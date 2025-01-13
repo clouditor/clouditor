@@ -50,6 +50,7 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 		ctID     string
 		clients  clients
 		authOpts *gophercloud.AuthOptions
+		region   string
 	}
 	tests := []struct {
 		name    string
@@ -74,6 +75,7 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 						},
 					},
 				},
+				region: "test region",
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {
 				assert.Equal(t, 3, len(got))
@@ -86,7 +88,7 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 					Name:         "herp",
 					CreationTime: timestamppb.New(t1),
 					GeoLocation: &ontology.GeoLocation{
-						Region: "unknown",
+						Region: "test region",
 					},
 					Labels:              map[string]string{},
 					ParentId:            util.Ref("fcad67a6189847c4aecfa3c81a05783b"),
@@ -112,6 +114,7 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 				ctID:     tt.fields.ctID,
 				clients:  tt.fields.clients,
 				authOpts: tt.fields.authOpts,
+				region:   tt.fields.region,
 			}
 			gotList, err := d.discoverServer()
 

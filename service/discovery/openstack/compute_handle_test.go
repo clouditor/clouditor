@@ -55,6 +55,7 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 		ctID     string
 		clients  clients
 		authOpts *gophercloud.AuthOptions
+		region   string
 	}
 	type args struct {
 		server *servers.Server
@@ -119,6 +120,7 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 						},
 					},
 				},
+				region: "test region",
 			},
 			args: args{
 				server: &servers.Server{
@@ -141,7 +143,7 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 					Name:         "herp",
 					CreationTime: timestamppb.New(t1),
 					GeoLocation: &ontology.GeoLocation{
-						Region: "unknown",
+						Region: "test region",
 					},
 					Labels:              map[string]string{},
 					ParentId:            util.Ref("fcad67a6189847c4aecfa3c81a05783b"),
@@ -167,10 +169,8 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 				ctID:     tt.fields.ctID,
 				clients:  tt.fields.clients,
 				authOpts: tt.fields.authOpts,
+				region:   tt.fields.region,
 			}
-
-			// err := d.authorize()
-			// assert.NoError(t, err)
 
 			got, err := d.handleServer(tt.args.server)
 

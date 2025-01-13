@@ -42,7 +42,7 @@ func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) 
 		Description:  network.Description,
 		CreationTime: timestamppb.New(network.CreatedAt),
 		GeoLocation: &ontology.GeoLocation{
-			Region: "unknown", // TODO: Can we get the region?
+			Region: d.region,
 		},
 		Labels:   labels(util.Ref(network.Tags)),
 		ParentId: util.Ref(network.TenantID),

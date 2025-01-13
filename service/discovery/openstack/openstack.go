@@ -57,6 +57,7 @@ type openstackDiscovery struct {
 	ctID     string
 	clients  clients
 	authOpts *gophercloud.AuthOptions
+	region   string
 }
 
 type clients struct {
@@ -100,7 +101,8 @@ func init() {
 
 func NewOpenstackDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &openstackDiscovery{
-		ctID: config.DefaultCertificationTargetID,
+		ctID:   config.DefaultCertificationTargetID,
+		region: os.Getenv(RegionName),
 	}
 
 	// Apply options
@@ -133,7 +135,7 @@ func (d *openstackDiscovery) authorize() (err error) {
 	// Compute client
 	if d.clients.computeClient == nil {
 		d.clients.computeClient, err = openstack.NewComputeV2(d.clients.provider, gophercloud.EndpointOpts{
-			Region: os.Getenv(RegionName),
+			Region: d.region,
 		})
 		if err != nil {
 			return fmt.Errorf("could not create compute client: %w", err)
@@ -143,7 +145,7 @@ func (d *openstackDiscovery) authorize() (err error) {
 	// Network client
 	if d.clients.networkClient == nil {
 		d.clients.networkClient, err = openstack.NewNetworkV2(d.clients.provider, gophercloud.EndpointOpts{
-			Region: os.Getenv(RegionName),
+			Region: d.region,
 		})
 		if err != nil {
 			return fmt.Errorf("could not create network client: %w", err)
@@ -153,7 +155,7 @@ func (d *openstackDiscovery) authorize() (err error) {
 	// Storage client
 	if d.clients.storageClient == nil {
 		d.clients.storageClient, err = openstack.NewBlockStorageV2(d.clients.provider, gophercloud.EndpointOpts{
-			Region: os.Getenv(RegionName),
+			Region: d.region,
 			Type:   "block-storage", // We have to use block-storage here, otherwise volumev3 is used as type and that does not work. volumev3 is not available in the service catalog for now. We have to wait until it is fixed, see: https://github.com/gophercloud/gophercloud/issues/3207
 		})
 		if err != nil {
@@ -164,7 +166,7 @@ func (d *openstackDiscovery) authorize() (err error) {
 	// Identity client
 	if d.clients.identityClient == nil {
 		d.clients.identityClient, err = openstack.NewIdentityV3(d.clients.provider, gophercloud.EndpointOpts{
-			Region: os.Getenv(RegionName),
+			Region: d.region,
 		})
 		if err != nil {
 			return fmt.Errorf("could not create identity client: %w", err)

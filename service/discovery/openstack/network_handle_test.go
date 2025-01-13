@@ -45,6 +45,7 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 		ctID     string
 		clients  clients
 		authOpts *gophercloud.AuthOptions
+		region   string
 	}
 	type args struct {
 		network *networks.Network
@@ -58,6 +59,9 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 	}{
 		{
 			name: "Happy path",
+			fields: fields{
+				region: "test region",
+			},
 			args: args{
 				network: &networks.Network{
 					ID:        testdata.MockNetworkID1,
@@ -72,7 +76,7 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 					Name:         testdata.MockNetworkName1,
 					CreationTime: timestamppb.New(testTime),
 					GeoLocation: &ontology.GeoLocation{
-						Region: "unknown", // TODO: Can we get the region?
+						Region: "test region",
 					},
 					ParentId: util.Ref(testdata.MockServerTenantID),
 				}
@@ -92,6 +96,7 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 				ctID:     tt.fields.ctID,
 				clients:  tt.fields.clients,
 				authOpts: tt.fields.authOpts,
+				region:   tt.fields.region,
 			}
 			got, err := d.handleNetworkInterfaces(tt.args.network)
 

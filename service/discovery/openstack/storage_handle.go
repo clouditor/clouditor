@@ -48,7 +48,7 @@ func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontolog
 		Description:  volume.Description,
 		CreationTime: timestamppb.New(volume.CreatedAt),
 		GeoLocation: &ontology.GeoLocation{
-			Region: "unknown", // TODO: Can we get the region?
+			Region: d.region,
 		},
 		ParentId: util.Ref(getParentID(volume)),
 		Labels:   map[string]string{}, // Not available

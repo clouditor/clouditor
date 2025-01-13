@@ -61,7 +61,7 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 		Name:         server.Name,
 		CreationTime: timestamppb.New(server.Created),
 		GeoLocation: &ontology.GeoLocation{
-			Region: "unknown", // TODO: Can we get the region?
+			Region: d.region,
 		},
 		Labels:            labels(server.Tags),
 		ParentId:          util.Ref(server.TenantID),

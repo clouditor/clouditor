@@ -49,6 +49,7 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 		ctID     string
 		clients  clients
 		authOpts *gophercloud.AuthOptions
+		region   string
 	}
 	tests := []struct {
 		name    string
@@ -73,6 +74,7 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 						},
 					},
 				},
+				region: "test region",
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {
 				assert.Equal(t, 2, len(got))
@@ -85,7 +87,7 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 					Name:         "public",
 					CreationTime: timestamppb.New(t1),
 					GeoLocation: &ontology.GeoLocation{
-						Region: "unknown",
+						Region: "test region",
 					},
 					Labels:   map[string]string{},
 					ParentId: util.Ref("4fd44f30292945e481c7b8a0c8908869"),
@@ -106,6 +108,7 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 				ctID:     tt.fields.ctID,
 				clients:  tt.fields.clients,
 				authOpts: tt.fields.authOpts,
+				region:   tt.fields.region,
 			}
 			gotList, err := d.discoverNetworkInterfaces()
 

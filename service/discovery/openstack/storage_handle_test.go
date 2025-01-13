@@ -45,6 +45,7 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 		ctID     string
 		clients  clients
 		authOpts *gophercloud.AuthOptions
+		region   string
 	}
 	type args struct {
 		volume *volumes.Volume
@@ -58,6 +59,9 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 	}{
 		{
 			name: "Happy path: volume name missing",
+			fields: fields{
+				region: "test region",
+			},
 			args: args{
 				volume: &volumes.Volume{
 					ID: testdata.MockVolumeID1,
@@ -72,7 +76,7 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 					Name:         testdata.MockVolumeID1,
 					CreationTime: timestamppb.New(testTime),
 					GeoLocation: &ontology.GeoLocation{
-						Region: "unknown", // TODO: Can we get the region?
+						Region: "test region",
 					},
 					ParentId: util.Ref(testdata.MockVolumeTenantID),
 				}
@@ -87,6 +91,9 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 		},
 		{
 			name: "Happy path: volume name available",
+			fields: fields{
+				region: "test region",
+			},
 			args: args{
 				volume: &volumes.Volume{
 					ID:        testdata.MockVolumeID1,
@@ -101,7 +108,7 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 					Name:         testdata.MockVolumeName1,
 					CreationTime: timestamppb.New(testTime),
 					GeoLocation: &ontology.GeoLocation{
-						Region: "unknown", // TODO: Can we get the region?
+						Region: "test region",
 					},
 					ParentId: util.Ref(testdata.MockVolumeTenantID),
 				}
@@ -121,6 +128,7 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 				ctID:     tt.fields.ctID,
 				clients:  tt.fields.clients,
 				authOpts: tt.fields.authOpts,
+				region:   tt.fields.region,
 			}
 			got, err := d.handleBlockStorage(tt.args.volume)
 

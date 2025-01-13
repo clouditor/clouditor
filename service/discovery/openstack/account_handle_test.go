@@ -42,6 +42,7 @@ func Test_openstackDiscovery_handleTenant(t *testing.T) {
 		ctID     string
 		clients  clients
 		authOpts *gophercloud.AuthOptions
+		region   string
 	}
 	type args struct {
 		project *projects.Project
@@ -55,6 +56,9 @@ func Test_openstackDiscovery_handleTenant(t *testing.T) {
 	}{
 		{
 			name: "Happy path",
+			fields: fields{
+				region: "test region",
+			},
 			args: args{
 				project: &projects.Project{
 					ID:          testdata.MockProjectID1,
@@ -69,7 +73,7 @@ func Test_openstackDiscovery_handleTenant(t *testing.T) {
 					Id:   testdata.MockProjectID1,
 					Name: testdata.MockProjectName1,
 					GeoLocation: &ontology.GeoLocation{
-						Region: "unknown",
+						Region: "test region",
 					},
 					Description: testdata.MockProjectDescription1,
 					Labels:      labels(util.Ref([]string{})),
@@ -89,6 +93,7 @@ func Test_openstackDiscovery_handleTenant(t *testing.T) {
 				ctID:     tt.fields.ctID,
 				clients:  tt.fields.clients,
 				authOpts: tt.fields.authOpts,
+				region:   tt.fields.region,
 			}
 			got, err := d.handleProject(tt.args.project)
 

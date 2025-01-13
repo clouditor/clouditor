@@ -41,7 +41,7 @@ func (d *openstackDiscovery) handleProject(project *projects.Project) (ontology.
 		Name:         project.Name,
 		CreationTime: nil, // project does not have a creation date
 		GeoLocation: &ontology.GeoLocation{
-			Region: "unknown", // TODO: Can we get the region?
+			Region: d.region,
 		},
 		Description: project.Description,
 		Labels:      labels(util.Ref(project.Tags)),
