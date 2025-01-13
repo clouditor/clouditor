@@ -136,7 +136,6 @@ func (d *openstackDiscovery) authorize() (err error) {
 		}
 	}
 
-	// TODO(all): Move to compute and storage files?
 	// Compute client
 	if d.clients.computeClient == nil {
 		d.clients.computeClient, err = openstack.NewComputeV2(d.clients.provider, gophercloud.EndpointOpts{
