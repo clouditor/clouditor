@@ -67,6 +67,8 @@ func TestMain(m *testing.M) {
 			Timestamp:             timestamppb.Now(),
 			ResourceId:            "myResource",
 			ResourceTypes:         []string{"ResourceType"},
+			ComplianceComment:     "Something",
+			Compliant:             false,
 			MetricConfiguration: &assessment.MetricConfiguration{
 				TargetValue:           toStruct(1.0),
 				MetricId:              testdata.MockMetricID1,

@@ -255,6 +255,8 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 						TargetValue:           testdata.MockMetricConfigurationTargetValueString,
 						CertificationTargetId: testdata.MockCertificationTargetID1,
 					},
+					Compliant:             false,
+					ComplianceComment:     "Some comment",
 					EvidenceId:            testdata.MockEvidenceID1,
 					ResourceId:            "myResource",
 					ResourceTypes:         []string{"Resource"},

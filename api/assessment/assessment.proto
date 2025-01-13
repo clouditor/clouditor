@@ -31,6 +31,7 @@ import "api/assessment/metric.proto";
 import "api/evidence/evidence.proto";
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
@@ -98,66 +99,104 @@ message AssessEvidencesResponse {
 // with id resource_id.
 message AssessmentResult {
   // Assessment result id
-  string id = 1 [(buf.validate.field).string.uuid = true];
+  string id = 1 [
+    (buf.validate.field).string.uuid = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // Time of assessment
   google.protobuf.Timestamp timestamp = 2 [
     (tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\"",
-    (buf.validate.field).required = true
+    (buf.validate.field).required = true,
+    (google.api.field_behavior) = REQUIRED
   ];
 
   // Reference to the metric the assessment was based on
-  string metric_id = 3 [(buf.validate.field).string.min_len = 1];
+  string metric_id = 3 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // Data corresponding to the metric by the given metric id
   clouditor.assessment.v1.MetricConfiguration metric_configuration = 4 [
     (tagger.tags) = "gorm:\"serializer:json\"",
-    (buf.validate.field).required = true
+    (buf.validate.field).required = true,
+    (google.api.field_behavior) = REQUIRED
   ];
 
   // Compliant case: true or false
   bool compliant = 5;
 
   // Reference to the assessed evidence
-  string evidence_id = 6 [(buf.validate.field).string.uuid = true];
+  string evidence_id = 6 [
+    (buf.validate.field).string.uuid = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // Reference to the resource of the assessed evidence
-  string resource_id = 7 [(buf.validate.field).string.min_len = 1];
+  string resource_id = 7 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // Resource types
   repeated string resource_types = 8 [
     (tagger.tags) = "gorm:\"serializer:json\"",
-    (buf.validate.field).repeated.min_items = 1
+    (buf.validate.field).repeated.min_items = 1,
+    (google.api.field_behavior) = REQUIRED
   ];
 
-  // Some comments on the reason for non-compliance
-  string non_compliance_comments = 9;
+  // ComplianceComment contains a human readable description on the reason for (non)-compliance.
+  string compliance_comment = 9 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
-  repeated ComparisonResult non_compliance_details = 10 [(tagger.tags) = "gorm:\"serializer:json\""];
+  // ComplianceDetails contains machine-readable details about which comparisons lead to a (non)-compliance.
+  repeated ComparisonResult compliance_details = 10 [(tagger.tags) = "gorm:\"serializer:json\""];
 
   // The certification target which this assessment result belongs to
-  string certification_target_id = 20 [(buf.validate.field).string.uuid = true];
+  string certification_target_id = 20 [
+    (buf.validate.field).string.uuid = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // Reference to the tool which provided the assessment result
-  optional string tool_id = 21 [(buf.validate.field).string.min_len = 1];
+  optional string tool_id = 21 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
 }
 
-// An optional structure containing more details how a comparison inside an assessment result was done and if it was succesful.
+// An optional structure containing more details how a comparison inside an assessment result was done and if it was successful.
 message ComparisonResult {
   // Property is the property that was compared
-  string property = 1;
+  string property = 1 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // Value is the value in the property
-  string value = 2;
+  google.protobuf.Value value = 2 [
+    (buf.validate.field).required = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // Operator is the operator used in the comparison
-  string operator = 3 [(buf.validate.field).string.pattern = "^(<|>|<=|>=|==|isIn|allIn)$"];
+  string operator = 3 [
+    (buf.validate.field).string.pattern = "^(<|>|<=|>=|==|isIn|allIn)$",
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // TargetValue is the target value used in the comparison
-  google.protobuf.Value target_value = 4 [(tagger.tags) = "gorm:\"serializer:json\""];
+  google.protobuf.Value target_value = 4 [
+    (tagger.tags) = "gorm:\"serializer:json\"",
+    (buf.validate.field).required = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // Success is true, if the comparison was sucessful
-  bool success = 5;
+  bool success = 5 [(google.api.field_behavior) = REQUIRED];
 }
 
 /*

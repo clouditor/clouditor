@@ -26,9 +26,11 @@
 package orchestrator
 
 import (
+	"clouditor.io/clouditor/v2/internal/config"
 	"context"
 	"errors"
 	"fmt"
+	"github.com/spf13/viper"
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
@@ -48,10 +50,7 @@ import (
 )
 
 const (
-	DefaultCertificationTargetId          = "00000000-0000-0000-0000-000000000000"
-	DefaultCertificationTargetName        = "default"
-	DefaultCertificationTargetDescription = "The default certification target"
-	DefaultCertificationTargetType        = orchestrator.CertificationTarget_TARGET_TYPE_CLOUD
+	DefaultCertificationTargetId = "00000000-0000-0000-0000-000000000000"
 )
 
 func (s *Service) RegisterCertificationTarget(ctx context.Context, req *orchestrator.RegisterCertificationTargetRequest) (res *orchestrator.CertificationTarget, err error) {
@@ -291,11 +290,11 @@ func (s *Service) CreateDefaultCertificationTarget() (target *orchestrator.Certi
 		target =
 			&orchestrator.CertificationTarget{
 				Id:          DefaultCertificationTargetId,
-				Name:        DefaultCertificationTargetName,
-				Description: DefaultCertificationTargetDescription,
+				Name:        viper.GetString(config.DefaultCertificationTargetNameFlag),
+				Description: viper.GetString(config.DefaultCertificationTargetDescriptionFlag),
 				CreatedAt:   now,
 				UpdatedAt:   now,
-				TargetType:  DefaultCertificationTargetType,
+				TargetType:  orchestrator.CertificationTarget_TargetType(viper.GetInt32(config.DefaultCertificationTargetTypeFlag)),
 			}
 
 		// Save it in the database

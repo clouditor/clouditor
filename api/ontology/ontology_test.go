@@ -1,7 +1,7 @@
 package ontology
 
 import (
-	reflect "reflect"
+	"reflect"
 	"testing"
 	"time"
 
@@ -60,6 +60,23 @@ func TestRelated(t *testing.T) {
 				{
 					Property: "parent",
 					Value:    "some-storage-account-id",
+				},
+			},
+		},
+		{
+			name: "happy path with plural",
+			args: args{
+				r: &Application{
+					Id:         "some-id",
+					Name:       "some-name",
+					LibraryIds: []string{"some-library"},
+					Raw:        "{}",
+				},
+			},
+			want: []Relationship{
+				{
+					Property: "library",
+					Value:    "some-library",
 				},
 			},
 		},
