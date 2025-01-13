@@ -2,3 +2,6 @@
 	path = ui
 	url = https://github.com/clouditor/ui
 	branch = main
+[submodule "policies/metrics"]
+	path = policies/metrics
+	url = git@github.com:clouditor/metrics.git

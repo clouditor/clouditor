@@ -112,14 +112,14 @@ func prepareMetric(m *assessment.Metric) (err error) {
 	)
 
 	// Load the Rego file
-	file := fmt.Sprintf("policies/bundles/%s/%s/metric.rego", m.CategoryID(), m.Id)
+	file := fmt.Sprintf("policies/metrics/metrics/%s/%s/metric.rego", m.CategoryID(), m.Id)
 	m.Implementation, err = loadMetricImplementation(m.Id, file)
 	if err != nil {
 		return fmt.Errorf("could not load metric implementation: %w", err)
 	}
 
 	// Look for the data.json to include default metric configurations
-	fileName := fmt.Sprintf("policies/bundles/%s/%s/data.json", m.CategoryID(), m.Id)
+	fileName := fmt.Sprintf("policies/metrics/metrics/%s/%s/data.json", m.CategoryID(), m.Id)
 
 	// Load the default configuration file
 	b, err := os.ReadFile(fileName)
