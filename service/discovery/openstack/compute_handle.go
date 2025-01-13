@@ -26,6 +26,7 @@
 package openstack
 
 import (
+	"context"
 	"fmt"
 
 	"clouditor.io/clouditor/v2/api/discovery"
@@ -45,23 +46,29 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 	)
 
 	// TODO(anatheka): Check again!
-	// // boot and os logging are logged together in the console log
-	// consoleOutput := servers.ShowConsoleOutput(context.Background(), d.clients.computeClient, server.ID, servers.ShowConsoleOutputOpts{})
-	// if consoleOutput.Result.StatusCode PrettyPrintJSON() != "" {
-	// 	bootLogging = &ontology.BootLogging{
-	// 		Enabled: true,
-	// 	}
-	// 	osLogging = &ontology.OSLogging{
-	// 		Enabled: true,
-	// 	}
-	// }
+	// boot and os logging are logged together in the console log
+	consoleOutput := servers.ShowConsoleOutput(context.Background(), d.clients.computeClient, server.ID, servers.ShowConsoleOutputOpts{})
+	if consoleOutput.Result.Err == nil {
+		bootLogging = &ontology.BootLogging{
+			Enabled: true,
+		}
+		// osLogging = &ontology.OSLogging{
+		// 	Enabled: true,
+		// }
+	} else {
+		log.Errorf("Error getting boot logging: %s", consoleOutput.Err)
+		// When an error occurs, we assume that boot logging is disabled.
+		bootLogging = &ontology.BootLogging{
+			Enabled: false,
+		}
+	}
 
 	r := &ontology.VirtualMachine{
 		Id:           server.ID,
 		Name:         server.Name,
 		CreationTime: timestamppb.New(server.Created),
 		GeoLocation: &ontology.GeoLocation{
-			Region: d.region,
+			Region: d.region, // TODO: Can we get the region?
 		},
 		Labels:            labels(server.Tags),
 		ParentId:          util.Ref(server.TenantID),
