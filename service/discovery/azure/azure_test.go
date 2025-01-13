@@ -638,6 +638,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 							"type":                "EncryptionAtRestWithPlatformKey",
 						},
 					},
+					"managedBy": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
 				},
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
@@ -651,6 +652,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 							"type":                "EncryptionAtRestWithCustomerKey",
 						},
 					},
+					"managedBy": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
 				},
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
@@ -664,6 +666,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 							"type":                "EncryptionAtRestWithPlatformKey",
 						},
 					},
+					"managedBy": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
 				},
 			},
 		}, 200)
@@ -1532,15 +1535,15 @@ func Test_initClient(t *testing.T) {
 
 // WithDefenderProperties is a [DiscoveryOption] that adds the defender properties for our tests.
 func WithDefenderProperties(dp map[string]*defenderProperties) DiscoveryOption {
-	return func(a *azureDiscovery) {
-		a.defenderProperties = dp
+	return func(d *azureDiscovery) {
+		d.defenderProperties = dp
 	}
 }
 
 // WithSubscription is a [DiscoveryOption] that adds the subscription to the discoverer for our tests.
 func WithSubscription(sub *armsubscription.Subscription) DiscoveryOption {
-	return func(a *azureDiscovery) {
-		a.sub = sub
+	return func(d *azureDiscovery) {
+		d.sub = sub
 	}
 }
 

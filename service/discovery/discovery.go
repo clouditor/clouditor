@@ -49,6 +49,7 @@ import (
 	"clouditor.io/clouditor/v2/service/discovery/azure"
 	"clouditor.io/clouditor/v2/service/discovery/extra/csaf"
 	"clouditor.io/clouditor/v2/service/discovery/k8s"
+	"clouditor.io/clouditor/v2/service/discovery/openstack"
 
 	"github.com/go-co-op/gocron"
 	"github.com/google/uuid"
@@ -63,10 +64,11 @@ import (
 )
 
 const (
-	ProviderAWS   = "aws"
-	ProviderK8S   = "k8s"
-	ProviderAzure = "azure"
-	ProviderCSAF  = "csaf"
+	ProviderAWS       = "aws"
+	ProviderK8S       = "k8s"
+	ProviderAzure     = "azure"
+	ProviderOpenstack = "openstack"
+	ProviderCSAF      = "csaf"
 )
 
 var log *logrus.Entry
@@ -304,7 +306,8 @@ func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (s
 // Start starts discovery
 func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
 	var (
-		opts = []azure.DiscoveryOption{}
+		optsAzure     = []azure.DiscoveryOption{}
+		optsOpenstack = []openstack.DiscoveryOption{}
 	)
 
 	// Validate request
@@ -333,12 +336,12 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
 			}
 			// Add authorizer and CertificationTargetID
-			opts = append(opts, azure.WithAuthorizer(authorizer), azure.WithCertificationTargetID(svc.ctID))
+			optsAzure = append(optsAzure, azure.WithAuthorizer(authorizer), azure.WithCertificationTargetID(svc.ctID))
 			// Check if resource group is given and append to discoverer
 			if req.GetResourceGroup() != "" {
-				opts = append(opts, azure.WithResourceGroup(req.GetResourceGroup()))
+				optsAzure = append(optsAzure, azure.WithResourceGroup(req.GetResourceGroup()))
 			}
-			svc.discoverers = append(svc.discoverers, azure.NewAzureDiscovery(opts...))
+			svc.discoverers = append(svc.discoverers, azure.NewAzureDiscovery(optsAzure...))
 		case provider == ProviderK8S:
 			k8sClient, err := k8s.AuthFromKubeConfig()
 			if err != nil {
@@ -358,6 +361,15 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 			svc.discoverers = append(svc.discoverers,
 				aws.NewAwsStorageDiscovery(awsClient, svc.ctID),
 				aws.NewAwsComputeDiscovery(awsClient, svc.ctID))
+		case provider == ProviderOpenstack:
+			authorizer, err := openstack.NewAuthorizer()
+			if err != nil {
+				log.Errorf("Could not authenticate to OpenStack: %v", err)
+				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to OpenStack: %v", err)
+			}
+			// Add authorizer and CertificationTargetID
+			optsOpenstack = append(optsOpenstack, openstack.WithAuthorizer(authorizer), openstack.WithCertificationTargetID(svc.ctID))
+			svc.discoverers = append(svc.discoverers, openstack.NewOpenstackDiscovery(optsOpenstack...))
 		case provider == ProviderCSAF:
 			var (
 				domain string

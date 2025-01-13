@@ -55,10 +55,6 @@ import (
 )
 
 const (
-	StorageComponent = "storage"
-	ComputeComponent = "compute"
-	NetworkComponent = "network"
-
 	DefenderStorageType        = "StorageAccounts"
 	DefenderVirtualMachineType = "VirtualMachines"
 
@@ -91,17 +87,17 @@ func (*azureDiscovery) Description() string {
 	return "Discovery Azure."
 }
 
-type DiscoveryOption func(a *azureDiscovery)
+type DiscoveryOption func(d *azureDiscovery)
 
 func WithSender(sender policy.Transporter) DiscoveryOption {
-	return func(a *azureDiscovery) {
-		a.clientOptions.Transport = sender
+	return func(d *azureDiscovery) {
+		d.clientOptions.Transport = sender
 	}
 }
 
 func WithAuthorizer(authorizer azcore.TokenCredential) DiscoveryOption {
-	return func(a *azureDiscovery) {
-		a.cred = authorizer
+	return func(d *azureDiscovery) {
+		d.cred = authorizer
 	}
 }
 
@@ -113,8 +109,8 @@ func WithCertificationTargetID(ctID string) DiscoveryOption {
 
 // WithResourceGroup is a [DiscoveryOption] that scopes the discovery to a specific resource group.
 func WithResourceGroup(rg string) DiscoveryOption {
-	return func(a *azureDiscovery) {
-		a.rg = &rg
+	return func(d *azureDiscovery) {
+		d.rg = &rg
 	}
 }
 
@@ -318,17 +314,17 @@ func (a *azureDiscovery) CertificationTargetID() string {
 	return a.ctID
 }
 
-func (a *azureDiscovery) authorize() (err error) {
-	if a.isAuthorized {
+func (d *azureDiscovery) authorize() (err error) {
+	if d.isAuthorized {
 		return
 	}
 
-	if a.cred == nil {
+	if d.cred == nil {
 		return ErrNoCredentialsConfigured
 	}
 
 	// Create new subscriptions client
-	subClient, err := armsubscription.NewSubscriptionsClient(a.cred, &a.clientOptions)
+	subClient, err := armsubscription.NewSubscriptionsClient(d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new subscription client: %w", err)
 		return err
@@ -354,11 +350,11 @@ func (a *azureDiscovery) authorize() (err error) {
 	}
 
 	// get first subscription
-	a.sub = subList[0]
+	d.sub = subList[0]
 
-	log.Infof("Azure %s discoverer uses %s as subscription", a.discovererComponent, *a.sub.SubscriptionID)
+	log.Infof("Azure %s discoverer uses %s as subscription", d.discovererComponent, *d.sub.SubscriptionID)
 
-	a.isAuthorized = true
+	d.isAuthorized = true
 
 	return nil
 }

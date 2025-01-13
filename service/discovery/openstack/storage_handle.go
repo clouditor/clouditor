@@ -23,73 +23,39 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package csaf
+package openstack
 
 import (
-	"net/http"
-
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
-	"clouditor.io/clouditor/v2/internal/config"
+	"clouditor.io/clouditor/v2/internal/util"
 
-	"github.com/sirupsen/logrus"
+	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v2/volumes"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var log *logrus.Entry
-
-func init() {
-	log = logrus.WithField("component", "csaf-discovery")
-}
-
-type csafDiscovery struct {
-	domain string
-	ctID   string
-	client *http.Client
-}
-
-type DiscoveryOption func(d *csafDiscovery)
-
-func WithProviderDomain(domain string) DiscoveryOption {
-	return func(d *csafDiscovery) {
-		d.domain = domain
-	}
-}
-
-func WithCertificationTargetID(ctID string) DiscoveryOption {
-	return func(a *csafDiscovery) {
-		a.ctID = ctID
-	}
-}
-
-func NewTrustedProviderDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-	d := &csafDiscovery{
-		ctID:   config.DefaultCertificationTargetID,
-		domain: "clouditor.io",
-		client: http.DefaultClient,
+// handleBlockStorage creates a block storage resource based on the Clouditor Ontology
+func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontology.IsResource, error) {
+	// Get Name, if exits, otherwise take the ID
+	name := volume.Name
+	if volume.Name == "" {
+		name = volume.ID
 	}
 
-	// Apply options
-	for _, opt := range opts {
-		opt(d)
+	r := &ontology.BlockStorage{
+		Id:           volume.ID,
+		Name:         name,
+		Description:  volume.Description,
+		CreationTime: timestamppb.New(volume.CreatedAt),
+		GeoLocation: &ontology.GeoLocation{
+			Region: d.region,
+		},
+		ParentId: util.Ref(getParentID(volume)),
+		Labels:   map[string]string{}, // Not available
+		Raw:      discovery.Raw(volume),
 	}
 
-	return d
-}
+	log.Infof("Adding block storage '%s", volume.Name)
 
-func (*csafDiscovery) Name() string {
-	return "CSAF Trusted Provider Discovery"
-}
-
-func (*csafDiscovery) Description() string {
-	return "Discovery CSAF documents from a CSAF trusted provider"
-}
-
-func (d *csafDiscovery) CertificationTargetID() string {
-	return d.ctID
-}
-
-func (d *csafDiscovery) List() (list []ontology.IsResource, err error) {
-	log.Infof("Fetching CSAF documents from domain %s", d.domain)
-
-	return d.discoverProviders()
+	return r, nil
 }

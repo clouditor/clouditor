@@ -167,6 +167,11 @@ require (
 
 )
 
+// runtime dependencies (OpenStack)
+require (	
+	github.com/gophercloud/gophercloud/v2 v2.2.0
+)
+
 // runtime dependencies (k8s)
 require (
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect

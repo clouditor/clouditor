@@ -23,73 +23,33 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package csaf
+package openstack
 
 import (
-	"net/http"
-
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
-	"clouditor.io/clouditor/v2/internal/config"
+	"clouditor.io/clouditor/v2/internal/util"
 
-	"github.com/sirupsen/logrus"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var log *logrus.Entry
-
-func init() {
-	log = logrus.WithField("component", "csaf-discovery")
-}
-
-type csafDiscovery struct {
-	domain string
-	ctID   string
-	client *http.Client
-}
-
-type DiscoveryOption func(d *csafDiscovery)
-
-func WithProviderDomain(domain string) DiscoveryOption {
-	return func(d *csafDiscovery) {
-		d.domain = domain
-	}
-}
-
-func WithCertificationTargetID(ctID string) DiscoveryOption {
-	return func(a *csafDiscovery) {
-		a.ctID = ctID
-	}
-}
-
-func NewTrustedProviderDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-	d := &csafDiscovery{
-		ctID:   config.DefaultCertificationTargetID,
-		domain: "clouditor.io",
-		client: http.DefaultClient,
+// handleNetworkInterfaces creates a network interface resource based on the Clouditor Ontology
+func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) (ontology.IsResource, error) {
+	r := &ontology.NetworkInterface{
+		Id:           network.ID,
+		Name:         network.Name,
+		Description:  network.Description,
+		CreationTime: timestamppb.New(network.CreatedAt),
+		GeoLocation: &ontology.GeoLocation{
+			Region: d.region,
+		},
+		Labels:   labels(util.Ref(network.Tags)),
+		ParentId: util.Ref(network.TenantID),
+		Raw:      discovery.Raw(network),
 	}
 
-	// Apply options
-	for _, opt := range opts {
-		opt(d)
-	}
+	log.Infof("Adding network interface '%s", network.Name)
 
-	return d
-}
-
-func (*csafDiscovery) Name() string {
-	return "CSAF Trusted Provider Discovery"
-}
-
-func (*csafDiscovery) Description() string {
-	return "Discovery CSAF documents from a CSAF trusted provider"
-}
-
-func (d *csafDiscovery) CertificationTargetID() string {
-	return d.ctID
-}
-
-func (d *csafDiscovery) List() (list []ontology.IsResource, err error) {
-	log.Infof("Fetching CSAF documents from domain %s", d.domain)
-
-	return d.discoverProviders()
+	return r, nil
 }

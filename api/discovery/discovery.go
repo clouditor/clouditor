@@ -41,7 +41,7 @@ import (
 var ErrNotOntologyResource = errors.New("protobuf message is not a valid ontology resource")
 
 // Discoverer is a part of the discovery service that takes care of the actual discovering and translation into
-// vocabulary objects.
+// ontology objects.
 type Discoverer interface {
 	Name() string
 	List() ([]ontology.IsResource, error)
