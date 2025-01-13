@@ -139,7 +139,8 @@ message EvaluationResult {
   // Evaluation result id
   string id = 1 [
     (buf.validate.field).string = {uuid: true},
-    (buf.validate.field).ignore_empty = true
+    (buf.validate.field).ignore_empty = true,
+    (google.api.field_behavior) = REQUIRED
   ];
 
   // The Certification Target ID the evaluation belongs to
@@ -161,16 +162,22 @@ message EvaluationResult {
   optional string parent_control_id = 7;
 
   // Evaluation status
-  EvaluationStatus status = 8 [(buf.validate.field).enum.defined_only = true];
+  EvaluationStatus status = 8 [
+    (buf.validate.field).enum.defined_only = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // Time of evaluation
-  google.protobuf.Timestamp timestamp = 9 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
+  google.protobuf.Timestamp timestamp = 9 [
+    (tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\"",
+    (google.api.field_behavior) = REQUIRED
+  ];
 
-  // List of assessment results because of which the evaluation status is not
-  // 'compliant'
-  repeated string failing_assessment_result_ids = 10 [
+  // List of assessment results because of which the evaluation status is compliant or not compliant
+  repeated string assessment_result_ids = 10 [
     (tagger.tags) = "gorm:\"serializer:json\"",
-    (buf.validate.field).repeated.items.string.min_len = 1
+    (buf.validate.field).repeated.items.string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
   ];
 
   optional string comment = 11;

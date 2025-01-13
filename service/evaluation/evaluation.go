@@ -653,7 +653,7 @@ func (svc *Service) evaluateControl(ctx context.Context, auditScope *orchestrato
 	// Copy the manual results
 	copy(results[len(relevant):], manual)
 
-	var nonCompliantAssessmentResults = []string{}
+	var resultIds = []string{}
 
 	for _, r := range results {
 		// status is the current evaluation status, r.Status is the status of the evaluation result of the subcontrol
@@ -661,27 +661,29 @@ func (svc *Service) evaluateControl(ctx context.Context, auditScope *orchestrato
 		switch status {
 		case evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING:
 			// check the given evaluation result for the current evaluation status PENDING
-			status, nonCompliantAssessmentResults = handlePending(r)
+			status = handlePending(r)
 		case evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT, evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT_MANUALLY:
 			// check the given evaluation results for the current evaluation status COMPLIANT
-			status, nonCompliantAssessmentResults = handleCompliant(r)
+			status = handleCompliant(r)
 		case evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT, evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY:
 			// Evaluation status does not change if it is already not_compliant
-			nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.GetFailingAssessmentResultIds()...)
 		}
+
+		// We are interested in all result IDs in order to provide a trace back from evaluation result back to assessment (and evidence).
+		resultIds = append(resultIds, r.AssessmentResultIds...)
 	}
 
 	// Create evaluation result
 	result = &evaluation.EvaluationResult{
-		Id:                         uuid.NewString(),
-		Timestamp:                  timestamppb.Now(),
-		ControlCategoryName:        control.CategoryName,
-		ControlCatalogId:           control.CategoryCatalogId,
-		ControlId:                  control.Id,
-		CertificationTargetId:      auditScope.CertificationTargetId,
-		AuditScopeId:               auditScope.Id,
-		Status:                     status,
-		FailingAssessmentResultIds: nonCompliantAssessmentResults,
+		Id:                    uuid.NewString(),
+		Timestamp:             timestamppb.Now(),
+		ControlCategoryName:   control.CategoryName,
+		ControlCatalogId:      control.CategoryCatalogId,
+		ControlId:             control.Id,
+		CertificationTargetId: auditScope.CertificationTargetId,
+		AuditScopeId:          auditScope.Id,
+		Status:                status,
+		AssessmentResultIds:   resultIds,
 	}
 
 	err = svc.storage.Create(result)
@@ -701,9 +703,9 @@ func (svc *Service) evaluateControl(ctx context.Context, auditScope *orchestrato
 // evaluateSubcontrol evaluates the sub-controls, e.g., OPS-13.2
 func (svc *Service) evaluateSubcontrol(_ context.Context, auditScope *orchestrator.AuditScope, control *orchestrator.Control) (eval *evaluation.EvaluationResult, err error) {
 	var (
-		assessments                   []*assessment.AssessmentResult
-		status                        evaluation.EvaluationStatus
-		nonCompliantAssessmentResults []string
+		assessments []*assessment.AssessmentResult
+		status      evaluation.EvaluationStatus
+		resultIds   []string
 	)
 
 	if auditScope == nil || control == nil {
@@ -755,25 +757,25 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, auditScope *orchestrat
 	}
 
 	// Here the actual evaluation takes place. We check if the assessment results are compliant.
-	for _, results := range assessments {
-		if !results.Compliant {
-			nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, results.GetId())
+	for _, r := range assessments {
+		if !r.Compliant {
 			status = evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT
 		}
+		resultIds = append(resultIds, r.GetId())
 	}
 
 	// Create evaluation result
 	eval = &evaluation.EvaluationResult{
-		Id:                         uuid.NewString(),
-		Timestamp:                  timestamppb.Now(),
-		ControlCategoryName:        control.CategoryName,
-		ControlCatalogId:           control.CategoryCatalogId,
-		ControlId:                  control.Id,
-		ParentControlId:            control.ParentControlId,
-		CertificationTargetId:      auditScope.CertificationTargetId,
-		AuditScopeId:               auditScope.Id,
-		Status:                     status,
-		FailingAssessmentResultIds: nonCompliantAssessmentResults,
+		Id:                    uuid.NewString(),
+		Timestamp:             timestamppb.Now(),
+		ControlCategoryName:   control.CategoryName,
+		ControlCatalogId:      control.CategoryCatalogId,
+		ControlId:             control.Id,
+		ParentControlId:       control.ParentControlId,
+		CertificationTargetId: auditScope.CertificationTargetId,
+		AuditScopeId:          auditScope.Id,
+		Status:                status,
+		AssessmentResultIds:   resultIds,
 	}
 
 	err = svc.storage.Create(eval)
@@ -906,10 +908,9 @@ func (svc *Service) getControl(catalogId, categoryName, controlId string) (contr
 }
 
 // handlePending evaluates the given evaluation result when the current control evaluation status is PENDING
-func handlePending(er *evaluation.EvaluationResult) (evaluation.EvaluationStatus, []string) {
+func handlePending(er *evaluation.EvaluationResult) evaluation.EvaluationStatus {
 	var (
-		evalStatus              = evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING
-		failingAssessmentResult []string
+		evalStatus = evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING
 	)
 
 	switch er.Status {
@@ -921,17 +922,15 @@ func handlePending(er *evaluation.EvaluationResult) (evaluation.EvaluationStatus
 	case evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT,
 		evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY:
 		evalStatus = evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT
-		failingAssessmentResult = append(failingAssessmentResult, er.GetFailingAssessmentResultIds()...)
 	}
 
-	return evalStatus, failingAssessmentResult
+	return evalStatus
 }
 
 // handleCompliant evaluates the given evaluation result when the current control evaluation status is COMPLIANT
-func handleCompliant(er *evaluation.EvaluationResult) (evaluation.EvaluationStatus, []string) {
+func handleCompliant(er *evaluation.EvaluationResult) evaluation.EvaluationStatus {
 	var (
-		evalStatus              = evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT
-		failingAssessmentResult []string
+		evalStatus = evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT
 	)
 
 	switch er.Status {
@@ -939,10 +938,9 @@ func handleCompliant(er *evaluation.EvaluationResult) (evaluation.EvaluationStat
 		// valuation status does not change
 	case evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT, evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY:
 		evalStatus = evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT
-		failingAssessmentResult = append(failingAssessmentResult, er.GetFailingAssessmentResultIds()...)
 	}
 
-	return evalStatus, failingAssessmentResult
+	return evalStatus
 }
 
 // TODO(oxisto): We can remove it with maps.Values in Go 1.22+
