@@ -37,7 +37,7 @@ In order to just build and run the Clouditor, without generating the protobuf fi
 ./run-engine-with-ui.sh --discovery-provider=azure
 ```
 
-This will start the all-in-on-engine with all discoverers enabled and launches the UI on http://localhost:5173. The
+This will start the all-in-on-engine with all discoverers enabled and launches the UI on http://localhost:3000. The
 default credentials are clouditor/clouditor.
 
 ### Using the extra discoverers (e.g. CSAF)
