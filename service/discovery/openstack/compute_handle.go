@@ -71,7 +71,6 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 		Raw:               discovery.Raw(server),
 		MalwareProtection: &ontology.MalwareProtection{},
 		BootLogging:       bootLogging,
-		ActivityLogging:   &ontology.ActivityLogging{},
 		AutomaticUpdates:  &ontology.AutomaticUpdates{},
 	}
 

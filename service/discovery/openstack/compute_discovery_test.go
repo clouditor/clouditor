@@ -96,7 +96,6 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 					BlockStorageIds:     []string{"2bdbc40f-a277-45d4-94ac-d9881c777d33"},
 					NetworkInterfaceIds: []string{"8a5fe506-7e9f-4091-899b-96336909d93c"},
 					MalwareProtection:   &ontology.MalwareProtection{},
-					ActivityLogging:     &ontology.ActivityLogging{},
 					AutomaticUpdates:    &ontology.AutomaticUpdates{},
 					BootLogging:         &ontology.BootLogging{Enabled: false},
 				}
