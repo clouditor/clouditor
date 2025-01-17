@@ -34,40 +34,56 @@ import (
 	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/projects"
 )
 
-// handleProject returns a [ontology.ResourceGroup] out of an existing [projects.Project].
-func (d *openstackDiscovery) handleProject(project *projects.Project) (ontology.IsResource, error) {
-	r := &ontology.ResourceGroup{
-		Id:           project.ID,
-		Name:         project.Name,
-		CreationTime: nil, // project does not have a creation date
-		GeoLocation: &ontology.GeoLocation{
-			Region: d.region,
-		},
-		Description: project.Description,
-		Labels:      labels(util.Ref(project.Tags)),
-		ParentId:    util.Ref(project.ParentID),
-		Raw:         discovery.Raw(project),
-	}
-
-	log.Infof("Adding project '%s", project.Name)
-
-	return r, nil
-}
-
 // handleDomain returns a [ontology.Account] out of an existing [domains.Domain].
 func (d *openstackDiscovery) handleDomain(domain *domains.Domain) (ontology.IsResource, error) {
 	r := &ontology.Account{
-		Id:           domain.ID,
-		Name:         domain.Name,
-		Description:  domain.Description,
 		CreationTime: nil, // domain does not have a creation date
 		GeoLocation:  nil, // domain is global
 		Labels:       nil, // domain does not have labels,
 		ParentId:     nil, // domain is the top-most item and have no parent,
-		Raw:          discovery.Raw(domain),
+	}
+
+	// if we are unable to retrieve the domain information in discoverDomains(), we will use the information obtained from the environment variables
+	if domain == nil {
+		r.Id = d.domainID
+		r.Name = d.domainName
+	} else {
+		r.Id = domain.ID
+		r.Name = domain.Name
+		r.Description = domain.Description
+		r.Raw = discovery.Raw(domain)
 	}
 
 	log.Infof("Adding domain '%s", domain.Name)
+
+	return r, nil
+}
+
+// handleProject returns a [ontology.ResourceGroup] out of an existing [projects.Project].
+func (d *openstackDiscovery) handleProject(project *projects.Project) (ontology.IsResource, error) {
+	r := &ontology.ResourceGroup{
+		CreationTime: nil, // project does not have a creation date
+		// GeoLocation: &ontology.GeoLocation{
+		// 	Region: d.region,
+		// },
+	}
+
+	if project == nil {
+		r.Id = ""   //TODO(anatheka): Add information
+		r.Name = "" // TODO(anatheka): Add information
+	} else {
+		r.Id = project.ID
+		r.Name = project.Name
+		r.GeoLocation = &ontology.GeoLocation{
+			Region: d.region,
+		}
+		r.Description = project.Description
+		r.Labels = labels(util.Ref(project.Tags))
+		r.ParentId = util.Ref(project.ParentID)
+		r.Raw = discovery.Raw(project)
+	}
+
+	log.Infof("Adding project '%s", project.Name)
 
 	return r, nil
 }
