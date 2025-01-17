@@ -25,11 +25,24 @@
 
 package openstack
 
-// TODO(anatheka): Should we leave the code here in case we want to discover it again, or should we delete it?
-// // discoverProjects discovers projects/tenants. OpenStack project and tenant are interchangeable.
-// func (d *openstackDiscovery) discoverProjects() (list []ontology.IsResource, err error) {
-// 	var opts projects.ListOptsBuilder = &projects.ListOpts{}
-// 	list, err = genericList(d, d.identityClient, projects.List, d.handleProject, projects.ExtractProjects, opts)
+import (
+	"clouditor.io/clouditor/v2/api/ontology"
+	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/domains"
+	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/projects"
+)
 
-// 	return
-// }
+// discoverDomains discovers domains.
+func (d *openstackDiscovery) discoverDomains() (list []ontology.IsResource, err error) {
+	var opts domains.ListOptsBuilder = &domains.ListOpts{}
+	list, err = genericList(d, d.identityClient, domains.List, d.handleDomain, domains.ExtractDomains, opts)
+
+	return
+}
+
+// discoverProjects discovers projects/tenants. OpenStack project and tenant are interchangeable.
+func (d *openstackDiscovery) discoverProjects() (list []ontology.IsResource, err error) {
+	var opts projects.ListOptsBuilder = &projects.ListOpts{}
+	list, err = genericList(d, d.identityClient, projects.List, d.handleProject, projects.ExtractProjects, opts)
+
+	return
+}
