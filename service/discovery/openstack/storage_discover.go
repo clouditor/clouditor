@@ -33,10 +33,7 @@ import (
 
 // discoverBlockStorage discovers block storages
 func (d *openstackDiscovery) discoverBlockStorage() (list []ontology.IsResource, err error) {
-	// TODO(oxisto): Limit the list to a specific tenant?
-	var opts volumes.ListOptsBuilder = &volumes.ListOpts{
-		AllTenants: true,
-	}
+	var opts volumes.ListOptsBuilder = &volumes.ListOpts{}
 	list, err = genericList(d, d.storageClient, volumes.List, d.handleBlockStorage, volumes.ExtractVolumes, opts)
 
 	return

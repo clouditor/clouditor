@@ -45,6 +45,8 @@ import (
 
 const (
 	RegionName = "OS_REGION_NAME"
+	DomainID   = "OS_PROJECT_DOMAIN_ID"
+	DomainName = "OS_USER_DOMAIN_NAME"
 )
 
 var (
@@ -54,10 +56,15 @@ var (
 )
 
 type openstackDiscovery struct {
-	ctID     string
-	clients  clients
-	authOpts *gophercloud.AuthOptions
-	region   string
+	ctID       string
+	clients    clients
+	authOpts   *gophercloud.AuthOptions
+	region     string
+	domainID   string
+	domainName string
+	// It is not possible to add the OS_TENANT_ID or OS_TENANT_NAME. It results in an error: "Error authenticating with application credential: Application credentials cannot request a scope."
+	projectID   string
+	projectName string
 }
 
 type clients struct {
@@ -106,8 +113,10 @@ func NewOpenstackDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	}
 
 	d := &openstackDiscovery{
-		ctID:   config.DefaultCertificationTargetID,
-		region: os.Getenv(RegionName),
+		ctID:       config.DefaultCertificationTargetID,
+		region:     os.Getenv(RegionName),
+		domainID:   os.Getenv(DomainID),
+		domainName: os.Getenv(DomainName),
 	}
 
 	// Apply options
@@ -160,7 +169,6 @@ func (d *openstackDiscovery) authorize() (err error) {
 	if d.clients.storageClient == nil {
 		d.clients.storageClient, err = openstack.NewBlockStorageV2(d.clients.provider, gophercloud.EndpointOpts{
 			Region: d.region,
-			Type:   "block-storage", // We have to use block-storage here, otherwise volumev3 is used as type and that does not work. volumev3 is not available in the service catalog for now. We have to wait until it is fixed, see: https://github.com/gophercloud/gophercloud/issues/3207
 		})
 		if err != nil {
 			return fmt.Errorf("could not create block storage client: %w", err)
@@ -199,14 +207,14 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 	// Discover domains resource
 	domains, err := d.discoverDomains()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover domains: %w", err)
+		return nil, fmt.Errorf("could not discover domains: %v", err)
 	}
 	list = append(list, domains...)
 
 	// Discover project resources
 	projects, err := d.discoverProjects()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover projects: %w", err)
+		return nil, fmt.Errorf("could not discover projects/tenants: %v", err)
 	}
 	list = append(list, projects...)
 

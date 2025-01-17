@@ -33,7 +33,6 @@ import (
 
 // discoverNetworkInterfaces discovers network interfaces
 func (d *openstackDiscovery) discoverNetworkInterfaces() (list []ontology.IsResource, err error) {
-	// TODO(oxisto): Limit the list to a specific tenant?
 	var opts networks.ListOptsBuilder = &networks.ListOpts{}
 	list, err = genericList(d, d.networkClient, networks.List, d.handleNetworkInterfaces, networks.ExtractNetworks, opts)
 
