@@ -36,7 +36,23 @@ func (d *openstackDiscovery) discoverDomains() (list []ontology.IsResource, err 
 	var opts domains.ListOptsBuilder = &domains.ListOpts{}
 	list, err = genericList(d, d.identityClient, domains.List, d.handleDomain, domains.ExtractDomains, opts)
 
-	return
+	if err != nil {
+		// if we cannot retrieve the domain information by calling the API or from the environment variables, we will not be able to succeed
+		if d.domainID == "" || d.domainName == "" {
+			return nil, err
+		}
+
+		// TODO(all): Or should it be Errorf?
+		log.Debugf("could not discover domains due to insufficient permissions, but we can proceed with less domain information: %v", err)
+		r := &ontology.Account{
+			Id:   d.domainID,
+			Name: d.domainName,
+		}
+
+		list = append(list, r)
+	}
+
+	return list, nil
 }
 
 // discoverProjects discovers projects/tenants. OpenStack project and tenant are interchangeable.
@@ -44,5 +60,22 @@ func (d *openstackDiscovery) discoverProjects() (list []ontology.IsResource, err
 	var opts projects.ListOptsBuilder = &projects.ListOpts{}
 	list, err = genericList(d, d.identityClient, projects.List, d.handleProject, projects.ExtractProjects, opts)
 
-	return
+	if err != nil {
+		// TODO(all): Or should it be Errorf?
+		log.Debugf("could not discover projects/tenants due to insufficient permissions, but we can proceed with less project/tenant information: %v", err)
+
+		r := &ontology.ResourceGroup{
+			Id:       "6b715d5b91964beaa14100f011dc6339", //TODO(anatheka): Add information
+			Name:     "testName",                         //TODO(anatheka): Add information
+			ParentId: &d.domainID,
+		}
+
+		// Set projectID/projectName
+		d.projectID = d.projectID
+		d.projectName = d.projectName
+
+		list = append(list, r)
+	}
+
+	return list, nil
 }

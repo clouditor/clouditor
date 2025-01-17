@@ -44,11 +44,9 @@ import (
 )
 
 const (
-	RegionName  = "OS_REGION_NAME"
-	DomainID    = "OS_PROJECT_DOMAIN_ID"
-	DomainName  = "OS_USER_DOMAIN_NAME"
-	ProjectID   = "OS_TENANT_ID"
-	ProjectName = "OS_TENANT_NAME"
+	RegionName = "OS_REGION_NAME"
+	DomainID   = "OS_PROJECT_DOMAIN_ID"
+	DomainName = "OS_USER_DOMAIN_NAME"
 )
 
 var (
@@ -65,8 +63,8 @@ type openstackDiscovery struct {
 	domainID   string
 	domainName string
 	// It is not possible to add the OS_TENANT_ID or OS_TENANT_NAME. It results in an error: "Error authenticating with application credential: Application credentials cannot request a scope."
-	// projectID   string
-	// projectName string
+	projectID   string
+	projectName string
 }
 
 type clients struct {
@@ -209,14 +207,14 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 	// Discover domains resource
 	domains, err := d.discoverDomains()
 	if err != nil {
-		log.Debugf("could not discover domains due to insufficient permissions, but we can proceed with less domain information : %v", err)
+		return nil, fmt.Errorf("could not discover domains: %v", err)
 	}
 	list = append(list, domains...)
 
 	// Discover project resources
 	projects, err := d.discoverProjects()
 	if err != nil {
-		log.Debugf("could not discover projects/tenants due to insufficient permissions, but we can proceed with less project/tenant information : %v", err)
+		return nil, fmt.Errorf("could not discover projects/tenants: %v", err)
 	}
 	list = append(list, projects...)
 
