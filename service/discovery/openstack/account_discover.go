@@ -71,8 +71,8 @@ func (d *openstackDiscovery) discoverProjects() (list []ontology.IsResource, err
 		}
 
 		// Set projectID/projectName
-		d.projectID = d.projectID
-		d.projectName = d.projectName
+		d.projectID = ""   //TODO(anatheka): TBD
+		d.projectName = "" //TODO(anatheka): TBD
 
 		list = append(list, r)
 	}

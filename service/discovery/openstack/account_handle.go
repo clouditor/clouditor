@@ -69,8 +69,8 @@ func (d *openstackDiscovery) handleProject(project *projects.Project) (ontology.
 	}
 
 	// Set projectID/projectName
-	d.projectID = d.projectID
-	d.projectName = d.projectName
+	d.projectID = project.ID
+	d.projectName = project.Name
 
 	log.Infof("Adding project '%s", project.Name)
 
