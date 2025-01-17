@@ -58,14 +58,15 @@ var (
 )
 
 type openstackDiscovery struct {
-	ctID        string
-	clients     clients
-	authOpts    *gophercloud.AuthOptions
-	region      string
-	domainID    string
-	domainName  string
-	projectID   string
-	projectName string
+	ctID       string
+	clients    clients
+	authOpts   *gophercloud.AuthOptions
+	region     string
+	domainID   string
+	domainName string
+	// It is not possible to add the OS_TENANT_ID or OS_TENANT_NAME. It results in an error: "Error authenticating with application credential: Application credentials cannot request a scope."
+	// projectID   string
+	// projectName string
 }
 
 type clients struct {
@@ -114,16 +115,10 @@ func NewOpenstackDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	}
 
 	d := &openstackDiscovery{
-		ctID:        config.DefaultCertificationTargetID,
-		region:      os.Getenv(RegionName),
-		domainID:    os.Getenv(DomainID),
-		domainName:  os.Getenv(DomainName),
-		projectID:   os.Getenv(ProjectID),
-		projectName: os.Getenv(ProjectName),
-	}
-
-	if d.domainID == "" || d.domainName == "" || d.projectID == "" || d.projectName == "" {
-		log.Error("Missing domain or projects name/ID")
+		ctID:       config.DefaultCertificationTargetID,
+		region:     os.Getenv(RegionName),
+		domainID:   os.Getenv(DomainID),
+		domainName: os.Getenv(DomainName),
 	}
 
 	// Apply options
@@ -211,13 +206,19 @@ func NewAuthorizer() (gophercloud.AuthOptions, error) {
 // * Servers
 // * Block storages
 func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
-	// TODO(anatheka): Should we leave the code here in case we want to discover it again, or should we delete it?
-	// // Discover project resources
-	// projects, err := d.discoverProjects()
-	// if err != nil {
-	// 	return nil, fmt.Errorf("could not discover projects: %w", err)
-	// }
-	// list = append(list, projects...)
+	// Discover domains resource
+	domains, err := d.discoverDomains()
+	if err != nil {
+		log.Debugf("could not discover domains due to insufficient permissions, but we can proceed with less domain information : %v", err)
+	}
+	list = append(list, domains...)
+
+	// Discover project resources
+	projects, err := d.discoverProjects()
+	if err != nil {
+		log.Debugf("could not discover projects/tenants due to insufficient permissions, but we can proceed with less project/tenant information : %v", err)
+	}
+	list = append(list, projects...)
 
 	// Discover networks interfaces
 	networks, err := d.discoverNetworkInterfaces()
