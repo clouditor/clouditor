@@ -60,9 +60,9 @@ require (
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.1-20241127180247-a33202765966.1
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
-	github.com/bufbuild/protovalidate-go v0.7.0
+	github.com/bufbuild/protovalidate-go v0.8.2
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/google/cel-go v0.21.0 // indirect
+	github.com/google/cel-go v0.22.1 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.24.0
 	github.com/stoewer/go-strcase v1.3.0 // indirect
@@ -168,9 +168,7 @@ require (
 )
 
 // runtime dependencies (OpenStack)
-require (	
-	github.com/gophercloud/gophercloud/v2 v2.2.0
-)
+require github.com/gophercloud/gophercloud/v2 v2.2.0
 
 // runtime dependencies (k8s)
 require (
@@ -239,3 +237,5 @@ require (
 	github.com/srikrsna/protoc-gen-gotag v1.0.0
 
 )
+
+require cel.dev/expr v0.18.0 // indirect
