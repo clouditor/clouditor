@@ -16,9 +16,9 @@ require (
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1 // indirect
-	github.com/open-policy-agent/opa v0.69.0
+	github.com/open-policy-agent/opa v1.0.1
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/prometheus/client_golang v1.20.4 // indirect
+	github.com/prometheus/client_golang v1.20.5 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.55.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
@@ -28,10 +28,10 @@ require (
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/yashtewari/glob-intersection v0.2.0 // indirect
-	go.opentelemetry.io/otel v1.28.0 // indirect
-	go.opentelemetry.io/otel/metric v1.28.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.28.0 // indirect
-	go.opentelemetry.io/otel/trace v1.28.0 // indirect
+	go.opentelemetry.io/otel v1.33.0 // indirect
+	go.opentelemetry.io/otel/metric v1.33.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.33.0 // indirect
+	go.opentelemetry.io/otel/trace v1.33.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/sync v0.10.0
 	gopkg.in/yaml.v2 v2.4.0 // indirect
@@ -42,7 +42,7 @@ require (
 	github.com/lmittmann/tint v1.0.5 // indirect
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/sirupsen/logrus v1.9.3
-	golang.org/x/sys v0.25.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
 
 )
 
@@ -51,7 +51,7 @@ require (
 	github.com/MicahParks/keyfunc/v2 v2.1.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/oxisto/oauth2go v0.14.0
-	golang.org/x/crypto v0.27.0 // indirect
+	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/oauth2 v0.24.0
 
 )
@@ -66,9 +66,9 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.24.0
 	github.com/stoewer/go-strcase v1.3.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20241118233622-e639e219e697
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20241118233622-e639e219e697 // indirect
-	google.golang.org/grpc v1.68.0
+	google.golang.org/genproto/googleapis/api v0.0.0-20241209162323-e6fa225c2576
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20241209162323-e6fa225c2576 // indirect
+	google.golang.org/grpc v1.69.2
 	google.golang.org/protobuf v1.36.1
 
 )
@@ -98,7 +98,7 @@ require (
 // runtime dependencies (config, cli)
 require (
 	github.com/alecthomas/kong v0.9.0 // indirect
-	github.com/fsnotify/fsnotify v1.7.0 // indirect
+	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
@@ -137,7 +137,7 @@ require (
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.2.2 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
-	golang.org/x/net v0.29.0 // indirect
+	golang.org/x/net v0.33.0 // indirect
 
 )
 
@@ -168,9 +168,7 @@ require (
 )
 
 // runtime dependencies (OpenStack)
-require (	
-	github.com/gophercloud/gophercloud/v2 v2.2.0
-)
+require github.com/gophercloud/gophercloud/v2 v2.2.0
 
 // runtime dependencies (k8s)
 require (
@@ -191,7 +189,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
-	golang.org/x/term v0.24.0 // indirect
+	golang.org/x/term v0.27.0 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	k8s.io/api v0.31.1
@@ -215,7 +213,7 @@ require (
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	go.etcd.io/bbolt v1.3.10 // indirect
-	golang.org/x/time v0.6.0 // indirect
+	golang.org/x/time v0.8.0 // indirect
 
 )
 
@@ -239,3 +237,5 @@ require (
 	github.com/srikrsna/protoc-gen-gotag v1.0.0
 
 )
+
+require go.opentelemetry.io/auto/sdk v1.1.0 // indirect
