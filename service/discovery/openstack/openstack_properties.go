@@ -84,15 +84,12 @@ func (d *openstackDiscovery) setProjectInfo(x interface{}) {
 
 	switch v := x.(type) {
 	case []volumes.Volume:
-		log.Debugf("volume")
 		d.project.projectID = v[0].TenantID
 		d.project.projectName = v[0].TenantID // it is not possible to extract the project name
 	case []servers.Server:
-		log.Debugf("server")
 		d.project.projectID = v[0].TenantID
 		d.project.projectName = v[0].TenantID // it is not possible to extract the project name
 	case []networks.Network:
-		log.Debugf("network")
 		d.project.projectID = v[0].TenantID
 		d.project.projectName = v[0].TenantID // it is not possible to extract the project name
 	default:
