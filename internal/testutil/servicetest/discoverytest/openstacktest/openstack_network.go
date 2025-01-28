@@ -42,7 +42,8 @@ import (
 // Source: https://github.com/gophercloud/gophercloud/blob/master/openstack/networking/v2/networks/testing/fixtures.go (2024-12-09)
 //
 // Changes:
-// - 20XX-XX-XX: Modified the function for specific requirements (Your Name)
+// - 2024-12-10: Add function HandleNetworkListSuccessfully() and changed "/v2.0/networks" to "/networks" based on the HandleFunc in https://github.com/gophercloud/gophercloud/blob/5770765aa037e1572cbaa9474113010a1397e822/openstack/networking/v2/networks/testing/requests_test.go (anatheka)
+// - 2025-01-28: Add ProjectID property to all network objects (anatheka)
 
 const ListResponse = `
 {
@@ -55,6 +56,7 @@ const ListResponse = `
             "name": "public",
             "admin_state_up": true,
             "tenant_id": "4fd44f30292945e481c7b8a0c8908869",
+            "project_id": "4fd44f30292945e481c7b8a0c8908869",
             "created_at": "2019-06-30T04:15:37",
             "updated_at": "2019-06-30T05:18:49",
             "shared": true,
@@ -100,6 +102,7 @@ const GetResponse = `
         "name": "public",
         "admin_state_up": true,
         "tenant_id": "4fd44f30292945e481c7b8a0c8908869",
+        "project_id": "4fd44f30292945e481c7b8a0c8908869",
         "created_at": "2019-06-30T04:15:37",
         "updated_at": "2019-06-30T05:18:49",
         "shared": true,
@@ -197,6 +200,7 @@ const UpdateResponse = `
         "name": "new_network_name",
         "admin_state_up": false,
         "tenant_id": "4fd44f30292945e481c7b8a0c8908869",
+        "project_id": "4fd44f30292945e481c7b8a0c8908869",
         "created_at": "2019-06-30T04:15:37Z",
         "updated_at": "2019-06-30T05:18:49Z",
         "shared": true,
@@ -243,6 +247,7 @@ var (
 		Name:         "public",
 		AdminStateUp: true,
 		TenantID:     "4fd44f30292945e481c7b8a0c8908869",
+		ProjectID:    "4fd44f30292945e481c7b8a0c8908869",
 		CreatedAt:    createdTime,
 		UpdatedAt:    updatedTime,
 		Shared:       true,
@@ -257,6 +262,7 @@ var (
 		Name:         "private",
 		AdminStateUp: true,
 		TenantID:     "26a7980765d0414dbc1fc1f88cdb7e6e",
+		ProjectID:    "26a7980765d0414dbc1fc1f88cdb7e6e",
 		CreatedAt:    createdTime,
 		UpdatedAt:    updatedTime,
 		Shared:       false,
@@ -267,7 +273,7 @@ var (
 var ExpectedNetworkSlice = []networks.Network{Network1, Network2}
 
 func HandleNetworkListSuccessfully(t *testing.T) {
-	th.Mux.HandleFunc("/v2.0/networks", func(w http.ResponseWriter, r *http.Request) {
+	th.Mux.HandleFunc("/networks", func(w http.ResponseWriter, r *http.Request) {
 		th.TestMethod(t, r, "GET")
 		th.TestHeader(t, r, "X-Auth-Token", client.TokenID)
 
