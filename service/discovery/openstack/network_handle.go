@@ -36,8 +36,6 @@ import (
 
 // handleNetworkInterfaces creates a network interface resource based on the Clouditor Ontology
 func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) (ontology.IsResource, error) {
-	var parentId string
-
 	r := &ontology.NetworkInterface{
 		Id:           network.ID,
 		Name:         network.Name,
@@ -47,7 +45,7 @@ func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) 
 			Region: d.region,
 		},
 		Labels:   labels(util.Ref(network.Tags)),
-		ParentId: util.Ref(parentId),
+		ParentId: util.Ref(network.ProjectID),
 		Raw:      discovery.Raw(network),
 	}
 

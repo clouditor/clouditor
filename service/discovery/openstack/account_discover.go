@@ -48,7 +48,6 @@ func (d *openstackDiscovery) discoverDomains() (list []ontology.IsResource, err 
 			return nil, err
 		}
 
-		// TODO(all): Or should it be Errorf?
 		r := &ontology.Account{
 			Id:   d.domain.domainID,
 			Name: d.domain.domainName,
