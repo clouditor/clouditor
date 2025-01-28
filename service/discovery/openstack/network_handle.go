@@ -38,11 +38,6 @@ import (
 func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) (ontology.IsResource, error) {
 	var parentId string
 
-	// Check if a network interface is assigned to the discovered project. If it is not, do not add the parent ID, allowing the network interface to remain unconnected to the project while still being associated with a virtual machine resource and displayed in the UI graph.
-	if d.projectID == network.TenantID {
-		parentId = network.TenantID
-	}
-
 	r := &ontology.NetworkInterface{
 		Id:           network.ID,
 		Name:         network.Name,
