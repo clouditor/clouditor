@@ -46,6 +46,8 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 		clients  clients
 		authOpts *gophercloud.AuthOptions
 		region   string
+		domain   *domain
+		project  *project
 	}
 	type args struct {
 		network *networks.Network
@@ -66,7 +68,7 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 				network: &networks.Network{
 					ID:        testdata.MockNetworkID1,
 					Name:      testdata.MockNetworkName1,
-					TenantID:  testdata.MockServerTenantID,
+					ProjectID: testdata.MockServerTenantID,
 					CreatedAt: testTime,
 				},
 			},
@@ -97,6 +99,8 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 				clients:  tt.fields.clients,
 				authOpts: tt.fields.authOpts,
 				region:   tt.fields.region,
+				domain:   tt.fields.domain,
+				project:  tt.fields.project,
 			}
 			got, err := d.handleNetworkInterfaces(tt.args.network)
 
