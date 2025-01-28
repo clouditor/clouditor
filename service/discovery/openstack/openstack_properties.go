@@ -30,7 +30,10 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/v2/internal/util"
+	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v2/volumes"
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/attachinterfaces"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/v2/pagination"
 )
 
@@ -74,4 +77,25 @@ func (d *openstackDiscovery) getAttachedNetworkInterfaces(serverID string) ([]st
 	}
 
 	return list, nil
+}
+
+// setProjectInfo stores the project ID and name based on the given resource
+func (d *openstackDiscovery) setProjectInfo(x interface{}) {
+
+	switch v := x.(type) {
+	case []volumes.Volume:
+		log.Debugf("volume")
+		d.project.projectID = v[0].TenantID
+		d.project.projectName = v[0].TenantID // it is not possible to extract the project name
+	case []servers.Server:
+		log.Debugf("server")
+		d.project.projectID = v[0].TenantID
+		d.project.projectName = v[0].TenantID // it is not possible to extract the project name
+	case []networks.Network:
+		log.Debugf("network")
+		d.project.projectID = v[0].TenantID
+		d.project.projectName = v[0].TenantID // it is not possible to extract the project name
+	default:
+		log.Debugf("no known resource type found")
+	}
 }
