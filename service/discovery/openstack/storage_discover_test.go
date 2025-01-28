@@ -51,6 +51,8 @@ func Test_openstackDiscovery_discoverBlockStorage(t *testing.T) {
 		clients  clients
 		authOpts *gophercloud.AuthOptions
 		region   string
+		domain   *domain
+		project  *project
 	}
 	tests := []struct {
 		name     string
@@ -74,8 +76,11 @@ func Test_openstackDiscovery_discoverBlockStorage(t *testing.T) {
 							return testhelper.Endpoint(), nil
 						},
 					},
+					storageClient: client.ServiceClient(),
 				},
-				region: "test region",
+				region:  "test region",
+				domain:  &domain{},
+				project: &project{},
 			},
 			wantList: func(t *testing.T, got []ontology.IsResource) bool {
 				assert.Equal(t, 2, len(got))
@@ -111,6 +116,8 @@ func Test_openstackDiscovery_discoverBlockStorage(t *testing.T) {
 				clients:  tt.fields.clients,
 				authOpts: tt.fields.authOpts,
 				region:   tt.fields.region,
+				domain:   tt.fields.domain,
+				project:  tt.fields.project,
 			}
 			gotList, err := d.discoverBlockStorage()
 
