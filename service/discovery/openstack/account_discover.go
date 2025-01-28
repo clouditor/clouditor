@@ -26,6 +26,9 @@
 package openstack
 
 import (
+	"fmt"
+
+	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/domains"
 	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/projects"
@@ -37,16 +40,19 @@ func (d *openstackDiscovery) discoverDomains() (list []ontology.IsResource, err 
 	list, err = genericList(d, d.identityClient, domains.List, d.handleDomain, domains.ExtractDomains, opts)
 
 	if err != nil {
-		// if we cannot retrieve the domain information by calling the API or from the environment variables, we will not be able to succeed
-		if d.domainID == "" || d.domainName == "" {
+		// if we cannot retrieve the domain information by calling the API or from the environment variables, we will add the information manually if we already got the domain ID and/or domain name
+		log.Debugf("could not discover domains due to insufficient permissions, but we can proceed with less domain information: %v", err)
+
+		if d.domain.domainID == "" || d.domain.domainName == "" {
+			err := fmt.Errorf("neither the domain ID nor the domain name are available: %v", err)
 			return nil, err
 		}
 
 		// TODO(all): Or should it be Errorf?
-		log.Debugf("could not discover domains due to insufficient permissions, but we can proceed with less domain information: %v", err)
 		r := &ontology.Account{
-			Id:   d.domainID,
-			Name: d.domainName,
+			Id:   d.domain.domainID,
+			Name: d.domain.domainName,
+			Raw:  discovery.Raw("Domain information manually added."),
 		}
 
 		list = append(list, r)
@@ -61,18 +67,20 @@ func (d *openstackDiscovery) discoverProjects() (list []ontology.IsResource, err
 	list, err = genericList(d, d.identityClient, projects.List, d.handleProject, projects.ExtractProjects, opts)
 
 	if err != nil {
-		// TODO(all): Or should it be Errorf?
+		// if we cannot retrieve the project information by calling the API or from the environment variables, we will add the information manually if we already got the project ID and/or project name
 		log.Debugf("could not discover projects/tenants due to insufficient permissions, but we can proceed with less project/tenant information: %v", err)
 
-		r := &ontology.ResourceGroup{
-			Id:       "6b715d5b91964beaa14100f011dc6339", //TODO(anatheka): Add information
-			Name:     "testName",                         //TODO(anatheka): Add information
-			ParentId: &d.domainID,
+		if d.project.projectID == "" || d.project.projectName == "" {
+			err := fmt.Errorf("neither the project ID nor the project name are available: %v", err)
+			return nil, err
 		}
 
-		// Set projectID/projectName
-		d.projectID = ""   //TODO(anatheka): TBD
-		d.projectName = "" //TODO(anatheka): TBD
+		r := &ontology.ResourceGroup{
+			Id:       d.project.projectID,
+			Name:     d.project.projectName,
+			ParentId: &d.domain.domainID,
+			Raw:      discovery.Raw("Project/Tenant information manually added."),
+		}
 
 		list = append(list, r)
 	}
