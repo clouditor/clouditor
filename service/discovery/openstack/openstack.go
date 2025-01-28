@@ -56,12 +56,20 @@ var (
 )
 
 type openstackDiscovery struct {
-	ctID       string
-	clients    clients
-	authOpts   *gophercloud.AuthOptions
-	region     string
+	ctID     string
+	clients  clients
+	authOpts *gophercloud.AuthOptions
+	region   string
+	domain   *domain
+	project  *project
+}
+
+type domain struct {
 	domainID   string
 	domainName string
+}
+
+type project struct {
 	// It is not possible to add the OS_TENANT_ID or OS_TENANT_NAME. It results in an error: "Error authenticating with application credential: Application credentials cannot request a scope."
 	projectID   string
 	projectName string
@@ -113,10 +121,14 @@ func NewOpenstackDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	}
 
 	d := &openstackDiscovery{
-		ctID:       config.DefaultCertificationTargetID,
-		region:     os.Getenv(RegionName),
-		domainID:   os.Getenv(DomainID),
-		domainName: os.Getenv(DomainName),
+		ctID:   config.DefaultCertificationTargetID,
+		region: os.Getenv(RegionName),
+		domain: &domain{
+			domainID:   os.Getenv(DomainID),
+			domainName: os.Getenv(DomainName),
+		},
+		// Currently, the project ID cannot be specified as an environment variable in conjunction with application credentials.
+		project: &project{},
 	}
 
 	// Apply options
@@ -204,6 +216,33 @@ func NewAuthorizer() (gophercloud.AuthOptions, error) {
 // * Servers
 // * Block storages
 func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
+	if err = d.authorize(); err != nil {
+		return nil, fmt.Errorf("could not authorize openstack: %w", err)
+	}
+
+	// First, we need to discover the resources to obtain the domain and project ID. Domains and projects are discovered last, or they are set manually if discovery is not possible due to insufficient permissions. Currently, application credentials in OpenStack are always created for a specific project within a specific domain, making discovery essentially unnecessary. The code will be retained in case this changes in the future.
+	// Discover servers
+
+	servers, err := d.discoverServer()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover servers: %w", err)
+	}
+	list = append(list, servers...)
+
+	// Discover networks interfaces
+	networks, err := d.discoverNetworkInterfaces()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover network interfaces: %w", err)
+	}
+	list = append(list, networks...)
+
+	// Discover block storage
+	storage, err := d.discoverBlockStorage()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover block storage: %w", err)
+	}
+	list = append(list, storage...)
+
 	// Discover domains resource
 	domains, err := d.discoverDomains()
 	if err != nil {
@@ -217,27 +256,6 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 		return nil, fmt.Errorf("could not discover projects/tenants: %v", err)
 	}
 	list = append(list, projects...)
-
-	// Discover networks interfaces
-	networks, err := d.discoverNetworkInterfaces()
-	if err != nil {
-		return nil, fmt.Errorf("could not discover network interfaces: %w", err)
-	}
-	list = append(list, networks...)
-
-	// Discover servers
-	servers, err := d.discoverServer()
-	if err != nil {
-		return nil, fmt.Errorf("could not discover servers: %w", err)
-	}
-	list = append(list, servers...)
-
-	// Discover block storage
-	storage, err := d.discoverBlockStorage()
-	if err != nil {
-		return nil, fmt.Errorf("could not discover block storage: %w", err)
-	}
-	list = append(list, storage...)
 
 	return
 }
@@ -261,10 +279,6 @@ func genericList[T any, O any, R ontology.IsResource](d *openstackDiscovery,
 	extractor ExtractorFunc[T],
 	opts O,
 ) (list []ontology.IsResource, err error) {
-	if err = d.authorize(); err != nil {
-		return nil, fmt.Errorf("could not authorize openstack: %w", err)
-	}
-
 	client, err := clientGetter()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get client: %w", err)
@@ -275,6 +289,11 @@ func genericList[T any, O any, R ontology.IsResource](d *openstackDiscovery,
 
 		if err != nil {
 			return false, fmt.Errorf("could not extract items from paginated result: %w", err)
+		}
+
+		// Check if project/tenant ID is already stored
+		if d.project.projectID == "" {
+			d.setProjectInfo(x)
 		}
 
 		for _, s := range x {
