@@ -42,7 +42,7 @@ import (
 // Source: https://github.com/gophercloud/gophercloud/blob/master/openstack/networking/v2/networks/testing/fixtures.go (2024-12-09)
 //
 // Changes:
-// - 2024-12-10: Add function HandleNetworkListSuccessfully() and changed "/v2.0/networks" to "/networks" based on the HandleFunc in https://github.com/gophercloud/gophercloud/blob/5770765aa037e1572cbaa9474113010a1397e822/openstack/networking/v2/networks/testing/requests_test.go (anatheka)
+// - 2024-12-10: Add function HandleNetworkListSuccessfully() and add second path for "/networks" based on the HandleFunc in https://github.com/gophercloud/gophercloud/blob/5770765aa037e1572cbaa9474113010a1397e822/openstack/networking/v2/networks/testing/requests_test.go (anatheka)
 // - 2025-01-28: Add ProjectID property to all network objects (anatheka)
 
 const ListResponse = `
@@ -274,6 +274,16 @@ var ExpectedNetworkSlice = []networks.Network{Network1, Network2}
 
 func HandleNetworkListSuccessfully(t *testing.T) {
 	th.Mux.HandleFunc("/networks", func(w http.ResponseWriter, r *http.Request) {
+		th.TestMethod(t, r, "GET")
+		th.TestHeader(t, r, "X-Auth-Token", client.TokenID)
+
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		fmt.Fprint(w, ListResponse)
+	})
+
+	th.Mux.HandleFunc("/v2.0/networks", func(w http.ResponseWriter, r *http.Request) {
 		th.TestMethod(t, r, "GET")
 		th.TestHeader(t, r, "X-Auth-Token", client.TokenID)
 
