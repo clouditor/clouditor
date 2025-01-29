@@ -210,52 +210,60 @@ func NewAuthorizer() (gophercloud.AuthOptions, error) {
 }
 
 // List discovers the following OpenStack resource types and translates them into the Clouditor ontology:
+// * Servers
+// * Network interfaces
+// * Block storages
 // * Domains
 // * Projects
-// * Network interfaces
-// * Servers
-// * Block storages
 func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
+	var (
+		servers  []ontology.IsResource
+		networks []ontology.IsResource
+		storages []ontology.IsResource
+		projects []ontology.IsResource
+		domains  []ontology.IsResource
+	)
+
 	if err = d.authorize(); err != nil {
 		return nil, fmt.Errorf("could not authorize openstack: %w", err)
 	}
 
 	// First, we need to discover the resources to obtain the domain and project ID. Domains and projects are discovered last, or they are set manually if discovery is not possible due to insufficient permissions. Currently, application credentials in OpenStack are always created for a specific project within a specific domain, making discovery essentially unnecessary. The code will be retained in case this changes in the future.
-	// Discover servers
 
-	servers, err := d.discoverServer()
+	// Discover servers
+	servers, err = d.discoverServer()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover servers: %w", err)
 	}
 	list = append(list, servers...)
 
 	// Discover networks interfaces
-	networks, err := d.discoverNetworkInterfaces()
+	networks, err = d.discoverNetworkInterfaces()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover network interfaces: %w", err)
 	}
 	list = append(list, networks...)
 
 	// Discover block storage
-	storage, err := d.discoverBlockStorage()
+	storages, err = d.discoverBlockStorage()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover block storage: %w", err)
 	}
-	list = append(list, storage...)
-
-	// Discover domains resource
-	domains, err := d.discoverDomains()
-	if err != nil {
-		return nil, fmt.Errorf("could not discover domains: %v", err)
-	}
-	list = append(list, domains...)
+	list = append(list, storages...)
 
 	// Discover project resources
-	projects, err := d.discoverProjects()
+	projects, err = d.discoverProjects()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover projects/tenants: %v", err)
 	}
 	list = append(list, projects...)
+
+	// Discover domains resource
+	domains, err = d.discoverDomains()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover domains: %v", err)
+	}
+	list = append(list, domains...)
 
 	return
 }
