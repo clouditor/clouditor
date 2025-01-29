@@ -43,7 +43,7 @@ func (d *openstackDiscovery) discoverDomains() (list []ontology.IsResource, err 
 		// if we cannot retrieve the domain information by calling the API or from the environment variables, we will add the information manually if we already got the domain ID and/or domain name
 		log.Debugf("could not discover domains due to insufficient permissions, but we can proceed with less domain information: %v", err)
 
-		if d.domain.domainID == "" || d.domain.domainName == "" {
+		if d.domain.domainID == "" && d.domain.domainName == "" {
 			err := fmt.Errorf("neither the domain ID nor the domain name are available: %v", err)
 			return nil, err
 		}
@@ -69,7 +69,7 @@ func (d *openstackDiscovery) discoverProjects() (list []ontology.IsResource, err
 		// if we cannot retrieve the project information by calling the API or from the environment variables, we will add the information manually if we already got the project ID and/or project name
 		log.Debugf("could not discover projects/tenants due to insufficient permissions, but we can proceed with less project/tenant information: %v", err)
 
-		if d.project.projectID == "" || d.project.projectName == "" {
+		if d.project.projectID == "" && d.project.projectName == "" {
 			err := fmt.Errorf("neither the project ID nor the project name are available: %v", err)
 			return nil, err
 		}
