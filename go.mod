@@ -52,7 +52,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/oxisto/oauth2go v0.14.0
 	golang.org/x/crypto v0.27.0 // indirect
-	golang.org/x/oauth2 v0.24.0
+	golang.org/x/oauth2 v0.25.0
 
 )
 
@@ -168,9 +168,7 @@ require (
 )
 
 // runtime dependencies (OpenStack)
-require (	
-	github.com/gophercloud/gophercloud/v2 v2.2.0
-)
+require github.com/gophercloud/gophercloud/v2 v2.2.0
 
 // runtime dependencies (k8s)
 require (
