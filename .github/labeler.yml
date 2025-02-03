@@ -1,66 +1,42 @@
-# Add 'cmd/engine' label to any changes in cmd/engine directory
-cmd/engine:
-- changed-files:
-  - any-glob-to-any-file: 'cmd/engine/*'
+"cmd/engine":
+  - cmd/engine/*
 
-# Add 'policies' label to any changes in policies directory
-policies:
-- changed-files:
-  - any-glob-to-any-file: 'policies/**/*'
+"policies":
+  - policies/**/*
 
-# Add 'persistence' label to any changes in persistence directory
-persistence:
-- changed-files:
-  - any-glob-to-any-file: 'persistence/**/*'
+"persistence":
+  - persistence/**/*
 
-# Add 'api/evaluation' label to any changes in api/evaluation directory
-api/evaluation:
-- changed-files:
-  - any-glob-to-any-file: 'api/evaluation/*'
+"api/evaluation":
+  - api/evaluation/*
 
-# Add 'api' label to any changes in api directory, excluding api/evaluation
-api:
-- changed-files:
-  - any-glob-to-any-file:
-    - 'api/**/*'
-    - '!api/evaluation/*'
+"api":
+  - any: ["api/**/*", "!api/evaluation/*"]
 
-# Add 'service/discovery' label to any changes in service/discovery directory
-service/discovery:
-- changed-files:
-  - any-glob-to-any-file: 'service/discovery/*'
+"service/discovery":
+  - service/discovery/*
 
-# Add 'service/assessment' label to any changes in service/assessment directory
-service/assessment:
-- changed-files:
-  - any-glob-to-any-file: 'service/assessment/*'
+"csaf":
+  - service/discovery/extra/csaf
 
-# Add 'service/orchestrator' label to any changes in service/orchestrator directory
-service/orchestrator:
-- changed-files:
-  - any-glob-to-any-file: 'service/orchestrator/*'
+"service/assessment":
+  - service/assessment/*
 
-# Add 'internal' label to any changes in internal directory
-internal:
-- changed-files:
-  - any-glob-to-any-file: 'internal/**/*'
+"service/orchestrator":
+  - service/orchestrator/*
 
-# Add 'voc' label to any changes in voc directory
-voc:
-- changed-files:
-  - any-glob-to-any-file: 'voc/**/*'
+"service":
+  - any:
+      [
+        "service/**/*",
+        "!service/assessment/*",
+        "!service/orchestrator/*",
+        "!service/discovery/*",
+        "!service/discovery/extra/csaf/*"
+      ]
 
-# Add 'service' label to any changes in service directory, excluding certain subdirectories
-service:
-- all:
-  - changed-files:
-    - any-glob-to-any-file: 'service/**/*'
-    - all-globs-to-all-files: '!service/assessment/*'
-    - all-globs-to-all-files: '!service/orchestrator/*'
-    - all-globs-to-all-files: '!service/discovery/*'
-    - all-globs-to-all-files: '!service/discovery/extra/csaf/*'
+"internal":
+  - internal/**/*
 
-# Add 'csaf' label to any changes in service/discovery/extra/csaf directory
-csaf:
-- changed-files:
-  - any-glob-to-any-file: 'service/discovery/extra/csaf/*'
+"voc":
+  - voc/**/*
