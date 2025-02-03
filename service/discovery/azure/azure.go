@@ -387,7 +387,7 @@ func (d *azureDiscovery) discoverDefender() (map[string]*defenderProperties, err
 	}
 
 	// List all pricings to get the enabled Defender for X
-	pricingsList, err := d.clients.defenderClient.List(context.Background(), nil)
+	pricingsList, err := d.clients.defenderClient.List(context.Background(), *d.sub.ID, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not discover pricings")
 	}
