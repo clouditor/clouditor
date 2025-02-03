@@ -1,5 +1,5 @@
 "cmd/engine":
-  - any: ["cmd/engine/*"]
+  - 'cmd/engine/*'
 
 "policies":
   - policies/**/*
