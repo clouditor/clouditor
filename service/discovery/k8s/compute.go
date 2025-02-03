@@ -28,6 +28,7 @@ package k8s
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
@@ -40,8 +41,8 @@ import (
 
 type k8sComputeDiscovery struct{ k8sDiscovery }
 
-func NewKubernetesComputeDiscovery(intf kubernetes.Interface, cloudServiceID string) discovery.Discoverer {
-	return &k8sComputeDiscovery{k8sDiscovery{intf, cloudServiceID}}
+func NewKubernetesComputeDiscovery(intf kubernetes.Interface, CertificationTargetID string) discovery.Discoverer {
+	return &k8sComputeDiscovery{k8sDiscovery{intf, CertificationTargetID}}
 }
 
 func (*k8sComputeDiscovery) Name() string {
@@ -64,14 +65,14 @@ func (d *k8sComputeDiscovery) List() ([]ontology.IsResource, error) {
 	for i := range pods.Items {
 		// Get virtual machines
 		c := d.handlePod(&pods.Items[i])
-		log.Infof("Adding container %+v", c)
+		log.Infof("Adding container %+v", c.GetId())
 		list = append(list, c)
 
 		// Get all volumes conntected to the specific pod
 		v := d.handlePodVolume(&pods.Items[i])
 
 		if len(v) != 0 {
-			log.Infof("Adding pod volume %+v", v)
+			log.Infof("Adding pod volumes %+v", strings.Join(ontology.ResourceIDs(v), ","))
 			list = append(list, v...)
 		}
 	}

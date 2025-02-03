@@ -38,22 +38,14 @@ import (
 	anypb "google.golang.org/protobuf/types/known/anypb"
 )
 
-const (
-	// DefaultCloudServiceID is the default service ID. Currently, our discoverers have no way to differentiate between different
-	// services, but we need this feature in the future. This serves as a default to already prepare the necessary
-	// structures for this feature.
-	DefaultCloudServiceID   = "00000000-0000-0000-0000-000000000000"
-	EvidenceCollectorToolId = "Clouditor Evidences Collection"
-)
-
 var ErrNotOntologyResource = errors.New("protobuf message is not a valid ontology resource")
 
 // Discoverer is a part of the discovery service that takes care of the actual discovering and translation into
-// vocabulary objects.
+// ontology objects.
 type Discoverer interface {
 	Name() string
 	List() ([]ontology.IsResource, error)
-	CloudServiceID() string
+	CertificationTargetID() string
 }
 
 // ToOntologyResource converts the content of the "properties" (which is an [*anypb.Any]) into an [ontology.IsResource].
@@ -91,7 +83,7 @@ func Raw(raws ...any) string {
 
 // ToDiscoveryResource converts a proto message that complies to the interface [ontology.IsResource] into a resource
 // that can be persisted in our database ([*discovery.Resource]).
-func ToDiscoveryResource(resource ontology.IsResource, csID string) (r *Resource, err error) {
+func ToDiscoveryResource(resource ontology.IsResource, ctID, collectorID string) (r *Resource, err error) {
 	var (
 		a *anypb.Any
 	)
@@ -105,17 +97,18 @@ func ToDiscoveryResource(resource ontology.IsResource, csID string) (r *Resource
 	// Build a resource struct. This will hold the latest sync state of the
 	// resource for our storage layer.
 	r = &Resource{
-		Id:             string(resource.GetId()),
-		ResourceType:   strings.Join(ontology.ResourceTypes(resource), ","),
-		CloudServiceId: csID,
-		Properties:     a,
+		Id:                    string(resource.GetId()),
+		ResourceType:          strings.Join(ontology.ResourceTypes(resource), ","),
+		CertificationTargetId: ctID,
+		ToolId:                collectorID,
+		Properties:            a,
 	}
 
 	return
 }
 
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
-// the cloud service ID of the inner object.
-func (req *UpdateResourceRequest) GetCloudServiceId() string {
-	return req.Resource.GetCloudServiceId()
+// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
+// the certification target ID of the inner object.
+func (req *UpdateResourceRequest) GetCertificationTargetId() string {
+	return req.Resource.GetCertificationTargetId()
 }

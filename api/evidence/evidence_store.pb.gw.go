@@ -10,6 +10,7 @@ package evidence
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 
@@ -24,142 +25,121 @@ import (
 )
 
 // Suppress "imported and not used" errors
-var _ codes.Code
-var _ io.Reader
-var _ status.Status
-var _ = runtime.String
-var _ = utilities.NewDoubleArray
-var _ = metadata.Join
+var (
+	_ codes.Code
+	_ io.Reader
+	_ status.Status
+	_ = errors.New
+	_ = runtime.String
+	_ = utilities.NewDoubleArray
+	_ = metadata.Join
+)
 
 func request_EvidenceStore_StoreEvidence_0(ctx context.Context, marshaler runtime.Marshaler, client EvidenceStoreClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq StoreEvidenceRequest
-	var metadata runtime.ServerMetadata
-
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.Evidence); err != nil && err != io.EOF {
+	var (
+		protoReq StoreEvidenceRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.Evidence); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := client.StoreEvidence(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_EvidenceStore_StoreEvidence_0(ctx context.Context, marshaler runtime.Marshaler, server EvidenceStoreServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq StoreEvidenceRequest
-	var metadata runtime.ServerMetadata
-
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.Evidence); err != nil && err != io.EOF {
+	var (
+		protoReq StoreEvidenceRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.Evidence); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := server.StoreEvidence(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
-var (
-	filter_EvidenceStore_ListEvidences_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
+var filter_EvidenceStore_ListEvidences_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 
 func request_EvidenceStore_ListEvidences_0(ctx context.Context, marshaler runtime.Marshaler, client EvidenceStoreClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ListEvidencesRequest
-	var metadata runtime.ServerMetadata
-
+	var (
+		protoReq ListEvidencesRequest
+		metadata runtime.ServerMetadata
+	)
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_EvidenceStore_ListEvidences_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := client.ListEvidences(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_EvidenceStore_ListEvidences_0(ctx context.Context, marshaler runtime.Marshaler, server EvidenceStoreServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ListEvidencesRequest
-	var metadata runtime.ServerMetadata
-
+	var (
+		protoReq ListEvidencesRequest
+		metadata runtime.ServerMetadata
+	)
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_EvidenceStore_ListEvidences_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := server.ListEvidences(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
 func request_EvidenceStore_GetEvidence_0(ctx context.Context, marshaler runtime.Marshaler, client EvidenceStoreClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetEvidenceRequest
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq GetEvidenceRequest
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["evidence_id"]
+	val, ok := pathParams["evidence_id"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "evidence_id")
 	}
-
 	protoReq.EvidenceId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "evidence_id", err)
 	}
-
 	msg, err := client.GetEvidence(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_EvidenceStore_GetEvidence_0(ctx context.Context, marshaler runtime.Marshaler, server EvidenceStoreServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetEvidenceRequest
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq GetEvidenceRequest
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["evidence_id"]
+	val, ok := pathParams["evidence_id"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "evidence_id")
 	}
-
 	protoReq.EvidenceId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "evidence_id", err)
 	}
-
 	msg, err := server.GetEvidence(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
 // RegisterEvidenceStoreHandlerServer registers the http handlers for service EvidenceStore to "mux".
 // UnaryRPC     :call EvidenceStoreServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterEvidenceStoreHandlerFromEndpoint instead.
+// GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
 func RegisterEvidenceStoreHandlerServer(ctx context.Context, mux *runtime.ServeMux, server EvidenceStoreServer) error {
-
-	mux.Handle("POST", pattern_EvidenceStore_StoreEvidence_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_EvidenceStore_StoreEvidence_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/StoreEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidence"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/StoreEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidence"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -171,20 +151,15 @@ func RegisterEvidenceStoreHandlerServer(ctx context.Context, mux *runtime.ServeM
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_EvidenceStore_StoreEvidence_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("GET", pattern_EvidenceStore_ListEvidences_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_EvidenceStore_ListEvidences_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/ListEvidences", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/ListEvidences", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -196,20 +171,15 @@ func RegisterEvidenceStoreHandlerServer(ctx context.Context, mux *runtime.ServeM
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_EvidenceStore_ListEvidences_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("GET", pattern_EvidenceStore_GetEvidence_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_EvidenceStore_GetEvidence_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/GetEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences/{evidence_id}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/GetEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences/{evidence_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -221,9 +191,7 @@ func RegisterEvidenceStoreHandlerServer(ctx context.Context, mux *runtime.ServeM
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_EvidenceStore_GetEvidence_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
 
 	return nil
@@ -232,25 +200,24 @@ func RegisterEvidenceStoreHandlerServer(ctx context.Context, mux *runtime.ServeM
 // RegisterEvidenceStoreHandlerFromEndpoint is same as RegisterEvidenceStoreHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
 func RegisterEvidenceStoreHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
-	conn, err := grpc.DialContext(ctx, endpoint, opts...)
+	conn, err := grpc.NewClient(endpoint, opts...)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if err != nil {
 			if cerr := conn.Close(); cerr != nil {
-				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+				grpclog.Errorf("Failed to close conn to %s: %v", endpoint, cerr)
 			}
 			return
 		}
 		go func() {
 			<-ctx.Done()
 			if cerr := conn.Close(); cerr != nil {
-				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+				grpclog.Errorf("Failed to close conn to %s: %v", endpoint, cerr)
 			}
 		}()
 	}()
-
 	return RegisterEvidenceStoreHandler(ctx, mux, conn)
 }
 
@@ -264,16 +231,13 @@ func RegisterEvidenceStoreHandler(ctx context.Context, mux *runtime.ServeMux, co
 // to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "EvidenceStoreClient".
 // Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "EvidenceStoreClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "EvidenceStoreClient" to call the correct interceptors.
+// "EvidenceStoreClient" to call the correct interceptors. This client ignores the HTTP middlewares.
 func RegisterEvidenceStoreHandlerClient(ctx context.Context, mux *runtime.ServeMux, client EvidenceStoreClient) error {
-
-	mux.Handle("POST", pattern_EvidenceStore_StoreEvidence_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_EvidenceStore_StoreEvidence_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/StoreEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidence"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/StoreEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidence"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -284,18 +248,13 @@ func RegisterEvidenceStoreHandlerClient(ctx context.Context, mux *runtime.ServeM
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_EvidenceStore_StoreEvidence_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("GET", pattern_EvidenceStore_ListEvidences_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_EvidenceStore_ListEvidences_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/ListEvidences", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/ListEvidences", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -306,18 +265,13 @@ func RegisterEvidenceStoreHandlerClient(ctx context.Context, mux *runtime.ServeM
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_EvidenceStore_ListEvidences_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("GET", pattern_EvidenceStore_GetEvidence_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_EvidenceStore_GetEvidence_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/GetEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences/{evidence_id}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/GetEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences/{evidence_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -328,26 +282,19 @@ func RegisterEvidenceStoreHandlerClient(ctx context.Context, mux *runtime.ServeM
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_EvidenceStore_GetEvidence_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
 	return nil
 }
 
 var (
 	pattern_EvidenceStore_StoreEvidence_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "evidence_store", "evidence"}, ""))
-
 	pattern_EvidenceStore_ListEvidences_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "evidence_store", "evidences"}, ""))
-
-	pattern_EvidenceStore_GetEvidence_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "evidence_store", "evidences", "evidence_id"}, ""))
+	pattern_EvidenceStore_GetEvidence_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "evidence_store", "evidences", "evidence_id"}, ""))
 )
 
 var (
 	forward_EvidenceStore_StoreEvidence_0 = runtime.ForwardResponseMessage
-
 	forward_EvidenceStore_ListEvidences_0 = runtime.ForwardResponseMessage
-
-	forward_EvidenceStore_GetEvidence_0 = runtime.ForwardResponseMessage
+	forward_EvidenceStore_GetEvidence_0   = runtime.ForwardResponseMessage
 )

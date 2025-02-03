@@ -1,6 +1,7 @@
 package ontology
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
@@ -25,7 +26,7 @@ func TestResourceTypes(t *testing.T) {
 			args: args{
 				r: &VirtualMachine{},
 			},
-			want: []string{"VirtualMachine", "Compute", "CloudResource", "Resource"},
+			want: []string{"VirtualMachine", "Compute", "Infrastructure", "Resource"},
 		},
 	}
 	for _, tt := range tests {
@@ -62,6 +63,23 @@ func TestRelated(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "happy path with plural",
+			args: args{
+				r: &Application{
+					Id:         "some-id",
+					Name:       "some-name",
+					LibraryIds: []string{"some-library"},
+					Raw:        "{}",
+				},
+			},
+			want: []Relationship{
+				{
+					Property: "library",
+					Value:    "some-library",
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -95,26 +113,31 @@ func TestResourceMap(t *testing.T) {
 			},
 			wantProps: func(t *testing.T, got map[string]any) bool {
 				want := map[string]any{
-					"activityLogging":     nil,
-					"blockStorageIds":     []any{},
-					"bootLogging":         nil,
-					"creationTime":        "2024-01-01T00:00:00Z",
-					"encryptionInUse":     nil,
-					"geoLocation":         nil,
-					"id":                  "my-id",
-					"labels":              map[string]any{},
-					"name":                "My VM",
-					"networkInterfaceIds": []any{},
-					"malwareProtection":   nil,
-					"osLogging":           nil,
-					"raw":                 "",
-					"resourceLogging":     nil,
+					"activityLogging":            nil,
+					"blockStorageIds":            []any{},
+					"bootLogging":                nil,
+					"creationTime":               "2024-01-01T00:00:00Z",
+					"encryptionInUse":            nil,
+					"geoLocation":                nil,
+					"id":                         "my-id",
+					"internetAccessibleEndpoint": false,
+					"labels":                     map[string]any{},
+					"name":                       "My VM",
+					"description":                "",
+					"networkInterfaceIds":        []any{},
+					"malwareProtection":          nil,
+					"osLogging":                  nil,
+					"raw":                        "",
+					"redundancies":               []any{},
+					"remoteAttestation":          nil,
+					"resourceLogging":            nil,
 					"automaticUpdates": map[string]any{
 						"enabled":      false,
 						"interval":     "172800s",
 						"securityOnly": false,
 					},
-					"type": []string{"VirtualMachine", "Compute", "CloudResource", "Resource"},
+					"type":            []string{"VirtualMachine", "Compute", "Infrastructure", "Resource"},
+					"usageStatistics": nil,
 				}
 
 				return assert.Equal(t, want, got)
@@ -128,6 +151,40 @@ func TestResourceMap(t *testing.T) {
 
 			tt.wantErr(t, err)
 			tt.wantProps(t, gotProps)
+		})
+	}
+}
+
+func TestListResourceIDs(t *testing.T) {
+	type args struct {
+		r []IsResource
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "Empty input",
+			args: args{},
+			want: []string{},
+		},
+		{
+			name: "Happy path",
+			args: args{
+				[]IsResource{
+					&Account{Id: "test"},
+					&Account{Id: "test2"},
+				},
+			},
+			want: []string{"test", "test2"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ResourceIDs(tt.args.r); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ListResourceIDs() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

@@ -29,7 +29,7 @@ package clouditor.evaluation.v1;
 
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
-import "google/protobuf/duration.proto";
+import "google/api/field_behavior.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
 
@@ -37,16 +37,16 @@ option go_package = "clouditor.io/clouditor/v2/api/evaluation";
 
 // Manages the evaluation of Clouditor's assessment results
 service Evaluation {
-  // Evaluates periodically all assessment results of a cloud service id based
+  // Evaluates periodically all assessment results of a certification target id based
   // on the given catalog id. Part of the public API, also exposed as REST.
   rpc StartEvaluation(StartEvaluationRequest) returns (StartEvaluationResponse) {
-    option (google.api.http) = {post: "/v1/evaluation/evaluate/{cloud_service_id}/{catalog_id}/start"};
+    option (google.api.http) = {post: "/v1/evaluation/evaluate/{audit_scope_id}/start"};
   }
 
-  // StopEvaluation stops the evaluation for the given target of evaluation.
+  // StopEvaluation stops the evaluation for the given audit scope.
   // Part of the public API, also exposed as REST.
   rpc StopEvaluation(StopEvaluationRequest) returns (StopEvaluationResponse) {
-    option (google.api.http) = {post: "/v1/evaluation/evaluate/{cloud_service_id}/{catalog_id}/stop"};
+    option (google.api.http) = {post: "/v1/evaluation/evaluate/{audit_scope_id}/stop"};
   }
 
   // List all evaluation results that the user can access. It can further be
@@ -66,8 +66,10 @@ service Evaluation {
 }
 
 message StartEvaluationRequest {
-  string cloud_service_id = 1 [(buf.validate.field).string.uuid = true];
-  string catalog_id = 2 [(buf.validate.field).string.min_len = 1];
+  string audit_scope_id = 1 [
+    (buf.validate.field).string.uuid = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // The interval time in minutes the evaluation executes periodically. The
   // default interval is set to 5 minutes.
@@ -83,17 +85,18 @@ message CreateEvaluationResultRequest {
 }
 
 message StopEvaluationRequest {
-  string cloud_service_id = 1 [(buf.validate.field).string.uuid = true];
-
-  string catalog_id = 2 [(buf.validate.field).string.min_len = 1];
+  string audit_scope_id = 1 [
+    (buf.validate.field).string.uuid = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
 }
 
 message StopEvaluationResponse {}
 
 message ListEvaluationResultsRequest {
   message Filter {
-    // Optional. Lists only evaluation results for a specific cloud service.
-    optional string cloud_service_id = 1 [(buf.validate.field).string.uuid = true];
+    // Optional. Lists only evaluation results for a specific certification target.
+    optional string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
 
     // Optional. Lists only evaluation results for a specific catalog.
     optional string catalog_id = 2 [(buf.validate.field).string.min_len = 1];
@@ -130,52 +133,59 @@ message ListEvaluationResultsResponse {
 }
 
 // A evaluation result resource, representing the result after evaluating the
-// cloud service with a specific control cloud_service_id, category_name and
-// catalog_id are necessary to get the corresponding TargetOfEvaluation
+// certification target with a specific control certification_target_id, category_name and
+// catalog_id are necessary to get the corresponding AuditScope
 message EvaluationResult {
   // Evaluation result id
   string id = 1 [
     (buf.validate.field).string = {uuid: true},
-    (buf.validate.field).ignore_empty = true
+    (buf.validate.field).ignore_empty = true,
+    (google.api.field_behavior) = REQUIRED
   ];
 
-  // The Cloud Service ID the evaluation belongs to
-  string cloud_service_id = 2 [
-    (buf.validate.field).string = {uuid: true},
-    (buf.validate.field).ignore_empty = true
-  ];
+  // The Certification Target ID the evaluation belongs to
+  string certification_target_id = 2 [(buf.validate.field).string = {uuid: true}];
+
+  // The Audit Scope ID the evaluation belongs to
+  string audit_scope_id = 3 [(buf.validate.field).string = {uuid: true}];
 
   // The control id the evaluation was based on
-  string control_id = 3 [(buf.validate.field).string.min_len = 1];
+  string control_id = 4 [(buf.validate.field).string.min_len = 1];
 
   // The category the evaluated control belongs to
-  string control_category_name = 4 [(buf.validate.field).string.min_len = 1];
+  string control_category_name = 5 [(buf.validate.field).string.min_len = 1];
 
   // The catalog the evaluated control belongs to
-  string control_catalog_id = 5 [(buf.validate.field).string.min_len = 1];
+  string control_catalog_id = 6 [(buf.validate.field).string.min_len = 1];
 
   // Optionally, specifies the parent control ID, if this is a sub-control
-  optional string parent_control_id = 6;
+  optional string parent_control_id = 7;
 
   // Evaluation status
-  EvaluationStatus status = 7 [(buf.validate.field).enum.defined_only = true];
-
-  // Time of evaluation
-  google.protobuf.Timestamp timestamp = 8 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\""];
-
-  // List of assessment results because of which the evaluation status is not
-  // 'compliant'
-  repeated string failing_assessment_result_ids = 9 [
-    (tagger.tags) = "gorm:\"serializer:json\"",
-    (buf.validate.field).repeated.items.string.min_len = 1
+  EvaluationStatus status = 8 [
+    (buf.validate.field).enum.defined_only = true,
+    (google.api.field_behavior) = REQUIRED
   ];
 
-  optional string comment = 10;
+  // Time of evaluation
+  google.protobuf.Timestamp timestamp = 9 [
+    (tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\"",
+    (google.api.field_behavior) = REQUIRED
+  ];
+
+  // List of assessment results because of which the evaluation status is compliant or not compliant
+  repeated string assessment_result_ids = 10 [
+    (tagger.tags) = "gorm:\"serializer:json\"",
+    (buf.validate.field).repeated.items.string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
+
+  optional string comment = 11;
 
   // Optional, but required if the status is one of the "manually" ones. This
   // denotes how long the (manual) created evaluation result is valid. During
   // this time, no automatic results are generated for the specific control.
-  optional google.protobuf.Timestamp valid_until = 20 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\""];
+  optional google.protobuf.Timestamp valid_until = 20 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
 }
 
 enum EvaluationStatus {

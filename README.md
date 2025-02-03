@@ -6,6 +6,7 @@
 [![](https://godoc.org/clouditor.io/clouditor/v2?status.svg)](https://pkg.go.dev/clouditor.io/clouditor/v2)
 [![Go Report Card](https://goreportcard.com/badge/clouditor.io/clouditor/v2)](https://goreportcard.com/report/clouditor.io/clouditor/v2)
 [![codecov](https://codecov.io/gh/clouditor/clouditor/branch/main/graph/badge.svg)](https://codecov.io/gh/clouditor/clouditor)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/8691/badge)](https://www.bestpractices.dev/projects/8691)
 
 > [!NOTE]
 > Note: We are currently preparing a `v2` release of Clouditor, which will be somewhat incompatible with regards to storage to `v1`. The APIs will remain largely the same, but will be improved and cleaned. We will regularly release pre-release `v2` versions, but do not have a concrete time-frame for a stable `v2` yet.
@@ -36,8 +37,20 @@ In order to just build and run the Clouditor, without generating the protobuf fi
 ./run-engine-with-ui.sh --discovery-provider=azure
 ```
 
-This will start the all-in-on-engine with all discoverers enabled and launches the UI on http://localhost:5173. The
+This will start the all-in-on-engine with all discoverers enabled and launches the UI on http://localhost:3000. The
 default credentials are clouditor/clouditor.
+
+### Using the extra discoverers (e.g. CSAF)
+
+Next to the regular cloud provider discoverers, Clouditor also comes with a a set of extra discoverers for dedicated protocols, for example CSAF. The CSAF discoverer allows the conformance check of a CSAF (trusted) provider.
+
+It can be used with the following command:
+
+```
+./run-engine-with-ui.sh --discovery-provider=csaf --discovery-csaf-domain=clouditor.io
+```
+
+The domain `clouditor.io` can be replace with your actual domain.
 
 ## Build
 
@@ -82,13 +95,13 @@ The CLI can also be used to interact with the experimental resource graph, for e
 
 ```bash
 cl service discovery experimental update-resource \
-'{"id": "log4j", "cloudServiceId": "00000000-0000-0000-0000-000000000000", "resourceType": "Library,Resource", "properties":{"name": "log4j", "groupId": "org.apache.logging.log4j", "artifactId": "log4j-core", "version": "2.17.0", "dependencyType": "maven", "url": "https://github.com/apache/logging-log4j2", "vulnerabilities": ["CVE-2021-44832"]}}'
+'{"id": "log4j", "certificationTargetId": "00000000-0000-0000-0000-000000000000", "resourceType": "Library,Resource", "properties":{"name": "log4j", "groupId": "org.apache.logging.log4j", "artifactId": "log4j-core", "version": "2.17.0", "dependencyType": "maven", "url": "https://github.com/apache/logging-log4j2", "vulnerabilities": ["CVE-2021-44832"]}}'
 cl service discovery experimental update-resource \
-'{"id": "Main.java", "cloudServiceId": "00000000-0000-0000-0000-000000000000", "resourceType": "TranslationUnitDeclaration,Resource", "properties":{"name": "Main.java", "code": "class Main { public static void main(String[] args) { return; } }"}}'
+'{"id": "Main.java", "certificationTargetId": "00000000-0000-0000-0000-000000000000", "resourceType": "TranslationUnitDeclaration,Resource", "properties":{"name": "Main.java", "code": "class Main { public static void main(String[] args) { return; } }"}}'
 cl service discovery experimental update-resource \
-'{"id": "MyApplication", "cloudServiceId": "00000000-0000-0000-0000-000000000000", "resourceType": "Application,Resource", "properties":{"@type":"type.googleapis.com/clouditor.ontology.v1.Application", "id:": "MyApplication", "name": "MyApplication","dependencies":["log4j"],"translationUnits":["Main.java"]}}'
+'{"id": "MyApplication", "certificationTargetId": "00000000-0000-0000-0000-000000000000", "resourceType": "Application,Resource", "properties":{"@type":"type.googleapis.com/clouditor.ontology.v1.Application", "id:": "MyApplication", "name": "MyApplication","dependencies":["log4j"],"translationUnits":["Main.java"]}}'
 cl service discovery experimental update-resource \
-'{"id": "github.com/org/app", "cloudServiceId": "00000000-0000-0000-0000-000000000000", "resourceType": "CodeRepository,Resource", "properties":{"id:": "github.com/org/app", "name": "github.com/org/app", "parent": "MyApplication", "url": "github.com/org/app"}}'
+'{"id": "github.com/org/app", "certificationTargetId": "00000000-0000-0000-0000-000000000000", "resourceType": "CodeRepository,Resource", "properties":{"id:": "github.com/org/app", "name": "github.com/org/app", "parent": "MyApplication", "url": "github.com/org/app"}}'
 ```
 
 ### Command Completion

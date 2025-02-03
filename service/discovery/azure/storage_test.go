@@ -286,9 +286,9 @@ func Test_handleFileStorage(t *testing.T) {
 					},
 				},
 				ResourceLogging: &ontology.ResourceLogging{
-					Enabled:               false,
-					MonitoringEnabled:     false,
-					SecurityAlertsEnabled: false,
+					Enabled:                  false,
+					MonitoringLogDataEnabled: false,
+					SecurityAlertsEnabled:    false,
 				},
 			},
 			wantErr: assert.NoError,
@@ -534,8 +534,8 @@ func Test_handleObjectStorage(t *testing.T) {
 				},
 				Immutability: &ontology.Immutability{Enabled: false},
 				ResourceLogging: &ontology.ResourceLogging{
-					MonitoringEnabled:     false,
-					SecurityAlertsEnabled: false,
+					MonitoringLogDataEnabled: false,
+					SecurityAlertsEnabled:    false,
 				},
 				Backups: []*ontology.Backup{
 					{
@@ -637,8 +637,8 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 						},
 					},
 					ResourceLogging: &ontology.ResourceLogging{
-						MonitoringEnabled:     false,
-						SecurityAlertsEnabled: false,
+						MonitoringLogDataEnabled: false,
+						SecurityAlertsEnabled:    false,
 					},
 				},
 				&ontology.FileStorage{
@@ -660,8 +660,8 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 						},
 					},
 					ResourceLogging: &ontology.ResourceLogging{
-						MonitoringEnabled:     false,
-						SecurityAlertsEnabled: false,
+						MonitoringLogDataEnabled: false,
+						SecurityAlertsEnabled:    false,
 					},
 				},
 			},
@@ -760,8 +760,8 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 					},
 					Immutability: &ontology.Immutability{Enabled: false},
 					ResourceLogging: &ontology.ResourceLogging{
-						MonitoringEnabled:     false,
-						SecurityAlertsEnabled: false,
+						MonitoringLogDataEnabled: false,
+						SecurityAlertsEnabled:    false,
 					},
 					Backups: []*ontology.Backup{
 						{
@@ -792,8 +792,8 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 					},
 					Immutability: &ontology.Immutability{Enabled: false},
 					ResourceLogging: &ontology.ResourceLogging{
-						MonitoringEnabled:     false,
-						SecurityAlertsEnabled: false,
+						MonitoringLogDataEnabled: false,
+						SecurityAlertsEnabled:    false,
 					},
 					Backups: []*ontology.Backup{
 						{

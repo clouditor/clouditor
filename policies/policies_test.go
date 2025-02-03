@@ -50,6 +50,8 @@ const (
 	mockVM1ResourceID         = "/mockresources/compute/vm1"
 	mockVM2EvidenceID         = "4"
 	mockVM2ResourceID         = "/mockresources/compute/vm2"
+	mockBlockStorage1ID       = "/mockresources/storage/storage1"
+	mockBlockStorage2ID       = "/mockresources/storage/storage2"
 )
 
 func TestMain(m *testing.M) {
@@ -89,9 +91,9 @@ func (*mockMetricsSource) Metrics() (metrics []*assessment.Metric, err error) {
 	return
 }
 
-func (m *mockMetricsSource) MetricConfiguration(serviceID, metricID string) (*assessment.MetricConfiguration, error) {
+func (m *mockMetricsSource) MetricConfiguration(targetID string, metric *assessment.Metric) (*assessment.MetricConfiguration, error) {
 	// Fetch the metric configuration directly from our file
-	bundle := fmt.Sprintf("policies/bundles/%s/data.json", metricID)
+	bundle := fmt.Sprintf("policies/bundles/%s/%s/data.json", metric.CategoryID(), metric.Id)
 
 	b, err := os.ReadFile(bundle)
 	assert.NoError(m.t, err)
@@ -101,21 +103,21 @@ func (m *mockMetricsSource) MetricConfiguration(serviceID, metricID string) (*as
 	assert.NoError(m.t, err)
 
 	config.IsDefault = true
-	config.MetricId = metricID
-	config.CloudServiceId = serviceID
+	config.MetricId = metric.Id
+	config.CertificationTargetId = targetID
 
 	return &config, nil
 }
 
-func (m *mockMetricsSource) MetricImplementation(_ assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error) {
+func (m *mockMetricsSource) MetricImplementation(_ assessment.MetricImplementation_Language, metric *assessment.Metric) (*assessment.MetricImplementation, error) {
 	// Fetch the metric implementation directly from our file
-	bundle := fmt.Sprintf("policies/bundles/%s/metric.rego", metric)
+	bundle := fmt.Sprintf("policies/bundles/%s/%s/metric.rego", metric.CategoryID(), metric.Id)
 
 	b, err := os.ReadFile(bundle)
 	assert.NoError(m.t, err)
 
 	var impl = &assessment.MetricImplementation{
-		MetricId: metric,
+		MetricId: metric.Id,
 		Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
 		Code:     string(b),
 	}
@@ -127,13 +129,13 @@ type updatedMockMetricsSource struct {
 	mockMetricsSource
 }
 
-func (*updatedMockMetricsSource) MetricConfiguration(serviceID, metricID string) (*assessment.MetricConfiguration, error) {
+func (*updatedMockMetricsSource) MetricConfiguration(targetID string, metric *assessment.Metric) (*assessment.MetricConfiguration, error) {
 	return &assessment.MetricConfiguration{
-		Operator:       "==",
-		TargetValue:    structpb.NewBoolValue(false),
-		IsDefault:      false,
-		UpdatedAt:      timestamppb.New(time.Date(2022, 12, 1, 0, 0, 0, 0, time.Local)),
-		MetricId:       metricID,
-		CloudServiceId: serviceID,
+		Operator:              "==",
+		TargetValue:           structpb.NewBoolValue(false),
+		IsDefault:             false,
+		UpdatedAt:             timestamppb.New(time.Date(2022, 12, 1, 0, 0, 0, 0, time.Local)),
+		MetricId:              metric.Id,
+		CertificationTargetId: targetID,
 	}, nil
 }

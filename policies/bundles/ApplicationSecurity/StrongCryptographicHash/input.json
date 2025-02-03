@@ -1,0 +1,45 @@
+{
+    "@type":  "type.googleapis.com/clouditor.ontology.v1.Application",
+    "type": ["Application"],
+    "creationTime":  null,
+    "description":  "",
+    "id":  "pythonpass",
+    "labels":  {},
+    "name":  "pythonpass",
+    "programmingLanguage":  "",
+    "programmingVersion":  "",
+    "raw":  "",
+    "translationUnits":  [],
+    "automaticUpdates":  null,
+    "codeModuleIds":  [],
+    "codeRepositoryId":  "cra-demo",
+    "functionalities":  [
+      {
+        "cryptographicHash":  {
+          "algorithm":  "md5",
+          "usesSalt":  false,
+          "codeRegion":  {
+            "endColumn":  74,
+            "endLine":  11,
+            "file":  "backend/app/models.py",
+            "startColumn":  37,
+            "startLine":  11
+          }
+        }
+      },
+      {
+        "cryptographicHash":  {
+          "algorithm":  "md5",
+          "usesSalt":  false,
+          "codeRegion":  {
+            "endColumn":  53,
+            "endLine":  14,
+            "file":  "backend/app/models.py",
+            "startColumn":  16,
+            "startLine":  14
+          }
+        }
+      }
+    ],
+    "libraryIds":  []
+  }

@@ -28,6 +28,8 @@ syntax = "proto3";
 package clouditor.assessment.v1;
 
 import "buf/validate/validate.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
@@ -37,16 +39,22 @@ option go_package = "clouditor.io/clouditor/v2/api/assessment";
 // A metric resource
 message Metric {
   // Required. The unique identifier of the metric.
-  string id = 1 [(buf.validate.field).string.min_len = 1];
+  string id = 1 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // Required. The human readable name of the metric.
-  string name = 2 [(buf.validate.field).string.min_len = 1];
+  string name = 2 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // The description of the metric
   string description = 3;
 
   // The reference to control catalog category or domain
-  string category = 4;
+  string category = 4 [(buf.validate.field).string.min_len = 1];
 
   // The scale of this metric, e.g. categories, ranked data or metric values.
   Scale scale = 5 [(buf.validate.field).enum.defined_only = true];
@@ -63,10 +71,8 @@ message Metric {
   }
 
   // The interval in seconds the evidences must be collected for the respective
-  // metric. For now, we are not able to use google.protobuf.Duration because it
-  // is converted to a custom object in OpenAPI
-  // (https://github.com/google/gnostic/issues/351)
-  int64 interval = 7;
+  // metric.
+  google.protobuf.Duration interval = 7 [(tagger.tags) = "gorm:\"serializer:durationpb;type:interval\""];
 
   // The implementation of this metric. This ensures that we are modelling an
   // association between a Metric and its MetricImplementation.
@@ -74,7 +80,7 @@ message Metric {
 
   // Optional, but required if the metric is removed. The metric is not deleted
   // for backward compatibility and the timestamp is set to the time of removal.
-  optional google.protobuf.Timestamp deprecated_since = 10 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\""];
+  optional google.protobuf.Timestamp deprecated_since = 10 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
 }
 
 // A range resource representing the range of values
@@ -114,30 +120,36 @@ message Order {
 // Defines the operator and a target value for an individual metric
 message MetricConfiguration {
   // The operator to compare the metric, such as == or >
-  string operator = 1 [(buf.validate.field).string.pattern = "^(|<|>|<=|>=|==|isIn|allIn)$"];
+  string operator = 1 [
+    (buf.validate.field).string.pattern = "^(<|>|<=|>=|==|isIn|allIn)$",
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // The target value
   google.protobuf.Value target_value = 2 [
     (tagger.tags) = "gorm:\"serializer:json\"",
-    (buf.validate.field).required = true
+    (buf.validate.field).required = true,
+    (google.api.field_behavior) = REQUIRED
   ];
 
   // Whether this configuration is a default configuration
-  bool is_default = 3;
+  bool is_default = 3 [(google.api.field_behavior) = REQUIRED];
 
   // The last time of update
-  google.protobuf.Timestamp updated_at = 4 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\""];
+  google.protobuf.Timestamp updated_at = 4 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
 
   // The metric this configuration belongs to
   string metric_id = 5 [
     (tagger.tags) = "gorm:\"primaryKey\"",
-    (buf.validate.field).string.min_len = 1
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
   ];
 
-  // The service this configuration belongs to
-  string cloud_service_id = 6 [
+  // The certification target this configuration belongs to
+  string certification_target_id = 6 [
     (tagger.tags) = "gorm:\"primaryKey\"",
-    (buf.validate.field).string.uuid = true
+    (buf.validate.field).string.uuid = true,
+    (google.api.field_behavior) = REQUIRED
   ];
 }
 
@@ -146,7 +158,8 @@ message MetricImplementation {
   // The metric which is implemented
   string metric_id = 1 [
     (buf.validate.field).string.min_len = 1,
-    (tagger.tags) = "gorm:\"primaryKey\""
+    (tagger.tags) = "gorm:\"primaryKey\"",
+    (google.api.field_behavior) = REQUIRED
   ];
 
   enum Language {
@@ -158,8 +171,11 @@ message MetricImplementation {
   Language lang = 2 [(buf.validate.field).enum.defined_only = true];
 
   // The actual implementation
-  string code = 3 [(buf.validate.field).string.min_len = 1];
+  string code = 3 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // The last time of update
-  google.protobuf.Timestamp updated_at = 4 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\""];
+  google.protobuf.Timestamp updated_at = 4 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
 }

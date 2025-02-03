@@ -94,7 +94,7 @@ func NewSession(url string, config *oauth2.Config, token *oauth2.Token) (session
 		Config:     config,
 	}
 
-	if session.ClientConn, err = grpc.Dial(session.URL, api.DefaultGrpcDialOptions(url, session)...); err != nil {
+	if session.ClientConn, err = grpc.NewClient(session.URL, api.DefaultGrpcDialOptions(url, session)...); err != nil {
 		return nil, fmt.Errorf("could not connect: %w", err)
 	}
 
@@ -130,7 +130,7 @@ func ContinueSession() (session *Session, err error) {
 		_ = session.Save()
 	}
 
-	if session.ClientConn, err = grpc.Dial(session.URL, api.DefaultGrpcDialOptions(session.URL, session)...); err != nil {
+	if session.ClientConn, err = grpc.NewClient(session.URL, api.DefaultGrpcDialOptions(session.URL, session)...); err != nil {
 		return nil, fmt.Errorf("could not connect: %w", err)
 	}
 
@@ -290,8 +290,8 @@ func ValidArgsGetControls(_ *cobra.Command, args []string, toComplete string) ([
 	}
 }
 
-func ValidArgsGetCloudServices(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	return getCloudServices(toComplete), cobra.ShellCompDirectiveNoFileComp
+func ValidArgsGetCertificationTargets(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return getCertificationTargets(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
 
 func getTools(_ string) []string {
@@ -431,12 +431,12 @@ func getControls(catalogID string, categoryName string, _ string) []string {
 	return output
 }
 
-func getCloudServices(_ string) []string {
+func getCertificationTargets(_ string) []string {
 	var (
 		err     error
 		session *Session
 		client  orchestrator.OrchestratorClient
-		res     *orchestrator.ListCloudServicesResponse
+		res     *orchestrator.ListCertificationTargetsResponse
 	)
 
 	if session, err = ContinueSession(); err != nil {
@@ -446,12 +446,12 @@ func getCloudServices(_ string) []string {
 
 	client = orchestrator.NewOrchestratorClient(session)
 
-	if res, err = client.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{}); err != nil {
+	if res, err = client.ListCertificationTargets(context.Background(), &orchestrator.ListCertificationTargetsRequest{}); err != nil {
 		return []string{}
 	}
 
 	var metrics []string
-	for _, v := range res.Services {
+	for _, v := range res.Targets {
 		metrics = append(metrics, fmt.Sprintf("%s\t%s: %s", v.Id, v.Name, v.Description))
 	}
 

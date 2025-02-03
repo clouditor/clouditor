@@ -5,6 +5,21 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch discovery (in-memory, auto-start)",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/discovery",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--db-in-memory",
+                "--discovery-auto-start",
+                "--discovery-provider=azure"
+            ],
+            "env": {},
+            "preLaunchTask": "go: generate"
+        },
+        {
             "name": "Launch engine",
             "type": "go",
             "request": "launch",
@@ -28,7 +43,7 @@
             "preLaunchTask": "go: generate"
         },
         {
-            "name": "Launch engine (in-memory, dashboard development redirect with Azure discovery)",
+            "name": "Launch engine Azure (in-memory, dashboard development redirect with Azure discovery)",
             "type": "go",
             "request": "launch",
             "mode": "auto",
@@ -36,10 +51,46 @@
             "cwd": "${workspaceFolder}",
             "args": [
                 "--db-in-memory",
-                "--dashboard-url=http://localhost:5173",
-                "--api-cors-allowed-origins=http://localhost:5173",
+                "--dashboard-callback-url=http://localhost:3000/api/auth/callback/confirmate",
+                "--api-cors-allowed-origins=http://localhost:3000",
                 "--discovery-auto-start",
                 "--discovery-provider=azure",
+            ],
+            "env": {},
+            "preLaunchTask": "go: generate"
+        },
+        {
+            "name": "Launch engine OpenStack (in-memory, dashboard development redirect with OpenStack discovery)",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/engine",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--db-in-memory",
+                "--dashboard-callback-url=http://localhost:5173/callback",
+                "--api-cors-allowed-origins=http://localhost:5173",
+                "--discovery-auto-start",
+                "--discovery-provider=openstack",
+            ],
+            "env": {},
+            "preLaunchTask": "go: generate"
+        },
+        {
+            "name": "Launch engine CSAF (in-memory, dashboard development redirect with CSAF discovery)",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/engine",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--db-in-memory",
+                "--dashboard-callback-url=http://localhost:5173/callback",
+                "--api-cors-allowed-origins=http://localhost:5173",
+                "--discovery-auto-start",
+                "--discovery-provider=csaf",
+                "--discovery-csaf-domain=clouditor.io",
+                "--log-level=debug"
             ],
             "env": {},
             "preLaunchTask": "go: generate"
@@ -52,7 +103,7 @@
             "program": "${workspaceFolder}/cmd/engine",
             "cwd": "${workspaceFolder}",
             "args": [
-                "--dashboard-url=http://localhost:5173",
+                "--dashboard-callback-url=http://localhost:5173/callback",
                 "--api-cors-allowed-origins=http://localhost:5173",
                 "--discovery-auto-start",
                 "--discovery-provider=azure"

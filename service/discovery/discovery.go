@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -37,17 +38,23 @@ import (
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/util"
+	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/inmemory"
+	"clouditor.io/clouditor/v2/server/rest"
 	"clouditor.io/clouditor/v2/service"
 	"clouditor.io/clouditor/v2/service/discovery/aws"
 	"clouditor.io/clouditor/v2/service/discovery/azure"
+	"clouditor.io/clouditor/v2/service/discovery/extra/csaf"
 	"clouditor.io/clouditor/v2/service/discovery/k8s"
+	"clouditor.io/clouditor/v2/service/discovery/openstack"
 
 	"github.com/go-co-op/gocron"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -57,20 +64,45 @@ import (
 )
 
 const (
-	ProviderAWS   = "aws"
-	ProviderK8S   = "k8s"
-	ProviderAzure = "azure"
+	ProviderAWS       = "aws"
+	ProviderK8S       = "k8s"
+	ProviderAzure     = "azure"
+	ProviderOpenstack = "openstack"
+	ProviderCSAF      = "csaf"
 )
 
 var log *logrus.Entry
+
+// DefaultServiceSpec returns a [launcher.ServiceSpec] for this [Service] with all necessary options retrieved from the
+// config system.
+func DefaultServiceSpec() launcher.ServiceSpec {
+	var providers []string
+
+	// If no CSPs for discovering are given, take all implemented discoverers
+	if len(viper.GetStringSlice(config.DiscoveryProviderFlag)) == 0 {
+		providers = []string{ProviderAWS, ProviderAzure, ProviderK8S}
+	} else {
+		providers = viper.GetStringSlice(config.DiscoveryProviderFlag)
+	}
+
+	return launcher.NewServiceSpec(
+		NewService,
+		WithStorage,
+		nil,
+		WithOAuth2Authorizer(config.ClientCredentials()),
+		WithCertificationTargetID(viper.GetString(config.CertificationTargetIDFlag)),
+		WithProviders(providers),
+		WithAssessmentAddress(viper.GetString(config.AssessmentURLFlag)),
+	)
+}
 
 // DiscoveryEventType defines the event types for [DiscoveryEvent].
 type DiscoveryEventType int
 
 const (
-	// DiscovererStart is emmited at the start of a discovery run.
+	// DiscovererStart is emitted at the start of a discovery run.
 	DiscovererStart DiscoveryEventType = iota
-	// DiscovererFinished is emmited at the end of a discovery run.
+	// DiscovererFinished is emitted at the end of a discovery run.
 	DiscovererFinished
 )
 
@@ -99,14 +131,18 @@ type Service struct {
 
 	authz service.AuthorizationStrategy
 
-	providers []string
+	providers   []string
+	discoverers []discovery.Discoverer
 
 	discoveryInterval time.Duration
 
 	Events chan *DiscoveryEvent
 
-	// csID is the cloud service ID for which we are gathering resources.
-	csID string
+	// ctID is the certification target ID for which we are gathering resources.
+	ctID string
+
+	// collectorID is the evidence collector tool ID which is gathering the resources.
+	collectorID string
 }
 
 func init() {
@@ -118,33 +154,44 @@ const (
 	DefaultAssessmentAddress = "localhost:9090"
 )
 
-// ServiceOption is a functional option type to configure the discovery service.
-type ServiceOption func(*Service)
-
 // WithAssessmentAddress is an option to configure the assessment service gRPC address.
-func WithAssessmentAddress(target string, opts ...grpc.DialOption) ServiceOption {
+func WithAssessmentAddress(target string, opts ...grpc.DialOption) service.Option[*Service] {
+
 	return func(s *Service) {
+		log.Infof("Assessment URL is set to %s", target)
+
 		s.assessment.Target = target
 		s.assessment.Opts = opts
 	}
 }
 
-// WithCloudServiceID is an option to configure the cloud service ID for which resources will be discovered.
-func WithCloudServiceID(ID string) ServiceOption {
+// WithCertificationTargetID is an option to configure the certification target ID for which resources will be discovered.
+func WithCertificationTargetID(ID string) service.Option[*Service] {
 	return func(svc *Service) {
-		svc.csID = ID
+		log.Infof("Certification Target ID is set to %s", ID)
+
+		svc.ctID = ID
+	}
+}
+
+// WithEvidenceCollectorToolID is an option to configure the collector tool ID that is used to discover resources.
+func WithEvidenceCollectorToolID(ID string) service.Option[*Service] {
+	return func(svc *Service) {
+		log.Infof("Evidence Collector Tool ID is set to %s", ID)
+
+		svc.collectorID = ID
 	}
 }
 
 // WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
-func WithOAuth2Authorizer(config *clientcredentials.Config) ServiceOption {
+func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[*Service] {
 	return func(svc *Service) {
 		svc.assessment.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
 	}
 }
 
 // WithProviders is an option to set providers for discovering
-func WithProviders(providersList []string) ServiceOption {
+func WithProviders(providersList []string) service.Option[*Service] {
 	if len(providersList) == 0 {
 		newError := errors.New("no providers given")
 		log.Error(newError)
@@ -155,35 +202,44 @@ func WithProviders(providersList []string) ServiceOption {
 	}
 }
 
+// WithAdditionalDiscoverers is an option to add additional discoverers for discovering. Note: These are added in
+// addition to the ones created by [WithProviders].
+func WithAdditionalDiscoverers(discoverers []discovery.Discoverer) service.Option[*Service] {
+	return func(s *Service) {
+		s.discoverers = append(s.discoverers, discoverers...)
+	}
+}
+
 // WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
-func WithStorage(storage persistence.Storage) ServiceOption {
+func WithStorage(storage persistence.Storage) service.Option[*Service] {
 	return func(s *Service) {
 		s.storage = storage
 	}
 }
 
 // WithDiscoveryInterval is an option to set the discovery interval. If not set, the discovery is set to 5 minutes.
-func WithDiscoveryInterval(interval time.Duration) ServiceOption {
+func WithDiscoveryInterval(interval time.Duration) service.Option[*Service] {
 	return func(s *Service) {
 		s.discoveryInterval = interval
 	}
 }
 
 // WithAuthorizationStrategy is an option that configures an authorization strategy to be used with this service.
-func WithAuthorizationStrategy(authz service.AuthorizationStrategy) ServiceOption {
+func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Option[*Service] {
 	return func(s *Service) {
 		s.authz = authz
 	}
 }
 
-func NewService(opts ...ServiceOption) *Service {
+func NewService(opts ...service.Option[*Service]) *Service {
 	var err error
 	s := &Service{
 		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
 		assessment:        api.NewRPCConnection(DefaultAssessmentAddress, assessment.NewAssessmentClient),
 		scheduler:         gocron.NewScheduler(time.UTC),
 		Events:            make(chan *DiscoveryEvent),
-		csID:              discovery.DefaultCloudServiceID,
+		ctID:              config.DefaultCertificationTargetID,
+		collectorID:       config.DefaultEvidenceCollectorToolID,
 		authz:             &service.AuthorizationStrategyAllowAll{},
 		discoveryInterval: 5 * time.Minute, // Default discovery interval is 5 minutes
 	}
@@ -202,6 +258,29 @@ func NewService(opts ...ServiceOption) *Service {
 	}
 
 	return s
+}
+
+func (svc *Service) Init() {
+	var err error
+
+	// Automatically start the discovery, if we have this flag enabled
+	if viper.GetBool(config.DiscoveryAutoStartFlag) {
+		go func() {
+			<-rest.GetReadyChannel()
+			_, err = svc.Start(context.Background(), &discovery.StartDiscoveryRequest{
+				ResourceGroup: util.Ref(viper.GetString(config.DiscoveryResourceGroupFlag)),
+				CsafDomain:    util.Ref(viper.GetString(config.DiscoveryCSAFDomainFlag)),
+			})
+			if err != nil {
+				log.Errorf("Could not automatically start discovery: %v", err)
+			}
+		}()
+	}
+}
+
+func (svc *Service) Shutdown() {
+	svc.assessmentStreams.CloseAll()
+	svc.scheduler.Stop()
 }
 
 // initAssessmentStream initializes the stream that is used to send evidences to the assessment service.
@@ -227,8 +306,8 @@ func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (s
 // Start starts discovery
 func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
 	var (
-		opts       = []azure.DiscoveryOption{}
-		discoverer []discovery.Discoverer
+		optsAzure     = []azure.DiscoveryOption{}
+		optsOpenstack = []openstack.DiscoveryOption{}
 	)
 
 	// Validate request
@@ -237,7 +316,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 		return nil, err
 	}
 
-	// Check if cloud_service_id in the service is within allowed or one can access *all* the cloud services
+	// Check if certification_target_id in the service is within allowed or one can access *all* the certification targets
 	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, svc) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -256,32 +335,51 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				log.Errorf("Could not authenticate to Azure: %v", err)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
 			}
-			// Add authorizer and cloudServiceID
-			opts = append(opts, azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID))
+			// Add authorizer and CertificationTargetID
+			optsAzure = append(optsAzure, azure.WithAuthorizer(authorizer), azure.WithCertificationTargetID(svc.ctID))
 			// Check if resource group is given and append to discoverer
 			if req.GetResourceGroup() != "" {
-				opts = append(opts, azure.WithResourceGroup(req.GetResourceGroup()))
+				optsAzure = append(optsAzure, azure.WithResourceGroup(req.GetResourceGroup()))
 			}
-			discoverer = append(discoverer, azure.NewAzureDiscovery(opts...))
+			svc.discoverers = append(svc.discoverers, azure.NewAzureDiscovery(optsAzure...))
 		case provider == ProviderK8S:
 			k8sClient, err := k8s.AuthFromKubeConfig()
 			if err != nil {
 				log.Errorf("Could not authenticate to Kubernetes: %v", err)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Kubernetes: %v", err)
 			}
-			discoverer = append(discoverer,
-				k8s.NewKubernetesComputeDiscovery(k8sClient, svc.csID),
-				k8s.NewKubernetesNetworkDiscovery(k8sClient, svc.csID),
-				k8s.NewKubernetesStorageDiscovery(k8sClient, svc.csID))
+			svc.discoverers = append(svc.discoverers,
+				k8s.NewKubernetesComputeDiscovery(k8sClient, svc.ctID),
+				k8s.NewKubernetesNetworkDiscovery(k8sClient, svc.ctID),
+				k8s.NewKubernetesStorageDiscovery(k8sClient, svc.ctID))
 		case provider == ProviderAWS:
 			awsClient, err := aws.NewClient()
 			if err != nil {
 				log.Errorf("Could not authenticate to AWS: %v", err)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to AWS: %v", err)
 			}
-			discoverer = append(discoverer,
-				aws.NewAwsStorageDiscovery(awsClient, svc.csID),
-				aws.NewAwsComputeDiscovery(awsClient, svc.csID))
+			svc.discoverers = append(svc.discoverers,
+				aws.NewAwsStorageDiscovery(awsClient, svc.ctID),
+				aws.NewAwsComputeDiscovery(awsClient, svc.ctID))
+		case provider == ProviderOpenstack:
+			authorizer, err := openstack.NewAuthorizer()
+			if err != nil {
+				log.Errorf("Could not authenticate to OpenStack: %v", err)
+				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to OpenStack: %v", err)
+			}
+			// Add authorizer and CertificationTargetID
+			optsOpenstack = append(optsOpenstack, openstack.WithAuthorizer(authorizer), openstack.WithCertificationTargetID(svc.ctID))
+			svc.discoverers = append(svc.discoverers, openstack.NewOpenstackDiscovery(optsOpenstack...))
+		case provider == ProviderCSAF:
+			var (
+				domain string
+				opts   []csaf.DiscoveryOption
+			)
+			domain = util.Deref(req.CsafDomain)
+			if domain != "" {
+				opts = append(opts, csaf.WithProviderDomain(domain))
+			}
+			svc.discoverers = append(svc.discoverers, csaf.NewTrustedProviderDiscovery(opts...))
 		default:
 			newError := fmt.Errorf("provider %s not known", provider)
 			log.Error(newError)
@@ -289,7 +387,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 		}
 	}
 
-	for _, v := range discoverer {
+	for _, v := range svc.discoverers {
 		log.Infof("Scheduling {%s} to execute every {%v} minutes...", v.Name(), svc.discoveryInterval.Minutes())
 
 		_, err = svc.scheduler.
@@ -306,13 +404,6 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 	svc.scheduler.StartAsync()
 
 	return resp, nil
-}
-
-func (svc *Service) Shutdown() {
-	log.Info("Shutting down discovery service")
-
-	svc.assessmentStreams.CloseAll()
-	svc.scheduler.Stop()
 }
 
 func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
@@ -349,7 +440,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	for _, resource := range list {
 		// Build a resource struct. This will hold the latest sync state of the
 		// resource for our storage layer.
-		r, err := discovery.ToDiscoveryResource(resource, svc.GetCloudServiceId())
+		r, err := discovery.ToDiscoveryResource(resource, svc.GetCertificationTargetId(), svc.collectorID)
 		if err != nil {
 			log.Errorf("Could not convert resource: %v", err)
 			continue
@@ -368,12 +459,20 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		}
 
 		e := &evidence.Evidence{
-			Id:             uuid.New().String(),
-			CloudServiceId: svc.GetCloudServiceId(),
-			Timestamp:      timestamppb.Now(),
-			Raw:            util.Ref(resource.GetRaw()),
-			ToolId:         discovery.EvidenceCollectorToolId,
-			Resource:       a,
+			Id:                    uuid.New().String(),
+			CertificationTargetId: svc.GetCertificationTargetId(),
+			Timestamp:             timestamppb.Now(),
+			Raw:                   util.Ref(resource.GetRaw()),
+			ToolId:                svc.collectorID,
+			Resource:              a,
+		}
+
+		// Only enabled related evidences for some specific resources for now
+		if slices.Contains(ontology.ResourceTypes(resource), "SecurityAdvisoryService") {
+			edges := ontology.Related(resource)
+			for _, edge := range edges {
+				e.ExperimentalRelatedResourceIds = append(e.ExperimentalRelatedResourceIds, edge.Value)
+			}
 		}
 
 		// Get Evidence Store stream
@@ -403,31 +502,36 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 	}
 
 	// Filtering the resources by
-	// * cloud service ID
+	// * certification target ID
 	// * resource type
+	// * tool ID
 	if req.Filter != nil {
-		// Check if cloud_service_id in filter is within allowed or one can access *all* the cloud services
+		// Check if certification_target_id in filter is within allowed or one can access *all* the certification targets
 		if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Filter) {
 			return nil, service.ErrPermissionDenied
 		}
 
-		if req.Filter.CloudServiceId != nil {
-			query = append(query, "cloud_service_id = ?")
-			args = append(args, req.Filter.GetCloudServiceId())
+		if req.Filter.CertificationTargetId != nil {
+			query = append(query, "certification_target_id = ?")
+			args = append(args, req.Filter.GetCertificationTargetId())
 		}
 		if req.Filter.Type != nil {
 			query = append(query, "(resource_type LIKE ? OR resource_type LIKE ? OR resource_type LIKE ?)")
 			args = append(args, req.Filter.GetType()+",%", "%,"+req.Filter.GetType()+",%", "%,"+req.Filter.GetType())
 		}
+		if req.Filter.ToolId != nil {
+			query = append(query, "tool_id = ?")
+			args = append(args, req.Filter.GetToolId())
+		}
 	}
 
-	// We need to further restrict our query according to the cloud service we are allowed to "see".
+	// We need to further restrict our query according to the certification target we are allowed to "see".
 	//
-	// TODO(oxisto): This is suboptimal, since we are now calling AllowedCloudServices twice. Once here
+	// TODO(oxisto): This is suboptimal, since we are now calling AllowedCertificationTargets twice. Once here
 	//  and once above in CheckAccess.
-	all, allowed = svc.authz.AllowedCloudServices(ctx)
+	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
 	if !all {
-		query = append(query, "cloud_service_id IN ?")
+		query = append(query, "certification_target_id IN ?")
 		args = append(args, allowed)
 	}
 
@@ -441,9 +545,9 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 	return
 }
 
-// GetCloudServiceId implements CloudServiceRequest for this service. This is a little trick, so that we can call
+// GetCertificationTargetId implements CertificationTargetRequest for this service. This is a little trick, so that we can call
 // CheckAccess directly on the service. This is necessary because the discovery service itself is tied to a specific
-// cloud service ID, instead of the individual requests that are made against the service.
-func (svc *Service) GetCloudServiceId() string {
-	return svc.csID
+// certification target ID, instead of the individual requests that are made against the service.
+func (svc *Service) GetCertificationTargetId() string {
+	return svc.ctID
 }

@@ -29,6 +29,7 @@ package clouditor.discovery.v1;
 
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
 import "google/protobuf/any.proto";
 import "tagger/tagger.proto";
 
@@ -54,6 +55,7 @@ service Discovery {
 
 message StartDiscoveryRequest {
   optional string resource_group = 1;
+  optional string csaf_domain = 2;
 }
 
 message StartDiscoveryResponse {
@@ -63,7 +65,8 @@ message StartDiscoveryResponse {
 message ListResourcesRequest {
   message Filter {
     optional string type = 1;
-    optional string cloud_service_id = 2;
+    optional string certification_target_id = 2;
+    optional string tool_id = 3;
   }
 
   optional Filter filter = 1;
@@ -75,7 +78,7 @@ message ListResourcesRequest {
 }
 
 message ListResourcesResponse {
-  repeated Resource results = 1;
+  repeated Resource results = 1 [(google.api.field_behavior) = REQUIRED];
   string next_page_token = 2;
 }
 
@@ -85,18 +88,33 @@ message Resource {
   // Id contains a unique ID for each resource. This is specific for the cloud
   // provider this resource was gathered for and can for example be a resource
   // URL.
-  string id = 1 [(buf.validate.field).string.min_len = 1];
-  // CloudServiceId is the UUID for the cloud service to which this resource
+  string id = 1 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
+  // CertificationTargetId is the UUID for the certification target to which this resource
   // belongs to.
-  string cloud_service_id = 2 [(buf.validate.field).string.uuid = true];
+  string certification_target_id = 2 [
+    (buf.validate.field).string.uuid = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
   // ResourceType contains a comma separated string of resource types according
   // to our ontology.
-  string resource_type = 3 [(buf.validate.field).string.min_len = 1];
+  string resource_type = 3 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
+  // Reference to the tool which provided the resource
+  string tool_id = 4 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // Properties contains a protobuf message that describe the resource in the
   // terms of our Clouditor ontology.
   google.protobuf.Any properties = 10 [
     (tagger.tags) = "gorm:\"serializer:anypb;type:json\"",
-    (buf.validate.field).required = true
+    (buf.validate.field).required = true,
+    (google.api.field_behavior) = REQUIRED
   ];
 }

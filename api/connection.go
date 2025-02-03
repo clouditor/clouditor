@@ -143,7 +143,7 @@ func (conn *RPCConnection[T]) init() (err error) {
 	defer conn.m.Unlock()
 
 	// Establish a connection to the specified gRPC service
-	conn.cc, err = grpc.Dial(conn.Target,
+	conn.cc, err = grpc.NewClient(conn.Target,
 		DefaultGrpcDialOptions(conn.Target, conn, conn.Opts...)...,
 	)
 	if err != nil {

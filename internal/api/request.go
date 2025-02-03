@@ -11,9 +11,9 @@ type PayloadRequest interface {
 	proto.Message
 }
 
-// CloudServiceRequest represents any kind of RPC request, that contains a
-// reference to a cloud service. Defined in internal/api to avoid cyclic
+// CertificationTargetRequest represents any kind of RPC request, that contains a
+// reference to a certification target. Defined in internal/api to avoid cyclic
 // dependencies.
-type CloudServiceRequest interface {
-	GetCloudServiceId() string
+type CertificationTargetRequest interface {
+	GetCertificationTargetId() string
 }

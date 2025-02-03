@@ -38,6 +38,7 @@ import (
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
@@ -637,6 +638,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 							"type":                "EncryptionAtRestWithPlatformKey",
 						},
 					},
+					"managedBy": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
 				},
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
@@ -650,6 +652,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 							"type":                "EncryptionAtRestWithCustomerKey",
 						},
 					},
+					"managedBy": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
 				},
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
@@ -663,6 +666,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 							"type":                "EncryptionAtRestWithPlatformKey",
 						},
 					},
+					"managedBy": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
 				},
 			},
 		}, 200)
@@ -1089,18 +1093,18 @@ func TestNewAzureDiscovery(t *testing.T) {
 			name: "Happy path",
 			args: args{},
 			want: &azureDiscovery{
-				csID:               discovery.DefaultCloudServiceID,
+				ctID:               config.DefaultCertificationTargetID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
 		},
 		{
-			name: "Happy path: with cloud service id",
+			name: "Happy path: with certification target id",
 			args: args{
-				opts: []DiscoveryOption{WithCloudServiceID(testdata.MockCloudServiceID1)},
+				opts: []DiscoveryOption{WithCertificationTargetID(testdata.MockCertificationTargetID1)},
 			},
 			want: &azureDiscovery{
-				csID:               testdata.MockCloudServiceID1,
+				ctID:               testdata.MockCertificationTargetID1,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1112,7 +1116,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 			},
 			want: &azureDiscovery{
 				rg:                 util.Ref(testdata.MockResourceGroup),
-				csID:               discovery.DefaultCloudServiceID,
+				ctID:               config.DefaultCertificationTargetID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1128,7 +1132,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 						Transport: mockSender{},
 					},
 				},
-				csID:               discovery.DefaultCloudServiceID,
+				ctID:               config.DefaultCertificationTargetID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1140,7 +1144,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 			},
 			want: &azureDiscovery{
 				cred:               &mockAuthorizer{},
-				csID:               discovery.DefaultCloudServiceID,
+				ctID:               config.DefaultCertificationTargetID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1197,7 +1201,7 @@ func Test_azureDiscovery_List(t *testing.T) {
 	}
 }
 
-func Test_azureDiscovery_CloudServiceID(t *testing.T) {
+func Test_azureDiscovery_CertificationTargetID(t *testing.T) {
 	type fields struct {
 		isAuthorized        bool
 		sub                 *armsubscription.Subscription
@@ -1206,7 +1210,7 @@ func Test_azureDiscovery_CloudServiceID(t *testing.T) {
 		clientOptions       arm.ClientOptions
 		discovererComponent string
 		clients             clients
-		csID                string
+		ctID                string
 		backupMap           map[string]*backup
 		defenderProperties  map[string]*defenderProperties
 	}
@@ -1218,9 +1222,9 @@ func Test_azureDiscovery_CloudServiceID(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				csID: testdata.MockCloudServiceID1,
+				ctID: testdata.MockCertificationTargetID1,
 			},
-			want: testdata.MockCloudServiceID1,
+			want: testdata.MockCertificationTargetID1,
 		},
 	}
 	for _, tt := range tests {
@@ -1233,12 +1237,12 @@ func Test_azureDiscovery_CloudServiceID(t *testing.T) {
 				clientOptions:       tt.fields.clientOptions,
 				discovererComponent: tt.fields.discovererComponent,
 				clients:             tt.fields.clients,
-				csID:                tt.fields.csID,
+				ctID:                tt.fields.ctID,
 				backupMap:           tt.fields.backupMap,
 				defenderProperties:  tt.fields.defenderProperties,
 			}
-			if got := a.CloudServiceID(); got != tt.want {
-				t.Errorf("azureDiscovery.CloudServiceID() = %v, want %v", got, tt.want)
+			if got := a.CertificationTargetID(); got != tt.want {
+				t.Errorf("azureDiscovery.CertificationTargetID() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -1531,15 +1535,15 @@ func Test_initClient(t *testing.T) {
 
 // WithDefenderProperties is a [DiscoveryOption] that adds the defender properties for our tests.
 func WithDefenderProperties(dp map[string]*defenderProperties) DiscoveryOption {
-	return func(a *azureDiscovery) {
-		a.defenderProperties = dp
+	return func(d *azureDiscovery) {
+		d.defenderProperties = dp
 	}
 }
 
 // WithSubscription is a [DiscoveryOption] that adds the subscription to the discoverer for our tests.
 func WithSubscription(sub *armsubscription.Subscription) DiscoveryOption {
-	return func(a *azureDiscovery) {
-		a.sub = sub
+	return func(d *azureDiscovery) {
+		d.sub = sub
 	}
 }
 
@@ -1557,7 +1561,7 @@ func NewMockAzureDiscovery(transport policy.Transporter, opts ...DiscoveryOption
 				Transport: transport,
 			},
 		},
-		csID:      testdata.MockCloudServiceID1,
+		ctID:      testdata.MockCertificationTargetID1,
 		backupMap: make(map[string]*backup),
 	}
 

@@ -28,16 +28,21 @@ package orchestrator
 import (
 	"context"
 	"embed"
+	"fmt"
 	"sync"
 
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/api/runtime"
+	"clouditor.io/clouditor/v2/internal/config"
+	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/inmemory"
+	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/service"
 
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 //go:embed *.json
@@ -51,16 +56,41 @@ var (
 	log                         *logrus.Entry
 )
 
+// DefaultServiceSpec returns a [launcher.ServiceSpec] for this [Service] with all necessary options retrieved from the
+// config system.
+func DefaultServiceSpec() launcher.ServiceSpec {
+	return launcher.NewServiceSpec(
+		NewService,
+		WithStorage,
+		func(svc *Service) ([]server.StartGRPCServerOption, error) {
+			// It is possible to register hook functions for the orchestrator.
+			//  * The hook functions in orchestrator are implemented in StoreAssessmentResult(s)
+
+			// svc.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
+
+			// Create default Certification Target
+			if viper.GetBool(config.CreateDefaultCertificationTargetFlag) {
+				_, err := svc.CreateDefaultCertificationTarget()
+				if err != nil {
+					return nil, fmt.Errorf("could not register default target certification target: %v", err)
+				}
+			}
+
+			return nil, nil
+		},
+	)
+}
+
 // Service is an implementation of the Clouditor Orchestrator service
 type Service struct {
 	orchestrator.UnimplementedOrchestratorServer
 
-	// cloudServiceHooks is a list of hook functions that can be used to inform
-	// about updated CloudServices
-	cloudServiceHooks []orchestrator.CloudServiceHookFunc
+	// CertificationTargetHooks is a list of hook functions that can be used to inform
+	// about updated CertificationTargets
+	CertificationTargetHooks []orchestrator.CertificationTargetHookFunc
 
-	// toeHooks is a list of hook functions that can be used to inform about updated Target of Evaluations
-	toeHooks []orchestrator.TargetOfEvaluationHookFunc
+	// auditScopeHooks is a list of hook functions that can be used to inform about updated Audit Scopes
+	auditScopeHooks []orchestrator.AuditScopeHookFunc
 
 	// hookMutex is used for (un)locking hook calls
 	hookMutex sync.RWMutex
@@ -84,7 +114,7 @@ type Service struct {
 
 	events chan *orchestrator.MetricChangeEvent
 
-	// authz defines our authorization strategy, e.g., which user can access which cloud service and associated
+	// authz defines our authorization strategy, e.g., which user can access which certification target and associated
 	// resources, such as evidences and assessment results.
 	authz service.AuthorizationStrategy
 }
@@ -93,59 +123,56 @@ func init() {
 	log = logrus.WithField("component", "orchestrator")
 }
 
-// ServiceOption is a function-style option to configure the Orchestrator Service
-type ServiceOption func(*Service)
-
 // WithMetricsFile can be used to load a different metrics file
-func WithMetricsFile(file string) ServiceOption {
+func WithMetricsFile(file string) service.Option[*Service] {
 	return func(s *Service) {
 		s.metricsFile = file
 	}
 }
 
 // WithExternalMetrics can be used to load metric definitions from an external source
-func WithExternalMetrics(f func() ([]*assessment.Metric, error)) ServiceOption {
+func WithExternalMetrics(f func() ([]*assessment.Metric, error)) service.Option[*Service] {
 	return func(s *Service) {
 		s.loadMetricsFunc = f
 	}
 }
 
 // WithCatalogsFolder can be used to load catalog files from a different catalogs folder
-func WithCatalogsFolder(folder string) ServiceOption {
+func WithCatalogsFolder(folder string) service.Option[*Service] {
 	return func(s *Service) {
 		s.catalogsFolder = folder
 	}
 }
 
 // WithExternalCatalogs can be used to load catalog definitions from an external source
-func WithExternalCatalogs(f func() ([]*orchestrator.Catalog, error)) ServiceOption {
+func WithExternalCatalogs(f func() ([]*orchestrator.Catalog, error)) service.Option[*Service] {
 	return func(s *Service) {
 		s.loadCatalogsFunc = f
 	}
 }
 
 // WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
-func WithStorage(storage persistence.Storage) ServiceOption {
+func WithStorage(storage persistence.Storage) service.Option[*Service] {
 	return func(s *Service) {
 		s.storage = storage
 	}
 }
 
 // WithAuthorizationStrategyJWT is an option that configures an JWT-based authorization strategy using a specific claim key.
-func WithAuthorizationStrategyJWT(key string, allowAllKey string) ServiceOption {
+func WithAuthorizationStrategyJWT(key string, allowAllKey string) service.Option[*Service] {
 	return func(s *Service) {
-		s.authz = &service.AuthorizationStrategyJWT{CloudServicesKey: key, AllowAllKey: allowAllKey}
+		s.authz = &service.AuthorizationStrategyJWT{CertificationTargetsKey: key, AllowAllKey: allowAllKey}
 	}
 }
 
-func WithAuthorizationStrategy(authz service.AuthorizationStrategy) ServiceOption {
+func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Option[*Service] {
 	return func(s *Service) {
 		s.authz = authz
 	}
 }
 
 // NewService creates a new Orchestrator service
-func NewService(opts ...ServiceOption) *Service {
+func NewService(opts ...service.Option[*Service]) *Service {
 	var err error
 	s := Service{
 		metricsFile:    DefaultMetricsFile,
@@ -182,10 +209,14 @@ func NewService(opts ...ServiceOption) *Service {
 	return &s
 }
 
+func (svc *Service) Init() {}
+
+func (svc *Service) Shutdown() {}
+
 // informHooks informs the registered hook functions
-func (s *Service) informHooks(ctx context.Context, cld *orchestrator.CloudService, err error) {
+func (s *Service) informHooks(ctx context.Context, cld *orchestrator.CertificationTarget, err error) {
 	s.hookMutex.RLock()
-	hooks := s.cloudServiceHooks
+	hooks := s.CertificationTargetHooks
 	defer s.hookMutex.RUnlock()
 
 	// Inform our hook, if we have any
@@ -197,10 +228,10 @@ func (s *Service) informHooks(ctx context.Context, cld *orchestrator.CloudServic
 	}
 }
 
-func (s *Service) RegisterCloudServiceHook(hook orchestrator.CloudServiceHookFunc) {
+func (s *Service) RegisterCertificationTargetHook(hook orchestrator.CertificationTargetHookFunc) {
 	s.hookMutex.Lock()
 	defer s.hookMutex.Unlock()
-	s.cloudServiceHooks = append(s.cloudServiceHooks, hook)
+	s.CertificationTargetHooks = append(s.CertificationTargetHooks, hook)
 }
 
 // GetRuntimeInfo implements a method to retrieve runtime information

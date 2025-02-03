@@ -41,12 +41,12 @@ message Evidence {
 
   // time of evidence creation
   google.protobuf.Timestamp timestamp = 2 [
-    (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"",
+    (tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\"",
     (buf.validate.field).required = true
   ];
 
-  // Reference to a service this evidence was gathered from
-  string cloud_service_id = 3 [(buf.validate.field).string.uuid = true];
+  // Reference to a certification target (e.g., service, organization) this evidence was gathered from
+  string certification_target_id = 3 [(buf.validate.field).string.uuid = true];
 
   // Reference to the tool which provided the evidence
   string tool_id = 4 [(buf.validate.field).string.min_len = 1];
@@ -61,4 +61,11 @@ message Evidence {
     (tagger.tags) = "gorm:\"serializer:anypb;type:json\"",
     (buf.validate.field).required = true
   ];
+
+  // Very experimental property. Use at own risk. This property will be deleted again.
+  //
+  // Related resource IDs. The assessment will wait until all evidences for related resource have arrived in the
+  // assessment and are recent enough. In the future, this will be replaced with information in the "related" edges in
+  // the resource. For now, this needs to be set manually in the evidence.
+  repeated string experimental_related_resource_ids = 999 [(tagger.tags) = "gorm:\"serializer:json\""];
 }

@@ -33,6 +33,7 @@ import (
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -54,10 +55,6 @@ import (
 )
 
 const (
-	StorageComponent = "storage"
-	ComputeComponent = "compute"
-	NetworkComponent = "network"
-
 	DefenderStorageType        = "StorageAccounts"
 	DefenderVirtualMachineType = "VirtualMachines"
 
@@ -90,30 +87,30 @@ func (*azureDiscovery) Description() string {
 	return "Discovery Azure."
 }
 
-type DiscoveryOption func(a *azureDiscovery)
+type DiscoveryOption func(d *azureDiscovery)
 
 func WithSender(sender policy.Transporter) DiscoveryOption {
-	return func(a *azureDiscovery) {
-		a.clientOptions.Transport = sender
+	return func(d *azureDiscovery) {
+		d.clientOptions.Transport = sender
 	}
 }
 
 func WithAuthorizer(authorizer azcore.TokenCredential) DiscoveryOption {
-	return func(a *azureDiscovery) {
-		a.cred = authorizer
+	return func(d *azureDiscovery) {
+		d.cred = authorizer
 	}
 }
 
-func WithCloudServiceID(csID string) DiscoveryOption {
+func WithCertificationTargetID(ctID string) DiscoveryOption {
 	return func(a *azureDiscovery) {
-		a.csID = csID
+		a.ctID = ctID
 	}
 }
 
 // WithResourceGroup is a [DiscoveryOption] that scopes the discovery to a specific resource group.
 func WithResourceGroup(rg string) DiscoveryOption {
-	return func(a *azureDiscovery) {
-		a.rg = &rg
+	return func(d *azureDiscovery) {
+		d.rg = &rg
 	}
 }
 
@@ -131,7 +128,7 @@ type azureDiscovery struct {
 	clientOptions       arm.ClientOptions
 	discovererComponent string
 	clients             clients
-	csID                string
+	ctID                string
 	backupMap           map[string]*backup
 	defenderProperties  map[string]*defenderProperties
 }
@@ -189,7 +186,7 @@ type clients struct {
 
 func NewAzureDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureDiscovery{
-		csID:               discovery.DefaultCloudServiceID,
+		ctID:               config.DefaultCertificationTargetID,
 		backupMap:          make(map[string]*backup),
 		defenderProperties: make(map[string]*defenderProperties),
 	}
@@ -313,21 +310,21 @@ func (d *azureDiscovery) List() (list []ontology.IsResource, err error) {
 	return list, nil
 }
 
-func (a *azureDiscovery) CloudServiceID() string {
-	return a.csID
+func (a *azureDiscovery) CertificationTargetID() string {
+	return a.ctID
 }
 
-func (a *azureDiscovery) authorize() (err error) {
-	if a.isAuthorized {
+func (d *azureDiscovery) authorize() (err error) {
+	if d.isAuthorized {
 		return
 	}
 
-	if a.cred == nil {
+	if d.cred == nil {
 		return ErrNoCredentialsConfigured
 	}
 
 	// Create new subscriptions client
-	subClient, err := armsubscription.NewSubscriptionsClient(a.cred, &a.clientOptions)
+	subClient, err := armsubscription.NewSubscriptionsClient(d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get new subscription client: %w", err)
 		return err
@@ -353,11 +350,11 @@ func (a *azureDiscovery) authorize() (err error) {
 	}
 
 	// get first subscription
-	a.sub = subList[0]
+	d.sub = subList[0]
 
-	log.Infof("Azure %s discoverer uses %s as subscription", a.discovererComponent, *a.sub.SubscriptionID)
+	log.Infof("Azure %s discoverer uses %s as subscription", d.discovererComponent, *d.sub.SubscriptionID)
 
-	a.isAuthorized = true
+	d.isAuthorized = true
 
 	return nil
 }

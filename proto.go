@@ -28,14 +28,14 @@
 package clouditor
 
 // Run owl2proto to generate the ontology proto file. The tools needs as arguments the following:
+// - root-resource-name from the owl file
 // - owl file in the owx format
-// - header file
-// - root resource name from the owl file
-// - output path for the proto file (optional, default is "api/ontology.proto")
-//go:generate owl2proto internal/input/urn_webprotege_ontology_e4316a28-d966-4499-bd93-6be721055117.owx internal/input/clouditor_header.proto http://graph.clouditor.io/classes/BaseResource api/ontology/ontology.proto
+// - header-file
+// - output-path for the proto file (optional, default is "api/ontology.proto")
+//go:generate owl2proto generate-proto --root-resource-name=cl:BaseResource internal/ontology/urn_webprotege_ontology_e4316a28-d966-4499-bd93-6be721055117.owx --header-file=internal/ontology/clouditor_header.proto --output-path=api/ontology/ontology.proto --full-semantic-mode=false --deterministic-field-numbers=true
 //go:generate buf format -w
-//go:generate buf generate --exclude-path="internal/input/clouditor_header.proto"
-//go:generate buf generate --exclude-path="internal/input/clouditor_header.proto" --template buf.gotag.gen.yaml
+//go:generate buf generate --exclude-path="internal/ontology/clouditor_header.proto"
+//go:generate buf generate --exclude-path="internal/ontology/clouditor_header.proto" --template buf.gotag.gen.yaml
 //go:generate buf generate --template buf.openapi.gen.yaml --path api/assessment -o openapi/assessment
 //go:generate buf generate --template buf.openapi.gen.yaml --path api/evaluation -o openapi/evaluation
 //go:generate buf generate --template buf.openapi.gen.yaml --path api/discovery -o openapi/discovery

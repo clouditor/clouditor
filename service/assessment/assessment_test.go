@@ -49,6 +49,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/prototest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/evidencetest"
+	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/policies"
 	"clouditor.io/clouditor/v2/service"
 
@@ -83,7 +84,7 @@ func TestMain(m *testing.M) {
 // TestNewService is a simply test for NewService
 func TestNewService(t *testing.T) {
 	type args struct {
-		opts []service.Option[Service]
+		opts []service.Option[*Service]
 	}
 	tests := []struct {
 		name string
@@ -93,7 +94,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer created with option rego package name",
 			args: args{
-				opts: []service.Option[Service]{
+				opts: []service.Option[*Service]{
 					WithRegoPackageName("testPkg"),
 				},
 			},
@@ -104,7 +105,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer created with option authorizer",
 			args: args{
-				opts: []service.Option[Service]{
+				opts: []service.Option[*Service]{
 					WithAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{})),
 				},
 			},
@@ -115,7 +116,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer created with options",
 			args: args{
-				opts: []service.Option[Service]{
+				opts: []service.Option[*Service]{
 					WithEvidenceStoreAddress("localhost:9091"),
 					WithOrchestratorAddress("localhost:9092"),
 				},
@@ -128,7 +129,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer without EvidenceStore",
 			args: args{
-				opts: []service.Option[Service]{
+				opts: []service.Option[*Service]{
 					WithoutEvidenceStore(),
 				},
 			},
@@ -139,7 +140,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer with oauth2 authorizer",
 			args: args{
-				opts: []service.Option[Service]{
+				opts: []service.Option[*Service]{
 					WithOAuth2Authorizer(&clientcredentials.Config{ClientID: "client"}),
 				},
 			},
@@ -150,7 +151,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer with authorization strategy",
 			args: args{
-				opts: []service.Option[Service]{
+				opts: []service.Option[*Service]{
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(true)),
 				},
 			},
@@ -172,9 +173,10 @@ func TestNewService(t *testing.T) {
 // TestAssessEvidence tests AssessEvidence
 func TestService_AssessEvidence(t *testing.T) {
 	type fields struct {
-		authz         service.AuthorizationStrategy
-		evidenceStore *api.RPCConnection[evidence.EvidenceStoreClient]
-		orchestrator  *api.RPCConnection[orchestrator.OrchestratorClient]
+		authz               service.AuthorizationStrategy
+		evidenceStore       *api.RPCConnection[evidence.EvidenceStoreClient]
+		orchestrator        *api.RPCConnection[orchestrator.OrchestratorClient]
+		evidenceResourceMap map[string]*evidence.Evidence
 	}
 	type args struct {
 		in0      context.Context
@@ -205,14 +207,14 @@ func TestService_AssessEvidence(t *testing.T) {
 			},
 			wantResp: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "evidence.id: value must be a valid UUID")
+				return assert.ErrorContains(t, err, "evidence.id: value is empty, which is not a valid UUID")
 			},
 		},
 		{
-			name: "Assess resource without id",
+			name: "Assess evidence without id",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 			},
 			args: args{
 				in0: context.TODO(),
@@ -224,22 +226,22 @@ func TestService_AssessEvidence(t *testing.T) {
 			},
 			wantResp: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "evidence.id: value must be a valid UUID")
+				return assert.ErrorContains(t, err, "evidence.id: value is empty, which is not a valid UUID")
 			},
 		},
 		{
 			name: "Assess resource without tool id",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 			},
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					Timestamp:      timestamppb.Now(),
-					CloudServiceId: testdata.MockCloudServiceID1,
-					Resource:       prototest.NewAny(t, &ontology.VirtualMachine{}),
+					Id:                    testdata.MockEvidenceID1,
+					Timestamp:             timestamppb.Now(),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					Resource:              prototest.NewAny(t, &ontology.VirtualMachine{}),
 				},
 			},
 			wantResp: nil,
@@ -250,16 +252,16 @@ func TestService_AssessEvidence(t *testing.T) {
 		{
 			name: "Assess resource without timestamp",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 			},
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					ToolId:         testdata.MockEvidenceToolID1,
-					CloudServiceId: testdata.MockCloudServiceID1,
-					Resource:       prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					Resource:              prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
 				},
 			},
 			wantResp: nil,
@@ -270,9 +272,10 @@ func TestService_AssessEvidence(t *testing.T) {
 		{
 			name: "Assess resource",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
-				authz:         servicetest.NewAuthorizationStrategy(true),
+				evidenceStore:       api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:        api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				authz:               servicetest.NewAuthorizationStrategy(true),
+				evidenceResourceMap: make(map[string]*evidence.Evidence),
 			},
 			args: args{
 				in0: context.TODO(),
@@ -284,15 +287,17 @@ func TestService_AssessEvidence(t *testing.T) {
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
 					}),
-					CloudServiceId: testdata.MockCloudServiceID1},
+					CertificationTargetId: testdata.MockCertificationTargetID1},
 			},
-			wantResp: &assessment.AssessEvidenceResponse{},
-			wantErr:  assert.NoError,
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_ASSESSED,
+			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "Assess resource of wrong could service",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID2),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID2),
 			},
 			args: args{
 				in0: context.TODO(),
@@ -304,7 +309,7 @@ func TestService_AssessEvidence(t *testing.T) {
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
 					}),
-					CloudServiceId: testdata.MockCloudServiceID1},
+					CertificationTargetId: testdata.MockCertificationTargetID1},
 			},
 			wantResp: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -314,18 +319,19 @@ func TestService_AssessEvidence(t *testing.T) {
 		{
 			name: "Assess resource without resource id",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
-				authz:         servicetest.NewAuthorizationStrategy(true),
+				evidenceStore:       api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:        api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				authz:               servicetest.NewAuthorizationStrategy(true),
+				evidenceResourceMap: make(map[string]*evidence.Evidence),
 			},
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					ToolId:         testdata.MockEvidenceToolID1,
-					Timestamp:      timestamppb.Now(),
-					Resource:       prototest.NewAny(t, &ontology.VirtualMachine{}),
-					CloudServiceId: testdata.MockCloudServiceID1,
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					Timestamp:             timestamppb.Now(),
+					Resource:              prototest.NewAny(t, &ontology.VirtualMachine{}),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 				},
 			},
 			wantResp: nil,
@@ -336,17 +342,18 @@ func TestService_AssessEvidence(t *testing.T) {
 		{
 			name: "No RPC connections",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(connectionRefusedDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(connectionRefusedDialer)),
-				authz:         servicetest.NewAuthorizationStrategy(true),
+				evidenceStore:       api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(connectionRefusedDialer)),
+				orchestrator:        api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(connectionRefusedDialer)),
+				authz:               servicetest.NewAuthorizationStrategy(true),
+				evidenceResourceMap: make(map[string]*evidence.Evidence),
 			},
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					ToolId:         testdata.MockEvidenceToolID1,
-					Timestamp:      timestamppb.Now(),
-					CloudServiceId: testdata.MockCloudServiceID1,
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					Timestamp:             timestamppb.Now(),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
@@ -358,6 +365,67 @@ func TestService_AssessEvidence(t *testing.T) {
 				return assert.ErrorContains(t, err, "connection refused")
 			},
 		},
+		{
+			name: "Assess resource and wait existing related resources is already there",
+			fields: fields{
+				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				authz:         servicetest.NewAuthorizationStrategy(true),
+				evidenceResourceMap: map[string]*evidence.Evidence{
+					"my-other-resource-id": {
+						Id: testdata.MockEvidenceID2,
+						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+							Id: testdata.MockResourceID2,
+						}),
+					},
+				},
+			},
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					Timestamp:             timestamppb.Now(),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+						Id:   testdata.MockResourceID1,
+						Name: testdata.MockResourceName1,
+					}),
+					ExperimentalRelatedResourceIds: []string{"my-other-resource-id"},
+				},
+			},
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_ASSESSED,
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Assess resource and wait existing related resources is not there",
+			fields: fields{
+				evidenceStore:       api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:        api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				authz:               servicetest.NewAuthorizationStrategy(true),
+				evidenceResourceMap: make(map[string]*evidence.Evidence),
+			},
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					Timestamp:             timestamppb.Now(),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+						Id:   testdata.MockResourceID1,
+						Name: testdata.MockResourceName1,
+					}),
+					ExperimentalRelatedResourceIds: []string{"my-other-resource-id"},
+				},
+			},
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_WAITING_FOR_RELATED,
+			},
+			wantErr: assert.NoError,
+		},
 	}
 
 	for _, tt := range tests {
@@ -368,15 +436,16 @@ func TestService_AssessEvidence(t *testing.T) {
 				evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 				orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
 				cachedConfigurations: make(map[string]cachedConfiguration),
+				evidenceResourceMap:  tt.fields.evidenceResourceMap,
+				requests:             make(map[string]waitingRequest),
 				pe:                   policies.NewRegoEval(policies.WithPackageName(policies.DefaultRegoPackage)),
 				authz:                tt.fields.authz,
 			}
 			gotResp, err := s.AssessEvidence(tt.args.in0, &assessment.AssessEvidenceRequest{Evidence: tt.args.evidence})
 
 			tt.wantErr(t, err)
-
 			// Check response
-			assert.Empty(t, gotResp)
+			assert.Equal(t, tt.wantResp, gotResp)
 		})
 	}
 }
@@ -390,9 +459,9 @@ func TestService_AssessEvidence(t *testing.T) {
 func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached(t *testing.T) {
 	s := &Service{
 		evidenceStore: api.NewRPCConnection(
-			"bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+			testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
 		orchestrator: api.NewRPCConnection(
-			"bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+			testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 		authz: servicetest.NewAuthorizationStrategy(true),
 		evidenceStoreStreams: api.NewStreamsOf(
 			api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
@@ -400,6 +469,7 @@ func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached
 			api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient,
 				*orchestrator.StoreAssessmentResultRequest](log)),
 		cachedConfigurations: make(map[string]cachedConfiguration),
+		evidenceResourceMap:  make(map[string]*evidence.Evidence),
 		pe:                   policies.NewRegoEval(policies.WithPackageName(policies.DefaultRegoPackage)),
 	}
 	// First assess evidence with a valid VM resource s.t. the cache is created for the combination of resource type and
@@ -421,9 +491,9 @@ func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached
 
 	assert.NoError(t, err)
 	_, err = s.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{
-		Id:             uuid.NewString(),
-		Timestamp:      timestamppb.Now(),
-		CloudServiceId: testdata.MockCloudServiceID1,
+		Id:                    uuid.NewString(),
+		Timestamp:             timestamppb.Now(),
+		CertificationTargetId: testdata.MockCertificationTargetID1,
 		// Make sure both evidences have the same tool id (for caching key)
 		ToolId:   e.ToolId,
 		Raw:      nil,
@@ -456,16 +526,16 @@ func TestService_AssessEvidences(t *testing.T) {
 			args: args{
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             testdata.MockEvidenceID1,
-						Timestamp:      timestamppb.Now(),
-						CloudServiceId: testdata.MockCloudServiceID1,
-						Resource:       prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+						Id:                    testdata.MockEvidenceID1,
+						Timestamp:             timestamppb.Now(),
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						Resource:              prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
 					},
 				}),
 			},
 			wantErr: assert.Nil[error],
 			want: func(t *testing.T, got *assessment.AssessEvidencesResponse) bool {
-				assert.Equal(t, assessment.AssessEvidencesResponse_FAILED, got.Status)
+				assert.Equal(t, assessment.AssessmentStatus_ASSESSMENT_STATUS_FAILED, got.Status)
 				return assert.Contains(t, got.StatusMessage, "evidence.tool_id: value length must be at least 1 characters")
 			},
 		},
@@ -474,17 +544,17 @@ func TestService_AssessEvidences(t *testing.T) {
 			args: args{
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Timestamp:      timestamppb.Now(),
-						ToolId:         testdata.MockEvidenceToolID1,
-						CloudServiceId: testdata.MockCloudServiceID1,
-						Resource:       prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+						Timestamp:             timestamppb.Now(),
+						ToolId:                testdata.MockEvidenceToolID1,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						Resource:              prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
 					},
 				}),
 			},
 			wantErr: assert.Nil[error],
 			want: func(t *testing.T, got *assessment.AssessEvidencesResponse) bool {
-				assert.Equal(t, assessment.AssessEvidencesResponse_FAILED, got.Status)
-				return assert.Contains(t, got.StatusMessage, "evidence.id: value must be a valid UUID")
+				assert.Equal(t, assessment.AssessmentStatus_ASSESSMENT_STATUS_FAILED, got.Status)
+				return assert.Contains(t, got.StatusMessage, "evidence.id: value is empty, which is not a valid UUID")
 			},
 		},
 		{
@@ -497,10 +567,10 @@ func TestService_AssessEvidences(t *testing.T) {
 			args: args{
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             testdata.MockEvidenceID1,
-						Timestamp:      timestamppb.Now(),
-						ToolId:         testdata.MockEvidenceToolID1,
-						CloudServiceId: testdata.MockCloudServiceID1,
+						Id:                    testdata.MockEvidenceID1,
+						Timestamp:             timestamppb.Now(),
+						ToolId:                testdata.MockEvidenceToolID1,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
 						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 							Id:   testdata.MockResourceID1,
 							Name: testdata.MockResourceName1,
@@ -510,7 +580,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			},
 			wantErr: assert.Nil[error],
 			want: func(t *testing.T, got *assessment.AssessEvidencesResponse) bool {
-				assert.Equal(t, assessment.AssessEvidencesResponse_ASSESSED, got.Status)
+				assert.Equal(t, assessment.AssessmentStatus_ASSESSMENT_STATUS_ASSESSED, got.Status)
 				return assert.Empty(t, got.StatusMessage)
 			},
 		},
@@ -522,10 +592,10 @@ func TestService_AssessEvidences(t *testing.T) {
 			args: args{
 				streamToClientWithSendErr: createMockAssessmentServerStreamWithSendErr(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Timestamp:      timestamppb.Now(),
-						ToolId:         testdata.MockEvidenceToolID1,
-						CloudServiceId: testdata.MockCloudServiceID1,
-						Resource:       prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+						Timestamp:             timestamppb.Now(),
+						ToolId:                testdata.MockEvidenceToolID1,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						Resource:              prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
 					},
 				}),
 			},
@@ -542,10 +612,10 @@ func TestService_AssessEvidences(t *testing.T) {
 			args: args{
 				streamToServerWithRecvErr: createMockAssessmentServerStreamWithRecvErr(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Timestamp:      timestamppb.Now(),
-						ToolId:         testdata.MockEvidenceToolID1,
-						CloudServiceId: testdata.MockCloudServiceID1,
-						Resource:       prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+						Timestamp:             timestamppb.Now(),
+						ToolId:                testdata.MockEvidenceToolID1,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						Resource:              prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
 					},
 				}),
 			},
@@ -565,9 +635,10 @@ func TestService_AssessEvidences(t *testing.T) {
 				resultHooks:          tt.fields.ResultHooks,
 				cachedConfigurations: make(map[string]cachedConfiguration),
 				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
-				evidenceStore:        api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:         api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore:        api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:         api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 				orchestratorStreams:  tt.fields.orchestratorStreams,
+				evidenceResourceMap:  make(map[string]*evidence.Evidence),
 				pe:                   policies.NewRegoEval(),
 				authz:                tt.fields.authz,
 			}
@@ -625,10 +696,10 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 				in0: context.TODO(),
 				evidence: &assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             testdata.MockEvidenceID1,
-						ToolId:         testdata.MockEvidenceToolID1,
-						Timestamp:      timestamppb.Now(),
-						CloudServiceId: testdata.MockCloudServiceID1,
+						Id:                    testdata.MockEvidenceID1,
+						ToolId:                testdata.MockEvidenceToolID1,
+						Timestamp:             timestamppb.Now(),
+						CertificationTargetId: testdata.MockCertificationTargetID1,
 						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 							Id:   testdata.MockResourceID1,
 							Name: testdata.MockResourceName1,
@@ -645,7 +716,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 							MalwareProtection: &ontology.MalwareProtection{
 								Enabled:              true,
 								NumberOfThreatsFound: 5,
-								DaysSinceActive:      durationpb.New(time.Hour * 24 * 20),
+								DurationSinceActive:  durationpb.New(time.Hour * 24 * 20),
 								ApplicationLogging: &ontology.ApplicationLogging{
 									Enabled:           true,
 									LoggingServiceIds: []string{"SomeAnalyticsService?"},
@@ -656,15 +727,20 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 
 				resultHooks: []assessment.ResultHookFunc{firstHookFunction, secondHookFunction},
 			},
-			wantErr:  assert.Nil[error],
-			wantResp: &assessment.AssessEvidenceResponse{},
+			wantErr: assert.Nil[error],
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_ASSESSED,
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			hookCallCounter = 0
-			s := NewService(WithEvidenceStoreAddress("", grpc.WithContextDialer(bufConnDialer)), WithOrchestratorAddress("", grpc.WithContextDialer(bufConnDialer)))
+			s := NewService(
+				WithEvidenceStoreAddress(testdata.MockGRPCTarget, grpc.WithContextDialer(bufConnDialer)),
+				WithOrchestratorAddress(testdata.MockGRPCTarget, grpc.WithContextDialer(bufConnDialer)),
+			)
 
 			for i, hookFunction := range tt.args.resultHooks {
 				s.RegisterAssessmentResultHook(hookFunction)
@@ -832,6 +908,7 @@ func TestService_handleEvidence(t *testing.T) {
 	}
 	type args struct {
 		evidence *evidence.Evidence
+		related  map[string]ontology.IsResource
 	}
 	tests := []struct {
 		name    string
@@ -841,17 +918,54 @@ func TestService_handleEvidence(t *testing.T) {
 		wantErr assert.WantErr
 	}{
 		{
-			name: "correct evidence",
+			name: "correct evidence: using metrics which returns comparison results",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 			},
 			args: args{
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					ToolId:         testdata.MockEvidenceToolID1,
-					Timestamp:      timestamppb.Now(),
-					CloudServiceId: testdata.MockCloudServiceID1,
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					Timestamp:             timestamppb.Now(),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					Resource: prototest.NewAny(t, &ontology.Application{
+						Id:   "Application",
+						Name: "Application",
+						Functionalities: []*ontology.Functionality{
+							{
+								Type: &ontology.Functionality_CryptographicHash{
+									CryptographicHash: &ontology.CryptographicHash{
+										Algorithm: "md5",
+										UsesSalt:  false,
+									},
+								},
+							},
+						},
+					}),
+				},
+			},
+			want: func(t *testing.T, got []*assessment.AssessmentResult) bool {
+				for _, result := range got {
+					err := api.Validate(result)
+					assert.NoError(t, err)
+				}
+				return assert.Equal(t, 5, len(got))
+			},
+			wantErr: assert.Nil[error],
+		},
+		{
+			name: "correct evidence: using metrics which do not return comparison results",
+			fields: fields{
+				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+			},
+			args: args{
+				evidence: &evidence.Evidence{
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					Timestamp:             timestamppb.Now(),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
@@ -874,16 +988,16 @@ func TestService_handleEvidence(t *testing.T) {
 		{
 			name: "broken Any message",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 			},
 			args: args{
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					ToolId:         testdata.MockEvidenceToolID1,
-					Timestamp:      timestamppb.Now(),
-					CloudServiceId: testdata.MockCloudServiceID1,
-					Resource:       &anypb.Any{TypeUrl: "does-not-exist"},
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					Timestamp:             timestamppb.Now(),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					Resource:              &anypb.Any{TypeUrl: "does-not-exist"},
 				},
 			},
 			want: assert.Nil[[]*assessment.AssessmentResult],
@@ -894,16 +1008,16 @@ func TestService_handleEvidence(t *testing.T) {
 		{
 			name: "not an ontology resource",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 			},
 			args: args{
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					ToolId:         testdata.MockEvidenceToolID1,
-					Timestamp:      timestamppb.Now(),
-					CloudServiceId: testdata.MockCloudServiceID1,
-					Resource:       prototest.NewAny(t, &emptypb.Empty{}),
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					Timestamp:             timestamppb.Now(),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					Resource:              prototest.NewAny(t, &emptypb.Empty{}),
 				},
 			},
 			want: assert.Nil[[]*assessment.AssessmentResult],
@@ -914,15 +1028,15 @@ func TestService_handleEvidence(t *testing.T) {
 		{
 			name: "evidence store stream error",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(connectionRefusedDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(connectionRefusedDialer)),
+				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 			},
 			args: args{
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					ToolId:         testdata.MockEvidenceToolID1,
-					Timestamp:      timestamppb.Now(),
-					CloudServiceId: testdata.MockCloudServiceID1,
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					Timestamp:             timestamppb.Now(),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
@@ -954,7 +1068,7 @@ func TestService_handleEvidence(t *testing.T) {
 				authz:                tt.fields.authz,
 			}
 
-			results, err := s.handleEvidence(context.Background(), tt.args.evidence)
+			results, err := s.handleEvidence(context.Background(), tt.args.evidence, tt.args.related)
 
 			tt.wantErr(t, err)
 			tt.want(t, results)
@@ -964,7 +1078,7 @@ func TestService_handleEvidence(t *testing.T) {
 
 func TestService_initOrchestratorStoreStream(t *testing.T) {
 	type fields struct {
-		opts []service.Option[Service]
+		opts []service.Option[*Service]
 	}
 	type args struct {
 		url string
@@ -982,7 +1096,7 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 				url: "localhost:1",
 			},
 			fields: fields{
-				opts: []service.Option[Service]{
+				opts: []service.Option[*Service]{
 					WithOrchestratorAddress("localhost:1"),
 				},
 			},
@@ -995,11 +1109,11 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 		{
 			name: "Authenticated RPC connection with invalid user",
 			args: args{
-				url: "bufnet",
+				url: testdata.MockGRPCTarget,
 			},
 			fields: fields{
-				opts: []service.Option[Service]{
-					WithOrchestratorAddress("bufnet", grpc.WithContextDialer(bufConnDialer)),
+				opts: []service.Option[*Service]{
+					WithOrchestratorAddress(testdata.MockGRPCTarget, grpc.WithContextDialer(bufConnDialer)),
 					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
 			},
@@ -1079,7 +1193,7 @@ type eventRecorder struct {
 	done  bool
 }
 
-func (*eventRecorder) Eval(_ *evidence.Evidence, _ ontology.IsResource, _ policies.MetricsSource) (data []*policies.Result, err error) {
+func (*eventRecorder) Eval(_ *evidence.Evidence, _ ontology.IsResource, _ map[string]ontology.IsResource, _ policies.MetricsSource) (data []*policies.CombinedResult, err error) {
 	return nil, nil
 }
 
@@ -1108,7 +1222,7 @@ func TestService_MetricImplementation(t *testing.T) {
 	}
 	type args struct {
 		lang   assessment.MetricImplementation_Language
-		metric string
+		metric *assessment.Metric
 	}
 	tests := []struct {
 		name    string
@@ -1146,6 +1260,28 @@ func TestService_MetricImplementation(t *testing.T) {
 
 			tt.wantErr(t, err)
 			tt.want(t, gotImpl)
+		})
+	}
+}
+
+func TestDefaultServiceSpec(t *testing.T) {
+	tests := []struct {
+		name string
+		want assert.Want[launcher.ServiceSpec]
+	}{
+		{
+			name: "Happy path",
+			want: func(t *testing.T, got launcher.ServiceSpec) bool {
+				return assert.NotNil(t, got)
+
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := DefaultServiceSpec()
+
+			tt.want(t, got)
 		})
 	}
 }

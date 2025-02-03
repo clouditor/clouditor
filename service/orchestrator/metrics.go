@@ -112,14 +112,14 @@ func prepareMetric(m *assessment.Metric) (err error) {
 	)
 
 	// Load the Rego file
-	file := fmt.Sprintf("policies/bundles/%s/metric.rego", m.Id)
+	file := fmt.Sprintf("policies/bundles/%s/%s/metric.rego", m.CategoryID(), m.Id)
 	m.Implementation, err = loadMetricImplementation(m.Id, file)
 	if err != nil {
 		return fmt.Errorf("could not load metric implementation: %w", err)
 	}
 
 	// Look for the data.json to include default metric configurations
-	fileName := fmt.Sprintf("policies/bundles/%s/data.json", m.Id)
+	fileName := fmt.Sprintf("policies/bundles/%s/%s/data.json", m.CategoryID(), m.Id)
 
 	// Load the default configuration file
 	b, err := os.ReadFile(fileName)
@@ -396,25 +396,25 @@ func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrato
 		return nil, err
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}
 
 	res = new(assessment.MetricConfiguration)
 
-	err = svc.storage.Get(res, gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", req.CloudServiceId, req.MetricId)
+	err = svc.storage.Get(res, gorm.WithoutPreload(), "certification_target_id = ? AND metric_id = ?", req.CertificationTargetId, req.MetricId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		// Otherwise, fall back to our default configuration
 		if config, ok := defaultMetricConfigurations[req.MetricId]; ok {
-			// Copy the metric configuration and set the cloud service id
+			// Copy the metric configuration and set the certification target id
 			newConfig := &assessment.MetricConfiguration{
-				Operator:       config.GetOperator(),
-				TargetValue:    config.GetTargetValue(),
-				IsDefault:      config.GetIsDefault(),
-				UpdatedAt:      config.GetUpdatedAt(),
-				MetricId:       config.GetMetricId(),
-				CloudServiceId: req.GetCloudServiceId(),
+				Operator:              config.GetOperator(),
+				TargetValue:           config.GetTargetValue(),
+				IsDefault:             config.GetIsDefault(),
+				UpdatedAt:             config.GetUpdatedAt(),
+				MetricId:              config.GetMetricId(),
+				CertificationTargetId: req.GetCertificationTargetId(),
 			}
 
 			return newConfig, nil
@@ -436,7 +436,7 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 		return nil, err
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -445,7 +445,7 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 	req.Configuration.UpdatedAt = timestamppb.Now()
 	req.Configuration.IsDefault = false
 
-	err = svc.storage.Save(&req.Configuration, "metric_id = ? AND cloud_service_id = ?", req.GetMetricId(), req.GetCloudServiceId())
+	err = svc.storage.Save(&req.Configuration, "metric_id = ? AND certification_target_id = ?", req.GetMetricId(), req.GetCertificationTargetId())
 	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
 		return nil, status.Errorf(codes.NotFound, "metric or service does not exist")
 	} else if err != nil {
@@ -455,9 +455,9 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 	// Notify event listeners
 	go func() {
 		svc.events <- &orchestrator.MetricChangeEvent{
-			Type:           orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED,
-			CloudServiceId: req.CloudServiceId,
-			MetricId:       req.MetricId,
+			Type:                  orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED,
+			CertificationTargetId: req.CertificationTargetId,
+			MetricId:              req.MetricId,
 		}
 	}()
 
@@ -470,7 +470,7 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 }
 
 // ListMetricConfigurations retrieves a list of MetricConfiguration objects for a particular target
-// cloud service specified in req.
+// certification target specified in req.
 //
 // The list MUST include a configuration for each known metric. If the user did not specify a custom
 // configuration for a particular metric within the service, the default metric configuration is
@@ -482,7 +482,7 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 		return nil, err
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -499,7 +499,7 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 
 	// TODO(oxisto): This is not very efficient, we should do this once at startup so that we can just return the map
 	for _, metric := range metrics {
-		config, err := svc.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{CloudServiceId: req.CloudServiceId, MetricId: metric.Id})
+		config, err := svc.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{CertificationTargetId: req.CertificationTargetId, MetricId: metric.Id})
 		if err == nil {
 			response.Configurations[metric.Id] = config
 		}

@@ -37,7 +37,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/prototest"
 	"clouditor.io/clouditor/v2/persistence"
-
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -52,6 +51,7 @@ func Test_regoEval_Eval(t *testing.T) {
 	}
 	type args struct {
 		resource   ontology.IsResource
+		related    map[string]ontology.IsResource
 		evidenceID string
 		src        MetricsSource
 	}
@@ -67,7 +67,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			name: "ObjectStorage: Compliant Case",
 			fields: fields{
 				qc:      newQueryCache(),
-				mrtc:    &metricsCache{m: make(map[string][]string)},
+				mrtc:    &metricsCache{m: make(map[string][]*assessment.Metric)},
 				storage: testutil.NewInMemoryStorage(t),
 				pkg:     DefaultRegoPackage,
 			},
@@ -102,7 +102,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			name: "ObjectStorage: Non-Compliant Case with no Encryption at rest",
 			fields: fields{
 				qc:      newQueryCache(),
-				mrtc:    &metricsCache{m: make(map[string][]string)},
+				mrtc:    &metricsCache{m: make(map[string][]*assessment.Metric)},
 				storage: testutil.NewInMemoryStorage(t),
 				pkg:     DefaultRegoPackage,
 			},
@@ -137,7 +137,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			name: "ObjectStorage: Non-Compliant Case 2 with no customer managed key",
 			fields: fields{
 				qc:      newQueryCache(),
-				mrtc:    &metricsCache{m: make(map[string][]string)},
+				mrtc:    &metricsCache{m: make(map[string][]*assessment.Metric)},
 				storage: testutil.NewInMemoryStorage(t),
 				pkg:     DefaultRegoPackage,
 			},
@@ -173,7 +173,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			name: "VM: Compliant Case",
 			fields: fields{
 				qc:      newQueryCache(),
-				mrtc:    &metricsCache{m: make(map[string][]string)},
+				mrtc:    &metricsCache{m: make(map[string][]*assessment.Metric)},
 				storage: testutil.NewInMemoryStorage(t),
 				pkg:     DefaultRegoPackage,
 			},
@@ -198,7 +198,7 @@ func Test_regoEval_Eval(t *testing.T) {
 					},
 					MalwareProtection: &ontology.MalwareProtection{
 						Enabled:              true,
-						DaysSinceActive:      durationpb.New(time.Hour * 24 * 5),
+						DurationSinceActive:  durationpb.New(time.Hour * 24 * 5),
 						NumberOfThreatsFound: 5,
 						ApplicationLogging: &ontology.ApplicationLogging{
 							Enabled:           true,
@@ -230,7 +230,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			name: "VM: Non-Compliant Case",
 			fields: fields{
 				qc:      newQueryCache(),
-				mrtc:    &metricsCache{m: make(map[string][]string)},
+				mrtc:    &metricsCache{m: make(map[string][]*assessment.Metric)},
 				storage: testutil.NewInMemoryStorage(t),
 				pkg:     DefaultRegoPackage,
 			},
@@ -267,6 +267,129 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			wantErr: assert.Nil[error],
 		},
+		{
+			name: "VM: Related Evidence: non-compliant VMDiskEncryptionEnabled",
+			fields: fields{
+				qc:      newQueryCache(),
+				mrtc:    &metricsCache{m: make(map[string][]*assessment.Metric)},
+				storage: testutil.NewInMemoryStorage(t),
+				pkg:     DefaultRegoPackage,
+			},
+			args: args{
+				resource: &ontology.VirtualMachine{
+					Id:              mockVM2ResourceID,
+					BlockStorageIds: []string{mockBlockStorage1ID},
+				},
+				evidenceID: mockVM1EvidenceID,
+				src:        &mockMetricsSource{t: t},
+				related: map[string]ontology.IsResource{
+					mockBlockStorage1ID: &ontology.BlockStorage{
+						Id: mockBlockStorage1ID,
+						AtRestEncryption: &ontology.AtRestEncryption{
+							Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
+								CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
+									Enabled:   false,
+									Algorithm: "AES256",
+								},
+							},
+						},
+					},
+				},
+			},
+			compliant: map[string]bool{
+				"AutomaticUpdatesEnabled":             false,
+				"AutomaticUpdatesInterval":            false,
+				"AutomaticUpdatesSecurityOnly":        false,
+				"BootLoggingEnabled":                  false,
+				"BootLoggingOutput":                   false,
+				"BootLoggingRetention":                false,
+				"MalwareProtectionEnabled":            false,
+				"OSLoggingEnabled":                    false,
+				"OSLoggingOutput":                     false,
+				"OSLoggingRetention":                  false,
+				"ResourceInventory":                   true,
+				"VirtualMachineDiskEncryptionEnabled": false,
+			},
+			wantErr: assert.Nil[error],
+		},
+		{
+			name: "VM: Related Evidence",
+			fields: fields{
+				qc:      newQueryCache(),
+				mrtc:    &metricsCache{m: make(map[string][]*assessment.Metric)},
+				storage: testutil.NewInMemoryStorage(t),
+				pkg:     DefaultRegoPackage,
+			},
+			args: args{
+				resource: &ontology.VirtualMachine{
+					Id:              mockVM2ResourceID,
+					BlockStorageIds: []string{mockBlockStorage1ID},
+				},
+				evidenceID: mockVM1EvidenceID,
+				src:        &mockMetricsSource{t: t},
+				related: map[string]ontology.IsResource{
+					mockBlockStorage1ID: &ontology.BlockStorage{
+						Id: mockBlockStorage1ID,
+						AtRestEncryption: &ontology.AtRestEncryption{
+							Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
+								CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
+									Enabled:   true,
+									Algorithm: "AES256",
+								},
+							},
+						},
+					},
+				},
+			},
+			compliant: map[string]bool{
+				"AutomaticUpdatesEnabled":             false,
+				"AutomaticUpdatesInterval":            false,
+				"AutomaticUpdatesSecurityOnly":        false,
+				"BootLoggingEnabled":                  false,
+				"BootLoggingOutput":                   false,
+				"BootLoggingRetention":                false,
+				"MalwareProtectionEnabled":            false,
+				"OSLoggingEnabled":                    false,
+				"OSLoggingOutput":                     false,
+				"OSLoggingRetention":                  false,
+				"ResourceInventory":                   true,
+				"VirtualMachineDiskEncryptionEnabled": true,
+			},
+			wantErr: assert.Nil[error],
+		},
+		{
+			name: "Application: StrongCryptographicHash",
+			fields: fields{
+				qc:      newQueryCache(),
+				mrtc:    &metricsCache{m: make(map[string][]*assessment.Metric)},
+				storage: testutil.NewInMemoryStorage(t),
+				pkg:     DefaultRegoPackage,
+			},
+			args: args{
+				resource: &ontology.Application{
+					Id: "app",
+					Functionalities: []*ontology.Functionality{
+						{
+							Type: &ontology.Functionality_CryptographicHash{
+								CryptographicHash: &ontology.CryptographicHash{
+									Algorithm: "MD5",
+								},
+							},
+						},
+					},
+				},
+				evidenceID: mockVM1EvidenceID,
+				src:        &mockMetricsSource{t: t},
+			},
+			compliant: map[string]bool{
+				"AutomaticUpdatesEnabled":      false,
+				"AutomaticUpdatesInterval":     false,
+				"AutomaticUpdatesSecurityOnly": false,
+				"ResourceInventory":            true,
+				"StrongCryptographicHash":      false,
+			},
+			wantErr: assert.Nil[error],
+		},
 	}
 
 	for _, tt := range tests {
@@ -279,7 +402,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			results, err := pe.Eval(&evidence.Evidence{
 				Id:       tt.args.evidenceID,
 				Resource: prototest.NewAny(t, tt.args.resource),
-			}, tt.args.resource, tt.args.src)
+			}, tt.args.resource, tt.args.related, tt.args.src)
 
 			tt.wantErr(t, err)
 
@@ -305,30 +428,33 @@ func Test_regoEval_evalMap(t *testing.T) {
 		pkg  string
 	}
 	type args struct {
-		baseDir   string
-		serviceID string
-		metricID  string
-		m         map[string]interface{}
-		src       MetricsSource
+		baseDir  string
+		targetID string
+		metric   *assessment.Metric
+		m        map[string]interface{}
+		src      MetricsSource
 	}
 	tests := []struct {
 		name       string
 		fields     fields
 		args       args
-		wantResult assert.Want[*Result]
+		wantResult assert.Want[*CombinedResult]
 		wantErr    assert.WantErr
 	}{
 		{
 			name: "default metric configuration",
 			fields: fields{
 				qc:   newQueryCache(),
-				mrtc: &metricsCache{m: make(map[string][]string)},
+				mrtc: &metricsCache{m: make(map[string][]*assessment.Metric)},
 				pkg:  DefaultRegoPackage,
 			},
 			args: args{
-				serviceID: testdata.MockCloudServiceID1,
-				metricID:  "AutomaticUpdatesEnabled",
-				baseDir:   ".",
+				targetID: testdata.MockCertificationTargetID1,
+				metric: &assessment.Metric{
+					Id:       "AutomaticUpdatesEnabled",
+					Category: "Endpoint Security",
+				},
+				baseDir: ".",
 				m: map[string]interface{}{
 					"automaticUpdates": map[string]interface{}{
 						"enabled": true,
@@ -336,21 +462,22 @@ func Test_regoEval_evalMap(t *testing.T) {
 				},
 				src: &mockMetricsSource{t: t},
 			},
-			wantResult: func(t *testing.T, got *Result) bool {
-				want := &Result{
+			wantResult: func(t *testing.T, got *CombinedResult) bool {
+				want := &CombinedResult{
 					Applicable:  true,
 					Compliant:   true,
 					TargetValue: true,
 					Operator:    "==",
 					MetricID:    "AutomaticUpdatesEnabled",
 					Config: &assessment.MetricConfiguration{
-						Operator:       "==",
-						TargetValue:    structpb.NewBoolValue(true),
-						IsDefault:      true,
-						UpdatedAt:      nil,
-						MetricId:       "AutomaticUpdatesEnabled",
-						CloudServiceId: testdata.MockCloudServiceID1,
+						Operator:              "==",
+						TargetValue:           structpb.NewBoolValue(true),
+						IsDefault:             true,
+						UpdatedAt:             nil,
+						MetricId:              "AutomaticUpdatesEnabled",
+						CertificationTargetId: testdata.MockCertificationTargetID1,
 					},
+					Message: assessment.DefaultCompliantMessage,
 				}
 
 				return assert.Equal(t, want, got)
@@ -361,13 +488,16 @@ func Test_regoEval_evalMap(t *testing.T) {
 			name: "updated metric configuration",
 			fields: fields{
 				qc:   newQueryCache(),
-				mrtc: &metricsCache{m: make(map[string][]string)},
+				mrtc: &metricsCache{m: make(map[string][]*assessment.Metric)},
 				pkg:  DefaultRegoPackage,
 			},
 			args: args{
-				serviceID: testdata.MockCloudServiceID1,
-				metricID:  "AutomaticUpdatesEnabled",
-				baseDir:   ".",
+				targetID: testdata.MockCertificationTargetID1,
+				metric: &assessment.Metric{
+					Id:       "AutomaticUpdatesEnabled",
+					Category: "Endpoint Security",
+				},
+				baseDir: ".",
 				m: map[string]interface{}{
 					"automaticUpdates": map[string]interface{}{
 						"enabled": true,
@@ -375,21 +505,22 @@ func Test_regoEval_evalMap(t *testing.T) {
 				},
 				src: &updatedMockMetricsSource{mockMetricsSource{t: t}},
 			},
-			wantResult: func(t *testing.T, got *Result) bool {
-				want := &Result{
+			wantResult: func(t *testing.T, got *CombinedResult) bool {
+				want := &CombinedResult{
 					Applicable:  true,
 					Compliant:   false,
 					TargetValue: false,
 					Operator:    "==",
 					MetricID:    "AutomaticUpdatesEnabled",
 					Config: &assessment.MetricConfiguration{
-						Operator:       "==",
-						TargetValue:    structpb.NewBoolValue(false),
-						IsDefault:      false,
-						UpdatedAt:      timestamppb.New(time.Date(2022, 12, 1, 0, 0, 0, 0, time.Local)),
-						MetricId:       "AutomaticUpdatesEnabled",
-						CloudServiceId: testdata.MockCloudServiceID1,
+						Operator:              "==",
+						TargetValue:           structpb.NewBoolValue(false),
+						IsDefault:             false,
+						UpdatedAt:             timestamppb.New(time.Date(2022, 12, 1, 0, 0, 0, 0, time.Local)),
+						MetricId:              "AutomaticUpdatesEnabled",
+						CertificationTargetId: testdata.MockCertificationTargetID1,
 					},
+					Message: assessment.DefaultNonCompliantMessage,
 				}
 
 				return assert.Equal(t, want, got)
@@ -404,10 +535,80 @@ func Test_regoEval_evalMap(t *testing.T) {
 				mrtc: tt.fields.mrtc,
 				pkg:  tt.fields.pkg,
 			}
-			gotResult, err := re.evalMap(tt.args.baseDir, tt.args.serviceID, tt.args.metricID, tt.args.m, tt.args.src)
+			gotResult, err := re.evalMap(tt.args.baseDir, tt.args.targetID, tt.args.metric, tt.args.m, tt.args.src)
 
 			tt.wantErr(t, err)
 			tt.wantResult(t, gotResult)
+		})
+	}
+}
+
+func Test_reencode(t *testing.T) {
+	type args struct {
+		in  any
+		out any
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Happy path: Map to Map",
+			args: args{
+				in:  map[string]string{"key": "value"},
+				out: new(map[string]string),
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: Slice to Slice",
+			args: args{
+				in:  []int{1, 2, 3},
+				out: new([]int),
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: String to String",
+			args: args{
+				in:  "hello",
+				out: new(string),
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Invalid Input (Marshal)",
+			args: args{
+				in:  make(chan int),
+				out: new(map[string]string),
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name: "Invalid Input (Unmarshal)",
+			args: args{
+				in:  42, // Invalid input for unmarshalling into a map[string]string
+				out: new(map[string]string),
+			},
+			wantErr: assert.Error,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var err error
+			switch out := tt.args.out.(type) {
+			case *map[string]string:
+				err = reencode(tt.args.in, out)
+			case *([]int):
+				err = reencode(tt.args.in, out)
+			case *string:
+				err = reencode(tt.args.in, out)
+			default:
+				t.Fatalf("unsupported type: %T", out)
+			}
+
+			tt.wantErr(t, err)
 		})
 	}
 }

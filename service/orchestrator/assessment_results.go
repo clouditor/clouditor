@@ -67,12 +67,12 @@ func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.G
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	// Check if cloud_service_id in assessment_result is within allowed or one can access *all* the cloud services
-	all, allowed = svc.authz.AllowedCloudServices(ctx)
+	// Check if certification_target_id in assessment_result is within allowed or one can access *all* the certification targets
+	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
 
-	// The content of the filtered cloud service ID must be in the list of allowed cloud service IDs,
-	// unless one can access *all* the cloud services.
-	if !all && !slices.Contains(allowed, res.GetCloudServiceId()) {
+	// The content of the filtered certification target ID must be in the list of allowed certification target IDs,
+	// unless one can access *all* the certification targets.
+	if !all && !slices.Contains(allowed, res.GetCertificationTargetId()) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -90,13 +90,13 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 		return nil, err
 	}
 
-	// Retrieve list of allowed cloud service according to our authorization strategy. No need to specify any conditions
-	// to our storage request, if we are allowed to see all cloud services.
-	all, allowed = svc.authz.AllowedCloudServices(ctx)
+	// Retrieve list of allowed certification target according to our authorization strategy. No need to specify any conditions
+	// to our storage request, if we are allowed to see all certification targets.
+	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
 
-	// The content of the filtered cloud service ID must be in the list of allowed cloud service IDs,
-	// unless one can access *all* the cloud services.
-	if !all && req.Filter != nil && req.Filter.CloudServiceId != nil && !slices.Contains(allowed, req.Filter.GetCloudServiceId()) {
+	// The content of the filtered certification target ID must be in the list of allowed certification target IDs,
+	// unless one can access *all* the certification targets.
+	if !all && req.Filter != nil && req.Filter.CertificationTargetId != nil && !slices.Contains(allowed, req.Filter.GetCertificationTargetId()) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -106,14 +106,15 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 	var args []any
 
 	// Filtering the assessment results by
-	// * cloud service ID
+	// * certification target ID
 	// * compliant status
 	// * metric ID
 	// * tool ID
+	// * assessment result ID(s)
 	if req.Filter != nil {
-		if req.Filter.CloudServiceId != nil {
-			query = append(query, "cloud_service_id = ?")
-			args = append(args, req.Filter.GetCloudServiceId())
+		if req.Filter.CertificationTargetId != nil {
+			query = append(query, "certification_target_id = ?")
+			args = append(args, req.Filter.GetCertificationTargetId())
 		}
 		if req.Filter.Compliant != nil {
 			query = append(query, "compliant = ?")
@@ -123,16 +124,20 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 			query = append(query, "metric_id IN ?")
 			args = append(args, req.Filter.GetMetricIds())
 		}
+		if req.Filter.AssessmentResultIds != nil {
+			query = append(query, "id IN ?")
+			args = append(args, req.Filter.GetAssessmentResultIds())
+		}
 		if req.Filter.ToolId != nil {
 			query = append(query, "tool_id = ?")
 			args = append(args, req.Filter.ToolId)
 		}
 	}
 
-	// In any case, we need to make sure that we only select assessment results of cloud services that we have access to
+	// In any case, we need to make sure that we only select assessment results of certification targets that we have access to
 	// (if we do not have access to all)
 	if !all {
-		query = append(query, "cloud_service_id IN ?")
+		query = append(query, "certification_target_id IN ?")
 		args = append(args, allowed)
 	}
 
@@ -178,7 +183,7 @@ func (svc *Service) StoreAssessmentResult(ctx context.Context, req *orchestrator
 		return nil, err
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}

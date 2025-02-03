@@ -2,6 +2,7 @@ package ontology
 
 import (
 	"encoding/json"
+	"google.golang.org/protobuf/reflect/protoreflect"
 	"slices"
 	"strings"
 
@@ -38,24 +39,33 @@ func Related(r IsResource) []Relationship {
 	for i := 0; i < fields.Len(); i++ {
 		field := fields.Get(i)
 
+		// We are only interested in string fields
+		if field.Kind() != protoreflect.StringKind {
+			continue
+		}
+
 		// TODO(oxisto): Can we maybe have a proto option on these fields instead of matching by name?
 		property, found := strings.CutSuffix(string(field.Name()), "_id")
+		if !found {
+			// Try with _ids
+			property, found = strings.CutSuffix(string(field.Name()), "_ids")
+		}
 		if found {
 			v := r.ProtoReflect().Get(field)
-			vv := v.Interface()
-			if vvv, ok := vv.(string); ok {
-				// Make sure, the value is really set
-				if vvv != "" {
+			if field.IsList() {
+				list := v.List()
+				for i := 0; i < list.Len(); i++ {
 					ids = append(ids, Relationship{
-						Property: string(property),
-						Value:    vvv,
+						Property: property,
+						Value:    list.Get(i).String(),
 					})
 				}
-			} else if vvvv, ok := vv.([]string); ok {
-				for _, vvv := range vvvv {
+			} else {
+				s := v.String()
+				if s != "" {
 					ids = append(ids, Relationship{
-						Property: string(property),
-						Value:    vvv,
+						Property: property,
+						Value:    s,
 					})
 				}
 			}
@@ -105,4 +115,30 @@ func ResourceMap(r IsResource) (props map[string]any, err error) {
 	props["type"] = ResourceTypes(r)
 
 	return
+}
+
+func ToPrettyJSON(r IsResource) (s string, err error) {
+	m, err := ResourceMap(r)
+	if err != nil {
+		return "", err
+	}
+
+	b, err := json.MarshalIndent(m, "", "  ")
+	if err != nil {
+		return "", err
+	}
+
+	s = string(b)
+	return
+}
+
+// ResourceIDs return a list of the given resource IDs
+func ResourceIDs(r []IsResource) []string {
+	var a = []string{}
+
+	for _, v := range r {
+		a = append(a, v.GetId())
+	}
+
+	return a
 }

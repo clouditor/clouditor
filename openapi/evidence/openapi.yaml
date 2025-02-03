@@ -41,7 +41,7 @@ paths:
             description: Returns all stored evidences. Part of the public API, also exposed as REST.
             operationId: EvidenceStore_ListEvidences
             parameters:
-                - name: filter.cloudServiceId
+                - name: filter.certificationTargetId
                   in: query
                   schema:
                     type: string
@@ -119,9 +119,9 @@ components:
                     type: string
                     description: time of evidence creation
                     format: date-time
-                cloudServiceId:
+                certificationTargetId:
                     type: string
-                    description: Reference to a service this evidence was gathered from
+                    description: Reference to a certification target (e.g., service, organization) this evidence was gathered from
                 toolId:
                     type: string
                     description: Reference to the tool which provided the evidence
@@ -136,6 +136,16 @@ components:
                     description: |-
                         Semantic representation of the Cloud resource according to our defined
                          ontology
+                experimentalRelatedResourceIds:
+                    type: array
+                    items:
+                        type: string
+                    description: |-
+                        Very experimental property. Use at own risk. This property will be deleted again.
+
+                         Related resource IDs. The assessment will wait until all evidences for related resource have arrived in the
+                         assessment and are recent enough. In the future, this will be replaced with information in the "related" edges in
+                         the resource. For now, this needs to be set manually in the evidence.
             description: An evidence resource
         GoogleProtobufAny:
             type: object

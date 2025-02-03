@@ -1,0 +1,98 @@
+{
+    "authenticity": null,
+    "creationTime": null,
+    "geoLocation": null,
+    "id": "https://127.0.0.1:58107/.well-known/csaf/provider-metadata.jsonservice",
+    "internetAccessibleEndpoint": true,
+    "ips": [],
+    "keyIds": [
+        "https://127.0.0.1:58107/.well-known/csaf/opengpg/1802844772de29c2ad3429e01b6a9c3ec7a68a12.asc"
+    ],
+    "labels": {},
+    "name": "Test Vendor",
+    "ports": [],
+    "raw": "",
+    "redundancies": [],
+    "securityAdvisoryFeeds": [
+        {
+            "securityAdvisoryDocumentIds": [
+                "some-id"
+            ]
+        }
+    ],
+    "serviceMetadataDocumentId": "https://127.0.0.1:58107/.well-known/csaf/provider-metadata.json",
+    "transportEncryption": {
+        "cipherSuites": [],
+        "enabled": true,
+        "enforced": false,
+        "protocol": "",
+        "protocolVersion": 0
+    },
+    "type": [
+        "SecurityAdvisoryService",
+        "NetworkService",
+        "Networking",
+        "Infrastructure",
+        "Resource"
+    ],
+    "usageStatistics": null,
+    "related": {
+        "https://127.0.0.1:58107/.well-known/csaf/provider-metadata.json": {
+            "creationTime": null,
+            "documentChecksums": [],
+            "documentLocation": {
+                "remoteDocumentLocation": {
+                    "authenticity": null,
+                    "path": "https://127.0.0.1:58107/.well-known/csaf/provider-metadata.json",
+                    "transportEncryption": {
+                        "cipherSuites": [],
+                        "enabled": true,
+                        "enforced": false,
+                        "protocol": "",
+                        "protocolVersion": 0
+                    }
+                }
+            },
+            "documentSignatures": [],
+            "filetype": "JSON",
+            "id": "https://127.0.0.1:58107/.well-known/csaf/provider-metadata.json",
+            "labels": {},
+            "name": "provider-metadata.json",
+            "raw": "",
+            "schemaValidation": {
+                "errors": [],
+                "format": "CSAF provider metadata",
+                "schemaUrl": "https://docs.oasis-open.org/csaf/csaf/v2.0/provider_json_schema.json"
+            },
+            "securityFeatures": [],
+            "type": [
+                "ServiceMetadataDocument",
+                "Document",
+                "Resource"
+            ]
+        },
+        "https://127.0.0.1:58521/.well-known/csaf/opengpg/962f0d7ce1220ddfb40345f1524a986590bfb5d3.asc": {
+            "algorithm": "PGP",
+            "creationTime": null,
+            "enabled": false,
+            "expirationDate": null,
+            "geoLocation": null,
+            "id": "https://127.0.0.1:58521/.well-known/csaf/opengpg/962f0d7ce1220ddfb40345f1524a986590bfb5d3.asc",
+            "internetAccessibleEndpoint": false,
+            "isManaged": false,
+            "keySize": 0,
+            "labels": {},
+            "name": "",
+            "notBeforeDate": null,
+            "raw": "",
+            "redundancies": [],
+            "type": [
+                "Key",
+                "Credential",
+                "Infrastructure",
+                "Resource"
+            ],
+            "usageStatistics": null
+        }
+    }
+}

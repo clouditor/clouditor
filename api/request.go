@@ -34,27 +34,27 @@ import (
 // which should be updated or created.
 type PayloadRequest = api.PayloadRequest
 
-// CloudServiceRequest represents any kind of RPC request, that contains a
-// reference to a cloud service.
+// CertificationTargetRequest represents any kind of RPC request, that contains a
+// reference to a certification target.
 //
-// Note: GetCloudServiceId() is already implemented by the generated protobuf
-// code for the following messages because they directly have a cloud_service id
+// Note: GetCertificationTargetId() is already implemented by the generated protobuf
+// code for the following messages because they directly have a certification_target id
 // field:
 //   - orchestrator.RemoveControlFromScopeRequest
 //   - orchestrator.ListControlsInScopeRequest
-//   - orchestrator.GetCloudServiceRequest
-//   - orchestrator.RemoveCloudServiceRequest
+//   - orchestrator.GetCertificationTargetRequest
+//   - orchestrator.RemoveCertificationTargetRequest
 //   - orchestrator.UpdateMetricConfigurationRequest
 //   - orchestrator.GetMetricConfigurationRequest
 //   - orchestrator.ListMetricConfigurationRequest
 //   - orchestrator.MetricChangeEvent
-//   - orchestrator.TargetOfEvaluation
-//   - orchestrator.RemoveTargetOfEvaluationRequest
-//   - orchestrator.GetTargetOfEvaluationRequest
-//   - orchestrator.ListTargetsOfEvaluationRequest
+//   - orchestrator.AuditScope
+//   - orchestrator.RemoveAuditScopeRequest
+//   - orchestrator.GetAuditScopeRequest
+//   - orchestrator.ListAuditScopesRequest
 //   - orchestrator.Certificate
 //
-// All other requests, especially in cases where the cloud service ID is
+// All other requests, especially in cases where the certification target ID is
 // embedded in a sub-field need to explicitly implement this interface in order.
 // This interface is for example used by authorization checks.
-type CloudServiceRequest = api.CloudServiceRequest
+type CertificationTargetRequest = api.CertificationTargetRequest

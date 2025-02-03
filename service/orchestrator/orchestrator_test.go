@@ -38,9 +38,9 @@ import (
 	apiruntime "clouditor.io/clouditor/v2/api/runtime"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
+	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/persistence/inmemory"
 	"clouditor.io/clouditor/v2/service"
-
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -74,7 +74,7 @@ func TestNewService(t *testing.T) {
 	assert.NoError(t, err)
 
 	type args struct {
-		opts []ServiceOption
+		opts []service.Option[*Service]
 	}
 	tests := []struct {
 		name string
@@ -84,7 +84,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "New service with database",
 			args: args{
-				opts: []ServiceOption{WithStorage(myStorage)},
+				opts: []service.Option[*Service]{WithStorage(myStorage)},
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Same(t, myStorage, got.storage)
@@ -93,7 +93,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "New service with catalogs file",
 			args: args{
-				opts: []ServiceOption{WithCatalogsFolder("catalogsFolder.json")},
+				opts: []service.Option[*Service]{WithCatalogsFolder("catalogsFolder.json")},
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Equal(t, "catalogsFolder.json", got.catalogsFolder)
@@ -102,7 +102,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "New service with metrics file",
 			args: args{
-				opts: []ServiceOption{WithMetricsFile("metricsfile.json")},
+				opts: []service.Option[*Service]{WithMetricsFile("metricsfile.json")},
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Equal(t, "metricsfile.json", got.metricsFile)
@@ -111,7 +111,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "New service with authorization strategy",
 			args: args{
-				opts: []ServiceOption{WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{})},
+				opts: []service.Option[*Service]{WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{})},
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Equal[service.AuthorizationStrategy](t, &service.AuthorizationStrategyAllowAll{}, got.authz)
@@ -127,7 +127,7 @@ func TestNewService(t *testing.T) {
 	}
 }
 
-func TestCloudServiceHooks(t *testing.T) {
+func TestCertificationTargetHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
 		wg              sync.WaitGroup
@@ -136,46 +136,46 @@ func TestCloudServiceHooks(t *testing.T) {
 
 	wg.Add(hookCounts)
 
-	firstHookFunction := func(_ context.Context, cloudService *orchestrator.CloudService, err error) {
+	firstHookFunction := func(_ context.Context, CertificationTarget *orchestrator.CertificationTarget, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the firstHookFunction")
 		wg.Done()
 	}
 
-	secondHookFunction := func(_ context.Context, cloudService *orchestrator.CloudService, err error) {
+	secondHookFunction := func(_ context.Context, CertificationTarget *orchestrator.CertificationTarget, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the secondHookFunction")
 		wg.Done()
 	}
 
 	type args struct {
-		in0               context.Context
-		serviceUpdate     *orchestrator.UpdateCloudServiceRequest
-		cloudServiceHooks []orchestrator.CloudServiceHookFunc
+		in0                      context.Context
+		targetUpdate             *orchestrator.UpdateCertificationTargetRequest
+		CertificationTargetHooks []orchestrator.CertificationTargetHookFunc
 	}
 	tests := []struct {
 		name    string
 		args    args
-		wantRes assert.Want[*orchestrator.CloudService]
+		wantRes assert.Want[*orchestrator.CertificationTarget]
 		wantErr assert.WantErr
 	}{
 		{
-			name: "Update Cloud Service",
+			name: "Update Certification Target",
 			args: args{
 				in0: context.TODO(),
-				serviceUpdate: &orchestrator.UpdateCloudServiceRequest{
-					CloudService: &orchestrator.CloudService{
+				targetUpdate: &orchestrator.UpdateCertificationTargetRequest{
+					CertificationTarget: &orchestrator.CertificationTarget{
 						Id:          "00000000-0000-0000-0000-000000000000",
-						Name:        "test service",
-						Description: "test service",
+						Name:        "test target",
+						Description: "test target",
 					},
 				},
-				cloudServiceHooks: []orchestrator.CloudServiceHookFunc{firstHookFunction, secondHookFunction},
+				CertificationTargetHooks: []orchestrator.CertificationTargetHookFunc{firstHookFunction, secondHookFunction},
 			},
 			wantErr: assert.Nil[error],
-			wantRes: func(t *testing.T, got *orchestrator.CloudService) bool {
+			wantRes: func(t *testing.T, got *orchestrator.CertificationTarget) bool {
 				return assert.Equal(t, "00000000-0000-0000-0000-000000000000", got.Id) &&
-					assert.Equal(t, "test service", got.Name) && assert.Equal(t, "test service", got.Description)
+					assert.Equal(t, "test target", got.Name) && assert.Equal(t, "test target", got.Description)
 			},
 		},
 	}
@@ -185,24 +185,24 @@ func TestCloudServiceHooks(t *testing.T) {
 			hookCallCounter = 0
 			s := NewService()
 
-			_, err := s.CreateDefaultTargetCloudService()
+			_, err := s.CreateDefaultCertificationTarget()
 			if err != nil {
-				t.Errorf("CreateCloudService() error = %v", err)
+				t.Errorf("CreateCertificationTarget() error = %v", err)
 			}
 
-			for i, hookFunction := range tt.args.cloudServiceHooks {
-				s.RegisterCloudServiceHook(hookFunction)
+			for i, hookFunction := range tt.args.CertificationTargetHooks {
+				s.RegisterCertificationTargetHook(hookFunction)
 
 				// Check if hook is registered
-				funcName1 := runtime.FuncForPC(reflect.ValueOf(s.cloudServiceHooks[i]).Pointer()).Name()
+				funcName1 := runtime.FuncForPC(reflect.ValueOf(s.CertificationTargetHooks[i]).Pointer()).Name()
 				funcName2 := runtime.FuncForPC(reflect.ValueOf(hookFunction).Pointer()).Name()
 				assert.Equal(t, funcName1, funcName2)
 			}
 
 			// To test the hooks we have to call a function that calls the hook function
-			gotRes, err := s.UpdateCloudService(tt.args.in0, tt.args.serviceUpdate)
+			gotRes, err := s.UpdateCertificationTarget(tt.args.in0, tt.args.targetUpdate)
 
-			// wait for all hooks (2 services * 2 hooks)
+			// wait for all hooks (2 certification targets * 2 hooks)
 			wg.Wait()
 
 			tt.wantErr(t, err)
@@ -240,6 +240,28 @@ func TestService_GetRuntimeInfo(t *testing.T) {
 
 			tt.wantErr(t, err)
 			tt.want(t, gotRes)
+		})
+	}
+}
+
+func TestDefaultServiceSpec(t *testing.T) {
+	tests := []struct {
+		name string
+		want assert.Want[launcher.ServiceSpec]
+	}{
+		{
+			name: "Happy path",
+			want: func(t *testing.T, got launcher.ServiceSpec) bool {
+				return assert.NotNil(t, got)
+
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := DefaultServiceSpec()
+
+			tt.want(t, got)
 		})
 	}
 }

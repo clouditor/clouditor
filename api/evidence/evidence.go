@@ -28,6 +28,8 @@ package evidence
 import (
 	"context"
 
+	"clouditor.io/clouditor/v2/api/ontology"
+
 	"google.golang.org/protobuf/proto"
 )
 
@@ -35,4 +37,47 @@ type EvidenceHookFunc func(ctx context.Context, evidence *Evidence, err error)
 
 func (req *StoreEvidenceRequest) GetPayload() proto.Message {
 	return req.Evidence
+}
+
+func (ev *Evidence) GetOntologyResource() ontology.IsResource {
+	var (
+		m        proto.Message
+		resource ontology.IsResource
+		err      error
+		ok       bool
+	)
+	// TODO: find a smarter way, because now we are unmarshalling the resource twice
+	// Try to extract the resource out of the evidence
+	m, err = ev.Resource.UnmarshalNew()
+	if err != nil {
+		return nil
+	}
+
+	resource, ok = m.(ontology.IsResource)
+	if !ok {
+		return nil
+	}
+
+	return resource
+}
+
+func (ev *Evidence) GetResourceId() string {
+	var (
+		m        proto.Message
+		resource ontology.IsResource
+		err      error
+	)
+	// TODO: find a smarter way, because now we are unmarshalling the resource twice
+	// Try to extract the resource out of the evidence
+	m, err = ev.Resource.UnmarshalNew()
+	if err != nil {
+		return ""
+	}
+
+	resource, ok := m.(ontology.IsResource)
+	if !ok {
+		return ""
+	}
+
+	return resource.GetId()
 }

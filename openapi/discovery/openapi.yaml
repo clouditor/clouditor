@@ -17,7 +17,11 @@ paths:
                   in: query
                   schema:
                     type: string
-                - name: filter.cloudServiceId
+                - name: filter.certificationTargetId
+                  in: query
+                  schema:
+                    type: string
+                - name: filter.toolId
                   in: query
                   schema:
                     type: string
@@ -164,6 +168,11 @@ components:
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
         GraphEdge:
+            required:
+                - id
+                - source
+                - target
+                - type
             type: object
             properties:
                 id:
@@ -175,6 +184,8 @@ components:
                 type:
                     type: string
         ListGraphEdgesResponse:
+            required:
+                - edges
             type: object
             properties:
                 edges:
@@ -184,6 +195,8 @@ components:
                 nextPageToken:
                     type: string
         ListResourcesResponse:
+            required:
+                - results
             type: object
             properties:
                 results:
@@ -193,6 +206,12 @@ components:
                 nextPageToken:
                     type: string
         Resource:
+            required:
+                - id
+                - certificationTargetId
+                - resourceType
+                - toolId
+                - properties
             type: object
             properties:
                 id:
@@ -201,16 +220,19 @@ components:
                         Id contains a unique ID for each resource. This is specific for the cloud
                          provider this resource was gathered for and can for example be a resource
                          URL.
-                cloudServiceId:
+                certificationTargetId:
                     type: string
                     description: |-
-                        CloudServiceId is the UUID for the cloud service to which this resource
+                        CertificationTargetId is the UUID for the certification target to which this resource
                          belongs to.
                 resourceType:
                     type: string
                     description: |-
                         ResourceType contains a comma separated string of resource types according
                          to our ontology.
+                toolId:
+                    type: string
+                    description: Reference to the tool which provided the resource
                 properties:
                     allOf:
                         - $ref: '#/components/schemas/GoogleProtobufAny'
@@ -224,6 +246,8 @@ components:
             type: object
             properties:
                 resourceGroup:
+                    type: string
+                csafDomain:
                     type: string
         StartDiscoveryResponse:
             type: object
@@ -247,6 +271,8 @@ components:
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
         UpdateResourceRequest:
+            required:
+                - resource
             type: object
             properties:
                 resource:

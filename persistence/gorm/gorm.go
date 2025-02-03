@@ -70,13 +70,13 @@ var DefaultTypes = []any{
 	&assessment.AssessmentResult{},
 	&discovery.Resource{},
 	&evidence.Evidence{},
-	&orchestrator.CloudService{},
+	&orchestrator.CertificationTarget{},
 	&orchestrator.Certificate{},
 	&orchestrator.State{},
 	&orchestrator.Catalog{},
 	&orchestrator.Category{},
 	&orchestrator.Control{},
-	&orchestrator.TargetOfEvaluation{},
+	&orchestrator.AuditScope{},
 	&evaluation.EvaluationResult{},
 }
 
@@ -157,16 +157,12 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 		sql.SetMaxOpenConns(g.maxConn)
 	}
 
+	schema.RegisterSerializer("durationpb", &DurationSerializer{})
 	schema.RegisterSerializer("timestamppb", &TimestampSerializer{})
 	schema.RegisterSerializer("valuepb", &ValueSerializer{})
 	schema.RegisterSerializer("anypb", &AnySerializer{})
 
-	if err = g.db.SetupJoinTable(&orchestrator.CloudService{}, "CatalogsInScope", &orchestrator.TargetOfEvaluation{}); err != nil {
-		err = fmt.Errorf("error during join-table: %w", err)
-		return
-	}
-
-	if err = g.db.SetupJoinTable(orchestrator.CloudService{}, "ConfiguredMetrics", assessment.MetricConfiguration{}); err != nil {
+	if err = g.db.SetupJoinTable(orchestrator.CertificationTarget{}, "ConfiguredMetrics", assessment.MetricConfiguration{}); err != nil {
 		err = fmt.Errorf("error during join-table: %w", err)
 		return
 	}

@@ -44,7 +44,7 @@ var (
 type metricsCache struct {
 	sync.RWMutex
 	// Metrics cached in a map. Key is composed of tool id and resource types concatenation
-	m map[string][]string
+	m map[string][]*assessment.Metric
 }
 
 // PolicyEval is an interface for the policy evaluation engine
@@ -52,25 +52,33 @@ type PolicyEval interface {
 	// Eval evaluates a given evidence against a metric coming from the metrics source. In order to avoid unnecessarily
 	// unwrapping, the callee of this function needs to supply the unwrapped ontology resource, since they most likely
 	// unwrapped the resource already, e.g. to check for validation.
-	Eval(evidence *evidence.Evidence, r ontology.IsResource, src MetricsSource) (data []*Result, err error)
+	Eval(evidence *evidence.Evidence, r ontology.IsResource, related map[string]ontology.IsResource, src MetricsSource) (data []*CombinedResult, err error)
 	HandleMetricEvent(event *orchestrator.MetricChangeEvent) (err error)
 }
 
-type Result struct {
-	Applicable  bool
-	Compliant   bool
+type CombinedResult struct {
+	Applicable bool
+	Compliant  bool
+	// TODO(oxisto): They are now part of the individual comparison results
 	TargetValue interface{}
-	Operator    string
-	MetricID    string
-	Config      *assessment.MetricConfiguration
+	// TODO(oxisto): They are now part of the individual comparison results
+	Operator string
+	MetricID string
+	Config   *assessment.MetricConfiguration
+
+	// ComparisonResult is an optional feature to get more infos about the comparisons
+	ComparisonResult []*assessment.ComparisonResult
+
+	// Message contains an optional string that the metric can supply to provide a human readable representation of the result
+	Message string
 }
 
 // MetricsSource is used to retrieve a list of metrics and to retrieve a metric
-// configuration as well as implementation for a particular metric (and target service)
+// configuration as well as implementation for a particular metric (and certification target)
 type MetricsSource interface {
 	Metrics() ([]*assessment.Metric, error)
-	MetricConfiguration(serviceID, metricID string) (*assessment.MetricConfiguration, error)
-	MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error)
+	MetricConfiguration(targetID string, metric *assessment.Metric) (*assessment.MetricConfiguration, error)
+	MetricImplementation(lang assessment.MetricImplementation_Language, metric *assessment.Metric) (*assessment.MetricImplementation, error)
 }
 
 // ControlsSource is used to retrieve a list of controls

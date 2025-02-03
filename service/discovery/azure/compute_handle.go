@@ -85,22 +85,22 @@ func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (o
 		Labels:              labels(vm.Tags),
 		ParentId:            resourceGroupID(vm.ID),
 		Raw:                 discovery.Raw(vm),
-		NetworkInterfaceIds: []string{},
+		NetworkInterfaceIds: []string{}, // TODO(all): Discover network interface IDs
 		BlockStorageIds:     []string{},
 		MalwareProtection:   &ontology.MalwareProtection{},
 		BootLogging: &ontology.BootLogging{
-			Enabled:               isBootDiagnosticEnabled(vm),
-			LoggingServiceIds:     bootLogging,
-			RetentionPeriod:       durationpb.New(0), // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
-			MonitoringEnabled:     monitoringLogDataEnabled,
-			SecurityAlertsEnabled: securityAlertsEnabled,
+			Enabled:                  isBootDiagnosticEnabled(vm),
+			LoggingServiceIds:        bootLogging,
+			RetentionPeriod:          durationpb.New(0), // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
+			MonitoringLogDataEnabled: monitoringLogDataEnabled,
+			SecurityAlertsEnabled:    securityAlertsEnabled,
 		},
 		OsLogging: &ontology.OSLogging{
-			Enabled:               osLoggingEnabled,
-			RetentionPeriod:       durationpb.New(0),
-			LoggingServiceIds:     []string{}, // TODO(all): TBD
-			MonitoringEnabled:     monitoringLogDataEnabled,
-			SecurityAlertsEnabled: monitoringLogDataEnabled,
+			Enabled:                  osLoggingEnabled,
+			RetentionPeriod:          durationpb.New(0),
+			LoggingServiceIds:        []string{}, // TODO(all): TBD
+			MonitoringLogDataEnabled: monitoringLogDataEnabled,
+			SecurityAlertsEnabled:    monitoringLogDataEnabled,
 		},
 		ActivityLogging: &ontology.ActivityLogging{
 			Enabled:           true, // is always enabled
@@ -159,7 +159,7 @@ func (d *azureDiscovery) handleBlockStorage(disk *armcompute.Disk) (*ontology.Bl
 		CreationTime:     creationTime(disk.Properties.TimeCreated),
 		GeoLocation:      location(disk.Location),
 		Labels:           labels(disk.Tags),
-		ParentId:         resourceGroupID(disk.ID),
+		ParentId:         resourceGroupID(disk.ManagedBy),
 		Raw:              discovery.Raw(disk, rawKeyUrl),
 		AtRestEncryption: enc,
 		Backups:          backups,
@@ -223,10 +223,9 @@ func (d *azureDiscovery) handleFunction(function *armappservice.Site, config arm
 		// TODO(oxisto): This is missing in the ontology
 		/*HttpEndpoint: &ontology.HttpEndpoint{
 			TransportEncryption: getTransportEncryption(function.Properties, config),
-		},
-		PublicAccess:    getPublicAccessStatus(function),
-		Redundancy:      getRedundancy(function),
-		*/
+		},*/
+		InternetAccessibleEndpoint: getInternetAccessibleEndpoint(function),
+		Redundancies:               getRedundancies(function),
 	}
 }
 
@@ -236,7 +235,7 @@ func (d *azureDiscovery) handleWebApp(webApp *armappservice.Site, config armapps
 		return nil
 	}
 
-	return &ontology.WebApp{
+	return &ontology.Function{
 		Id:           resourceID(webApp.ID),
 		Name:         util.Deref(webApp.Name),
 		CreationTime: nil, // Only the last modified time is available.
@@ -251,9 +250,8 @@ func (d *azureDiscovery) handleWebApp(webApp *armappservice.Site, config armapps
 		// TODO(oxisto): This is missing in the ontology
 		/*HttpEndpoint: &ontology.HttpEndpoint{
 			TransportEncryption: getTransportEncryption(webApp.Properties, config),
-		},
-		PublicAccess:    getPublicAccessStatus(function),
-		Redundancy:      getRedundancy(function),
-		*/
+		},*/
+		InternetAccessibleEndpoint: getInternetAccessibleEndpoint(webApp),
+		Redundancies:               getRedundancies(webApp),
 	}
 }

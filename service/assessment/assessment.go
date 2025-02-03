@@ -39,13 +39,17 @@ import (
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/logging"
 	"clouditor.io/clouditor/v2/internal/util"
+	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/policies"
+	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/service"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -57,6 +61,24 @@ import (
 var (
 	log *logrus.Entry
 )
+
+func DefaultServiceSpec() launcher.ServiceSpec {
+	return launcher.NewServiceSpec(
+		NewService,
+		nil,
+		func(svc *Service) ([]server.StartGRPCServerOption, error) {
+			// It is possible to register hook functions for the assessment service.
+			//  * The hook functions in assessment are implemented in AssessEvidence(s)
+
+			// assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {}
+
+			return nil, nil
+		},
+		WithOAuth2Authorizer(config.ClientCredentials()),
+		WithOrchestratorAddress(viper.GetString(config.OrchestratorURLFlag)),
+		WithEvidenceStoreAddress(viper.GetString(config.EvidenceStoreURLFlag)),
+	)
+}
 
 func init() {
 	log = logrus.WithField("component", "assessment")
@@ -103,6 +125,18 @@ type Service struct {
 
 	authz service.AuthorizationStrategy
 
+	// evidenceResourceMap is a cache which maps a resource ID (key) to its latest available evidence
+	// TODO(oxisto): replace this with storage queries
+	evidenceResourceMap map[string]*evidence.Evidence
+	em                  sync.RWMutex
+	wg                  sync.WaitGroup
+
+	// requests contains a map of our waiting requests
+	requests map[string]waitingRequest
+
+	// rm is a RWMutex for the requests property
+	rm sync.RWMutex
+
 	// pe contains the actual policy evaluation engine we use
 	pe policies.PolicyEval
 
@@ -119,30 +153,34 @@ const (
 )
 
 // WithoutEvidenceStore is a service option to discard evidences and don't send them to an evidence store
-func WithoutEvidenceStore() service.Option[Service] {
+func WithoutEvidenceStore() service.Option[*Service] {
 	return func(svc *Service) {
 		svc.isEvidenceStoreDisabled = true
 	}
 }
 
 // WithEvidenceStoreAddress is an option to configure the evidence store gRPC address.
-func WithEvidenceStoreAddress(address string, opts ...grpc.DialOption) service.Option[Service] {
+func WithEvidenceStoreAddress(address string, opts ...grpc.DialOption) service.Option[*Service] {
 	return func(svc *Service) {
+		log.Infof("Evidence Store URL is set to %s", address)
+
 		svc.evidenceStore.Target = address
 		svc.evidenceStore.Opts = opts
 	}
 }
 
 // WithOrchestratorAddress is an option to configure the orchestrator gRPC address.
-func WithOrchestratorAddress(target string, opts ...grpc.DialOption) service.Option[Service] {
+func WithOrchestratorAddress(target string, opts ...grpc.DialOption) service.Option[*Service] {
 	return func(svc *Service) {
+		log.Infof("Orchestrator URL is set to %s", target)
+
 		svc.orchestrator.Target = target
 		svc.orchestrator.Opts = opts
 	}
 }
 
 // WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
-func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[Service] {
+func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[*Service] {
 	return func(s *Service) {
 		auth := api.NewOAuthAuthorizerFromClientCredentials(config)
 		s.evidenceStore.SetAuthorizer(auth)
@@ -151,7 +189,7 @@ func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[Servi
 }
 
 // WithAuthorizer is an option to use a pre-created authorizer
-func WithAuthorizer(auth api.Authorizer) service.Option[Service] {
+func WithAuthorizer(auth api.Authorizer) service.Option[*Service] {
 	return func(s *Service) {
 		s.evidenceStore.SetAuthorizer(auth)
 		s.orchestrator.SetAuthorizer(auth)
@@ -159,25 +197,27 @@ func WithAuthorizer(auth api.Authorizer) service.Option[Service] {
 }
 
 // WithRegoPackageName is an option to configure the Rego package name
-func WithRegoPackageName(pkg string) service.Option[Service] {
+func WithRegoPackageName(pkg string) service.Option[*Service] {
 	return func(s *Service) {
 		s.evalPkg = pkg
 	}
 }
 
 // WithAuthorizationStrategy is an option that configures an authorization strategy.
-func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Option[Service] {
+func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Option[*Service] {
 	return func(svc *Service) {
 		svc.authz = authz
 	}
 }
 
 // NewService creates a new assessment service with default values.
-func NewService(opts ...service.Option[Service]) *Service {
+func NewService(opts ...service.Option[*Service]) *Service {
 	svc := &Service{
 		evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 		orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
 		cachedConfigurations: make(map[string]cachedConfiguration),
+		requests:             make(map[string]waitingRequest),
+		evidenceResourceMap:  make(map[string]*evidence.Evidence),
 		evidenceStore:        api.NewRPCConnection(DefaultEvidenceStoreAddress, evidence.NewEvidenceStoreClient),
 		orchestrator:         api.NewRPCConnection(DefaultOrchestratorAddress, orchestrator.NewOrchestratorClient),
 	}
@@ -203,31 +243,107 @@ func NewService(opts ...service.Option[Service]) *Service {
 	return svc
 }
 
+func (svc *Service) Init() {}
+
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
-func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEvidenceRequest) (resp *assessment.AssessEvidenceResponse, err error) {
-	resp = &assessment.AssessEvidenceResponse{}
+func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
+	var (
+		resourceId string
+	)
 
 	// Validate request
 	err = api.Validate(req)
-	if err != nil {
-		return nil, err
-	}
-
-	// Check if cloud_service_id in the service is within allowed or one can access *all* the cloud services
-	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
-		return nil, service.ErrPermissionDenied
-	}
-
-	// Assess evidence. This also validates the embedded resource and returns a gRPC error if validation fails.
-	_, err = svc.handleEvidence(ctx, req.Evidence)
 	if err != nil {
 		log.Error(err)
 		return nil, err
 	}
 
-	logging.LogRequest(log, logrus.DebugLevel, logging.Assess, req)
+	// Check if certification_target_id in the service is within allowed or one can access *all* the certification targets
+	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
+		log.Error(service.ErrPermissionDenied)
+		return nil, service.ErrPermissionDenied
+	}
 
-	return resp, nil
+	// TODO: This is really bad, because we will also unmarshal the resource as part of handleEvidence
+	resourceId = req.Evidence.GetResourceId()
+
+	// Check, if we can immediately handle this evidence; we assume so at first
+	var (
+		canHandle                                 = true
+		waitingFor map[string]bool                = make(map[string]bool)
+		related    map[string]ontology.IsResource = make(map[string]ontology.IsResource)
+	)
+
+	svc.em.Lock()
+
+	// We need to check, if by any chance the related resource evidences have already arrived
+	//
+	// TODO(oxisto): We should also check if they are "recent" enough (which is probably determined by the metric)
+	for _, r := range req.Evidence.ExperimentalRelatedResourceIds {
+		// If any of the related resource is not available, we cannot handle them immediately, but we need to add it to
+		// our waitingFor slice
+		if _, ok := svc.evidenceResourceMap[r]; ok {
+			ev := svc.evidenceResourceMap[r]
+
+			related[r] = ev.GetOntologyResource()
+		} else {
+			canHandle = false
+			waitingFor[r] = true
+		}
+	}
+
+	// Update our resourceID to evidence cache
+	svc.evidenceResourceMap[resourceId] = req.Evidence
+	svc.em.Unlock()
+
+	// Inform any other left over evidences that might be waiting
+	go svc.informWaitingRequests(resourceId)
+
+	if canHandle {
+		// Assess evidence. This also validates the embedded resource and returns a gRPC error if validation fails.
+		_, err = svc.handleEvidence(ctx, req.Evidence, related)
+		if err != nil {
+			log.Error(err)
+			return nil, err
+		}
+
+		res = &assessment.AssessEvidenceResponse{
+			Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_ASSESSED,
+		}
+
+		logging.LogRequest(log, logrus.DebugLevel, logging.Assess, req)
+	} else {
+		log.Debugf("Evidence %s needs to wait for %d more resource(s) to assess evidence", req.Evidence.Id, len(waitingFor))
+
+		// Create a left-over request with all the necessary information
+		l := waitingRequest{
+			started:      time.Now(),
+			waitingFor:   waitingFor,
+			resourceId:   resourceId,
+			Evidence:     req.Evidence,
+			s:            svc,
+			newResources: make(chan string, 1000),
+			ctx:          ctx,
+		}
+
+		// Add it to our wait group
+		svc.wg.Add(1)
+
+		// Wait for evidences in the background and handle them
+		go l.WaitAndHandle()
+
+		// Lock requests for writing
+		svc.rm.Lock()
+		svc.requests[req.Evidence.Id] = l
+		// Unlock writing
+		svc.rm.Unlock()
+
+		res = &assessment.AssessEvidenceResponse{
+			Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_WAITING_FOR_RELATED,
+		}
+	}
+
+	return res, nil
 }
 
 // AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream) and responds with a stream.
@@ -259,12 +375,12 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 		if err != nil {
 			// Create response message. The AssessEvidence method does not need that message, so we have to create it here for the stream response.
 			res = &assessment.AssessEvidencesResponse{
-				Status:        assessment.AssessEvidencesResponse_FAILED,
+				Status:        assessment.AssessmentStatus_ASSESSMENT_STATUS_FAILED,
 				StatusMessage: err.Error(),
 			}
 		} else {
 			res = &assessment.AssessEvidencesResponse{
-				Status: assessment.AssessEvidencesResponse_ASSESSED,
+				Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_ASSESSED,
 			}
 		}
 
@@ -286,7 +402,7 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences. This will
 // also validate the resource embedded into the evidence and return an error if validation fails. In order to
 // distinguish between internal errors and validation errors, this function already returns a gRPC error.
-func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence) (results []*assessment.AssessmentResult, err error) {
+func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, related map[string]ontology.IsResource) (results []*assessment.AssessmentResult, err error) {
 	var (
 		types    []string
 		m        proto.Message
@@ -312,7 +428,7 @@ func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence) (
 	log.Debugf("Evaluating evidence %s (%s) collected by %s at %s", ev.Id, resource.GetId(), ev.ToolId, ev.Timestamp.AsTime())
 	log.Tracef("Evidence: %+v", ev)
 
-	evaluations, err := svc.pe.Eval(ev, resource, svc)
+	evaluations, err := svc.pe.Eval(ev, resource, related, svc)
 	if err != nil {
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
 
@@ -361,14 +477,15 @@ func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence) (
 		result := &assessment.AssessmentResult{
 			Id:                    uuid.NewString(),
 			Timestamp:             timestamppb.Now(),
-			CloudServiceId:        ev.GetCloudServiceId(),
+			CertificationTargetId: ev.GetCertificationTargetId(),
 			MetricId:              metricID,
 			MetricConfiguration:   data.Config,
 			Compliant:             data.Compliant,
 			EvidenceId:            ev.GetId(),
 			ResourceId:            resource.GetId(),
 			ResourceTypes:         types,
-			NonComplianceComments: "No comments so far",
+			ComplianceComment:     data.Message,
+			ComplianceDetails:     data.ComparisonResult,
 			ToolId:                util.Ref(assessment.AssessmentToolId),
 		}
 
@@ -463,7 +580,7 @@ func (svc *Service) Metrics() (metrics []*assessment.Metric, err error) {
 
 // MetricImplementation implements MetricsSource by retrieving the metric implementation
 // from the orchestrator.
-func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (impl *assessment.MetricImplementation, err error) {
+func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_Language, metric *assessment.Metric) (impl *assessment.MetricImplementation, err error) {
 	// For now, the orchestrator only supports the Rego language.
 	if lang != assessment.MetricImplementation_LANGUAGE_REGO {
 		return nil, errors.New("unsupported language")
@@ -471,18 +588,18 @@ func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_La
 
 	// Retrieve it from the orchestrator
 	impl, err = svc.orchestrator.Client.GetMetricImplementation(context.Background(), &orchestrator.GetMetricImplementationRequest{
-		MetricId: metric,
+		MetricId: metric.Id,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("could not retrieve metric implementation for %s from orchestrator: %w", metric, err)
+		return nil, fmt.Errorf("could not retrieve metric implementation for %s from orchestrator: %w", metric.Id, err)
 	}
 
 	return
 }
 
 // MetricConfiguration implements MetricsSource by getting the corresponding metric configuration for the
-// default target cloud service
-func (svc *Service) MetricConfiguration(cloudServiceID, metricID string) (config *assessment.MetricConfiguration, err error) {
+// default target certification target
+func (svc *Service) MetricConfiguration(CertificationTargetID string, metric *assessment.Metric) (config *assessment.MetricConfiguration, err error) {
 	var (
 		ok    bool
 		cache cachedConfiguration
@@ -490,7 +607,7 @@ func (svc *Service) MetricConfiguration(cloudServiceID, metricID string) (config
 	)
 
 	// Calculate the cache key
-	key = fmt.Sprintf("%s-%s", cloudServiceID, metricID)
+	key = fmt.Sprintf("%s-%s", CertificationTargetID, metric.Id)
 
 	// Retrieve our cached entry
 	svc.confMutex.Lock()
@@ -500,12 +617,12 @@ func (svc *Service) MetricConfiguration(cloudServiceID, metricID string) (config
 	// Check if entry is not there or is expired
 	if !ok || cache.cachedAt.After(time.Now().Add(EvictionTime)) {
 		config, err = svc.orchestrator.Client.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{
-			CloudServiceId: cloudServiceID,
-			MetricId:       metricID,
+			CertificationTargetId: CertificationTargetID,
+			MetricId:              metric.Id,
 		})
 
 		if err != nil {
-			return nil, fmt.Errorf("could not retrieve metric configuration for %s: %w", metricID, err)
+			return nil, fmt.Errorf("could not retrieve metric configuration for %s: %w", metric.Id, err)
 		}
 
 		cache = cachedConfiguration{
@@ -561,7 +678,7 @@ func (svc *Service) handleMetricEvent(event *orchestrator.MetricChangeEvent) {
 		svc.confMutex.Lock()
 
 		// Calculate the cache key
-		key = fmt.Sprintf("%s-%s", event.CloudServiceId, event.MetricId)
+		key = fmt.Sprintf("%s-%s", event.CertificationTargetId, event.MetricId)
 
 		delete(svc.cachedConfigurations, key)
 		svc.confMutex.Unlock()
