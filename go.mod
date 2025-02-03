@@ -43,7 +43,6 @@ require (
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/sys v0.29.0 // indirect
-
 )
 
 // runtime dependencies (security)
@@ -52,7 +51,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/oxisto/oauth2go v0.14.0
 	golang.org/x/crypto v0.32.0 // indirect
-	golang.org/x/oauth2 v0.24.0
+	golang.org/x/oauth2 v0.25.0
 
 )
 
@@ -138,7 +137,6 @@ require (
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	golang.org/x/net v0.34.0 // indirect
-
 )
 
 // runtime dependencies (AWS)
