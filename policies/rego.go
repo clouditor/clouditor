@@ -45,7 +45,7 @@ import (
 )
 
 // DefaultRegoPackage is the default package name for the Rego files
-const DefaultRegoPackage = "clouditor.metrics"
+const DefaultRegoPackage = "metrics"
 
 type regoEval struct {
 	// qc contains cached Rego queries
@@ -242,8 +242,8 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 		)
 
 		// Create paths for bundle directory and utility functions file
-		bundle := fmt.Sprintf("%s/policies/bundles/%s/%s/", baseDir, metric.CategoryID(), metric.Id)
-		operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
+		bundle := fmt.Sprintf("%s/policies/metrics/metrics/%s/%s/", baseDir, metric.CategoryID(), metric.Id)
+		operators := fmt.Sprintf("%s/policies/metrics/operators.rego", baseDir)
 
 		// The contents of the data map is available as the data variable within the Rego evaluation
 		data := map[string]interface{}{
