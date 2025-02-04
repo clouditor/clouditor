@@ -8,12 +8,12 @@ default applicable = false
 
 default compliant = false
 
-applicable {
+applicable if {
 	# we are only interested in some kind of privileged user    
 	identity.privileged
 }
 
-compliant {
+compliant if {
 	# count the number of "factors"
 	compare(data.operator, data.target_value, count(identity.authenticity))
 
