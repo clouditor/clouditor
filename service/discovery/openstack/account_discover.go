@@ -44,7 +44,7 @@ func (d *openstackDiscovery) discoverDomains() (list []ontology.IsResource, err 
 		log.Debugf("Could not discover domains due to insufficient permissions, but we can proceed with less domain information: %v", err)
 
 		if d.domain.domainID == "" {
-			err := fmt.Errorf("neither the domain ID nor the domain name are available: %v", err)
+			err := fmt.Errorf("domain ID is not available: %v", err)
 			return nil, err
 		}
 
@@ -70,7 +70,7 @@ func (d *openstackDiscovery) discoverProjects() (list []ontology.IsResource, err
 		log.Debugf("Could not discover projects/tenants due to insufficient permissions, but we can proceed with less project/tenant information: %v", err)
 
 		if d.project.projectID == "" {
-			err := fmt.Errorf("neither the project ID nor the project name are available: %v", err)
+			err := fmt.Errorf("domain ID is not available: %v", err)
 			return nil, err
 		}
 
