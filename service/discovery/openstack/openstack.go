@@ -45,6 +45,8 @@ import (
 
 const (
 	RegionName = "OS_REGION_NAME"
+	DomainID   = "OS_PROJECT_DOMAIN_ID"
+	DomainName = "OS_USER_DOMAIN_NAME"
 )
 
 var (
@@ -58,6 +60,19 @@ type openstackDiscovery struct {
 	clients  clients
 	authOpts *gophercloud.AuthOptions
 	region   string
+	domain   *domain
+	project  *project
+}
+
+type domain struct {
+	domainID   string
+	domainName string
+}
+
+type project struct {
+	// It is not possible to add the OS_TENANT_ID or OS_TENANT_NAME. It results in an error: "Error authenticating with application credential: Application credentials cannot request a scope."
+	projectID   string
+	projectName string
 }
 
 type clients struct {
@@ -108,6 +123,12 @@ func NewOpenstackDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &openstackDiscovery{
 		ctID:   config.DefaultCertificationTargetID,
 		region: os.Getenv(RegionName),
+		domain: &domain{
+			domainID:   os.Getenv(DomainID),
+			domainName: os.Getenv(DomainName),
+		},
+		// Currently, the project ID cannot be specified as an environment variable in conjunction with application credentials.
+		project: &project{},
 	}
 
 	// Apply options
@@ -160,7 +181,6 @@ func (d *openstackDiscovery) authorize() (err error) {
 	if d.clients.storageClient == nil {
 		d.clients.storageClient, err = openstack.NewBlockStorageV2(d.clients.provider, gophercloud.EndpointOpts{
 			Region: d.region,
-			Type:   "block-storage", // We have to use block-storage here, otherwise volumev3 is used as type and that does not work. volumev3 is not available in the service catalog for now. We have to wait until it is fixed, see: https://github.com/gophercloud/gophercloud/issues/3207
 		})
 		if err != nil {
 			return fmt.Errorf("could not create block storage client: %w", err)
@@ -190,46 +210,60 @@ func NewAuthorizer() (gophercloud.AuthOptions, error) {
 }
 
 // List discovers the following OpenStack resource types and translates them into the Clouditor ontology:
+// * Servers
+// * Network interfaces
+// * Block storages
 // * Domains
 // * Projects
-// * Network interfaces
-// * Servers
-// * Block storages
 func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
-	// Discover domains resource
-	domains, err := d.discoverDomains()
-	if err != nil {
-		return nil, fmt.Errorf("could not discover domains: %w", err)
-	}
-	list = append(list, domains...)
+	var (
+		servers  []ontology.IsResource
+		networks []ontology.IsResource
+		storages []ontology.IsResource
+		projects []ontology.IsResource
+		domains  []ontology.IsResource
+	)
 
-	// Discover project resources
-	projects, err := d.discoverProjects()
-	if err != nil {
-		return nil, fmt.Errorf("could not discover projects: %w", err)
+	if err = d.authorize(); err != nil {
+		return nil, fmt.Errorf("could not authorize openstack: %w", err)
 	}
-	list = append(list, projects...)
 
-	// Discover networks interfaces
-	networks, err := d.discoverNetworkInterfaces()
-	if err != nil {
-		return nil, fmt.Errorf("could not discover network interfaces: %w", err)
-	}
-	list = append(list, networks...)
+	// First, we need to discover the resources to obtain the domain and project ID. Domains and projects are discovered last, or they are set manually if discovery is not possible due to insufficient permissions. Currently, application credentials in OpenStack are always created for a specific project within a specific domain, making discovery essentially unnecessary. The code will be retained in case this changes in the future.
 
 	// Discover servers
-	servers, err := d.discoverServer()
+	servers, err = d.discoverServer()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover servers: %w", err)
 	}
 	list = append(list, servers...)
 
+	// Discover networks interfaces
+	networks, err = d.discoverNetworkInterfaces()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover network interfaces: %w", err)
+	}
+	list = append(list, networks...)
+
 	// Discover block storage
-	storage, err := d.discoverBlockStorage()
+	storages, err = d.discoverBlockStorage()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover block storage: %w", err)
 	}
-	list = append(list, storage...)
+	list = append(list, storages...)
+
+	// Discover project resources
+	projects, err = d.discoverProjects()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover projects/tenants: %v", err)
+	}
+	list = append(list, projects...)
+
+	// Discover domains resource
+	domains, err = d.discoverDomains()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover domains: %v", err)
+	}
+	list = append(list, domains...)
 
 	return
 }
@@ -253,10 +287,6 @@ func genericList[T any, O any, R ontology.IsResource](d *openstackDiscovery,
 	extractor ExtractorFunc[T],
 	opts O,
 ) (list []ontology.IsResource, err error) {
-	if err = d.authorize(); err != nil {
-		return nil, fmt.Errorf("could not authorize openstack: %w", err)
-	}
-
 	client, err := clientGetter()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get client: %w", err)
@@ -267,6 +297,11 @@ func genericList[T any, O any, R ontology.IsResource](d *openstackDiscovery,
 
 		if err != nil {
 			return false, fmt.Errorf("could not extract items from paginated result: %w", err)
+		}
+
+		// Check if project/tenant ID is already stored
+		if d.project.projectID == "" {
+			d.setProjectInfo(x)
 		}
 
 		for _, s := range x {
