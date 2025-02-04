@@ -1438,7 +1438,7 @@ func Test_labels(t *testing.T) {
 	}
 }
 
-func Test_initClient(t *testing.T) {
+func Test_initClientWithSubID(t *testing.T) {
 	var (
 		subID      = "00000000-0000-0000-0000-000000000000"
 		someError  = errors.New("some error")
@@ -1448,7 +1448,7 @@ func Test_initClient(t *testing.T) {
 	type args struct {
 		existingClient *armstorage.AccountsClient
 		d              *azureDiscovery
-		fun            ClientCreateFunc[armstorage.AccountsClient]
+		fun            ClientCreateFuncWithSubID[armstorage.AccountsClient]
 	}
 	tests := []struct {
 		name       string
@@ -1526,7 +1526,92 @@ func Test_initClient(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotClient, err := initClient(tt.args.existingClient, tt.args.d, tt.args.fun)
+			gotClient, err := initClientWithSubID(tt.args.existingClient, tt.args.d, tt.args.fun)
+			tt.wantErr(t, err)
+			tt.wantClient(t, gotClient)
+		})
+	}
+}
+
+func Test_initClientWithoutSubID(t *testing.T) {
+	var (
+		someError  = errors.New("some error")
+		someClient = &armsecurity.PricingsClient{}
+	)
+
+	type args struct {
+		existingClient *armsecurity.PricingsClient
+		d              *azureDiscovery
+		fun            ClientCreateFuncWithoutSubID[armsecurity.PricingsClient]
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantClient assert.Want[*armsecurity.PricingsClient]
+		wantErr    assert.ErrorAssertionFunc
+	}{
+		{
+			name: "No error, client does not exist",
+			args: args{
+				existingClient: nil,
+				d: &azureDiscovery{
+					cred: &mockAuthorizer{},
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockSender{},
+						},
+					},
+				},
+				fun: armsecurity.NewPricingsClient,
+			},
+			wantClient: assert.NotNil[*armsecurity.PricingsClient],
+			wantErr:    assert.NoError,
+		},
+		{
+			name: "Some error, client does not exist",
+			args: args{
+				existingClient: nil,
+				d: &azureDiscovery{
+					cred: &mockAuthorizer{},
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockSender{},
+						},
+					},
+				},
+				fun: func(credential azcore.TokenCredential, options *arm.ClientOptions) (*armsecurity.PricingsClient, error) {
+					return nil, someError
+				},
+			},
+			wantClient: assert.Nil[*armsecurity.PricingsClient],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, someError)
+			},
+		},
+		{
+			name: "No error, client already exists",
+			args: args{
+				existingClient: someClient,
+				d: &azureDiscovery{
+					cred: &mockAuthorizer{},
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockSender{},
+						},
+					},
+				},
+				fun: armsecurity.NewPricingsClient,
+			},
+			wantClient: func(t *testing.T, got *armsecurity.PricingsClient) bool {
+				return assert.Same(t, someClient, got)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotClient, err := initClientWithoutSubID(tt.args.existingClient, tt.args.d, tt.args.fun)
 			tt.wantErr(t, err)
 			tt.wantClient(t, gotClient)
 		})
