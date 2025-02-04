@@ -35,7 +35,7 @@ import (
 )
 
 // validator contains our single Validator that we re-use for each validation.
-var validator *protovalidate.Validator
+var validator protovalidate.Validator
 
 func init() {
 	validator, _ = protovalidate.New()
