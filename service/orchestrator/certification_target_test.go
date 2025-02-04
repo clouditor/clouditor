@@ -26,10 +26,11 @@
 package orchestrator
 
 import (
-	"clouditor.io/clouditor/v2/internal/config"
 	"context"
-	"github.com/spf13/viper"
 	"testing"
+
+	"clouditor.io/clouditor/v2/internal/config"
+	"github.com/spf13/viper"
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
@@ -58,6 +59,9 @@ func init() {
 }
 
 func TestService_RegisterCertificationTarget(t *testing.T) {
+	// UUID for testing
+	id := uuid.NewString()
+
 	tests := []struct {
 		name    string
 		req     *orchestrator.RegisterCertificationTargetRequest
@@ -95,6 +99,7 @@ func TestService_RegisterCertificationTarget(t *testing.T) {
 			name: "Happy path: without metadata as input",
 			req: &orchestrator.RegisterCertificationTargetRequest{
 				CertificationTarget: &orchestrator.CertificationTarget{
+					Id:          id,
 					Name:        "test",
 					Description: "some",
 				},
@@ -110,6 +115,7 @@ func TestService_RegisterCertificationTarget(t *testing.T) {
 			name: "Happy path: with metadata as input",
 			req: &orchestrator.RegisterCertificationTargetRequest{
 				CertificationTarget: &orchestrator.CertificationTarget{
+					Id:          id,
 					Name:        "test",
 					Description: "some",
 					Metadata: &orchestrator.CertificationTarget_Metadata{
