@@ -8,11 +8,11 @@ default applicable = false
 
 default compliant = false
 
-applicable {
+applicable if {
 	# we are only interested in some kind of privileged user    
 	identity.privileged
 }
 
-compliant {
+compliant if {
 	compare(data.operator, data.target_value, identity.authorization.mixedDuties)
 }

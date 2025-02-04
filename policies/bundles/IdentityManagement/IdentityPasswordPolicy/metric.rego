@@ -8,12 +8,12 @@ default applicable = false
 
 default compliant = false
 
-applicable {
+applicable if {
 	# the resource type should be an Identity
 	identity.type[_] == "Identity"
 }
 
-compliant {
+compliant if {
 	# we are just assuming, that the standard policy looks good
 	compare(data.operator, data.target_value, identity.disablePasswordPolicy)
 }

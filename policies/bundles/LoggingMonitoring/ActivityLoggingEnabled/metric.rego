@@ -1,4 +1,4 @@
-package clouditor.metrics.l_3_firewall_enabled
+package clouditor.metrics.activity_logging_enabled
 
 import data.clouditor.compare
 
@@ -6,11 +6,10 @@ default applicable = false
 
 default compliant = false
 
-enabled := input.accessRestriction.enabled
+enabled := input.resourceLogging.enabled
 
 applicable if {
 	enabled != null
-	compare("isIn",  "NetworkInterface", input.type)
 }
 
 compliant if {
