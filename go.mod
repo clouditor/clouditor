@@ -28,13 +28,13 @@ require (
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/yashtewari/glob-intersection v0.2.0 // indirect
+	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/otel v1.34.0 // indirect
 	go.opentelemetry.io/otel/metric v1.34.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.34.0 // indirect
 	go.opentelemetry.io/otel/trace v1.34.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/sync v0.10.0
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
 // runtime dependencies (logging)
@@ -57,19 +57,18 @@ require (
 
 // runtime dependencies (rpc)
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.1-20241127180247-a33202765966.1
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.4-20250130201111-63bb56e20495.1
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
-	github.com/bufbuild/protovalidate-go v0.7.0
+	github.com/bufbuild/protovalidate-go v0.9.1
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/google/cel-go v0.21.0 // indirect
+	github.com/google/cel-go v0.23.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.25.1
 	github.com/stoewer/go-strcase v1.3.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250115164207-1a7da9e5054f
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250115164207-1a7da9e5054f // indirect
 	google.golang.org/grpc v1.70.0
-	google.golang.org/protobuf v1.36.3
-
+	google.golang.org/protobuf v1.36.4
 )
 
 // runtime dependencies (storage)
@@ -224,13 +223,11 @@ require (
 
 // tools dependencies
 require (
+	cel.dev/expr v0.19.1 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.0.2 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/google/addlicense v1.1.0
 	github.com/lyft/protoc-gen-star v0.6.1 // indirect
 	github.com/oxisto/owl2proto v0.2.1
 	github.com/srikrsna/protoc-gen-gotag v1.0.0
-
 )
-
-require go.opentelemetry.io/auto/sdk v1.1.0 // indirect
