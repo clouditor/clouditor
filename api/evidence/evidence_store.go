@@ -26,8 +26,8 @@
 
 package evidence
 
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
-// the cloud service ID of the inner object.
-func (req *StoreEvidenceRequest) GetCloudServiceId() string {
-	return req.GetEvidence().GetCloudServiceId()
+// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
+// the certification target ID of the inner object.
+func (req *StoreEvidenceRequest) GetCertificationTargetId() string {
+	return req.GetEvidence().GetCertificationTargetId()
 }

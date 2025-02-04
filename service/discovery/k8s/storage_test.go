@@ -46,8 +46,8 @@ import (
 
 func TestNewKubernetesStorageDiscovery(t *testing.T) {
 	type args struct {
-		intf           kubernetes.Interface
-		cloudServiceID string
+		intf                  kubernetes.Interface
+		CertificationTargetID string
 	}
 	tests := []struct {
 		name string
@@ -63,20 +63,20 @@ func TestNewKubernetesStorageDiscovery(t *testing.T) {
 		{
 			name: "Happy path",
 			args: args{
-				intf:           &fake.Clientset{},
-				cloudServiceID: testdata.MockCloudServiceID1,
+				intf:                  &fake.Clientset{},
+				CertificationTargetID: testdata.MockCertificationTargetID1,
 			},
 			want: &k8sStorageDiscovery{
 				k8sDiscovery: k8sDiscovery{
 					intf: &fake.Clientset{},
-					csID: testdata.MockCloudServiceID1,
+					ctID: testdata.MockCertificationTargetID1,
 				},
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewKubernetesStorageDiscovery(tt.args.intf, tt.args.cloudServiceID)
+			got := NewKubernetesStorageDiscovery(tt.args.intf, tt.args.CertificationTargetID)
 			assert.Equal(t, tt.want, got, assert.CompareAllUnexported())
 			assert.Equal(t, "Kubernetes Storage", got.Name())
 		})
@@ -117,7 +117,7 @@ func Test_k8sStorageDiscovery_List(t *testing.T) {
 		t.Fatalf("error injecting volume add: %v", err)
 	}
 
-	d := NewKubernetesStorageDiscovery(client, testdata.MockCloudServiceID1)
+	d := NewKubernetesStorageDiscovery(client, testdata.MockCertificationTargetID1)
 
 	list, err := d.List()
 	assert.NoError(t, err)

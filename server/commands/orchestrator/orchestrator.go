@@ -57,7 +57,10 @@ func NewOrchestratorCommand() *cobra.Command {
 }
 
 func BindFlags(cmd *cobra.Command) {
-	cmd.Flags().Bool(config.CreateDefaultTargetFlag, config.DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
+	cmd.Flags().Bool(config.CreateDefaultCertificationTargetFlag, config.DefaultCreateDefaultTarget, "Creates a default target certification target if it does not exist")
+	cmd.Flags().String(config.DefaultCertificationTargetNameFlag, config.DefaultCertificationTargetName, "Name of the default target certification target")
+	cmd.Flags().String(config.DefaultCertificationTargetDescriptionFlag, config.DefaultCertificationTargetDescription, "Description of the default target certification target")
+	cmd.Flags().Int32(config.DefaultCertificationTargetTypeFlag, int32(config.DefaultCertificationTargetType), "Type of the default target certification target; (1=cloud, 2=product, 3=organisation)")
 	if cmd.Flag(config.APIgRPCPortFlag) == nil {
 		cmd.Flags().Uint16(config.APIgRPCPortFlag, config.DefaultAPIgRPCPortOrchestrator, "Specifies the port used for the Clouditor gRPC API")
 	}
@@ -65,7 +68,10 @@ func BindFlags(cmd *cobra.Command) {
 		cmd.Flags().Uint16(config.APIHTTPPortFlag, config.DefaultAPIHTTPPortOrchestrator, "Specifies the port used for the Clouditor HTTP API")
 	}
 
-	_ = viper.BindPFlag(config.CreateDefaultTargetFlag, cmd.Flags().Lookup(config.CreateDefaultTargetFlag))
+	_ = viper.BindPFlag(config.CreateDefaultCertificationTargetFlag, cmd.Flags().Lookup(config.CreateDefaultCertificationTargetFlag))
+	_ = viper.BindPFlag(config.DefaultCertificationTargetNameFlag, cmd.Flags().Lookup(config.DefaultCertificationTargetNameFlag))
+	_ = viper.BindPFlag(config.DefaultCertificationTargetDescriptionFlag, cmd.Flags().Lookup(config.DefaultCertificationTargetDescriptionFlag))
+	_ = viper.BindPFlag(config.DefaultCertificationTargetTypeFlag, cmd.Flags().Lookup(config.DefaultCertificationTargetTypeFlag))
 	_ = viper.BindPFlag(config.APIgRPCPortFlag, cmd.Flags().Lookup(config.APIgRPCPortFlag))
 	_ = viper.BindPFlag(config.APIHTTPPortFlag, cmd.Flags().Lookup(config.APIHTTPPortFlag))
 

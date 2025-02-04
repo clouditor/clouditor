@@ -84,14 +84,14 @@ func TestService_GetAssessmentResult(t *testing.T) {
 			},
 		},
 		{
-			name: "permission denied because of non authorized cloud_service_id",
+			name: "permission denied because of non authorized certification_target_id",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult3))
 				}),
-				authz: servicetest.NewAuthorizationStrategy(false, orchestratortest.MockAssessmentResult1.CloudServiceId),
+				authz: servicetest.NewAuthorizationStrategy(false, orchestratortest.MockAssessmentResult1.CertificationTargetId),
 			},
 			args: args{
 				req: orchestratortest.MockAssessmentResultRequest2,
@@ -151,14 +151,14 @@ func TestService_GetAssessmentResult(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Happy path with allowed cloud_service_id",
+			name: "Happy path with allowed certification_target_id",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult3))
 				}),
-				authz: servicetest.NewAuthorizationStrategy(false, orchestratortest.MockAssessmentResult1.CloudServiceId),
+				authz: servicetest.NewAuthorizationStrategy(false, orchestratortest.MockAssessmentResult1.CertificationTargetId),
 			},
 			args: args{
 				req: orchestratortest.MockAssessmentResultRequest1,
@@ -248,13 +248,13 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "list all only with allowed cloud service",
+			name: "list all only with allowed certification target",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
 			},
 			args: args{
 				ctx: context.TODO(),
@@ -268,19 +268,19 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "specify filtered cloud service ID which is not allowed",
+			name: "specify filtered certification target ID which is not allowed",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
 			},
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-						CloudServiceId: util.Ref(testdata.MockCloudServiceID2),
+						CertificationTargetId: util.Ref(testdata.MockCertificationTargetID2),
 					},
 				},
 			},
@@ -290,19 +290,19 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 		},
 		{
-			name: "return filtered cloud service ID",
+			name: "return filtered certification target ID",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
 			},
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-						CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
+						CertificationTargetId: util.Ref(testdata.MockCertificationTargetID1),
 					},
 				},
 			},
@@ -314,19 +314,19 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "return filtered cloud service ID and filtered compliant assessment results",
+			name: "return filtered certification target ID and filtered compliant assessment results",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
 			},
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-						CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
-						Compliant:      util.Ref(true),
+						CertificationTargetId: util.Ref(testdata.MockCertificationTargetID1),
+						Compliant:             util.Ref(true),
 					},
 				},
 			},
@@ -338,19 +338,19 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "return filtered cloud service ID and filtered non-compliant assessment results",
+			name: "return filtered certification target ID and filtered non-compliant assessment results",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
 			},
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-						CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
-						Compliant:      util.Ref(false),
+						CertificationTargetId: util.Ref(testdata.MockCertificationTargetID1),
+						Compliant:             util.Ref(false),
 					},
 				},
 			},
@@ -434,19 +434,19 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "return filtered cloud service ID and one filtered metric ID",
+			name: "return filtered certification target ID and one filtered metric ID",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
 			},
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-						CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
-						MetricIds:      []string{testdata.MockMetricID1, testdata.MockMetricID2},
+						CertificationTargetId: util.Ref(testdata.MockCertificationTargetID1),
+						MetricIds:             []string{testdata.MockMetricID1, testdata.MockMetricID2},
 					},
 				},
 			},
@@ -459,19 +459,19 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "return filtered cloud service ID and two filtered metric IDs",
+			name: "return filtered certification target ID and two filtered metric IDs",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
 			},
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-						CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
-						MetricIds:      []string{testdata.MockMetricID1, testdata.MockMetricID2},
+						CertificationTargetId: util.Ref(testdata.MockCertificationTargetID1),
+						MetricIds:             []string{testdata.MockMetricID1, testdata.MockMetricID2},
 					},
 				},
 			},
@@ -508,7 +508,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Invalid cloud service id request",
+			name: "Invalid certification target id request",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
@@ -519,7 +519,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-						CloudServiceId: util.Ref("No Valid UUID"),
+						CertificationTargetId: util.Ref("No Valid UUID"),
 					},
 				},
 			},
@@ -562,7 +562,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				req: &orchestrator.ListAssessmentResultsRequest{
 					LatestByResourceId: util.Ref(true),
 					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-						CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
+						CertificationTargetId: util.Ref(testdata.MockCertificationTargetID1),
 					},
 				},
 			},
@@ -647,23 +647,23 @@ func TestAssessmentResultHook(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
-						Id:             testdata.MockAssessmentResultID,
-						MetricId:       testdata.MockMetricID1,
-						EvidenceId:     testdata.MockEvidenceID1,
-						CloudServiceId: testdata.MockCloudServiceID1,
-						Timestamp:      timestamppb.Now(),
+						Id:                    testdata.MockAssessmentResultID,
+						MetricId:              testdata.MockMetricID1,
+						EvidenceId:            testdata.MockEvidenceID1,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						Timestamp:             timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
-							TargetValue:    toStruct(1.0),
-							Operator:       ">=",
-							IsDefault:      true,
-							CloudServiceId: testdata.MockCloudServiceID1,
-							MetricId:       testdata.MockMetricID1,
+							TargetValue:           toStruct(1.0),
+							Operator:              ">=",
+							IsDefault:             true,
+							CertificationTargetId: testdata.MockCertificationTargetID1,
+							MetricId:              testdata.MockMetricID1,
 						},
-						NonComplianceComments: testdata.MockAssessmentResultNonComplianceComment,
-						Compliant:             true,
-						ResourceId:            testdata.MockResourceID1,
-						ResourceTypes:         []string{"ResourceType"},
-						ToolId:                util.Ref(assessment.AssessmentToolId),
+						ComplianceComment: testdata.MockAssessmentResultNonComplianceComment,
+						Compliant:         true,
+						ResourceId:        testdata.MockResourceID1,
+						ResourceTypes:     []string{"ResourceType"},
+						ToolId:            util.Ref(assessment.AssessmentToolId),
 					},
 				},
 			},
@@ -710,23 +710,23 @@ func TestStoreAssessmentResult(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
-						Id:             testdata.MockAssessmentResultID,
-						MetricId:       "assessmentResultMetricID",
-						EvidenceId:     testdata.MockEvidenceID1,
-						CloudServiceId: testdata.MockCloudServiceID1,
-						Timestamp:      timestamppb.Now(),
+						Id:                    testdata.MockAssessmentResultID,
+						MetricId:              "assessmentResultMetricID",
+						EvidenceId:            testdata.MockEvidenceID1,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						Timestamp:             timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
-							TargetValue:    toStruct(1.0),
-							Operator:       "<=",
-							IsDefault:      true,
-							CloudServiceId: testdata.MockCloudServiceID1,
-							MetricId:       testdata.MockMetricID1,
+							TargetValue:           toStruct(1.0),
+							Operator:              "<=",
+							IsDefault:             true,
+							CertificationTargetId: testdata.MockCertificationTargetID1,
+							MetricId:              testdata.MockMetricID1,
 						},
-						NonComplianceComments: testdata.MockAssessmentResultNonComplianceComment,
-						Compliant:             true,
-						ResourceId:            testdata.MockResourceID1,
-						ResourceTypes:         []string{"ResourceType"},
-						ToolId:                util.Ref(assessment.AssessmentToolId),
+						ComplianceComment: testdata.MockAssessmentResultNonComplianceComment,
+						Compliant:         true,
+						ResourceId:        testdata.MockResourceID1,
+						ResourceTypes:     []string{"ResourceType"},
+						ToolId:            util.Ref(assessment.AssessmentToolId),
 					},
 				},
 			},
@@ -739,22 +739,22 @@ func TestStoreAssessmentResult(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
-						Id:             testdata.MockAssessmentResultID,
-						EvidenceId:     testdata.MockEvidenceID1,
-						CloudServiceId: testdata.MockCloudServiceID1,
-						Timestamp:      timestamppb.Now(),
+						Id:                    testdata.MockAssessmentResultID,
+						EvidenceId:            testdata.MockEvidenceID1,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						Timestamp:             timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
-							TargetValue:    toStruct(1.0),
-							Operator:       "<=",
-							IsDefault:      true,
-							CloudServiceId: testdata.MockCloudServiceID1,
-							MetricId:       testdata.MockMetricID1,
+							TargetValue:           toStruct(1.0),
+							Operator:              "<=",
+							IsDefault:             true,
+							CertificationTargetId: testdata.MockCertificationTargetID1,
+							MetricId:              testdata.MockMetricID1,
 						},
-						NonComplianceComments: testdata.MockAssessmentResultNonComplianceComment,
-						Compliant:             true,
-						ResourceId:            testdata.MockResourceID1,
-						ResourceTypes:         []string{"ResourceType"},
-						ToolId:                util.Ref(assessment.AssessmentToolId),
+						ComplianceComment: testdata.MockAssessmentResultNonComplianceComment,
+						Compliant:         true,
+						ResourceId:        testdata.MockResourceID1,
+						ResourceTypes:     []string{"ResourceType"},
+						ToolId:            util.Ref(assessment.AssessmentToolId),
 					},
 				},
 			},
@@ -921,23 +921,23 @@ func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAss
 	for i := 0; i < count; i++ {
 		storeAssessmentResultRequest := &orchestrator.StoreAssessmentResultRequest{
 			Result: &assessment.AssessmentResult{
-				Id:             uuid.NewString(),
-				MetricId:       fmt.Sprintf("assessmentResultMetricID-%d", i),
-				EvidenceId:     testdata.MockEvidenceID1,
-				CloudServiceId: testdata.MockCloudServiceID1,
-				Timestamp:      timestamppb.Now(),
+				Id:                    uuid.NewString(),
+				MetricId:              fmt.Sprintf("assessmentResultMetricID-%d", i),
+				EvidenceId:            testdata.MockEvidenceID1,
+				CertificationTargetId: testdata.MockCertificationTargetID1,
+				Timestamp:             timestamppb.Now(),
 				MetricConfiguration: &assessment.MetricConfiguration{
-					TargetValue:    toStruct(1.0),
-					Operator:       "<=",
-					IsDefault:      true,
-					CloudServiceId: testdata.MockCloudServiceID1,
-					MetricId:       testdata.MockMetricID1,
+					TargetValue:           toStruct(1.0),
+					Operator:              "<=",
+					IsDefault:             true,
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					MetricId:              testdata.MockMetricID1,
 				},
-				NonComplianceComments: testdata.MockAssessmentResultNonComplianceComment,
-				Compliant:             true,
-				ResourceId:            testdata.MockResourceID1,
-				ResourceTypes:         []string{"ResourceType"},
-				ToolId:                util.Ref(assessment.AssessmentToolId),
+				ComplianceComment: testdata.MockAssessmentResultNonComplianceComment,
+				Compliant:         true,
+				ResourceId:        testdata.MockResourceID1,
+				ResourceTypes:     []string{"ResourceType"},
+				ToolId:            util.Ref(assessment.AssessmentToolId),
 			},
 		}
 

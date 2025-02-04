@@ -25,8 +25,8 @@
 
 package evaluation
 
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
-// the cloud service ID of the inner object.
-func (req *CreateEvaluationResultRequest) GetCloudServiceId() string {
-	return req.GetResult().GetCloudServiceId()
+// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
+// the certification target ID of the inner object.
+func (req *CreateEvaluationResultRequest) GetCertificationTargetId() string {
+	return req.GetResult().GetCertificationTargetId()
 }

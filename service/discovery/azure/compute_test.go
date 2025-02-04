@@ -607,17 +607,17 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 				BootLogging: &ontology.BootLogging{
 					Enabled: true,
 					//LoggingService: []ontology.ResourceID{"https://logstoragevm1.blob.core.windows.net/"},
-					LoggingServiceIds:     []string{},
-					RetentionPeriod:       durationpb.New(0),
-					MonitoringEnabled:     true,
-					SecurityAlertsEnabled: true,
+					LoggingServiceIds:        []string{},
+					RetentionPeriod:          durationpb.New(0),
+					MonitoringLogDataEnabled: true,
+					SecurityAlertsEnabled:    true,
 				},
 				OsLogging: &ontology.OSLogging{
-					Enabled:               false,
-					LoggingServiceIds:     []string{},
-					RetentionPeriod:       durationpb.New(0),
-					MonitoringEnabled:     true,
-					SecurityAlertsEnabled: true,
+					Enabled:                  false,
+					LoggingServiceIds:        []string{},
+					RetentionPeriod:          durationpb.New(0),
+					MonitoringLogDataEnabled: true,
+					SecurityAlertsEnabled:    true,
 				},
 				AutomaticUpdates: &ontology.AutomaticUpdates{
 					Enabled:  false,
@@ -854,7 +854,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 					},
 					Labels:   map[string]string{},
 					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-					Raw:      "{\"*armcompute.Disk\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1\",\"location\":\"eastus\",\"name\":\"disk1\",\"properties\":{\"encryption\":{\"diskEncryptionSetId\":\"\",\"type\":\"EncryptionAtRestWithPlatformKey\"},\"timeCreated\":\"2017-05-24T13:28:53.004540398Z\"},\"type\":\"Microsoft.Compute/disks\"}],\"*armcompute.DiskEncryptionSet\":[null]}",
+					Raw:      "{\"*armcompute.Disk\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1\",\"location\":\"eastus\",\"managedBy\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1\",\"name\":\"disk1\",\"properties\":{\"encryption\":{\"diskEncryptionSetId\":\"\",\"type\":\"EncryptionAtRestWithPlatformKey\"},\"timeCreated\":\"2017-05-24T13:28:53.004540398Z\"},\"type\":\"Microsoft.Compute/disks\"}],\"*armcompute.DiskEncryptionSet\":[null]}",
 					AtRestEncryption: &ontology.AtRestEncryption{
 						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
@@ -880,7 +880,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 					},
 					Labels:   map[string]string{},
 					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-					Raw:      "{\"*armcompute.Disk\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2\",\"location\":\"eastus\",\"name\":\"disk2\",\"properties\":{\"encryption\":{\"diskEncryptionSetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1\",\"type\":\"EncryptionAtRestWithCustomerKey\"},\"timeCreated\":\"2017-05-24T13:28:53.004540398Z\"},\"type\":\"Microsoft.Compute/disks\"}],\"*armcompute.DiskEncryptionSet\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1\",\"location\":\"germanywestcentral\",\"name\":\"encryptionkeyvault1\",\"properties\":{\"activeKey\":{\"keyUrl\":\"https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382\",\"sourceVault\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault1\"}}},\"type\":\"Microsoft.Compute/diskEncryptionSets\"}]}",
+					Raw:      "{\"*armcompute.Disk\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2\",\"location\":\"eastus\",\"managedBy\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1\",\"name\":\"disk2\",\"properties\":{\"encryption\":{\"diskEncryptionSetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1\",\"type\":\"EncryptionAtRestWithCustomerKey\"},\"timeCreated\":\"2017-05-24T13:28:53.004540398Z\"},\"type\":\"Microsoft.Compute/disks\"}],\"*armcompute.DiskEncryptionSet\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1\",\"location\":\"germanywestcentral\",\"name\":\"encryptionkeyvault1\",\"properties\":{\"activeKey\":{\"keyUrl\":\"https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382\",\"sourceVault\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault1\"}}},\"type\":\"Microsoft.Compute/diskEncryptionSets\"}]}",
 					AtRestEncryption: &ontology.AtRestEncryption{
 						Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 							CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
@@ -906,8 +906,8 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 						Region: "eastus",
 					},
 					Labels:   map[string]string{},
-					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res2"),
-					Raw:      "{\"*armcompute.Disk\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3\",\"location\":\"eastus\",\"name\":\"disk3\",\"properties\":{\"encryption\":{\"diskEncryptionSetId\":\"\",\"type\":\"EncryptionAtRestWithPlatformKey\"},\"timeCreated\":\"2017-05-24T13:28:53.004540398Z\"},\"type\":\"Microsoft.Compute/disks\"}],\"*armcompute.DiskEncryptionSet\":[null]}",
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:      "{\"*armcompute.Disk\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3\",\"location\":\"eastus\",\"managedBy\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1\",\"name\":\"disk3\",\"properties\":{\"encryption\":{\"diskEncryptionSetId\":\"\",\"type\":\"EncryptionAtRestWithPlatformKey\"},\"timeCreated\":\"2017-05-24T13:28:53.004540398Z\"},\"type\":\"Microsoft.Compute/disks\"}],\"*armcompute.DiskEncryptionSet\":[null]}",
 					AtRestEncryption: &ontology.AtRestEncryption{
 						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
@@ -937,6 +937,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 			if !tt.wantErr(t, err) {
 				return
 			}
+
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -1024,6 +1025,7 @@ func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
 						},
 						TimeCreated: &creationTime,
 					},
+					ManagedBy: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res2/providers/microsoft.compute/disks/disk3"),
 				},
 			},
 			fields: fields{
@@ -1037,8 +1039,8 @@ func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
 					Region: "eastus",
 				},
 				Labels:   map[string]string{},
-				ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-				Raw:      "{\"*armcompute.Disk\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1\",\"location\":\"eastus\",\"name\":\"disk1\",\"properties\":{\"encryption\":{\"diskEncryptionSetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1\",\"type\":\"EncryptionAtRestWithCustomerKey\"},\"timeCreated\":\"2017-05-24T13:28:53.004540398Z\"}}],\"*armcompute.DiskEncryptionSet\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1\",\"location\":\"germanywestcentral\",\"name\":\"encryptionkeyvault1\",\"properties\":{\"activeKey\":{\"keyUrl\":\"https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382\",\"sourceVault\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault1\"}}},\"type\":\"Microsoft.Compute/diskEncryptionSets\"}]}",
+				ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res2"),
+				Raw:      "{\"*armcompute.Disk\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1\",\"location\":\"eastus\",\"managedBy\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res2/providers/microsoft.compute/disks/disk3\",\"name\":\"disk1\",\"properties\":{\"encryption\":{\"diskEncryptionSetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1\",\"type\":\"EncryptionAtRestWithCustomerKey\"},\"timeCreated\":\"2017-05-24T13:28:53.004540398Z\"}}],\"*armcompute.DiskEncryptionSet\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1\",\"location\":\"germanywestcentral\",\"name\":\"encryptionkeyvault1\",\"properties\":{\"activeKey\":{\"keyUrl\":\"https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382\",\"sourceVault\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault1\"}}},\"type\":\"Microsoft.Compute/diskEncryptionSets\"}]}",
 				AtRestEncryption: &ontology.AtRestEncryption{
 					Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 						CustomerKeyEncryption: &ontology.CustomerKeyEncryption{

@@ -10,6 +10,7 @@ package discovery
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 
@@ -24,124 +25,103 @@ import (
 )
 
 // Suppress "imported and not used" errors
-var _ codes.Code
-var _ io.Reader
-var _ status.Status
-var _ = runtime.String
-var _ = utilities.NewDoubleArray
-var _ = metadata.Join
+var (
+	_ codes.Code
+	_ io.Reader
+	_ status.Status
+	_ = errors.New
+	_ = runtime.String
+	_ = utilities.NewDoubleArray
+	_ = metadata.Join
+)
 
 func request_ExperimentalDiscovery_UpdateResource_0(ctx context.Context, marshaler runtime.Marshaler, client ExperimentalDiscoveryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq UpdateResourceRequest
-	var metadata runtime.ServerMetadata
-
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
+	var (
+		protoReq UpdateResourceRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["resource.id"]
+	val, ok := pathParams["resource.id"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "resource.id")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "resource.id", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "resource.id", err)
 	}
-
 	msg, err := client.UpdateResource(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_ExperimentalDiscovery_UpdateResource_0(ctx context.Context, marshaler runtime.Marshaler, server ExperimentalDiscoveryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq UpdateResourceRequest
-	var metadata runtime.ServerMetadata
-
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
+	var (
+		protoReq UpdateResourceRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["resource.id"]
+	val, ok := pathParams["resource.id"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "resource.id")
 	}
-
 	err = runtime.PopulateFieldFromPath(&protoReq, "resource.id", val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "resource.id", err)
 	}
-
 	msg, err := server.UpdateResource(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
-var (
-	filter_ExperimentalDiscovery_ListGraphEdges_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
+var filter_ExperimentalDiscovery_ListGraphEdges_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 
 func request_ExperimentalDiscovery_ListGraphEdges_0(ctx context.Context, marshaler runtime.Marshaler, client ExperimentalDiscoveryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ListGraphEdgesRequest
-	var metadata runtime.ServerMetadata
-
+	var (
+		protoReq ListGraphEdgesRequest
+		metadata runtime.ServerMetadata
+	)
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ExperimentalDiscovery_ListGraphEdges_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := client.ListGraphEdges(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_ExperimentalDiscovery_ListGraphEdges_0(ctx context.Context, marshaler runtime.Marshaler, server ExperimentalDiscoveryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ListGraphEdgesRequest
-	var metadata runtime.ServerMetadata
-
+	var (
+		protoReq ListGraphEdgesRequest
+		metadata runtime.ServerMetadata
+	)
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ExperimentalDiscovery_ListGraphEdges_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := server.ListGraphEdges(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
 // RegisterExperimentalDiscoveryHandlerServer registers the http handlers for service ExperimentalDiscovery to "mux".
 // UnaryRPC     :call ExperimentalDiscoveryServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterExperimentalDiscoveryHandlerFromEndpoint instead.
+// GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
 func RegisterExperimentalDiscoveryHandlerServer(ctx context.Context, mux *runtime.ServeMux, server ExperimentalDiscoveryServer) error {
-
-	mux.Handle("POST", pattern_ExperimentalDiscovery_UpdateResource_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_ExperimentalDiscovery_UpdateResource_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/UpdateResource", runtime.WithHTTPPathPattern("/v1experimental/discovery/resources/{resource.id}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/UpdateResource", runtime.WithHTTPPathPattern("/v1experimental/discovery/resources/{resource.id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -153,20 +133,15 @@ func RegisterExperimentalDiscoveryHandlerServer(ctx context.Context, mux *runtim
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ExperimentalDiscovery_UpdateResource_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("GET", pattern_ExperimentalDiscovery_ListGraphEdges_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_ExperimentalDiscovery_ListGraphEdges_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/ListGraphEdges", runtime.WithHTTPPathPattern("/v1experimental/discovery/graph/edges"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/ListGraphEdges", runtime.WithHTTPPathPattern("/v1experimental/discovery/graph/edges"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -178,9 +153,7 @@ func RegisterExperimentalDiscoveryHandlerServer(ctx context.Context, mux *runtim
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ExperimentalDiscovery_ListGraphEdges_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
 
 	return nil
@@ -207,7 +180,6 @@ func RegisterExperimentalDiscoveryHandlerFromEndpoint(ctx context.Context, mux *
 			}
 		}()
 	}()
-
 	return RegisterExperimentalDiscoveryHandler(ctx, mux, conn)
 }
 
@@ -221,16 +193,13 @@ func RegisterExperimentalDiscoveryHandler(ctx context.Context, mux *runtime.Serv
 // to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "ExperimentalDiscoveryClient".
 // Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "ExperimentalDiscoveryClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "ExperimentalDiscoveryClient" to call the correct interceptors.
+// "ExperimentalDiscoveryClient" to call the correct interceptors. This client ignores the HTTP middlewares.
 func RegisterExperimentalDiscoveryHandlerClient(ctx context.Context, mux *runtime.ServeMux, client ExperimentalDiscoveryClient) error {
-
-	mux.Handle("POST", pattern_ExperimentalDiscovery_UpdateResource_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_ExperimentalDiscovery_UpdateResource_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/UpdateResource", runtime.WithHTTPPathPattern("/v1experimental/discovery/resources/{resource.id}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/UpdateResource", runtime.WithHTTPPathPattern("/v1experimental/discovery/resources/{resource.id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -241,18 +210,13 @@ func RegisterExperimentalDiscoveryHandlerClient(ctx context.Context, mux *runtim
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ExperimentalDiscovery_UpdateResource_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("GET", pattern_ExperimentalDiscovery_ListGraphEdges_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_ExperimentalDiscovery_ListGraphEdges_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/ListGraphEdges", runtime.WithHTTPPathPattern("/v1experimental/discovery/graph/edges"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/ListGraphEdges", runtime.WithHTTPPathPattern("/v1experimental/discovery/graph/edges"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -263,22 +227,17 @@ func RegisterExperimentalDiscoveryHandlerClient(ctx context.Context, mux *runtim
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ExperimentalDiscovery_ListGraphEdges_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
 	return nil
 }
 
 var (
 	pattern_ExperimentalDiscovery_UpdateResource_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1experimental", "discovery", "resources", "resource.id"}, ""))
-
 	pattern_ExperimentalDiscovery_ListGraphEdges_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1experimental", "discovery", "graph", "edges"}, ""))
 )
 
 var (
 	forward_ExperimentalDiscovery_UpdateResource_0 = runtime.ForwardResponseMessage
-
 	forward_ExperimentalDiscovery_ListGraphEdges_0 = runtime.ForwardResponseMessage
 )

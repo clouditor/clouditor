@@ -28,7 +28,9 @@ syntax = "proto3";
 package clouditor.discovery.v1experimental;
 
 import "api/discovery/discovery.proto";
+import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
 
 option go_package = "clouditor.io/clouditor/v2/api/discovery";
 
@@ -57,7 +59,7 @@ service ExperimentalDiscovery {
 }
 
 message UpdateResourceRequest {
-  clouditor.discovery.v1.Resource resource = 1;
+  clouditor.discovery.v1.Resource resource = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
 message ListGraphEdgesRequest {
@@ -68,13 +70,22 @@ message ListGraphEdgesRequest {
 }
 
 message ListGraphEdgesResponse {
-  repeated GraphEdge edges = 1;
+  repeated GraphEdge edges = 1 [(google.api.field_behavior) = REQUIRED];
   string next_page_token = 2;
 }
 
 message GraphEdge {
-  string id = 1;
-  string source = 2;
-  string target = 3;
-  string type = 4;
+  string id = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (buf.validate.field).string.min_len = 1
+  ];
+  string source = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (buf.validate.field).string.min_len = 1
+  ];
+  string target = 3 [
+    (google.api.field_behavior) = REQUIRED,
+    (buf.validate.field).string.min_len = 1
+  ];
+  string type = 4 [(google.api.field_behavior) = REQUIRED];
 }

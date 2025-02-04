@@ -39,8 +39,8 @@ import (
 
 type k8sStorageDiscovery struct{ k8sDiscovery }
 
-func NewKubernetesStorageDiscovery(intf kubernetes.Interface, cloudServiceID string) discovery.Discoverer {
-	return &k8sStorageDiscovery{k8sDiscovery{intf, cloudServiceID}}
+func NewKubernetesStorageDiscovery(intf kubernetes.Interface, CertificationTargetID string) discovery.Discoverer {
+	return &k8sStorageDiscovery{k8sDiscovery{intf, CertificationTargetID}}
 }
 
 func (*k8sStorageDiscovery) Name() string {

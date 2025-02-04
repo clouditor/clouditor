@@ -64,9 +64,19 @@ func NewStandaloneCommand() *cobra.Command {
 		},
 	}
 
+	BindFlags(cmd)
+
+	return cmd
+
+}
+
+func BindFlags(cmd *cobra.Command) {
 	// Set gRPC and HTTP port
 	cmd.Flags().Uint16(config.APIgRPCPortFlag, config.DefaultAPIgRPCPort, "Specifies the port used for the Clouditor gRPC API")
 	cmd.Flags().Uint16(config.APIHTTPPortFlag, config.DefaultAPIHTTPPort, "Specifies the port used for the Clouditor HTTP API")
+
+	// Set embedded OAuth2 server public URL
+	cmd.Flags().String(config.EmbeddedOAuth2ServerPublicURLFlag, "", "Specifies the embedded OAuth 2.0 authorization server public URL.")
 
 	// Set the OrchestratorURLFlag default value to the default orchestrator URL "localhost:9090"
 	if cmd.Flag(config.OrchestratorURLFlag) == nil {
@@ -84,22 +94,20 @@ func NewStandaloneCommand() *cobra.Command {
 	}
 
 	// Set flag to start embedded OAuth2 server
-	cmd.Flags().Bool(config.APIStartEmbeddedOAuth2ServerFlag, true, "Specifies whether the embedded OAuth 2.0 authorization server is started as part of the REST gateway. For production workloads, an external authorization server is recommended.")
+	cmd.Flags().Bool(config.EmbeddedOAuth2ServerEnabledFlag, true, "Specifies whether the embedded OAuth 2.0 authorization server is started as part of the REST gateway. For production workloads, an external authorization server is recommended.")
 
-	_ = viper.BindPFlag(config.APIStartEmbeddedOAuth2ServerFlag, cmd.Flags().Lookup(config.APIStartEmbeddedOAuth2ServerFlag))
+	_ = viper.BindPFlag(config.EmbeddedOAuth2ServerEnabledFlag, cmd.Flags().Lookup(config.EmbeddedOAuth2ServerEnabledFlag))
+	_ = viper.BindPFlag(config.EmbeddedOAuth2ServerPublicURLFlag, cmd.Flags().Lookup(config.EmbeddedOAuth2ServerPublicURLFlag))
 
 	_ = viper.BindPFlag(config.APIgRPCPortFlag, cmd.Flags().Lookup(config.APIgRPCPortFlag))
 	_ = viper.BindPFlag(config.APIHTTPPortFlag, cmd.Flags().Lookup(config.APIHTTPPortFlag))
 	_ = viper.BindPFlag(config.OrchestratorURLFlag, cmd.Flags().Lookup(config.OrchestratorURLFlag))
 	_ = viper.BindPFlag(config.AssessmentURLFlag, cmd.Flags().Lookup(config.AssessmentURLFlag))
 	_ = viper.BindPFlag(config.EvidenceStoreURLFlag, cmd.Flags().Lookup(config.EvidenceStoreURLFlag))
-	_ = viper.BindPFlag(config.APIStartEmbeddedOAuth2ServerFlag, cmd.Flags().Lookup(config.APIStartEmbeddedOAuth2ServerFlag))
 
 	command_evidence.BindFlags(cmd)
 	command_assessment.BindFlags(cmd)
 	command_discovery.BindFlags(cmd)
 	command_evaluation.BindFlags(cmd)
 	command_orchestrator.BindFlags(cmd)
-
-	return cmd
 }

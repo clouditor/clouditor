@@ -1,7 +1,7 @@
 package ontology
 
 import (
-	reflect "reflect"
+	"reflect"
 	"testing"
 	"time"
 
@@ -26,7 +26,7 @@ func TestResourceTypes(t *testing.T) {
 			args: args{
 				r: &VirtualMachine{},
 			},
-			want: []string{"VirtualMachine", "Compute", "CloudResource", "Resource"},
+			want: []string{"VirtualMachine", "Compute", "Infrastructure", "Resource"},
 		},
 	}
 	for _, tt := range tests {
@@ -60,6 +60,23 @@ func TestRelated(t *testing.T) {
 				{
 					Property: "parent",
 					Value:    "some-storage-account-id",
+				},
+			},
+		},
+		{
+			name: "happy path with plural",
+			args: args{
+				r: &Application{
+					Id:         "some-id",
+					Name:       "some-name",
+					LibraryIds: []string{"some-library"},
+					Raw:        "{}",
+				},
+			},
+			want: []Relationship{
+				{
+					Property: "library",
+					Value:    "some-library",
 				},
 			},
 		},
@@ -106,18 +123,20 @@ func TestResourceMap(t *testing.T) {
 					"internetAccessibleEndpoint": false,
 					"labels":                     map[string]any{},
 					"name":                       "My VM",
+					"description":                "",
 					"networkInterfaceIds":        []any{},
 					"malwareProtection":          nil,
 					"osLogging":                  nil,
 					"raw":                        "",
 					"redundancies":               []any{},
+					"remoteAttestation":          nil,
 					"resourceLogging":            nil,
 					"automaticUpdates": map[string]any{
 						"enabled":      false,
 						"interval":     "172800s",
 						"securityOnly": false,
 					},
-					"type":            []string{"VirtualMachine", "Compute", "CloudResource", "Resource"},
+					"type":            []string{"VirtualMachine", "Compute", "Infrastructure", "Resource"},
 					"usageStatistics": nil,
 				}
 

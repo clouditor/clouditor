@@ -693,10 +693,24 @@
     "range": {
       "order": {
         "values": [
-          "TLS 1.0",
-          "TLS 1.1",
-          "TLS 1.2",
-          "TLS 1.3"
+          "TLS"
+        ]
+      }
+    }
+  },
+  {
+    "id": "TransportEncryptionProtocolVersion",
+    "name": "Transport Encryption Protocol Version",
+    "description": "This metric is used to assess if an up-to-date transport encryption protocol version is used",
+    "category": "Transport Encryption",
+    "scale": 1,
+    "range": {
+      "order": {
+        "values": [
+          "1.0",
+          "1.1",
+          "1.2",
+          "1.3"
         ]
       }
     }
@@ -757,6 +771,20 @@
         "values": [
           false,
           true
+        ]
+      }
+    }
+  },
+  {
+    "id": "StrongCryptographicHash",
+    "name": "Application: Usage of strong cryptographic hashes",
+    "description": "This metric is used to assess if an application uses strong cryptographic hashes",
+    "category": "Application Security",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
         ]
       }
     }

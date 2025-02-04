@@ -57,7 +57,7 @@ func TestMain(m *testing.M) {
 	clitest.AutoChdir()
 
 	svc = service_orchestrator.NewService()
-	_, err = svc.CreateDefaultTargetCloudService()
+	_, err = svc.CreateDefaultCertificationTarget()
 	if err != nil {
 		panic(err)
 	}
@@ -82,7 +82,7 @@ func TestSession(t *testing.T) {
 
 	// Do a simple authenticated call
 	oc := orchestrator.NewOrchestratorClient(session)
-	_, err = oc.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{})
+	_, err = oc.ListCertificationTargets(context.Background(), &orchestrator.ListCertificationTargetsRequest{})
 	assert.NoError(t, err)
 }
 
@@ -185,14 +185,14 @@ func TestValidArgsGetCatalogs(t *testing.T) {
 				toComplete: "",
 			},
 			want: func(t *testing.T, got []string) bool {
-				return assert.Contains(t, got, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID, testdata.MockCatalogName, testdata.MockCatalogDescription))
+				return assert.Contains(t, got, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID1, testdata.MockCatalogName, testdata.MockCatalogDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 		{
 			name: "all args - return nothing",
 			args: args{
-				args:       []string{testdata.MockCatalogID},
+				args:       []string{testdata.MockCatalogID1},
 				toComplete: "",
 			},
 			want:  assert.Empty[[]string],
@@ -227,14 +227,14 @@ func TestValidArgsGetCategory(t *testing.T) {
 				toComplete: "",
 			},
 			want: func(t *testing.T, got []string) bool {
-				return assert.Contains(t, got, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID, testdata.MockCatalogName, testdata.MockCatalogDescription))
+				return assert.Contains(t, got, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID1, testdata.MockCatalogName, testdata.MockCatalogDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 		{
 			name: "one arg - return category",
 			args: args{
-				args:       []string{testdata.MockCatalogID},
+				args:       []string{testdata.MockCatalogID1},
 				toComplete: "",
 			},
 			want: func(t *testing.T, got []string) bool {
@@ -245,7 +245,7 @@ func TestValidArgsGetCategory(t *testing.T) {
 		{
 			name: "all args - return nothing",
 			args: args{
-				args:       []string{testdata.MockCatalogID, testdata.MockCategoryName},
+				args:       []string{testdata.MockCatalogID1, testdata.MockCategoryName},
 				toComplete: "",
 			},
 			want:  assert.Empty[[]string],
@@ -280,14 +280,14 @@ func TestValidArgsGetControls(t *testing.T) {
 				toComplete: "",
 			},
 			want: func(t *testing.T, got []string) bool {
-				return assert.Contains(t, got, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID, testdata.MockCatalogName, testdata.MockCatalogDescription))
+				return assert.Contains(t, got, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID1, testdata.MockCatalogName, testdata.MockCatalogDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 		{
 			name: "one arg - return category",
 			args: args{
-				args:       []string{testdata.MockCatalogID},
+				args:       []string{testdata.MockCatalogID1},
 				toComplete: "",
 			},
 			want: func(t *testing.T, got []string) bool {
@@ -298,7 +298,7 @@ func TestValidArgsGetControls(t *testing.T) {
 		{
 			name: "two args - return category",
 			args: args{
-				args:       []string{testdata.MockCatalogID, testdata.MockCategoryName},
+				args:       []string{testdata.MockCatalogID1, testdata.MockCategoryName},
 				toComplete: "",
 			},
 			want: func(t *testing.T, got []string) bool {
@@ -309,7 +309,7 @@ func TestValidArgsGetControls(t *testing.T) {
 		{
 			name: "all args - return nothing",
 			args: args{
-				args:       []string{testdata.MockCatalogID, testdata.MockCategoryName, testdata.MockControlID1},
+				args:       []string{testdata.MockCatalogID1, testdata.MockCategoryName, testdata.MockControlID1},
 				toComplete: "",
 			},
 			want:  assert.Empty[[]string],
@@ -326,7 +326,7 @@ func TestValidArgsGetControls(t *testing.T) {
 	}
 }
 
-func TestValidArgsGetCloudServices(t *testing.T) {
+func TestValidArgsGetCertificationTargets(t *testing.T) {
 	type args struct {
 		in0        *cobra.Command
 		args       []string
@@ -339,7 +339,7 @@ func TestValidArgsGetCloudServices(t *testing.T) {
 		want1 cobra.ShellCompDirective
 	}{
 		{
-			name: "some cloud services",
+			name: "some certification targets",
 			args: args{
 				toComplete: "",
 			},
@@ -350,7 +350,7 @@ func TestValidArgsGetCloudServices(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := cli.ValidArgsGetCloudServices(tt.args.in0, tt.args.args, tt.args.toComplete)
+			got, got1 := cli.ValidArgsGetCertificationTargets(tt.args.in0, tt.args.args, tt.args.toComplete)
 			tt.want(t, got)
 			assert.Equal(t, tt.want1, got1)
 		})
