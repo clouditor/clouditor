@@ -50,12 +50,14 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 		clients  clients
 		authOpts *gophercloud.AuthOptions
 		region   string
+		domain   *domain
+		project  *project
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		want    assert.Want[[]ontology.IsResource]
-		wantErr assert.ErrorAssertionFunc
+		name     string
+		fields   fields
+		wantList assert.Want[[]ontology.IsResource]
+		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Happy path",
@@ -73,10 +75,13 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 							return testhelper.Endpoint(), nil
 						},
 					},
+					networkClient: client.ServiceClient(),
 				},
-				region: "test region",
+				region:  "test region",
+				domain:  &domain{},
+				project: &project{},
 			},
-			want: func(t *testing.T, got []ontology.IsResource) bool {
+			wantList: func(t *testing.T, got []ontology.IsResource) bool {
 				assert.Equal(t, 2, len(got))
 
 				t1, err := time.Parse("2006-01-02T15:04:05", "2019-06-30T04:15:37")
@@ -109,10 +114,12 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 				clients:  tt.fields.clients,
 				authOpts: tt.fields.authOpts,
 				region:   tt.fields.region,
+				domain:   tt.fields.domain,
+				project:  tt.fields.project,
 			}
 			gotList, err := d.discoverNetworkInterfaces()
 
-			tt.want(t, gotList)
+			tt.wantList(t, gotList)
 			tt.wantErr(t, err)
 		})
 	}

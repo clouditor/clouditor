@@ -1745,7 +1745,7 @@ components:
                 success:
                     type: boolean
                     description: Success is true, if the comparison was sucessful
-            description: An optional structure containing more details how a comparison inside an assessment result was done and if it was succesful.
+            description: An optional structure containing more details how a comparison inside an assessment result was done and if it was successful.
         Control:
             required:
                 - id
