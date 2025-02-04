@@ -46,6 +46,8 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 		clients  clients
 		authOpts *gophercloud.AuthOptions
 		region   string
+		domain   *domain
+		project  *project
 	}
 	type args struct {
 		volume *volumes.Volume
@@ -129,6 +131,8 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 				clients:  tt.fields.clients,
 				authOpts: tt.fields.authOpts,
 				region:   tt.fields.region,
+				domain:   tt.fields.domain,
+				project:  tt.fields.project,
 			}
 			got, err := d.handleBlockStorage(tt.args.volume)
 

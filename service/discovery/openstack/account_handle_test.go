@@ -37,12 +37,14 @@ import (
 	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/projects"
 )
 
-func Test_openstackDiscovery_handleTenant(t *testing.T) {
+func Test_openstackDiscovery_handleProject(t *testing.T) {
 	type fields struct {
 		ctID     string
 		clients  clients
 		authOpts *gophercloud.AuthOptions
 		region   string
+		domain   *domain
+		project  *project
 	}
 	type args struct {
 		project *projects.Project
@@ -94,6 +96,8 @@ func Test_openstackDiscovery_handleTenant(t *testing.T) {
 				clients:  tt.fields.clients,
 				authOpts: tt.fields.authOpts,
 				region:   tt.fields.region,
+				domain:   tt.fields.domain,
+				project:  tt.fields.project,
 			}
 			got, err := d.handleProject(tt.args.project)
 
@@ -108,6 +112,8 @@ func Test_openstackDiscovery_handleDomain(t *testing.T) {
 		ctID     string
 		clients  clients
 		authOpts *gophercloud.AuthOptions
+		domain   *domain
+		project  *project
 	}
 	type args struct {
 		domain *domains.Domain
@@ -149,6 +155,8 @@ func Test_openstackDiscovery_handleDomain(t *testing.T) {
 				ctID:     tt.fields.ctID,
 				clients:  tt.fields.clients,
 				authOpts: tt.fields.authOpts,
+				domain:   tt.fields.domain,
+				project:  tt.fields.project,
 			}
 			got, err := d.handleDomain(tt.args.domain)
 

@@ -45,7 +45,7 @@ func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) 
 			Region: d.region,
 		},
 		Labels:   labels(util.Ref(network.Tags)),
-		ParentId: util.Ref(network.TenantID),
+		ParentId: util.Ref(network.ProjectID),
 		Raw:      discovery.Raw(network),
 	}
 
