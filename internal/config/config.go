@@ -26,8 +26,9 @@
 package config
 
 import (
-	"clouditor.io/clouditor/v2/api/orchestrator"
 	"strings"
+
+	"clouditor.io/clouditor/v2/api/orchestrator"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
