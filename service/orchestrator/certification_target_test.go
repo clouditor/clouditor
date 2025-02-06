@@ -58,7 +58,7 @@ func init() {
 	viper.Set(config.DefaultCertificationTargetTypeFlag, int32(config.DefaultCertificationTargetType))
 }
 
-func TestService_CreateCertificationTarget(t *testing.T) {
+func TestService_RegisterCertificationTarget(t *testing.T) {
 	// UUID for testing
 	id := uuid.NewString()
 
