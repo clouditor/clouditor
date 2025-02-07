@@ -422,6 +422,9 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 
 // CreateEvaluationResult is a method implementation of the assessment interface
 func (svc *Service) CreateEvaluationResult(ctx context.Context, req *evaluation.CreateEvaluationResultRequest) (res *evaluation.EvaluationResult, err error) {
+	//Normally, a new evaluation result does not contain a UUID; therefore, we will add one here. This must be done before the validation check to prevent validation failure.
+	req.Result.Id = uuid.NewString()
+
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
@@ -446,7 +449,6 @@ func (svc *Service) CreateEvaluationResult(ctx context.Context, req *evaluation.
 	}
 
 	res = req.Result
-	res.Id = uuid.NewString()
 	err = svc.storage.Create(res)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
