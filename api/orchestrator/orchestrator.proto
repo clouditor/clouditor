@@ -611,7 +611,6 @@ message MetricChangeEvent {
 message AssessmentTool {
   string id = 1 [
     (buf.validate.field).string = {uuid: true},
-    (buf.validate.field).ignore_empty = true
   ];
 
   string name = 2 [
@@ -631,7 +630,6 @@ message AssessmentTool {
 message CertificationTarget {
   string id = 1 [
     (buf.validate.field).string = {uuid: true},
-    (buf.validate.field).ignore_empty = true,
     (google.api.field_behavior) = REQUIRED
   ];
 
