@@ -26,10 +26,11 @@
 package orchestrator
 
 import (
-	"clouditor.io/clouditor/v2/internal/config"
 	"context"
 	"errors"
 	"fmt"
+
+	"clouditor.io/clouditor/v2/internal/config"
 	"github.com/spf13/viper"
 
 	"clouditor.io/clouditor/v2/api"
@@ -54,6 +55,9 @@ const (
 )
 
 func (s *Service) RegisterCertificationTarget(ctx context.Context, req *orchestrator.RegisterCertificationTargetRequest) (res *orchestrator.CertificationTarget, err error) {
+	// Normally, a new evaluation result does not contain a UUID; therefore, we will add one here. This must be done before the validation check to prevent validation failure.
+	req.CertificationTarget.Id = uuid.NewString()
+
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
@@ -62,8 +66,7 @@ func (s *Service) RegisterCertificationTarget(ctx context.Context, req *orchestr
 
 	res = new(orchestrator.CertificationTarget)
 
-	// Generate a new ID
-	res.Id = uuid.NewString()
+	res.Id = req.CertificationTarget.Id
 	res.Name = req.CertificationTarget.Name
 	res.Description = req.CertificationTarget.Description
 

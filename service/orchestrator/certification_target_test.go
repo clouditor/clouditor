@@ -29,14 +29,12 @@ import (
 	"context"
 	"testing"
 
-	"clouditor.io/clouditor/v2/internal/config"
-	"github.com/spf13/viper"
-
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
@@ -44,135 +42,18 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
-	"gorm.io/gorm"
-
 	"github.com/google/uuid"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"gorm.io/gorm"
 )
 
 func init() {
 	viper.Set(config.DefaultCertificationTargetNameFlag, config.DefaultCertificationTargetName)
 	viper.Set(config.DefaultCertificationTargetDescriptionFlag, config.DefaultCertificationTargetDescription)
 	viper.Set(config.DefaultCertificationTargetTypeFlag, int32(config.DefaultCertificationTargetType))
-}
-
-func TestService_RegisterCertificationTarget(t *testing.T) {
-	// UUID for testing
-	id := uuid.NewString()
-
-	tests := []struct {
-		name    string
-		req     *orchestrator.RegisterCertificationTargetRequest
-		res     *orchestrator.CertificationTarget
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "missing request",
-			req:  nil,
-			res:  nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error()) &&
-					assert.Equal(t, codes.InvalidArgument, status.Code(err))
-			},
-		},
-		{
-			name: "missing certification target",
-			req:  &orchestrator.RegisterCertificationTargetRequest{},
-			res:  nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "certification_target: value is required") &&
-					assert.Equal(t, codes.InvalidArgument, status.Code(err))
-			},
-		},
-		{
-			name: "missing certification target name",
-			req:  &orchestrator.RegisterCertificationTargetRequest{CertificationTarget: &orchestrator.CertificationTarget{}},
-			res:  nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "certification_target.name: value length must be at least 1 characters") &&
-					assert.Equal(t, codes.InvalidArgument, status.Code(err))
-			},
-		},
-		{
-			name: "Happy path: without metadata as input",
-			req: &orchestrator.RegisterCertificationTargetRequest{
-				CertificationTarget: &orchestrator.CertificationTarget{
-					Id:          id,
-					Name:        "test",
-					Description: "some",
-				},
-			},
-			res: &orchestrator.CertificationTarget{
-				Name:        "test",
-				Description: "some",
-				Metadata:    &orchestrator.CertificationTarget_Metadata{},
-			},
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Happy path: with metadata as input",
-			req: &orchestrator.RegisterCertificationTargetRequest{
-				CertificationTarget: &orchestrator.CertificationTarget{
-					Id:          id,
-					Name:        "test",
-					Description: "some",
-					Metadata: &orchestrator.CertificationTarget_Metadata{
-						Labels: map[string]string{
-							"owner": "testOwner",
-							"env":   "prod",
-						},
-					},
-				},
-			},
-			res: &orchestrator.CertificationTarget{
-				Name:        "test",
-				Description: "some",
-				Metadata: &orchestrator.CertificationTarget_Metadata{
-					Labels: map[string]string{
-						"owner": "testOwner",
-						"env":   "prod",
-					},
-				},
-			},
-			wantErr: assert.NoError,
-		},
-	}
-	orchestratorService := NewService()
-	CertificationTarget, err := orchestratorService.CreateDefaultCertificationTarget()
-	assert.NoError(t, err)
-	assert.NotNil(t, CertificationTarget)
-	assert.NoError(t, api.Validate(CertificationTarget))
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			res, err := orchestratorService.RegisterCertificationTarget(context.Background(), tt.req)
-			tt.wantErr(t, err)
-
-			if tt.res != nil {
-				assert.NotEmpty(t, res.Id)
-			}
-
-			// reset the IDs because we cannot compare them, since they are randomly generated
-			if res != nil {
-				assert.NoError(t, api.Validate(res))
-
-				res.Id = ""
-				// check creation/update time and reset
-				assert.NotEmpty(t, res.CreatedAt)
-				res.CreatedAt = nil
-
-				assert.NotEmpty(t, res.UpdatedAt)
-				res.UpdatedAt = nil
-			}
-			if tt.res != nil {
-				tt.res.Id = ""
-			}
-
-			assert.Equal(t, tt.res, res)
-		})
-	}
 }
 
 func TestService_GetCertificationTarget(t *testing.T) {
@@ -691,6 +572,169 @@ func TestService_GetCertificationTargetStatistics(t *testing.T) {
 			gotRes, err := s.GetCertificationTargetStatistics(tt.args.ctx, tt.args.req)
 			tt.wantErr(t, err)
 			assert.Equal(t, tt.wantRes, gotRes)
+		})
+	}
+}
+
+func TestService_RegisterCertificationTarget(t *testing.T) {
+	type fields struct {
+		UnimplementedOrchestratorServer orchestrator.UnimplementedOrchestratorServer
+		CertificationTargetHooks        []orchestrator.CertificationTargetHookFunc
+		auditScopeHooks                 []orchestrator.AuditScopeHookFunc
+		AssessmentResultHooks           []assessment.ResultHookFunc
+		storage                         persistence.Storage
+		metricsFile                     string
+		loadMetricsFunc                 func() ([]*assessment.Metric, error)
+		catalogsFolder                  string
+		loadCatalogsFunc                func() ([]*orchestrator.Catalog, error)
+		events                          chan *orchestrator.MetricChangeEvent
+		authz                           service.AuthorizationStrategy
+	}
+	type args struct {
+		ctx context.Context
+		req *orchestrator.RegisterCertificationTargetRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes assert.Want[*orchestrator.CertificationTarget]
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Request validation error",
+			args: args{
+				req: &orchestrator.RegisterCertificationTargetRequest{
+					CertificationTarget: &orchestrator.CertificationTarget{},
+				},
+			},
+			wantRes: assert.Nil[*orchestrator.CertificationTarget],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, " validation error:\n - certification_target.name: value length must be at least 1 characters [string.min_len]")
+			},
+		},
+		{
+			name: "Database error",
+			fields: fields{
+				storage: &testutil.StorageWithError{CreateErr: gorm.ErrInvalidDB},
+			},
+			args: args{
+				req: &orchestrator.RegisterCertificationTargetRequest{
+					CertificationTarget: orchestratortest.NewCertificationTarget(),
+				},
+			},
+			wantRes: assert.Nil[*orchestrator.CertificationTarget],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not add certification target to the database:")
+			},
+		},
+		{
+			name: "Happy path: with metadata as input",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+			},
+			args: args{
+				req: &orchestrator.RegisterCertificationTargetRequest{
+					CertificationTarget: &orchestrator.CertificationTarget{
+						Name:        "test",
+						Description: "some",
+						Metadata: &orchestrator.CertificationTarget_Metadata{
+							Labels: map[string]string{
+								"owner": "testOwner",
+								"env":   "prod",
+							},
+						},
+					},
+				},
+			},
+			wantRes: func(t *testing.T, got *orchestrator.CertificationTarget) bool {
+				want := &orchestrator.CertificationTarget{
+					Name:        "test",
+					Description: "some",
+					CreatedAt:   &timestamppb.Timestamp{},
+					UpdatedAt:   &timestamppb.Timestamp{},
+					Metadata: &orchestrator.CertificationTarget_Metadata{
+						Labels: map[string]string{
+							"owner": "testOwner",
+							"env":   "prod",
+						},
+					},
+				}
+
+				// Check if ID is set and delete it for the comparison
+				assert.NotEmpty(t, got.GetId())
+				got.Id = ""
+
+				// Check if timestamp is set and delete it for the comparison
+				assert.NotEmpty(t, got.CreatedAt)
+				got.CreatedAt = &timestamppb.Timestamp{}
+
+				// Check if updated_at is set and delete it for the comparison
+				assert.NotEmpty(t, got.UpdatedAt)
+				got.UpdatedAt = &timestamppb.Timestamp{}
+
+				return assert.Equal(t, want, got)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: without metadata as input",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+			},
+			args: args{
+				req: &orchestrator.RegisterCertificationTargetRequest{
+					CertificationTarget: &orchestrator.CertificationTarget{
+						Name:        "test",
+						Description: "some",
+					},
+				},
+			},
+			wantRes: func(t *testing.T, got *orchestrator.CertificationTarget) bool {
+				want := &orchestrator.CertificationTarget{
+					Name:        "test",
+					Description: "some",
+					CreatedAt:   &timestamppb.Timestamp{},
+					UpdatedAt:   &timestamppb.Timestamp{},
+					Metadata:    &orchestrator.CertificationTarget_Metadata{},
+				}
+
+				// Check if ID is set and delete it for the comparison
+				assert.NotEmpty(t, got.GetId())
+				got.Id = ""
+
+				// Check if timestamp is set and delete it for the comparison
+				assert.NotEmpty(t, got.CreatedAt)
+				got.CreatedAt = &timestamppb.Timestamp{}
+
+				// Check if updated_at is set and delete it for the comparison
+				assert.NotEmpty(t, got.UpdatedAt)
+				got.UpdatedAt = &timestamppb.Timestamp{}
+
+				return assert.Equal(t, want, got)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				UnimplementedOrchestratorServer: tt.fields.UnimplementedOrchestratorServer,
+				CertificationTargetHooks:        tt.fields.CertificationTargetHooks,
+				auditScopeHooks:                 tt.fields.auditScopeHooks,
+				AssessmentResultHooks:           tt.fields.AssessmentResultHooks,
+				storage:                         tt.fields.storage,
+				metricsFile:                     tt.fields.metricsFile,
+				loadMetricsFunc:                 tt.fields.loadMetricsFunc,
+				catalogsFolder:                  tt.fields.catalogsFolder,
+				loadCatalogsFunc:                tt.fields.loadCatalogsFunc,
+				events:                          tt.fields.events,
+				authz:                           tt.fields.authz,
+			}
+			gotRes, err := s.RegisterCertificationTarget(tt.args.ctx, tt.args.req)
+
+			tt.wantErr(t, err)
+			tt.wantRes(t, gotRes)
 		})
 	}
 }
