@@ -713,7 +713,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 			},
 			wantResp: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, " validation error:\n - result.timestamp: value is required [required]")
+				return assert.ErrorContains(t, err, " validation error:\n - result.id: value is empty, which is not a valid UUID")
 			},
 		},
 		{
@@ -722,6 +722,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
+						Id:                    uuid.NewString(),
 						MetricId:              "assessmentResultMetricID",
 						EvidenceId:            testdata.MockEvidenceID1,
 						CertificationTargetId: testdata.MockCertificationTargetID1,
@@ -750,6 +751,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
+						Id:                    uuid.NewString(),
 						EvidenceId:            testdata.MockEvidenceID1,
 						CertificationTargetId: testdata.MockCertificationTargetID1,
 						Timestamp:             timestamppb.Now(),

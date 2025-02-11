@@ -40,7 +40,6 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
 
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -178,9 +177,6 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 
 // StoreAssessmentResult is a method implementation of the orchestrator interface: It receives an assessment result and stores it
 func (svc *Service) StoreAssessmentResult(ctx context.Context, req *orchestrator.StoreAssessmentResultRequest) (res *orchestrator.StoreAssessmentResultResponse, err error) {
-	// Normally, a new assessment result does not contain a UUID; therefore, we will add one here. This must be done before the validation check to prevent validation failure.
-	req.Result.Id = uuid.NewString()
-
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {

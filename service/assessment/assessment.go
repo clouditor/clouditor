@@ -47,6 +47,7 @@ import (
 	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/service"
 
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2/clientcredentials"
@@ -474,7 +475,7 @@ func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, r
 		types = ontology.ResourceTypes(resource)
 
 		result := &assessment.AssessmentResult{
-			// the ID is set in the StoreAssessmentResult() method
+			Id:                    uuid.NewString(),
 			Timestamp:             timestamppb.Now(),
 			CertificationTargetId: ev.GetCertificationTargetId(),
 			MetricId:              metricID,
