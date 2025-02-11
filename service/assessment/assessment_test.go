@@ -947,6 +947,9 @@ func TestService_handleEvidence(t *testing.T) {
 			},
 			want: func(t *testing.T, got []*assessment.AssessmentResult) bool {
 				for _, result := range got {
+					// We have to add an ID, otherwise the Validate() function fails
+					result.Id = uuid.NewString()
+
 					err := api.Validate(result)
 					assert.NoError(t, err)
 				}
@@ -978,6 +981,9 @@ func TestService_handleEvidence(t *testing.T) {
 			},
 			want: func(t *testing.T, got []*assessment.AssessmentResult) bool {
 				for _, result := range got {
+					// We have to add an ID, otherwise the Validate() function fails
+					result.Id = uuid.NewString()
+
 					err := api.Validate(result)
 					assert.NoError(t, err)
 				}
