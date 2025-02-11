@@ -422,7 +422,7 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 
 // CreateEvaluationResult is a method implementation of the assessment interface to store only manually created Evaluation Results
 func (svc *Service) CreateEvaluationResult(ctx context.Context, req *evaluation.CreateEvaluationResultRequest) (res *evaluation.EvaluationResult, err error) {
-	// Normally, a new evaluation result does not contain a UUID; therefore, we will add one here. This must be done before the validation check to prevent validation failure.
+	// A manually created evaluation result typically does not contain a UUID; therefore, we will add one here. This must be done before the validation check to prevent validation failure.
 	req.Result.Id = uuid.NewString()
 
 	// Validate request

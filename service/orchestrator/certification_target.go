@@ -55,7 +55,7 @@ const (
 )
 
 func (s *Service) RegisterCertificationTarget(ctx context.Context, req *orchestrator.RegisterCertificationTargetRequest) (res *orchestrator.CertificationTarget, err error) {
-	// Normally, a new evaluation result does not contain a UUID; therefore, we will add one here. This must be done before the validation check to prevent validation failure.
+	// A new certification target typically does not contain a UUID; therefore, we will add one here. This must be done before the validation check to prevent validation failure.
 	req.CertificationTarget.Id = uuid.NewString()
 
 	// Validate request
