@@ -191,7 +191,7 @@ func TestCertificationTargetHooks(t *testing.T) {
 			}
 
 			for i, hookFunction := range tt.args.CertificationTargetHooks {
-				s.RegisterCertificationTargetHook(hookFunction)
+				s.CreateCertificationTargetHook(hookFunction)
 
 				// Check if hook is registered
 				funcName1 := runtime.FuncForPC(reflect.ValueOf(s.CertificationTargetHooks[i]).Pointer()).Name()

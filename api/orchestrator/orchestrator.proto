@@ -127,7 +127,7 @@ service Orchestrator {
   }
 
   // Registers a new target certification target
-  rpc RegisterCertificationTarget(RegisterCertificationTargetRequest) returns (CertificationTarget) {
+  rpc CreateCertificationTarget(CreateCertificationTargetRequest) returns (CertificationTarget) {
     option (google.api.http) = {
       post: "/v1/orchestrator/certification_targets"
       body: "certification_target"
@@ -463,7 +463,7 @@ message GetCertificationTargetRequest {
   ];
 }
 
-message RegisterCertificationTargetRequest {
+message CreateCertificationTargetRequest {
   CertificationTarget certification_target = 1 [
     (buf.validate.field).required = true,
     (google.api.field_behavior) = REQUIRED
@@ -740,8 +740,7 @@ message Category {
   repeated Control controls = 4 [
     (tagger.tags) =
       "gorm:\"foreignKey:category_name,category_"
-      "catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE\""
-,
+      "catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE\"",
     (buf.validate.field).repeated.items.required = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -785,8 +784,7 @@ message Control {
     (tagger.tags) =
       "gorm:\"foreignKey:parent_control_id,parent_control_"
       "category_name,parent_control_category_catalog_id;"
-      "references=id,category_name;category_catalog_id\""
-,
+      "references=id,category_name;category_catalog_id\"",
     (buf.validate.field).repeated.items.required = true,
     (google.api.field_behavior) = REQUIRED
   ];

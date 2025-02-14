@@ -38,8 +38,8 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-// NewRegisterCertificationTargetCommand returns a cobra command for the `discover` subcommand
-func NewRegisterCertificationTargetCommand() *cobra.Command {
+// NewCreateCertificationTargetCommand returns a cobra command for the `discover` subcommand
+func NewCreateCertificationTargetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "register [name]",
 		Short: "Registers a new target certification target",
@@ -61,7 +61,7 @@ func NewRegisterCertificationTargetCommand() *cobra.Command {
 
 			name := args[0]
 
-			res, err = client.RegisterCertificationTarget(context.Background(), &orchestrator.RegisterCertificationTargetRequest{
+			res, err = client.CreateCertificationTarget(context.Background(), &orchestrator.CreateCertificationTargetRequest{
 				CertificationTarget: &orchestrator.CertificationTarget{
 					Name: name,
 				},
@@ -286,7 +286,7 @@ func NewCloudCommand() *cobra.Command {
 // AddCommands adds all subcommands
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
-		NewRegisterCertificationTargetCommand(),
+		NewCreateCertificationTargetCommand(),
 		NewListCertificationTargetsCommand(),
 		NewGetCertificationTargetCommand(),
 		NewUpdateCertificationTargetCommand(),

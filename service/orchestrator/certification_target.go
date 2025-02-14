@@ -53,7 +53,7 @@ const (
 	DefaultCertificationTargetId = "00000000-0000-0000-0000-000000000000"
 )
 
-func (s *Service) RegisterCertificationTarget(ctx context.Context, req *orchestrator.RegisterCertificationTargetRequest) (res *orchestrator.CertificationTarget, err error) {
+func (s *Service) CreateCertificationTarget(ctx context.Context, req *orchestrator.CreateCertificationTargetRequest) (res *orchestrator.CertificationTarget, err error) {
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {

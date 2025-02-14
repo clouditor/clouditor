@@ -57,10 +57,10 @@ func init() {
 	viper.Set(config.DefaultCertificationTargetTypeFlag, int32(config.DefaultCertificationTargetType))
 }
 
-func TestService_RegisterCertificationTarget(t *testing.T) {
+func TestService_CreateCertificationTarget(t *testing.T) {
 	tests := []struct {
 		name    string
-		req     *orchestrator.RegisterCertificationTargetRequest
+		req     *orchestrator.CreateCertificationTargetRequest
 		res     *orchestrator.CertificationTarget
 		wantErr assert.ErrorAssertionFunc
 	}{
@@ -75,7 +75,7 @@ func TestService_RegisterCertificationTarget(t *testing.T) {
 		},
 		{
 			name: "missing certification target",
-			req:  &orchestrator.RegisterCertificationTargetRequest{},
+			req:  &orchestrator.CreateCertificationTargetRequest{},
 			res:  nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "certification_target: value is required") &&
@@ -84,7 +84,7 @@ func TestService_RegisterCertificationTarget(t *testing.T) {
 		},
 		{
 			name: "missing certification target name",
-			req:  &orchestrator.RegisterCertificationTargetRequest{CertificationTarget: &orchestrator.CertificationTarget{}},
+			req:  &orchestrator.CreateCertificationTargetRequest{CertificationTarget: &orchestrator.CertificationTarget{}},
 			res:  nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "certification_target.name: value length must be at least 1 characters") &&
@@ -93,7 +93,7 @@ func TestService_RegisterCertificationTarget(t *testing.T) {
 		},
 		{
 			name: "Happy path: without metadata as input",
-			req: &orchestrator.RegisterCertificationTargetRequest{
+			req: &orchestrator.CreateCertificationTargetRequest{
 				CertificationTarget: &orchestrator.CertificationTarget{
 					Name:        "test",
 					Description: "some",
@@ -108,7 +108,7 @@ func TestService_RegisterCertificationTarget(t *testing.T) {
 		},
 		{
 			name: "Happy path: with metadata as input",
-			req: &orchestrator.RegisterCertificationTargetRequest{
+			req: &orchestrator.CreateCertificationTargetRequest{
 				CertificationTarget: &orchestrator.CertificationTarget{
 					Name:        "test",
 					Description: "some",
@@ -141,7 +141,7 @@ func TestService_RegisterCertificationTarget(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := orchestratorService.RegisterCertificationTarget(context.Background(), tt.req)
+			res, err := orchestratorService.CreateCertificationTarget(context.Background(), tt.req)
 			tt.wantErr(t, err)
 
 			if tt.res != nil {

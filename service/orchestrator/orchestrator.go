@@ -228,7 +228,7 @@ func (s *Service) informHooks(ctx context.Context, cld *orchestrator.Certificati
 	}
 }
 
-func (s *Service) RegisterCertificationTargetHook(hook orchestrator.CertificationTargetHookFunc) {
+func (s *Service) CreateCertificationTargetHook(hook orchestrator.CertificationTargetHookFunc) {
 	s.hookMutex.Lock()
 	defer s.hookMutex.Unlock()
 	s.CertificationTargetHooks = append(s.CertificationTargetHooks, hook)

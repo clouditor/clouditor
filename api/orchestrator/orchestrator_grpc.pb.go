@@ -61,7 +61,7 @@ const (
 	Orchestrator_GetMetric_FullMethodName                        = "/clouditor.orchestrator.v1.Orchestrator/GetMetric"
 	Orchestrator_ListMetrics_FullMethodName                      = "/clouditor.orchestrator.v1.Orchestrator/ListMetrics"
 	Orchestrator_RemoveMetric_FullMethodName                     = "/clouditor.orchestrator.v1.Orchestrator/RemoveMetric"
-	Orchestrator_RegisterCertificationTarget_FullMethodName      = "/clouditor.orchestrator.v1.Orchestrator/RegisterCertificationTarget"
+	Orchestrator_CreateCertificationTarget_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/CreateCertificationTarget"
 	Orchestrator_UpdateCertificationTarget_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/UpdateCertificationTarget"
 	Orchestrator_GetCertificationTarget_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/GetCertificationTarget"
 	Orchestrator_ListCertificationTargets_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/ListCertificationTargets"
@@ -133,7 +133,7 @@ type OrchestratorClient interface {
 	// Removes a new metric
 	RemoveMetric(ctx context.Context, in *RemoveMetricRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Registers a new target certification target
-	RegisterCertificationTarget(ctx context.Context, in *RegisterCertificationTargetRequest, opts ...grpc.CallOption) (*CertificationTarget, error)
+	CreateCertificationTarget(ctx context.Context, in *CreateCertificationTargetRequest, opts ...grpc.CallOption) (*CertificationTarget, error)
 	// Registers a new target certification target
 	UpdateCertificationTarget(ctx context.Context, in *UpdateCertificationTargetRequest, opts ...grpc.CallOption) (*CertificationTarget, error)
 	// Retrieves a target certification target
@@ -360,10 +360,10 @@ func (c *orchestratorClient) RemoveMetric(ctx context.Context, in *RemoveMetricR
 	return out, nil
 }
 
-func (c *orchestratorClient) RegisterCertificationTarget(ctx context.Context, in *RegisterCertificationTargetRequest, opts ...grpc.CallOption) (*CertificationTarget, error) {
+func (c *orchestratorClient) CreateCertificationTarget(ctx context.Context, in *CreateCertificationTargetRequest, opts ...grpc.CallOption) (*CertificationTarget, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CertificationTarget)
-	err := c.cc.Invoke(ctx, Orchestrator_RegisterCertificationTarget_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Orchestrator_CreateCertificationTarget_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -727,7 +727,7 @@ type OrchestratorServer interface {
 	// Removes a new metric
 	RemoveMetric(context.Context, *RemoveMetricRequest) (*emptypb.Empty, error)
 	// Registers a new target certification target
-	RegisterCertificationTarget(context.Context, *RegisterCertificationTargetRequest) (*CertificationTarget, error)
+	CreateCertificationTarget(context.Context, *CreateCertificationTargetRequest) (*CertificationTarget, error)
 	// Registers a new target certification target
 	UpdateCertificationTarget(context.Context, *UpdateCertificationTargetRequest) (*CertificationTarget, error)
 	// Retrieves a target certification target
@@ -853,8 +853,8 @@ func (UnimplementedOrchestratorServer) ListMetrics(context.Context, *ListMetrics
 func (UnimplementedOrchestratorServer) RemoveMetric(context.Context, *RemoveMetricRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveMetric not implemented")
 }
-func (UnimplementedOrchestratorServer) RegisterCertificationTarget(context.Context, *RegisterCertificationTargetRequest) (*CertificationTarget, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RegisterCertificationTarget not implemented")
+func (UnimplementedOrchestratorServer) CreateCertificationTarget(context.Context, *CreateCertificationTargetRequest) (*CertificationTarget, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateCertificationTarget not implemented")
 }
 func (UnimplementedOrchestratorServer) UpdateCertificationTarget(context.Context, *UpdateCertificationTargetRequest) (*CertificationTarget, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateCertificationTarget not implemented")
@@ -1211,20 +1211,20 @@ func _Orchestrator_RemoveMetric_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_RegisterCertificationTarget_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RegisterCertificationTargetRequest)
+func _Orchestrator_CreateCertificationTarget_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateCertificationTargetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).RegisterCertificationTarget(ctx, in)
+		return srv.(OrchestratorServer).CreateCertificationTarget(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_RegisterCertificationTarget_FullMethodName,
+		FullMethod: Orchestrator_CreateCertificationTarget_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).RegisterCertificationTarget(ctx, req.(*RegisterCertificationTargetRequest))
+		return srv.(OrchestratorServer).CreateCertificationTarget(ctx, req.(*CreateCertificationTargetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1840,8 +1840,8 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Orchestrator_RemoveMetric_Handler,
 		},
 		{
-			MethodName: "RegisterCertificationTarget",
-			Handler:    _Orchestrator_RegisterCertificationTarget_Handler,
+			MethodName: "CreateCertificationTarget",
+			Handler:    _Orchestrator_CreateCertificationTarget_Handler,
 		},
 		{
 			MethodName: "UpdateCertificationTarget",

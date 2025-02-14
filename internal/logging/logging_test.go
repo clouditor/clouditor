@@ -122,11 +122,11 @@ func TestLogRequest(t *testing.T) {
 			want: "",
 		},
 		{
-			name: "Register certification target",
+			name: "create certification target",
 			args: args{
 				level:   logrus.DebugLevel,
 				reqType: Register,
-				req: &orchestrator.RegisterCertificationTargetRequest{
+				req: &orchestrator.CreateCertificationTargetRequest{
 					CertificationTarget: &orchestrator.CertificationTarget{},
 				},
 			},
@@ -134,11 +134,11 @@ func TestLogRequest(t *testing.T) {
 		},
 
 		{
-			name: "Register certification target",
+			name: "create certification target",
 			args: args{
 				level:   logrus.DebugLevel,
 				reqType: Register,
-				req: &orchestrator.RegisterCertificationTargetRequest{
+				req: &orchestrator.CreateCertificationTargetRequest{
 					CertificationTarget: &orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1},
 				},
 			},
