@@ -17,7 +17,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/crypto/openpgp"
 	"clouditor.io/clouditor/v2/internal/util"
 
-	"github.com/csaf-poc/csaf_distribution/v3/csaf"
+	"github.com/gocsaf/csaf/v3/csaf"
 	log "github.com/sirupsen/logrus"
 )
 

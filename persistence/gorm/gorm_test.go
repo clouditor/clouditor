@@ -38,6 +38,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/v2/persistence"
+	"github.com/google/uuid"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -97,6 +98,7 @@ func TestStorageOptions(t *testing.T) {
 			// Test to create a new certification target and get it again with
 			// respective 'Create' and 'Get' Create record via DB call
 			targetInput := &orchestrator.CertificationTarget{
+				Id:        uuid.New().String(),
 				Name:      "SomeName",
 				CreatedAt: timestamppb.Now(),
 				UpdatedAt: timestamppb.Now(),

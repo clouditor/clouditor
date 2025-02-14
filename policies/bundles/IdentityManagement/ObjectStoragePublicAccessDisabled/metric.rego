@@ -7,11 +7,11 @@ default compliant = false
 
 default applicable = false
 
-applicable {
+applicable if {
 	# the resource type should be an ObjectStorage
 	storage.type[_] == "ObjectStorage"
 }
 
-compliant {
+compliant if {
 	compare(data.operator, data.target_value, storage.publicAccess)
 }

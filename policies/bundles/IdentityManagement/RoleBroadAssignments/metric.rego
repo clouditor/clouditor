@@ -9,11 +9,11 @@ default applicable = false
 
 default compliant = false
 
-applicable {
+applicable if {
 	rbac.broadAssignments
 }
 
-compliant {
+compliant if {
 	# TODO(all): Target value ?
 	compare(data.operator, data.target_value, rbac.broadAssignments)
 }

@@ -8,7 +8,7 @@ default applicable = false
 
 default compliant = false
 
-applicable {
+applicable if {
 	# we are only interested in some kind of admin user    
 	identity.privileged
 
@@ -16,7 +16,7 @@ applicable {
 	identity.activated
 }
 
-compliant {
+compliant if {
 	ts := time.parse_rfc3339_ns(identity.lastActivity)
 	now := time.now_ns()
 

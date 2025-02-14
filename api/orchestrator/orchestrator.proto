@@ -609,10 +609,7 @@ message MetricChangeEvent {
 // Represents an external tool or service that offers assessments according to
 // certain metrics.
 message AssessmentTool {
-  string id = 1 [
-    (buf.validate.field).string = {uuid: true},
-    (buf.validate.field).ignore_empty = true
-  ];
+  string id = 1 [(buf.validate.field).string = {uuid: true}];
 
   string name = 2 [
     (buf.validate.field).string.min_len = 1,
@@ -631,7 +628,6 @@ message AssessmentTool {
 message CertificationTarget {
   string id = 1 [
     (buf.validate.field).string = {uuid: true},
-    (buf.validate.field).ignore_empty = true,
     (google.api.field_behavior) = REQUIRED
   ];
 

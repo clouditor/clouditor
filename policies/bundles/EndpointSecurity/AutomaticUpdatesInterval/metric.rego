@@ -7,11 +7,11 @@ default applicable = false
 
 default compliant = false
 
-applicable {
+applicable if {
 	am
 }
 
-compliant {
+compliant if {
 	# Check if interval is > 0.
 	# The discoverer sets the interval to 0 if the the automatic update is not enabled. If we do not check 'interval > 0' it can result in 'AutomaticUpdatesEnabled=false' and  'AutomaticUpdatesInterval=true'. 
 	compare(">", 0, time.parse_duration_ns(am.interval) / (1000000000 * 86400))

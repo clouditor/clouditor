@@ -7,10 +7,10 @@ default compliant = false
 
 default applicable = false
 
-applicable {
+applicable if {
 	enc
 }
 
-compliant {
+compliant if {
 	compare(data.operator, data.target_value, enc.enforced)
 }

@@ -8,11 +8,11 @@ default compliant = false
 
 restrictedPorts := input.accessRestriction.restrictedPorts
 
-applicable {
+applicable if {
 	restrictedPorts != null
 }
 
 # TODO(all): Maybe change restrictet ports to array of strings. See comment in Ontology.
-compliant {
+compliant if {
 	compare(data.operator, data.target_value, restrictedPorts)
 }

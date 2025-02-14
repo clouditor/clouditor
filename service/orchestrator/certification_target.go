@@ -26,23 +26,24 @@
 package orchestrator
 
 import (
-	"clouditor.io/clouditor/v2/internal/config"
 	"context"
 	"errors"
 	"fmt"
-	"github.com/spf13/viper"
 
+	
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/logging"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -53,7 +54,10 @@ const (
 	DefaultCertificationTargetId = "00000000-0000-0000-0000-000000000000"
 )
 
-func (s *Service) CreateCertificationTarget(ctx context.Context, req *orchestrator.CreateCertificationTargetRequest) (res *orchestrator.CertificationTarget, err error) {
+func (s *Service) RegisterCertificationTarget(ctx context.Context, req *orchestrator.RegisterCertificationTargetRequest) (res *orchestrator.CertificationTarget, err error) {
+	// A new certification target typically does not contain a UUID; therefore, we will add one here. This must be done before the validation check to prevent validation failure.
+	req.CertificationTarget.Id = uuid.NewString()
+
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
@@ -62,8 +66,7 @@ func (s *Service) CreateCertificationTarget(ctx context.Context, req *orchestrat
 
 	res = new(orchestrator.CertificationTarget)
 
-	// Generate a new ID
-	res.Id = uuid.NewString()
+	res.Id = req.CertificationTarget.Id
 	res.Name = req.CertificationTarget.Name
 	res.Description = req.CertificationTarget.Description
 

@@ -7,11 +7,11 @@ default applicable = false
 
 default compliant = false
 
-applicable {
+applicable if {
 	logging
 }
 
-compliant {
+compliant if {
 	# time.Duration is nanoseconds, we want to convert this to hours
 	days := time.parse_duration_ns(logging.retentionPeriod) / (((1000 * 1000) * 1000) * 3600)
 
