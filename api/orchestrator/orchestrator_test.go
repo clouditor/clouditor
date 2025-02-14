@@ -187,7 +187,7 @@ func TestUpdateCertificateRequest_GetCertificationTargetId(t *testing.T) {
 	}
 }
 
-func TestRegisterCertificationTargetRequest_GetCertificationTargetId(t *testing.T) {
+func TestCreateCertificationTargetRequest_GetCertificationTargetId(t *testing.T) {
 	type fields struct {
 		CertificationTarget *CertificationTarget
 	}
@@ -206,11 +206,11 @@ func TestRegisterCertificationTargetRequest_GetCertificationTargetId(t *testing.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := &RegisterCertificationTargetRequest{
+			req := &CreateCertificationTargetRequest{
 				CertificationTarget: tt.fields.CertificationTarget,
 			}
 			if got := req.GetCertificationTargetId(); got != tt.want {
-				t.Errorf("RegisterCertificationTargetRequest.GetCertificationTargetId() = %v, want %v", got, tt.want)
+				t.Errorf("CreateCertificationTargetRequest.GetCertificationTargetId() = %v, want %v", got, tt.want)
 			}
 		})
 	}

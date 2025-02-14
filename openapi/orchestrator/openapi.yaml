@@ -902,7 +902,7 @@ paths:
             tags:
                 - Orchestrator
             description: Registers a new target certification target
-            operationId: Orchestrator_RegisterCertificationTarget
+            operationId: Orchestrator_CreateCertificationTarget
             requestBody:
                 content:
                     application/json:

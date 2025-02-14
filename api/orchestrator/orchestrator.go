@@ -57,7 +57,7 @@ func (req *UpdateCertificateRequest) GetCertificationTargetId() string {
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
 // the certification target ID of the inner object.
-func (req *RegisterCertificationTargetRequest) GetCertificationTargetId() string {
+func (req *CreateCertificationTargetRequest) GetCertificationTargetId() string {
 	return req.GetCertificationTarget().GetId()
 }
 
@@ -119,7 +119,7 @@ func (req *RemoveCertificateRequest) GetPayload() proto.Message {
 	return &Certificate{Id: req.CertificateId}
 }
 
-func (req *RegisterCertificationTargetRequest) GetPayload() proto.Message {
+func (req *CreateCertificationTargetRequest) GetPayload() proto.Message {
 	return req.CertificationTarget
 }
 

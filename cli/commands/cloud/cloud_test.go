@@ -63,7 +63,7 @@ func TestNewCloudCommand(t *testing.T) {
 	assert.True(t, cmd.HasSubCommands())
 }
 
-func TestRegisterCertificationTargetCommand(t *testing.T) {
+func TestCreateCertificationTargetCommand(t *testing.T) {
 	var (
 		response orchestrator.CertificationTarget
 		svc      *service_orchestrator.Service
@@ -75,7 +75,7 @@ func TestRegisterCertificationTargetCommand(t *testing.T) {
 	_, err = clitest.RunCLITestFunc(func() bool {
 		cli.Output = &b
 
-		cmd := NewRegisterCertificationTargetCommand()
+		cmd := NewCreateCertificationTargetCommand()
 		err = cmd.RunE(nil, []string{"not_default"})
 
 		assert.NoError(t, err)
@@ -242,7 +242,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 		cli.Output = &b
 
 		// create a new target service
-		target, err = svc.RegisterCertificationTarget(context.TODO(), &orchestrator.RegisterCertificationTargetRequest{CertificationTarget: &orchestrator.CertificationTarget{Name: "myTarget"}})
+		target, err = svc.CreateCertificationTarget(context.TODO(), &orchestrator.CreateCertificationTargetRequest{CertificationTarget: &orchestrator.CertificationTarget{Name: "myTarget"}})
 
 		assert.NotNil(t, target)
 		assert.NoError(t, err)
