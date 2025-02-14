@@ -1,4 +1,3 @@
 [submodule "ui"]
 	path = ui
-	url = https://github.com/confirmate/ui
-	branch = main
+	url = https://github.com/confirmate/ui.git
