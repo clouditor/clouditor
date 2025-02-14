@@ -3,7 +3,7 @@ package csaf
 import (
 	"clouditor.io/clouditor/v2/api/ontology"
 
-	"github.com/csaf-poc/csaf_distribution/v3/csaf"
+	"github.com/gocsaf/csaf/v3/csaf"
 )
 
 func (d *csafDiscovery) providerTransportEncryption(url string) *ontology.TransportEncryption {

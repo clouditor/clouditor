@@ -8,8 +8,8 @@ import (
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
 
-	"github.com/csaf-poc/csaf_distribution/v3/csaf"
-	csafutil "github.com/csaf-poc/csaf_distribution/v3/util"
+	"github.com/gocsaf/csaf/v3/csaf"
+	csafutil "github.com/gocsaf/csaf/v3/util"
 )
 
 func (d *csafDiscovery) discoverProviders() (providers []ontology.IsResource, err error) {
