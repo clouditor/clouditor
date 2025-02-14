@@ -30,7 +30,6 @@ import (
 	"errors"
 	"fmt"
 
-	
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/discovery"
@@ -54,7 +53,7 @@ const (
 	DefaultCertificationTargetId = "00000000-0000-0000-0000-000000000000"
 )
 
-func (s *Service) RegisterCertificationTarget(ctx context.Context, req *orchestrator.RegisterCertificationTargetRequest) (res *orchestrator.CertificationTarget, err error) {
+func (s *Service) CreateCertificationTarget(ctx context.Context, req *orchestrator.CreateCertificationTargetRequest) (res *orchestrator.CertificationTarget, err error) {
 	// A new certification target typically does not contain a UUID; therefore, we will add one here. This must be done before the validation check to prevent validation failure.
 	req.CertificationTarget.Id = uuid.NewString()
 

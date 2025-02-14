@@ -42,7 +42,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
-	"gorm.io/gorm"
 
 	"github.com/google/uuid"
 	"github.com/spf13/viper"
@@ -578,7 +577,7 @@ func TestService_GetCertificationTargetStatistics(t *testing.T) {
 	}
 }
 
-func TestService_RegisterCertificationTarget(t *testing.T) {
+func TestService_CreateCertificationTarget(t *testing.T) {
 	type fields struct {
 		UnimplementedOrchestratorServer orchestrator.UnimplementedOrchestratorServer
 		CertificationTargetHooks        []orchestrator.CertificationTargetHookFunc
@@ -594,7 +593,7 @@ func TestService_RegisterCertificationTarget(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		req *orchestrator.RegisterCertificationTargetRequest
+		req *orchestrator.CreateCertificationTargetRequest
 	}
 	tests := []struct {
 		name    string
@@ -606,7 +605,7 @@ func TestService_RegisterCertificationTarget(t *testing.T) {
 		{
 			name: "Request validation error",
 			args: args{
-				req: &orchestrator.RegisterCertificationTargetRequest{
+				req: &orchestrator.CreateCertificationTargetRequest{
 					CertificationTarget: &orchestrator.CertificationTarget{},
 				},
 			},
@@ -621,7 +620,7 @@ func TestService_RegisterCertificationTarget(t *testing.T) {
 				storage: &testutil.StorageWithError{CreateErr: gorm.ErrInvalidDB},
 			},
 			args: args{
-				req: &orchestrator.RegisterCertificationTargetRequest{
+				req: &orchestrator.CreateCertificationTargetRequest{
 					CertificationTarget: orchestratortest.NewCertificationTarget(),
 				},
 			},
@@ -636,7 +635,7 @@ func TestService_RegisterCertificationTarget(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t),
 			},
 			args: args{
-				req: &orchestrator.RegisterCertificationTargetRequest{
+				req: &orchestrator.CreateCertificationTargetRequest{
 					CertificationTarget: &orchestrator.CertificationTarget{
 						Name:        "test",
 						Description: "some",
@@ -685,7 +684,7 @@ func TestService_RegisterCertificationTarget(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t),
 			},
 			args: args{
-				req: &orchestrator.RegisterCertificationTargetRequest{
+				req: &orchestrator.CreateCertificationTargetRequest{
 					CertificationTarget: &orchestrator.CertificationTarget{
 						Name:        "test",
 						Description: "some",
@@ -733,7 +732,7 @@ func TestService_RegisterCertificationTarget(t *testing.T) {
 				events:                          tt.fields.events,
 				authz:                           tt.fields.authz,
 			}
-			gotRes, err := s.RegisterCertificationTarget(tt.args.ctx, tt.args.req)
+			gotRes, err := s.CreateCertificationTarget(tt.args.ctx, tt.args.req)
 
 			tt.wantErr(t, err)
 			tt.wantRes(t, gotRes)
