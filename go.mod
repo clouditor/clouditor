@@ -204,12 +204,12 @@ require (
 	github.com/Intevation/gval v1.3.0 // indirect
 	github.com/Intevation/jsonpath v0.2.1 // indirect
 	github.com/ProtonMail/go-crypto v1.1.3
-	github.com/cloudflare/circl v1.3.7 // indirect
-	github.com/csaf-poc/csaf_distribution/v3 v3.0.1-0.20240425111311-617deb4c1721
+	github.com/cloudflare/circl v1.5.0 // indirect
+	github.com/gocsaf/csaf/v3 v3.1.1
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1 // indirect
-	github.com/shopspring/decimal v1.3.1 // indirect
-	go.etcd.io/bbolt v1.3.10 // indirect
-	golang.org/x/time v0.7.0 // indirect
+	github.com/shopspring/decimal v1.4.0 // indirect
+	go.etcd.io/bbolt v1.3.11 // indirect
+	golang.org/x/time v0.8.0 // indirect
 
 )
 
