@@ -48,7 +48,6 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
 	"github.com/go-co-op/gocron"
-	"github.com/google/uuid"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -1758,7 +1757,7 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 			},
 			wantRes: assert.Nil[*evaluation.EvaluationResult],
 			wantErr: func(t *testing.T, err error) bool {
-				return assert.ErrorContains(t, err, " validation error:\n - result.id: value is empty, which is not a valid UUID")
+				return assert.ErrorContains(t, err, " validation error:\n - result.certification_target_id: value is empty, which is not a valid UUID")
 			},
 		},
 		{
@@ -1770,7 +1769,6 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 			args: args{
 				req: &evaluation.CreateEvaluationResultRequest{
 					Result: &evaluation.EvaluationResult{
-						Id:                    uuid.NewString(),
 						CertificationTargetId: orchestratortest.MockAuditScopeCertTargetID1.GetCertificationTargetId(),
 						AuditScopeId:          orchestratortest.MockAuditScopeCertTargetID1.GetId(),
 						ControlId:             orchestratortest.MockControl1.Id,
@@ -1794,7 +1792,6 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 			args: args{
 				req: &evaluation.CreateEvaluationResultRequest{
 					Result: &evaluation.EvaluationResult{
-						Id:                    uuid.NewString(),
 						CertificationTargetId: orchestratortest.MockAuditScopeCertTargetID1.GetCertificationTargetId(),
 						AuditScopeId:          orchestratortest.MockAuditScopeCertTargetID1.GetId(),
 						ControlId:             orchestratortest.MockControl1.Id,
@@ -1818,7 +1815,6 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 			args: args{
 				req: &evaluation.CreateEvaluationResultRequest{
 					Result: &evaluation.EvaluationResult{
-						Id:                    uuid.NewString(),
 						CertificationTargetId: orchestratortest.MockAuditScopeCertTargetID1.GetCertificationTargetId(),
 						AuditScopeId:          orchestratortest.MockAuditScopeCertTargetID1.GetId(),
 						ControlId:             orchestratortest.MockControl1.Id,
@@ -1844,7 +1840,6 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 			args: args{
 				req: &evaluation.CreateEvaluationResultRequest{
 					Result: &evaluation.EvaluationResult{
-						Id:                    uuid.NewString(),
 						CertificationTargetId: orchestratortest.MockAuditScopeCertTargetID1.GetCertificationTargetId(),
 						AuditScopeId:          orchestratortest.MockAuditScopeCertTargetID1.GetId(),
 						ControlId:             orchestratortest.MockControl1.Id,
@@ -1870,7 +1865,6 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 			args: args{
 				req: &evaluation.CreateEvaluationResultRequest{
 					Result: &evaluation.EvaluationResult{
-						Id:                    uuid.NewString(),
 						CertificationTargetId: orchestratortest.MockAuditScopeCertTargetID1.GetCertificationTargetId(),
 						AuditScopeId:          orchestratortest.MockAuditScopeCertTargetID1.GetId(),
 						ControlId:             orchestratortest.MockControl1.Id,

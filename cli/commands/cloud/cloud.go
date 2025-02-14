@@ -59,12 +59,10 @@ func NewRegisterCertificationTargetCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			id := args[0]
-			name := args[1]
+			name := args[0]
 
 			res, err = client.RegisterCertificationTarget(context.Background(), &orchestrator.RegisterCertificationTargetRequest{
 				CertificationTarget: &orchestrator.CertificationTarget{
-					Id:   id,
 					Name: name,
 				},
 			})

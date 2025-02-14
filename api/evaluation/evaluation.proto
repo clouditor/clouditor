@@ -139,7 +139,6 @@ message EvaluationResult {
   // Evaluation result id
   string id = 1 [
     (buf.validate.field).string = {uuid: true},
-    (buf.validate.field).ignore_empty = true,
     (google.api.field_behavior) = REQUIRED
   ];
 

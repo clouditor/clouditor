@@ -39,7 +39,6 @@ import (
 	"clouditor.io/clouditor/v2/server"
 	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
-	"github.com/google/uuid"
 	"github.com/spf13/viper"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -77,14 +76,13 @@ func TestRegisterCertificationTargetCommand(t *testing.T) {
 		cli.Output = &b
 
 		cmd := NewRegisterCertificationTargetCommand()
-		err = cmd.RunE(nil, []string{uuid.NewString(), "not_default"})
+		err = cmd.RunE(nil, []string{"not_default"})
 
 		assert.NoError(t, err)
 
 		err = protojson.Unmarshal(b.Bytes(), &response)
 
 		assert.NoError(t, err)
-		assert.NotEmpty(t, response.Id)
 		return assert.Equal(t, "not_default", response.Name)
 	}, server.WithServices(svc))
 	assert.NoError(t, err)
@@ -244,7 +242,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 		cli.Output = &b
 
 		// create a new target service
-		target, err = svc.RegisterCertificationTarget(context.TODO(), &orchestrator.RegisterCertificationTargetRequest{CertificationTarget: &orchestrator.CertificationTarget{Id: uuid.NewString(), Name: "myTarget"}})
+		target, err = svc.RegisterCertificationTarget(context.TODO(), &orchestrator.RegisterCertificationTargetRequest{CertificationTarget: &orchestrator.CertificationTarget{Name: "myTarget"}})
 
 		assert.NotNil(t, target)
 		assert.NoError(t, err)
