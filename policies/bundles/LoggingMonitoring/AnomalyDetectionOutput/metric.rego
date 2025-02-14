@@ -8,10 +8,10 @@ default compliant = false
 
 output := input.anomalyDetection.applicationLogging.loggingService
 
-applicable {
+applicable if {
 	output != null
 }
 
-compliant {
+compliant if {
 	compare(data.operator, data.target_value, output)
 }
