@@ -1757,7 +1757,7 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 			},
 			wantRes: assert.Nil[*evaluation.EvaluationResult],
 			wantErr: func(t *testing.T, err error) bool {
-				return assert.ErrorContains(t, err, " validation error:\n - result.certification_target_id")
+				return assert.ErrorContains(t, err, " validation error:\n - result.certification_target_id: value is empty, which is not a valid UUID")
 			},
 		},
 		{
