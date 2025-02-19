@@ -127,6 +127,7 @@ func TestResourceMap(t *testing.T) {
 					"networkInterfaceIds":        []any{},
 					"malwareProtection":          nil,
 					"osLogging":                  nil,
+					"loggings":                   []any{},
 					"raw":                        "",
 					"redundancies":               []any{},
 					"remoteAttestation":          nil,
