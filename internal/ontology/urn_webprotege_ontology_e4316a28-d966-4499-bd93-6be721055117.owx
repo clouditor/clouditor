@@ -136,6 +136,9 @@
         <Class abbreviatedIRI="cl:DDosProtection"/>
     </Declaration>
     <Declaration>
+        <Class abbreviatedIRI="cl:Data"/>
+    </Declaration>
+    <Declaration>
         <Class abbreviatedIRI="cl:DatabaseConnect"/>
     </Declaration>
     <Declaration>
@@ -292,6 +295,15 @@
         <Class abbreviatedIRI="cl:MachineLearning"/>
     </Declaration>
     <Declaration>
+        <Class abbreviatedIRI="cl:MachineLearningDataset"/>
+    </Declaration>
+    <Declaration>
+        <Class abbreviatedIRI="cl:MachineLearningModel"/>
+    </Declaration>
+    <Declaration>
+        <Class abbreviatedIRI="cl:MachineLearningService"/>
+    </Declaration>
+    <Declaration>
         <Class abbreviatedIRI="cl:MalwareProtection"/>
     </Declaration>
     <Declaration>
@@ -433,9 +445,6 @@
         <Class abbreviatedIRI="cl:Workflow"/>
     </Declaration>
     <Declaration>
-        <Class abbreviatedIRI="cl:Workspace"/>
-    </Declaration>
-    <Declaration>
         <Class abbreviatedIRI="cl:ZoneRedundancy"/>
     </Declaration>
     <Declaration>
@@ -559,6 +568,9 @@
         <DataProperty abbreviatedIRI="cl:enforceMFA"/>
     </Declaration>
     <Declaration>
+        <DataProperty abbreviatedIRI="cl:expendability"/>
+    </Declaration>
+    <Declaration>
         <DataProperty abbreviatedIRI="cl:expirationDate"/>
     </Declaration>
     <Declaration>
@@ -640,6 +652,9 @@
         <DataProperty abbreviatedIRI="cl:overridePasswordPolicy"/>
     </Declaration>
     <Declaration>
+        <DataProperty abbreviatedIRI="cl:privacyLabel"/>
+    </Declaration>
+    <Declaration>
         <DataProperty abbreviatedIRI="cl:privileged"/>
     </Declaration>
     <Declaration>
@@ -668,6 +683,9 @@
     </Declaration>
     <Declaration>
         <DataProperty abbreviatedIRI="cl:retentionPeriod"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty abbreviatedIRI="cl:robustness"/>
     </Declaration>
     <Declaration>
         <DataProperty abbreviatedIRI="cl:runtimeLanguage"/>
@@ -1305,6 +1323,13 @@
     <SubClassOf>
         <Class abbreviatedIRI="cl:CloudResource"/>
         <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
+            <Class abbreviatedIRI="cl:Logging"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:CloudResource"/>
+        <ObjectSomeValuesFrom>
             <ObjectProperty abbreviatedIRI="prop:offers"/>
             <Class abbreviatedIRI="cl:GeoLocation"/>
         </ObjectSomeValuesFrom>
@@ -1563,6 +1588,10 @@
         <Class abbreviatedIRI="cl:Availability"/>
     </SubClassOf>
     <SubClassOf>
+        <Class abbreviatedIRI="cl:Data"/>
+        <Class abbreviatedIRI="cl:BaseResource"/>
+    </SubClassOf>
+    <SubClassOf>
         <Class abbreviatedIRI="cl:DatabaseConnect"/>
         <Class abbreviatedIRI="cl:DatabaseOperation"/>
     </SubClassOf>
@@ -1648,7 +1677,7 @@
     </SubClassOf>
     <SubClassOf>
         <Class abbreviatedIRI="cl:Document"/>
-        <Class abbreviatedIRI="cl:BaseResource"/>
+        <Class abbreviatedIRI="cl:Data"/>
     </SubClassOf>
     <SubClassOf>
         <Class abbreviatedIRI="cl:Document"/>
@@ -1699,6 +1728,13 @@
     <SubClassOf>
         <Class abbreviatedIRI="cl:DocumentLocation"/>
         <Class abbreviatedIRI="cl:Functionality"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:DocumentLocation"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:has"/>
+            <Class abbreviatedIRI="cl:Storage"/>
+        </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class abbreviatedIRI="cl:DocumentLocation"/>
@@ -2131,10 +2167,10 @@
     </SubClassOf>
     <SubClassOf>
         <Class abbreviatedIRI="cl:L3Firewall"/>
-        <DataSomeValuesFrom>
+        <DataHasValue>
             <DataProperty abbreviatedIRI="prop:restrictedPorts"/>
-            <Datatype abbreviatedIRI="xsd:string"/>
-        </DataSomeValuesFrom>
+            <Literal>xsd:java.util.ArrayList&lt;String&gt;</Literal>
+        </DataHasValue>
     </SubClassOf>
     <SubClassOf>
         <Class abbreviatedIRI="cl:Library"/>
@@ -2279,7 +2315,68 @@
     </SubClassOf>
     <SubClassOf>
         <Class abbreviatedIRI="cl:MachineLearning"/>
-        <Class abbreviatedIRI="cl:CloudResource"/>
+        <Class abbreviatedIRI="cl:Functionality"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:MachineLearning"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:has"/>
+            <Class abbreviatedIRI="cl:MachineLearningDataset"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:MachineLearning"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:has"/>
+            <Class abbreviatedIRI="cl:MachineLearningModel"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:MachineLearningDataset"/>
+        <Class abbreviatedIRI="cl:Data"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:MachineLearningModel"/>
+        <Class abbreviatedIRI="cl:Data"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:MachineLearningModel"/>
+        <DataSomeValuesFrom>
+            <DataProperty abbreviatedIRI="cl:expendability"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:MachineLearningModel"/>
+        <DataSomeValuesFrom>
+            <DataProperty abbreviatedIRI="cl:privacyLabel"/>
+            <Datatype abbreviatedIRI="xsd:float"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:MachineLearningModel"/>
+        <DataSomeValuesFrom>
+            <DataProperty abbreviatedIRI="cl:robustness"/>
+            <Datatype abbreviatedIRI="xsd:float"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:MachineLearningService"/>
+        <Class abbreviatedIRI="cl:NetworkService"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:MachineLearningService"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
+            <Class abbreviatedIRI="cl:MachineLearning"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:MachineLearningService"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
+            <Class abbreviatedIRI="cl:Storage"/>
+        </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class abbreviatedIRI="cl:MalwareProtection"/>
@@ -2377,14 +2474,14 @@
         <Class abbreviatedIRI="cl:NetworkService"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty abbreviatedIRI="prop:has"/>
-            <Class abbreviatedIRI="cl:Compute"/>
+            <Class abbreviatedIRI="cl:ServiceMetadataDocument"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class abbreviatedIRI="cl:NetworkService"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty abbreviatedIRI="prop:has"/>
-            <Class abbreviatedIRI="cl:ServiceMetadataDocument"/>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
+            <Class abbreviatedIRI="cl:Compute"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
@@ -2706,6 +2803,13 @@
         <Class abbreviatedIRI="cl:Storage"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty abbreviatedIRI="prop:offers"/>
+            <Class abbreviatedIRI="cl:ActivityLog"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Storage"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:offers"/>
             <Class abbreviatedIRI="cl:Immutability"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
@@ -2725,6 +2829,13 @@
         <ObjectSomeValuesFrom>
             <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
             <Class abbreviatedIRI="cl:Storage"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:StorageService"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:offers"/>
+            <Class abbreviatedIRI="cl:ActivityLog"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
@@ -2888,31 +2999,6 @@
     <SubClassOf>
         <Class abbreviatedIRI="cl:Workflow"/>
         <Class abbreviatedIRI="cl:CICDService"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class abbreviatedIRI="cl:Workspace"/>
-        <Class abbreviatedIRI="cl:MachineLearning"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class abbreviatedIRI="cl:Workspace"/>
-        <ObjectSomeValuesFrom>
-            <ObjectProperty abbreviatedIRI="cl:offersInterface"/>
-            <Class abbreviatedIRI="cl:AtRestEncryption"/>
-        </ObjectSomeValuesFrom>
-    </SubClassOf>
-    <SubClassOf>
-        <Class abbreviatedIRI="cl:Workspace"/>
-        <ObjectSomeValuesFrom>
-            <ObjectProperty abbreviatedIRI="prop:has"/>
-            <Class abbreviatedIRI="cl:Storage"/>
-        </ObjectSomeValuesFrom>
-    </SubClassOf>
-    <SubClassOf>
-        <Class abbreviatedIRI="cl:Workspace"/>
-        <ObjectSomeValuesFrom>
-            <ObjectProperty abbreviatedIRI="prop:offers"/>
-            <Class abbreviatedIRI="cl:ResourceLogging"/>
-        </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class abbreviatedIRI="cl:ZoneRedundancy"/>
@@ -3580,6 +3666,11 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:Data</AbbreviatedIRI>
+        <Literal>Data</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:DatabaseConnect</AbbreviatedIRI>
         <Literal>DatabaseConnect</Literal>
     </AnnotationAssertion>
@@ -3641,7 +3732,7 @@ name = metadata.name</Literal>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:DocumentLocation</AbbreviatedIRI>
-        <Literal>DocumentLocation</Literal>
+        <Literal>DataLocation</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -3846,7 +3937,7 @@ name = metadata.name</Literal>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:LocalDocumentLocation</AbbreviatedIRI>
-        <Literal>LocalDocumentLocation</Literal>
+        <Literal>LocalDataLocation</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -3885,8 +3976,18 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
-        <AbbreviatedIRI>cl:MachineLearning</AbbreviatedIRI>
-        <Literal>MachineLearning</Literal>
+        <AbbreviatedIRI>cl:MachineLearningDataset</AbbreviatedIRI>
+        <Literal>MachineLearningDataset</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:MachineLearningModel</AbbreviatedIRI>
+        <Literal>MachineLearningModel</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:MachineLearningService</AbbreviatedIRI>
+        <Literal>MachineLearningService</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
@@ -4031,7 +4132,7 @@ name = metadata.name</Literal>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:RemoteDocumentLocation</AbbreviatedIRI>
-        <Literal>RemoteDocumentLocation</Literal>
+        <Literal>RemoteDataLocation</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -4175,11 +4276,6 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
-        <AbbreviatedIRI>cl:Workspace</AbbreviatedIRI>
-        <Literal>MLWorkspace</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:ZoneRedundancy</AbbreviatedIRI>
         <Literal>ZoneRedundancy</Literal>
     </AnnotationAssertion>
@@ -4277,6 +4373,11 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:enforceMFA</AbbreviatedIRI>
         <Literal>enforceMFA</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:expendability</AbbreviatedIRI>
+        <Literal>expendability</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -4455,6 +4556,11 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:privacyLabel</AbbreviatedIRI>
+        <Literal>privacyLabel</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:privileged</AbbreviatedIRI>
         <Literal>privileged</Literal>
     </AnnotationAssertion>
@@ -4517,6 +4623,11 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:retentionPeriod</AbbreviatedIRI>
         <Literal>retentionPeriod</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:robustness</AbbreviatedIRI>
+        <Literal>robustness</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>

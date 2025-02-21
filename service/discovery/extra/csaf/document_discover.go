@@ -93,9 +93,10 @@ func (d *csafDiscovery) handleAdvisory(label csaf.TLPLabel, file csaf.AdvisoryFi
 			"tlp": string(label),
 		},
 		Name: util.Deref(advisory.Document.Title),
-		DocumentLocation: &ontology.DocumentLocation{
-			Type: &ontology.DocumentLocation_RemoteDocumentLocation{
-				RemoteDocumentLocation: &ontology.RemoteDocumentLocation{
+
+		DataLocation: &ontology.DataLocation{
+			Type: &ontology.DataLocation_RemoteDataLocation{
+				RemoteDataLocation: &ontology.RemoteDataLocation{
 					Path:                file.URL(),
 					TransportEncryption: transportEncryption(res.TLS),
 					Authenticity:        clientAuthenticity(res),
