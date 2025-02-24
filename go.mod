@@ -57,7 +57,7 @@ require (
 
 // runtime dependencies (rpc)
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.4-20250130201111-63bb56e20495.1
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.4-20250219170025-d39267d9df8f.1
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
 	github.com/bufbuild/protovalidate-go v0.9.1
 	github.com/golang/protobuf v1.5.4 // indirect
