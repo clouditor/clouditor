@@ -439,7 +439,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}()
 
 	for _, resource := range list {
-		// Empty raw field and convert ontology resource into an Any proto message
+		// Delete raw field of the resource
 		raw := resource.GetRaw()
 		resource.ProtoReflect().Set(resource.ProtoReflect().Descriptor().Fields().ByName("raw"), protoreflect.ValueOf(""))
 
@@ -457,6 +457,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			log.Errorf("Could not save resource with ID '%s' to storage: %v", r.Id, err)
 		}
 
+		// Convert ontology resource into an Any proto message
 		a, err := anypb.New(resource)
 		if err != nil {
 			log.Errorf("Could not wrap resource message into Any protobuf object: %v", err)
