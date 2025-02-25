@@ -52,6 +52,12 @@ func (d *azureDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) ontolog
 // handleApplicationGateway returns the application gateway with its properties
 // NOTE: handleApplicationGateway uses the LoadBalancer for now until there is a own resource
 func (d *azureDiscovery) handleApplicationGateway(ag *armnetwork.ApplicationGateway) ontology.IsResource {
+	var firewallEnabled = false
+
+	if ag.Properties != nil && ag.Properties.WebApplicationFirewallConfiguration != nil {
+		firewallEnabled = util.Deref(ag.Properties.WebApplicationFirewallConfiguration.Enabled)
+	}
+
 	return &ontology.LoadBalancer{
 		Id:           resourceID(ag.ID),
 		Name:         util.Deref(ag.Name),
@@ -65,7 +71,7 @@ func (d *azureDiscovery) handleApplicationGateway(ag *armnetwork.ApplicationGate
 		AccessRestriction: &ontology.AccessRestriction{
 			Type: &ontology.AccessRestriction_WebApplicationFirewall{
 				WebApplicationFirewall: &ontology.WebApplicationFirewall{
-					Enabled: util.Deref(ag.Properties.WebApplicationFirewallConfiguration.Enabled),
+					Enabled: firewallEnabled,
 				},
 			},
 		},
