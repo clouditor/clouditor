@@ -439,6 +439,10 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}()
 
 	for _, resource := range list {
+		// Empty raw field and convert ontology resource into an Any proto message
+		raw := resource.GetRaw()
+		resource.ProtoReflect().Set(resource.ProtoReflect().Descriptor().Fields().ByName("raw"), protoreflect.ValueOf(""))
+
 		// Build a resource struct. This will hold the latest sync state of the
 		// resource for our storage layer.
 		r, err := discovery.ToDiscoveryResource(resource, svc.GetCertificationTargetId(), svc.collectorID)
@@ -452,10 +456,6 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		if err != nil {
 			log.Errorf("Could not save resource with ID '%s' to storage: %v", r.Id, err)
 		}
-
-		// Empty raw field and convert ontology resource into an Any proto message
-		raw := resource.GetRaw()
-		resource.ProtoReflect().Set(resource.ProtoReflect().Descriptor().Fields().ByName("raw"), protoreflect.ValueOf(""))
 
 		a, err := anypb.New(resource)
 		if err != nil {
