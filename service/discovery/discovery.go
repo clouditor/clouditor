@@ -439,7 +439,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}()
 
 	for _, resource := range list {
-		// Delete raw field of the resource
+		// Delete raw field of the resource, we only need the information in the evidence
 		raw := resource.GetRaw()
 		resource.ProtoReflect().Set(resource.ProtoReflect().Descriptor().Fields().ByName("raw"), protoreflect.ValueOf(""))
 
