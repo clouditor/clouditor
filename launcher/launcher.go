@@ -76,15 +76,16 @@ func NewLauncher(name string, specs ...ServiceSpec) (l *Launcher, err error) {
 	}
 
 	// Set storage
-	err = l.initStorage()
-	if err != nil {
-		return nil, err
+	if l.name != "assessment" {
+		err = l.initStorage()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Create the services out of the service specs
 	for _, spec := range specs {
 		// Create the service and gather the gRPC server options
-
 		svc, grpcOpts, err := spec.NewService(l.db)
 		if err != nil {
 			return nil, err
