@@ -59,6 +59,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -452,6 +453,10 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			log.Errorf("Could not save resource with ID '%s' to storage: %v", r.Id, err)
 		}
 
+		// Empty raw field and convert ontology resource into an Any proto message
+		raw := resource.GetRaw()
+		resource.ProtoReflect().Set(resource.ProtoReflect().Descriptor().Fields().ByName("raw"), protoreflect.ValueOf(""))
+
 		a, err := anypb.New(resource)
 		if err != nil {
 			log.Errorf("Could not wrap resource message into Any protobuf object: %v", err)
@@ -462,7 +467,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			Id:                    uuid.New().String(),
 			CertificationTargetId: svc.GetCertificationTargetId(),
 			Timestamp:             timestamppb.Now(),
-			Raw:                   util.Ref(resource.GetRaw()),
+			Raw:                   util.Ref(raw),
 			ToolId:                svc.collectorID,
 			Resource:              a,
 		}
