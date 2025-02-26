@@ -313,6 +313,14 @@ func (d *azureDiscovery) List() (list []ontology.IsResource, err error) {
 	}
 	list = append(list, ag...)
 
+	// Discover machine learning workspaces
+
+	mlWorkspaces, err := d.discoverMLWorkspaces()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover machine learning workspaces: %w", err)
+	}
+	list = append(list, mlWorkspaces...)
+
 	return list, nil
 }
 
