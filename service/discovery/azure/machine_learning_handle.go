@@ -34,22 +34,32 @@ import (
 )
 
 func (d *azureDiscovery) handleMLWorkspace(value *armmachinelearning.Workspace, computeList []string) (ontology.IsResource, error) {
-	atRestEnc := getAtRestEncryption(value.Properties.Encryption)
+	// atRestEnc := getAtRestEncryption(value.Properties.Encryption)
+	// TODO(anatheka): An ML Workspace has also an at rest encryption. How do we want to model that?
 
-	ml := &ontology.MLWorkspace{
+	ml := &ontology.MachineLearningService{
 		Id:                         resourceID(value.ID),
 		Name:                       util.Deref(value.Name),
 		CreationTime:               creationTime(value.SystemData.CreatedAt),
 		GeoLocation:                location(value.Location),
 		Labels:                     labels(value.Tags),
-		ParentId:                   resourceGroupID(resourceID2(value.ID)),
+		ParentId:                   resourceGroupID(resourceIDPointer(value.ID)),
 		Raw:                        discovery.Raw(value),
 		InternetAccessibleEndpoint: getInternetAccessibleEndpoint(value.Properties.PublicNetworkAccess),
-		ResourceLogging:            getResourceLogging(value.Properties.ApplicationInsights),
-		AtRestEncryption:           atRestEnc,
 		StorageIds:                 []string{util.Deref(value.Properties.StorageAccount)},
-		VirtualMachineIds:          computeList,
+		ComputeIds:                 computeList,
+		Loggings: []*ontology.Logging{
+			{
+				Type: &ontology.Logging_ResourceLogging{
+					ResourceLogging: getResourceLogging(value.Properties.ApplicationInsights),
+				},
+			},
+		},
 	}
+
+	// ml := &ontology.MLWorkspace{
+	// 	AtRestEncryption:           atRestEnc,
+	// }
 
 	return ml, nil
 }
@@ -76,7 +86,7 @@ func (d *azureDiscovery) handleMLCompute(value *armmachinelearning.ComputeResour
 			CreationTime:        time,
 			GeoLocation:         location(value.Location),
 			Labels:              labels(value.Tags),
-			ParentId:            resourceID2(workspaceID),
+			ParentId:            resourceIDPointer(workspaceID),
 			Raw:                 discovery.Raw(value, c.ComputeLocation),
 			NetworkInterfaceIds: []string{},
 		}
@@ -89,7 +99,7 @@ func (d *azureDiscovery) handleMLCompute(value *armmachinelearning.ComputeResour
 			CreationTime:        time,
 			GeoLocation:         location(value.Location),
 			Labels:              labels(value.Tags),
-			ParentId:            resourceID2(workspaceID),
+			ParentId:            resourceIDPointer(workspaceID),
 			Raw:                 discovery.Raw(value, c.ComputeLocation),
 			NetworkInterfaceIds: []string{},
 			BlockStorageIds:     []string{},
