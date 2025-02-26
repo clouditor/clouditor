@@ -31,6 +31,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/machinelearning/armmachinelearning"
 )
@@ -202,6 +203,48 @@ func Test_getResourceLogging(t *testing.T) {
 			if got := getResourceLogging(tt.args.log); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getResourceLogging() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func Test_getComputeStringList(t *testing.T) {
+	type args struct {
+		values []ontology.IsResource
+	}
+	tests := []struct {
+		name string
+		args args
+		want assert.Want[[]string]
+	}{
+		{
+			name: "Empty input",
+			args: args{},
+			want: func(t *testing.T, got []string) bool {
+				return assert.Empty(t, got)
+			},
+		},
+		{
+			name: "Happy path",
+			args: args{
+				values: []ontology.IsResource{
+					&ontology.VirtualMachine{
+						Id: "1",
+					},
+					&ontology.ObjectStorage{
+						Id: "2",
+					},
+				},
+			},
+			want: func(t *testing.T, got []string) bool {
+				return assert.Equal(t, []string{"1", "2"}, got)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := getComputeStringList(tt.args.values)
+
+			tt.want(t, got)
 		})
 	}
 }
