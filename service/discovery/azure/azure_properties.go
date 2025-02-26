@@ -256,3 +256,18 @@ func location(region *string) *ontology.GeoLocation {
 		Region: util.Deref(region),
 	}
 }
+
+// publicNetworkAccessStatus returns the public access status of the resource
+func publicNetworkAccessStatus(status *string) bool {
+	// Check if a mandatory field is empty
+	if status == nil {
+		return false
+	}
+
+	// Check if resource is public available
+	if util.Deref(status) == "Enabled" {
+		return true
+	}
+
+	return false
+}
