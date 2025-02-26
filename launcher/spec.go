@@ -73,9 +73,14 @@ func (s spec[T]) NewService(db persistence.Storage) (svc service.Service, grpcOp
 	return s.newService(db)
 }
 
+func (s spec[T]) HasStorageFunction() bool {
+	return s.wsf != nil
+}
+
 // ServiceSpec is an interface we need because of generics foo.
 type ServiceSpec interface {
 	NewService(db persistence.Storage) (svc service.Service, grpcOpts []server.StartGRPCServerOption, err error)
+	HasStorageFunction() bool
 }
 
 func NewServiceSpec[T service.Service](nsf NewServiceFunc[T], wsf WithStorageFunc[T], init ServiceInitFunc[T], opts ...service.Option[T]) ServiceSpec {
