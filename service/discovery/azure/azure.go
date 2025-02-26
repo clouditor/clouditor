@@ -45,6 +45,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/machinelearning/armmachinelearning"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
@@ -74,8 +75,9 @@ var (
 
 	ErrCouldNotAuthenticate     = errors.New("could not authenticate to Azure")
 	ErrCouldNotGetSubscriptions = errors.New("could not get azure subscription")
-	ErrNoCredentialsConfigured  = errors.New("no credentials were configured")
 	ErrGettingNextPage          = errors.New("error getting next page")
+	ErrNoCredentialsConfigured  = errors.New("no credentials were configured")
+	ErrSubsciptionNotFound      = errors.New("SubscriptionNotFound")
 	ErrVaultInstanceIsEmpty     = errors.New("vault and/or instance is nil")
 )
 
@@ -174,6 +176,10 @@ type clients struct {
 
 	// Security
 	defenderClient *armsecurity.PricingsClient
+
+	// Machine Learning
+	mlWorkspaceClient *armmachinelearning.WorkspacesClient
+	mlComputeClient   *armmachinelearning.ComputeClient
 
 	// Data protection
 	backupPoliciesClient  *armdataprotection.BackupPoliciesClient
