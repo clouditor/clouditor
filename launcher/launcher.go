@@ -75,16 +75,18 @@ func NewLauncher(name string, specs ...ServiceSpec) (l *Launcher, err error) {
 		return nil, err
 	}
 
-	// Set storage
-	err = l.initStorage()
-	if err != nil {
-		return nil, err
-	}
-
 	// Create the services out of the service specs
 	for _, spec := range specs {
-		// Create the service and gather the gRPC server options
+		// Check if the storage is nil and the service has a storage function. If a storage function is present, we need
+		// to initialize the storage.
+		if l.db == nil && spec.hasStorageFunction() {
+			err = l.initStorage()
+			if err != nil {
+				return nil, err
+			}
+		}
 
+		// Create the service and gather the gRPC server options
 		svc, grpcOpts, err := spec.NewService(l.db)
 		if err != nil {
 			return nil, err
@@ -224,8 +226,10 @@ func (l *Launcher) initLogging() error {
 // initStorage sets the storage config to the in-memory DB or to a given Postgres DB
 func (l *Launcher) initStorage() (err error) {
 	if viper.GetBool(config.DBInMemoryFlag) {
+		l.log.Debug("Create in-memory storage")
 		l.db, err = inmemory.NewStorage()
 	} else {
+		l.log.Debug("Create Postgres storage")
 		l.db, err = gorm.NewStorage(gorm.WithPostgres(
 			viper.GetString(config.DBHostFlag),
 			viper.GetUint16(config.DBPortFlag),

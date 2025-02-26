@@ -124,7 +124,7 @@ func init() {
 
 // NewStorage creates a new storage using GORM (which DB to use depends on the StorageOption)
 func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
-	log.Println("Creating storage")
+	log.Info("Creating storage")
 	// Create storage with default gorm config
 	g := &storage{
 		// We ignore Deepsource issue GO-W1004 (SkipDefaultTransaction of config is "false"): skipcq: GO-W1004
