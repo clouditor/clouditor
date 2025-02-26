@@ -79,7 +79,7 @@ func NewLauncher(name string, specs ...ServiceSpec) (l *Launcher, err error) {
 	for _, spec := range specs {
 		// Check if the storage is nil and the service has a storage function. If a storage function is present, we need
 		// to initialize the storage.
-		if l.db == nil && spec.HasStorageFunction() {
+		if l.db == nil && spec.hasStorageFunction() {
 			err = l.initStorage()
 			if err != nil {
 				return nil, err
