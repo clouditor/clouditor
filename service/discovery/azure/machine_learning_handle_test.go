@@ -33,7 +33,10 @@ import (
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/machinelearning/armmachinelearning"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -123,6 +126,128 @@ func Test_handleMLWorkspace(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			got, err := tt.fields.d.handleMLWorkspace(tt.args.value, tt.args.computeList)
+
+			tt.wantErr(t, err)
+			tt.want(t, got)
+		})
+	}
+}
+
+func Test_azureDiscovery_handleMLCompute(t *testing.T) {
+	type fields struct {
+		isAuthorized        bool
+		sub                 *armsubscription.Subscription
+		cred                azcore.TokenCredential
+		rg                  *string
+		clientOptions       arm.ClientOptions
+		discovererComponent string
+		clients             clients
+		ctID                string
+		backupMap           map[string]*backup
+		defenderProperties  map[string]*defenderProperties
+	}
+	type args struct {
+		value       *armmachinelearning.ComputeResource
+		workspaceID *string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    assert.Want[ontology.IsResource]
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Happy path: ComputeInstance",
+			args: args{
+				value: &armmachinelearning.ComputeResource{
+					Name: util.Ref("compute1"),
+					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace/computes/compute1"),
+					SystemData: &armmachinelearning.SystemData{
+						CreatedAt: util.Ref(time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)),
+					},
+					Tags:     map[string]*string{"tag1": util.Ref("tag1"), "tag2": util.Ref("tag2")},
+					Location: util.Ref("westeurope"),
+					Properties: &armmachinelearning.ComputeInstance{
+						ComputeLocation: util.Ref("westeurope"),
+					},
+				},
+				workspaceID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace"),
+			},
+			want: func(t *testing.T, got ontology.IsResource) bool {
+				got1 := got.(*ontology.Container)
+
+				want := &ontology.Container{
+					Id:                  resourceID(util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace/computes/compute1")),
+					Name:                "compute1",
+					CreationTime:        timestamppb.New(time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)),
+					GeoLocation:         &ontology.GeoLocation{Region: "westeurope"},
+					Labels:              map[string]string{"tag1": "tag1", "tag2": "tag2"},
+					ParentId:            resourceIDPointer(util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace")),
+					NetworkInterfaceIds: []string{},
+				}
+
+				assert.NotEmpty(t, got1.Raw)
+				got1.Raw = ""
+
+				return assert.Equal(t, want, got1)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: VirtualMachine",
+			args: args{
+				value: &armmachinelearning.ComputeResource{
+					Name: util.Ref("compute1"),
+					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace/computes/compute1"),
+					SystemData: &armmachinelearning.SystemData{
+						CreatedAt: util.Ref(time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)),
+					},
+					Tags:     map[string]*string{"tag1": util.Ref("tag1"), "tag2": util.Ref("tag2")},
+					Location: util.Ref("westeurope"),
+					Properties: &armmachinelearning.VirtualMachine{
+						ComputeLocation: util.Ref("westeurope"),
+					},
+				},
+				workspaceID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace"),
+			},
+			want: func(t *testing.T, got ontology.IsResource) bool {
+				got1 := got.(*ontology.VirtualMachine)
+
+				want := &ontology.VirtualMachine{
+					Id:                  resourceID(util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace/computes/compute1")),
+					Name:                "compute1",
+					CreationTime:        timestamppb.New(time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)),
+					GeoLocation:         &ontology.GeoLocation{Region: "westeurope"},
+					Labels:              map[string]string{"tag1": "tag1", "tag2": "tag2"},
+					ParentId:            resourceIDPointer(util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace")),
+					NetworkInterfaceIds: []string{},
+					MalwareProtection:   &ontology.MalwareProtection{},
+				}
+
+				assert.NotEmpty(t, got1.Raw)
+				got1.Raw = ""
+
+				return assert.Equal(t, want, got1)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureDiscovery{
+				isAuthorized:        tt.fields.isAuthorized,
+				sub:                 tt.fields.sub,
+				cred:                tt.fields.cred,
+				rg:                  tt.fields.rg,
+				clientOptions:       tt.fields.clientOptions,
+				discovererComponent: tt.fields.discovererComponent,
+				clients:             tt.fields.clients,
+				ctID:                tt.fields.ctID,
+				backupMap:           tt.fields.backupMap,
+				defenderProperties:  tt.fields.defenderProperties,
+			}
+			got, err := d.handleMLCompute(tt.args.value, tt.args.workspaceID)
 
 			tt.wantErr(t, err)
 			tt.want(t, got)
