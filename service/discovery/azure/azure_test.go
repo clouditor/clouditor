@@ -939,6 +939,33 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace/computes" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace/computes/compute1",
+					"name":     "compute1",
+					"location": "westus",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{
+						"computeType": "VirtualMachine",
+						"properties": map[string]interface{}{
+							"computeLocation": "westus",
+							"scaleSettings": map[string]interface{}{
+								"minNodeCount":                0,
+								"maxNodeCount":                10,
+								"nodeIdleTimeBeforeScaleDown": "PT120S",
+							},
+							"vmPriority": "LowPriority",
+							"vmSize":     "STANDARD_D2_V2",
+						},
+					},
+				},
+			},
+		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/loadBalancers" {
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
