@@ -73,8 +73,6 @@ func (d *azureDiscovery) discoverMLWorkspaces() ([]ontology.IsResource, error) {
 				return nil, fmt.Errorf("could not handle ML workspace: %w", err)
 			}
 
-			list = append(list, mlWorkspace)
-
 			log.Infof("Adding ML workspace '%s'", mlWorkspace.GetName())
 
 			list = append(list, mlWorkspace)
