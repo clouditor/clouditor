@@ -46,9 +46,16 @@ func Test_getAtRestEncryption(t *testing.T) {
 		wantAtRestEnc *ontology.AtRestEncryption
 	}{
 		{
-			name:          "Empty input",
-			args:          args{},
-			wantAtRestEnc: nil,
+			name: "Empty input",
+			args: args{},
+			wantAtRestEnc: &ontology.AtRestEncryption{
+				Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+					ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
+						Enabled:   true,
+						Algorithm: AES256,
+					},
+				},
+			},
 		},
 		{
 			name: "Happy path: CustomerKeyEncryption",
@@ -82,7 +89,8 @@ func Test_getAtRestEncryption(t *testing.T) {
 			wantAtRestEnc: &ontology.AtRestEncryption{
 				Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 					ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-						Enabled: true,
+						Enabled:   true,
+						Algorithm: AES256,
 					},
 				},
 			},

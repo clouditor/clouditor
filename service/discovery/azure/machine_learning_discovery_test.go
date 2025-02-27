@@ -61,7 +61,9 @@ func Test_azureDiscovery_discoverMLWorkspaces(t *testing.T) {
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {
-				return assert.Equal(t, 1, len(got))
+				assert.Equal(t, got[0].GetName(), "compute1")
+				assert.Equal(t, got[1].GetName(), "mlWorkspace")
+				return assert.Equal(t, 2, len(got))
 			},
 			wantErr: assert.NoError,
 		},
