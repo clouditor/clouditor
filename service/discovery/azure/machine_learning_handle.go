@@ -34,9 +34,6 @@ import (
 )
 
 func (d *azureDiscovery) handleMLWorkspace(value *armmachinelearning.Workspace, computeList []string) (ontology.IsResource, error) {
-	// atRestEnc := getAtRestEncryption(value.Properties.Encryption)
-	// TODO(anatheka): An ML Workspace has also an at rest encryption. How do we want to model that?
-
 	ml := &ontology.MachineLearningService{
 		Id:                         resourceID(value.ID),
 		Name:                       util.Deref(value.Name),
@@ -55,11 +52,11 @@ func (d *azureDiscovery) handleMLWorkspace(value *armmachinelearning.Workspace, 
 				},
 			},
 		},
+		TransportEncryption: &ontology.TransportEncryption{
+			Enabled:  true,
+			Enforced: true,
+		},
 	}
-
-	// ml := &ontology.MLWorkspace{
-	// 	AtRestEncryption:           atRestEnc,
-	// }
 
 	return ml, nil
 }
