@@ -52,10 +52,6 @@ func (d *azureDiscovery) handleMLWorkspace(value *armmachinelearning.Workspace, 
 				},
 			},
 		},
-		TransportEncryption: &ontology.TransportEncryption{
-			Enabled:  true,
-			Enforced: true,
-		},
 	}
 
 	return ml, nil
