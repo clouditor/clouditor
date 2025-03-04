@@ -72,7 +72,8 @@ func TestNewLauncher(t *testing.T) {
 				viper.Set(config.LogLevelFlag, "info")
 			},
 			args: args{
-				name: "component",
+				name:  "component",
+				specs: []launcher.ServiceSpec{discovery.DefaultServiceSpec()},
 			},
 			wantL: assert.Nil[*launcher.Launcher],
 			wantErr: func(t *testing.T, err error) bool {
