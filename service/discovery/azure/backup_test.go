@@ -163,7 +163,7 @@ func Test_azureDiscovery_discoverBackupInstances(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "error getting next page: GET")
+				return assert.ErrorContains(t, err, "could not get next page: GET")
 			},
 		},
 		{
