@@ -46,7 +46,6 @@ func getComputeStringList(values []ontology.IsResource) []string {
 
 func getInternetAccessibleEndpoint(status *armmachinelearning.PublicNetworkAccess) bool {
 	// Check if status is empty
-
 	if status == nil {
 		return false
 	}
