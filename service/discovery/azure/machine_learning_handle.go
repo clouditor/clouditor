@@ -66,7 +66,7 @@ func (d *azureDiscovery) handleMLCompute(value *armmachinelearning.ComputeResour
 		time      = &timestamppb.Timestamp{}
 	)
 
-	// Get properties vom ComputResource
+	// Get properties vom ComputeResource
 	if value.SystemData != nil && value.SystemData.CreatedAt != nil {
 		time = creationTime(value.SystemData.CreatedAt)
 	}
