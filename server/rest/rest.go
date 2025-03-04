@@ -162,7 +162,7 @@ func WithEmbeddedOAuth2Server(keyPath string, keyPassword string, saveOnCreate b
 		if oauthHost == "" {
 			publicURL = fmt.Sprintf("http://localhost:%d/v1/auth", httpPort)
 		} else {
-			publicURL = fmt.Sprintf("%s:%d/v1/auth", oauthHost, httpPort)
+			publicURL = fmt.Sprintf("%s/v1/auth", oauthHost)
 		}
 
 		log.Infof("Using embedded OAuth2.0 server on %s", publicURL)
