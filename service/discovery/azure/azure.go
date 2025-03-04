@@ -77,7 +77,7 @@ var (
 	ErrCouldNotGetSubscriptions = errors.New("could not get azure subscription")
 	ErrGettingNextPage          = errors.New("error getting next page")
 	ErrNoCredentialsConfigured  = errors.New("no credentials were configured")
-	ErrSubsciptionNotFound      = errors.New("SubscriptionNotFound")
+	ErrSubscriptionNotFound     = errors.New("SubscriptionNotFound")
 	ErrVaultInstanceIsEmpty     = errors.New("vault and/or instance is nil")
 )
 

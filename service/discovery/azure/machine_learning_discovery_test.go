@@ -52,7 +52,7 @@ func Test_azureDiscovery_discoverMLWorkspaces(t *testing.T) {
 			},
 			want: assert.Nil[[]ontology.IsResource],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrSubsciptionNotFound.Error())
+				return assert.ErrorContains(t, err, ErrSubscriptionNotFound.Error())
 			},
 		},
 		{
@@ -108,7 +108,7 @@ func Test_azureDiscovery_discoverMLCompute(t *testing.T) {
 			},
 			want: assert.Nil[[]ontology.IsResource],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrSubsciptionNotFound.Error())
+				return assert.ErrorContains(t, err, ErrSubscriptionNotFound.Error())
 			},
 		},
 		{
