@@ -60,7 +60,7 @@ func (d *azureDiscovery) discoverMLWorkspaces() ([]ontology.IsResource, error) {
 			// Add ML compute resources
 			compute, err := d.discoverMLCompute(resourceGroupName(util.Deref(value.ID)), value)
 			if err != nil {
-				return nil, fmt.Errorf("error getting ML compute resources: %w", err)
+				return nil, fmt.Errorf("could not discover ML compute resources: %w", err)
 			}
 
 			// Get string list of compute resources for the ML workspace resource
