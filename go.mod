@@ -51,7 +51,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/oxisto/oauth2go v0.14.0
 	golang.org/x/crypto v0.33.0 // indirect
-	golang.org/x/oauth2 v0.26.0
+	golang.org/x/oauth2 v0.27.0
 
 )
 
