@@ -323,8 +323,8 @@ func (d *azureDiscovery) List() (list []ontology.IsResource, err error) {
 	return list, nil
 }
 
-func (a *azureDiscovery) CertificationTargetID() string {
-	return a.ctID
+func (d *azureDiscovery) CertificationTargetID() string {
+	return d.ctID
 }
 
 func (d *azureDiscovery) authorize() (err error) {
