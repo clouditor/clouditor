@@ -972,7 +972,7 @@ func Test_azureStorageDiscovery_anomalyDetectionEnabled(t *testing.T) {
 			},
 			want: false,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "error getting next page: ")
+				return assert.ErrorContains(t, err, "could not get next page: ")
 			},
 		},
 		{
