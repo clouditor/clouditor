@@ -32,7 +32,7 @@ require (
 	go.opentelemetry.io/otel/sdk v1.34.0 // indirect
 	go.opentelemetry.io/otel/trace v1.34.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
-	golang.org/x/sync v0.11.0
+	golang.org/x/sync v0.12.0
 )
 
 // runtime dependencies (logging)
@@ -111,7 +111,7 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8 // indirect
-	golang.org/x/text v0.22.0
+	golang.org/x/text v0.23.0
 	gopkg.in/ini.v1 v1.67.0 // indirect
 )
 
