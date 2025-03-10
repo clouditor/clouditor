@@ -151,7 +151,7 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 			},
 			wantList: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "error getting next page: GET ")
+				return assert.ErrorContains(t, err, "could not get next page: GET ")
 			},
 		},
 		{
