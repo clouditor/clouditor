@@ -70,7 +70,6 @@ jobs:
       - name: Lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.60
           args: --timeout=10m
       - name: Check for forbidden licenses
         run: |
