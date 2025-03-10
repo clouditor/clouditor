@@ -45,6 +45,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/machinelearning/armmachinelearning"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
@@ -74,8 +75,9 @@ var (
 
 	ErrCouldNotAuthenticate     = errors.New("could not authenticate to Azure")
 	ErrCouldNotGetSubscriptions = errors.New("could not get azure subscription")
+	ErrGettingNextPage          = errors.New("could not get next page")
 	ErrNoCredentialsConfigured  = errors.New("no credentials were configured")
-	ErrGettingNextPage          = errors.New("error getting next page")
+	ErrSubscriptionNotFound     = errors.New("SubscriptionNotFound")
 	ErrVaultInstanceIsEmpty     = errors.New("vault and/or instance is nil")
 )
 
@@ -174,6 +176,10 @@ type clients struct {
 
 	// Security
 	defenderClient *armsecurity.PricingsClient
+
+	// Machine Learning
+	mlWorkspaceClient *armmachinelearning.WorkspacesClient
+	mlComputeClient   *armmachinelearning.ComputeClient
 
 	// Data protection
 	backupPoliciesClient  *armdataprotection.BackupPoliciesClient
@@ -307,11 +313,18 @@ func (d *azureDiscovery) List() (list []ontology.IsResource, err error) {
 	}
 	list = append(list, ag...)
 
+	// Discover machine learning workspaces
+	mlWorkspaces, err := d.discoverMLWorkspaces()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover machine learning workspaces: %w", err)
+	}
+	list = append(list, mlWorkspaces...)
+
 	return list, nil
 }
 
-func (a *azureDiscovery) CertificationTargetID() string {
-	return a.ctID
+func (d *azureDiscovery) CertificationTargetID() string {
+	return d.ctID
 }
 
 func (d *azureDiscovery) authorize() (err error) {
