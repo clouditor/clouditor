@@ -1,4 +1,4 @@
-name: Check Docker Go Version
+name: Check Docker Version
 
 on: [pull_request]
 
@@ -12,9 +12,9 @@ jobs:
 
       - name: Compare Docker and Go versions
         run: |
-          DOCKER_VERSION=$(grep 'FROM' Dockerfile | awk '{print $2}' | cut -d'-' -f1)
+          DOCKER_VERSION=$(grep 'FROM' Dockerfile | awk '{print $2}' | cut -d':' -f2)
           GO_VERSION=$(grep '^[[:space:]]*go ' go.mod | awk '{print $2}' | cut -d'.' -f1-2)
-          
+
           if [ "$DOCKER_VERSION" != "$GO_VERSION" ]; then
             echo "Docker version $DOCKER_VERSION does not match Go version $GO_VERSION!"
             exit 1
