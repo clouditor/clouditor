@@ -10,15 +10,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Compare Go versions
+      - name: Compare Docker and Go versions
         run: |
-          DOCKER_IMAGE=$(grep 'FROM' Dockerfile | awk '{print $2}')
-          DOCKER_GO_VERSION=$(docker run --rm $DOCKER_IMAGE go version | awk '{print $3}')
-          GO_MOD_VERSION=$(grep '^[[:space:]]*go ' go.mod | awk '{print $2}')
-
-          if [ "$DOCKER_GO_VERSION" != "$GO_MOD_VERSION" ]; then
-            echo "Docker Go version $DOCKER_GO_VERSION does not match Go version $GO_MOD_VERSION!"
+          DOCKER_VERSION=$(grep 'FROM' Dockerfile | awk '{print $2}' | cut -d'-' -f1)
+          GO_VERSION=$(grep '^[[:space:]]*go ' go.mod | awk '{print $2}' | cut -d'.' -f1-2)
+          
+          if [ "$DOCKER_VERSION" != "$GO_VERSION" ]; then
+            echo "Docker version $DOCKER_VERSION does not match Go version $GO_VERSION!"
             exit 1
           else
-            echo "Versions match: $DOCKER_GO_VERSION"
+            echo "Versions match: $DOCKER_VERSION"
           fi
