@@ -26,7 +26,7 @@
 package openstack
 
 import (
-	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v2/volumes"
+	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
 )
 
 // getParentID returns the parent ID of a volume.

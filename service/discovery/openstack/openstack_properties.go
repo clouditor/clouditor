@@ -30,7 +30,7 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/v2/internal/util"
-	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v2/volumes"
+	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/attachinterfaces"
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
