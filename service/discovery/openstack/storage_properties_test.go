@@ -30,7 +30,7 @@ import (
 
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v2/volumes"
+	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
 )
 
 func Test_getParentID(t *testing.T) {
