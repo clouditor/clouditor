@@ -37,7 +37,7 @@ import (
 // This code is based on the MockListResponse function from the Gophercloud library.
 // Gophercloud is licensed under the Apache License 2.0. See the LICENSE file in the
 // Gophercloud repository for the full license: https://github.com/gophercloud/gophercloud
-// Source: https://github.com/gophercloud/gophercloud/blob/master/openstack/blockstorage/v2/volumes/testing/fixtures_test.go (2024-12-09)
+// Source: https://github.com/gophercloud/gophercloud/blob/master/openstack/blockstorage/v3/volumes/testing/fixtures_test.go (2024-12-09)
 //
 // Changes:
 // - 2025-03-12: Rename function name from MockListResponse() to MockStorageListResponse()(@anatheka)
