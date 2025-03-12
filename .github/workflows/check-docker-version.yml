@@ -13,9 +13,9 @@ jobs:
       - name: Compare Docker and Go versions
         run: |
           DOCKER_VERSION=$(grep 'FROM' Dockerfile | awk '{print $2}' | cut -d':' -f2 | cut -d'-' -f1)
-          echo "Docker version: $DOCKER_VERSION"
+          echo "!Docker version: $DOCKER_VERSION"
           GO_VERSION=$(grep '^[[:space:]]*go ' go.mod | awk '{print $2}' | cut -d'.' -f1-2)
-          echo "Go version: $GO_VERSION"
+          echo "!Go version: $GO_VERSION"
 
           if [ "$DOCKER_VERSION" != "$GO_VERSION" ]; then
             echo "Docker version $DOCKER_VERSION does not match Go version $GO_VERSION!"
