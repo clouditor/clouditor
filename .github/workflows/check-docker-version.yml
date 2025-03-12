@@ -12,9 +12,10 @@ jobs:
 
       - name: Compare Docker and Go versions
         run: |
-          DOCKER_VERSION=$(grep 'FROM' Dockerfile | awk '{print $2}' | cut -d':' -f2 | cut -d'-' -f1 | tr -d '\r')
-          GO_VERSION=$(grep '^[[:space:]]*go ' go.mod | awk '{print $2}' | cut -d'.' -f1-2 | tr -d '\r')
+          DOCKER_VERSION=$(grep 'FROM' Dockerfile | awk '{print $2}' | cut -d':' -f2 | cut -d'-' -f1 | head -n 1)
+          GO_VERSION=$(grep '^[[:space:]]*go ' go.mod | awk '{print $2}' | cut -d'.' -f1-2)
 
+          # Debug output
           echo "Docker version: $DOCKER_VERSION"
           echo "Go version: $GO_VERSION"
 
