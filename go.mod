@@ -1,7 +1,6 @@
 module clouditor.io/clouditor/v2
 
 go 1.24.0
-
 // runtime dependencies (assessment)
 require (
 	github.com/agnivade/levenshtein v1.2.1 // indirect
@@ -161,7 +160,7 @@ require (
 )
 
 // runtime dependencies (OpenStack)
-require github.com/gophercloud/gophercloud/v2 v2.5.0
+require github.com/gophercloud/gophercloud/v2 v2.6.0
 
 // runtime dependencies (k8s)
 require (
