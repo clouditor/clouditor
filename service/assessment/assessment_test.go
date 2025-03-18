@@ -496,7 +496,6 @@ func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached
 		CertificationTargetId: testdata.MockCertificationTargetID1,
 		// Make sure both evidences have the same tool id (for caching key)
 		ToolId:   e.ToolId,
-		Raw:      nil,
 		Resource: a,
 	}})
 	assert.NoError(t, err)

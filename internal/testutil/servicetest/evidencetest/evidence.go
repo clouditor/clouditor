@@ -28,7 +28,6 @@ var (
 		Timestamp:             timestamppb.Now(),
 		CertificationTargetId: testdata.MockCertificationTargetID1,
 		ToolId:                testdata.MockEvidenceToolID1,
-		Raw:                   util.Ref("This Raw field must be of length >1"),
 		Resource:              nil,
 	}
 	MockEvidence2 = &evidence.Evidence{
@@ -36,7 +35,6 @@ var (
 		Timestamp:             timestamppb.Now(),
 		CertificationTargetId: testdata.MockCertificationTargetID2,
 		ToolId:                testdata.MockEvidenceToolID2,
-		Raw:                   util.Ref(""),
 		Resource:              nil,
 	}
 )

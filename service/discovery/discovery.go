@@ -452,6 +452,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			log.Errorf("Could not save resource with ID '%s' to storage: %v", r.Id, err)
 		}
 
+		// Convert ontology resource into an Any proto message
 		a, err := anypb.New(resource)
 		if err != nil {
 			log.Errorf("Could not wrap resource message into Any protobuf object: %v", err)
@@ -462,7 +463,6 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			Id:                    uuid.New().String(),
 			CertificationTargetId: svc.GetCertificationTargetId(),
 			Timestamp:             timestamppb.Now(),
-			Raw:                   util.Ref(resource.GetRaw()),
 			ToolId:                svc.collectorID,
 			Resource:              a,
 		}
