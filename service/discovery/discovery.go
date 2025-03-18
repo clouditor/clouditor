@@ -59,7 +59,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -439,10 +438,6 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}()
 
 	for _, resource := range list {
-		// Delete raw field of the resource, we only need the information in the evidence
-		raw := resource.GetRaw()
-		resource.ProtoReflect().Set(resource.ProtoReflect().Descriptor().Fields().ByName("raw"), protoreflect.ValueOf(""))
-
 		// Build a resource struct. This will hold the latest sync state of the
 		// resource for our storage layer.
 		r, err := discovery.ToDiscoveryResource(resource, svc.GetCertificationTargetId(), svc.collectorID)
@@ -468,7 +463,6 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			Id:                    uuid.New().String(),
 			CertificationTargetId: svc.GetCertificationTargetId(),
 			Timestamp:             timestamppb.Now(),
-			Raw:                   util.Ref(raw),
 			ToolId:                svc.collectorID,
 			Resource:              a,
 		}

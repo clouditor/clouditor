@@ -66,6 +66,7 @@ func request_Discovery_ListResources_0(ctx context.Context, marshaler runtime.Ma
 		protoReq ListResourcesRequest
 		metadata runtime.ServerMetadata
 	)
+	io.Copy(io.Discard, req.Body)
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}

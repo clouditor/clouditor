@@ -121,7 +121,6 @@ func TestService_StoreEvidence(t *testing.T) {
 						CertificationTargetId: testdata.MockCertificationTargetID1,
 						ToolId:                testdata.MockEvidenceToolID1,
 						Timestamp:             timestamppb.Now(),
-						Raw:                   nil,
 						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 							Id: "mock-id",
 						}),
@@ -147,7 +146,6 @@ func TestService_StoreEvidence(t *testing.T) {
 						Id:                    testdata.MockEvidenceID1,
 						CertificationTargetId: testdata.MockCertificationTargetID1,
 						Timestamp:             timestamppb.Now(),
-						Raw:                   nil,
 						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 							Id: "mock-id-1",
 						}),
@@ -221,7 +219,6 @@ func TestService_StoreEvidences(t *testing.T) {
 							Id:                    uuid.NewString(),
 							CertificationTargetId: "MockCertificationTargetId",
 							Timestamp:             timestamppb.Now(),
-							Raw:                   nil,
 							Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 								Id: "mock-id-1",
 							}),
@@ -570,7 +567,6 @@ func TestService_EvidenceHook(t *testing.T) {
 					Id:                    testdata.MockEvidenceID1,
 					CertificationTargetId: testdata.MockCertificationTargetID2,
 					Timestamp:             timestamppb.Now(),
-					Raw:                   nil,
 					ToolId:                "mockToolId-1",
 					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 						Id: "mock-id-1",
@@ -616,7 +612,6 @@ func createStoreEvidenceRequestMocks(t *testing.T, count int) []*evidence.StoreE
 				ToolId:                fmt.Sprintf("MockToolId-%d", i),
 				CertificationTargetId: testdata.MockCertificationTargetID1,
 				Timestamp:             timestamppb.Now(),
-				Raw:                   nil,
 				Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 					Id: "mock-id-1",
 				}),
