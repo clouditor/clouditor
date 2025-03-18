@@ -1,6 +1,7 @@
 module clouditor.io/clouditor/v2
 
 go 1.24.0
+
 // runtime dependencies (assessment)
 require (
 	github.com/agnivade/levenshtein v1.2.1 // indirect
@@ -63,7 +64,7 @@ require (
 	github.com/stoewer/go-strcase v1.3.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250204164813-702378808489
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250204164813-702378808489 // indirect
-	google.golang.org/grpc v1.70.0
+	google.golang.org/grpc v1.71.0
 	google.golang.org/protobuf v1.36.5
 )
 
