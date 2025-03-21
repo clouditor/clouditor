@@ -45,7 +45,7 @@ require (
 // runtime dependencies (security)
 require (
 	github.com/MicahParks/keyfunc/v2 v2.1.0
-	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/oxisto/oauth2go v0.14.0
 	golang.org/x/crypto v0.35.0 // indirect
 	golang.org/x/oauth2 v0.28.0
