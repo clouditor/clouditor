@@ -130,7 +130,7 @@ func Test_CreateCertificate(t *testing.T) {
 			args: args{
 				context.Background(),
 				&orchestrator.CreateCertificateRequest{
-					// mockCertificate's corresponding certification target ID is MockCertificationTargetID (authorization succeeds)
+					// mockCertificate's corresponding target of evaluation ID is MockCertificationTargetID (authorization succeeds)
 					Certificate: mockCertificate,
 				},
 			},
@@ -765,7 +765,7 @@ func Test_RemoveCertificate(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Happy path - with authorization for one certain certification target",
+			name: "Happy path - with authorization for one certain target of evaluation",
 			fields: fields{
 				svc: NewService(
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
@@ -873,7 +873,7 @@ func TestService_checkAuthorization(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Happy path - with authorization for one certain certification target",
+			name: "Happy path - with authorization for one certain target of evaluation",
 			fields: fields{
 				svc: NewService(
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(

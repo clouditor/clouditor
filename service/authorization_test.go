@@ -45,7 +45,7 @@ const (
 )
 
 var (
-	// TestContextOnlyService1 is an incoming context with a JWT that only allows access to certification target ID
+	// TestContextOnlyService1 is an incoming context with a JWT that only allows access to target of evaluation ID
 	// 11111111-1111-1111-1111-111111111111
 	TestContextOnlyService1 context.Context
 
@@ -57,7 +57,7 @@ var (
 		"authorization": "bearer what",
 	}))
 
-	// TestClaimsOnlyService1 contains claims that authorize the user for the certification target
+	// TestClaimsOnlyService1 contains claims that authorize the user for the target of evaluation
 	// 11111111-1111-1111-1111-111111111111.
 	TestClaimsOnlyService1 = jwt.MapClaims{
 		"sub": "me",

@@ -206,7 +206,7 @@ func TestService_StartDiscovery(t *testing.T) {
 			},
 		},
 		{
-			name: "No err with default certification target ID",
+			name: "No err with default target of evaluation ID",
 			fields: fields{
 				discoverer:  &discoverytest.TestDiscoverer{TestCase: 2, ServiceId: config.DefaultCertificationTargetID},
 				ctID:        config.DefaultCertificationTargetID,
@@ -215,7 +215,7 @@ func TestService_StartDiscovery(t *testing.T) {
 			checkEvidence: true,
 		},
 		{
-			name: "No err with custom certification target ID",
+			name: "No err with custom target of evaluation ID",
 			fields: fields{
 				discoverer:  &discoverytest.TestDiscoverer{TestCase: 2, ServiceId: testdata.MockCertificationTargetID1},
 				ctID:        testdata.MockCertificationTargetID1,
@@ -262,7 +262,7 @@ func TestService_StartDiscovery(t *testing.T) {
 				// The TestDiscoverer adds a random number to the ID, so we have to delete the last 3 characters as we do not know which random number will be added.
 				assert.Equal(t, eWant.GetId()[:len(eWant.GetId())-3], or.GetId()[:len(or.GetId())-3])
 
-				// Assert certification target ID
+				// Assert target of evaluation ID
 				assert.Equal(t, tt.fields.ctID, eGot.CertificationTargetId)
 			}
 		})
@@ -302,7 +302,7 @@ func TestService_ListResources(t *testing.T) {
 			wantErr:                  assert.Nil[error],
 		},
 		{
-			name: "Filter certification target, allow",
+			name: "Filter target of evaluation, allow",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
 				ctID:  testdata.MockCertificationTargetID1,
@@ -316,7 +316,7 @@ func TestService_ListResources(t *testing.T) {
 			wantErr:                  assert.Nil[error],
 		},
 		{
-			name: "Filter certification target, not allowed",
+			name: "Filter target of evaluation, not allowed",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
 				ctID:  testdata.MockCertificationTargetID1,
@@ -376,7 +376,7 @@ func TestService_ListResources(t *testing.T) {
 			wantErr:                  assert.Nil[error],
 		},
 		{
-			name: "No filtering, allow different certification target, empty result",
+			name: "No filtering, allow different target of evaluation, empty result",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID2),
 				ctID:  testdata.MockCertificationTargetID1,

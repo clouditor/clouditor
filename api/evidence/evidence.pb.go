@@ -57,7 +57,7 @@ type Evidence struct {
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// time of evidence creation
 	Timestamp *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
-	// Reference to a certification target (e.g., service, organization) this evidence was gathered from
+	// Reference to a target of evaluation (e.g., service, organization) this evidence was gathered from
 	CertificationTargetId string `protobuf:"bytes,3,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
 	// Reference to the tool which provided the evidence
 	ToolId string `protobuf:"bytes,4,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`

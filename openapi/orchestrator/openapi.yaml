@@ -16,7 +16,7 @@ paths:
             parameters:
                 - name: filter.certificationTargetId
                   in: query
-                  description: Optional. List only assessment results of a specific certification target.
+                  description: Optional. List only assessment results of a specific target of evaluation.
                   schema:
                     type: string
                 - name: filter.compliant
@@ -282,12 +282,12 @@ paths:
             parameters:
                 - name: filter.certificationTargetId
                   in: query
-                  description: Optional. List only audit scopes of a specific certification target
+                  description: Optional. List only audit scopes of a specific target of evaluation
                   schema:
                     type: string
                 - name: filter.catalogId
                   in: query
-                  description: Optional. List only audit scopes that evaluate the given catalog for any certification target
+                  description: Optional. List only audit scopes that evaluate the given catalog for any target of evaluation
                   schema:
                     type: string
                 - name: pageSize
@@ -901,7 +901,7 @@ paths:
         post:
             tags:
                 - Orchestrator
-            description: Registers a new target certification target
+            description: Registers a new target target of evaluation
             operationId: Orchestrator_CreateCertificationTarget
             requestBody:
                 content:
@@ -926,7 +926,7 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Retrieves target certification target statistics
+            description: Retrieves target target of evaluation statistics
             operationId: Orchestrator_GetCertificationTargetStatistics
             parameters:
                 - name: certificationTargetId
@@ -986,7 +986,7 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Retrieves a target certification target
+            description: Retrieves a target target of evaluation
             operationId: Orchestrator_GetCertificationTarget
             parameters:
                 - name: certificationTargetId
@@ -1010,7 +1010,7 @@ paths:
         delete:
             tags:
                 - Orchestrator
-            description: Removes a target certification target
+            description: Removes a target target of evaluation
             operationId: Orchestrator_RemoveCertificationTarget
             parameters:
                 - name: certificationTargetId
@@ -1034,7 +1034,7 @@ paths:
                 - Orchestrator
             description: |-
                 Lists all metric configurations (target value and operator) for a
-                 specific certification target ID
+                 specific target of evaluation ID
             operationId: Orchestrator_ListMetricConfigurations
             parameters:
                 - name: certificationTargetId
@@ -1061,7 +1061,7 @@ paths:
                 - Orchestrator
             description: |-
                 Retrieves a metric configuration (target value and operator) for a specific
-                 certification target and metric ID.
+                 target of evaluation and metric ID.
             operationId: Orchestrator_GetMetricConfiguration
             parameters:
                 - name: certificationTargetId
@@ -1092,7 +1092,7 @@ paths:
                 - Orchestrator
             description: |-
                 Updates a metric configuration (target value and operator) for a specific
-                 certification target and metric ID
+                 target of evaluation and metric ID
             operationId: Orchestrator_UpdateMetricConfiguration
             parameters:
                 - name: certificationTargetId
@@ -1128,7 +1128,7 @@ paths:
         put:
             tags:
                 - Orchestrator
-            description: Registers a new target certification target
+            description: Registers a new target target of evaluation
             operationId: Orchestrator_UpdateCertificationTarget
             parameters:
                 - name: certification_target.id
@@ -1527,7 +1527,7 @@ components:
                     description: ComplianceDetails contains machine-readable details about which comparisons lead to a (non)-compliance.
                 certificationTargetId:
                     type: string
-                    description: The certification target which this assessment result belongs to
+                    description: The target of evaluation which this assessment result belongs to
                 toolId:
                     type: string
                     description: Reference to the tool which provided the assessment result
@@ -1574,7 +1574,7 @@ components:
                         an assurance level is not offered by every catalog, therefore it is
                          optional
             description: |-
-                A Audit Scope binds a certification target to a catalog, so the certification target is
+                A Audit Scope binds a target of evaluation to a catalog, so the target of evaluation is
                  evaluated regarding this catalog's controls
         Catalog:
             required:
@@ -1619,7 +1619,7 @@ components:
             properties:
                 color:
                     type: string
-                    description: a color for the certification target used by the UI
+                    description: a color for the target of evaluation used by the UI
         Category:
             required:
                 - name
@@ -1698,7 +1698,7 @@ components:
                 metadata:
                     allOf:
                         - $ref: '#/components/schemas/CertificationTarget_Metadata'
-                    description: additional metadata of the certification target, mostly used for the UI
+                    description: additional metadata of the target of evaluation, mostly used for the UI
                 targetType:
                     enum:
                         - TARGET_TYPE_UNSPECIFIED
@@ -1718,7 +1718,7 @@ components:
                     description: a map of key/value pairs, e.g., env:prod
                 icon:
                     type: string
-                    description: an icon for the certification target used by the UI
+                    description: an icon for the target of evaluation used by the UI
         ComparisonResult:
             required:
                 - property
@@ -1815,16 +1815,16 @@ components:
             properties:
                 numberOfDiscoveredResources:
                     type: string
-                    description: number of discovered resources per certification target
+                    description: number of discovered resources per target of evaluation
                 numberOfAssessmentResults:
                     type: string
-                    description: number of assessment results per certification target
+                    description: number of assessment results per target of evaluation
                 numberOfEvidences:
                     type: string
-                    description: number of evidences per certification target
+                    description: number of evidences per target of evaluation
                 numberOfSelectedCatalogs:
                     type: string
-                    description: number of selected catalogs per certification target
+                    description: number of selected catalogs per target of evaluation
         GoogleProtobufAny:
             type: object
             properties:
@@ -2007,7 +2007,7 @@ components:
                     description: The metric this configuration belongs to
                 certificationTargetId:
                     type: string
-                    description: The certification target this configuration belongs to
+                    description: The target of evaluation this configuration belongs to
             description: Defines the operator and a target value for an individual metric
         MetricImplementation:
             required:

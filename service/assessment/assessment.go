@@ -598,7 +598,7 @@ func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_La
 }
 
 // MetricConfiguration implements MetricsSource by getting the corresponding metric configuration for the
-// default target certification target
+// default target target of evaluation
 func (svc *Service) MetricConfiguration(CertificationTargetID string, metric *assessment.Metric) (config *assessment.MetricConfiguration, err error) {
 	var (
 		ok    bool

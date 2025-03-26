@@ -145,7 +145,7 @@ message MetricConfiguration {
     (google.api.field_behavior) = REQUIRED
   ];
 
-  // The certification target this configuration belongs to
+  // The target of evaluation this configuration belongs to
   string certification_target_id = 6 [
     (tagger.tags) = "gorm:\"primaryKey\"",
     (buf.validate.field).string.uuid = true,

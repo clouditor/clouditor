@@ -27,7 +27,7 @@
 package evidence
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
-// the certification target ID of the inner object.
+// the target of evaluation ID of the inner object.
 func (req *StoreEvidenceRequest) GetCertificationTargetId() string {
 	return req.GetEvidence().GetCertificationTargetId()
 }

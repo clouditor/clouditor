@@ -132,26 +132,26 @@ type OrchestratorClient interface {
 	ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error)
 	// Removes a new metric
 	RemoveMetric(ctx context.Context, in *RemoveMetricRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Registers a new target certification target
+	// Registers a new target target of evaluation
 	CreateCertificationTarget(ctx context.Context, in *CreateCertificationTargetRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
-	// Registers a new target certification target
+	// Registers a new target target of evaluation
 	UpdateCertificationTarget(ctx context.Context, in *UpdateCertificationTargetRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
-	// Retrieves a target certification target
+	// Retrieves a target target of evaluation
 	GetCertificationTarget(ctx context.Context, in *GetCertificationTargetRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
 	// Lists all target certification targets
 	ListCertificationTargets(ctx context.Context, in *ListCertificationTargetsRequest, opts ...grpc.CallOption) (*ListCertificationTargetsResponse, error)
-	// Removes a target certification target
+	// Removes a target target of evaluation
 	RemoveCertificationTarget(ctx context.Context, in *RemoveCertificationTargetRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Retrieves target certification target statistics
+	// Retrieves target target of evaluation statistics
 	GetCertificationTargetStatistics(ctx context.Context, in *GetCertificationTargetStatisticsRequest, opts ...grpc.CallOption) (*GetCertificationTargetStatisticsResponse, error)
 	// Updates a metric configuration (target value and operator) for a specific
-	// certification target and metric ID
+	// target of evaluation and metric ID
 	UpdateMetricConfiguration(ctx context.Context, in *UpdateMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error)
 	// Retrieves a metric configuration (target value and operator) for a specific
-	// certification target and metric ID.
+	// target of evaluation and metric ID.
 	GetMetricConfiguration(ctx context.Context, in *GetMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error)
 	// Lists all metric configurations (target value and operator) for a
-	// specific certification target ID
+	// specific target of evaluation ID
 	ListMetricConfigurations(ctx context.Context, in *ListMetricConfigurationRequest, opts ...grpc.CallOption) (*ListMetricConfigurationResponse, error)
 	// Updates an existing metric implementation
 	UpdateMetricImplementation(ctx context.Context, in *UpdateMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error)
@@ -726,26 +726,26 @@ type OrchestratorServer interface {
 	ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error)
 	// Removes a new metric
 	RemoveMetric(context.Context, *RemoveMetricRequest) (*emptypb.Empty, error)
-	// Registers a new target certification target
+	// Registers a new target target of evaluation
 	CreateCertificationTarget(context.Context, *CreateCertificationTargetRequest) (*TargetOfEvaluation, error)
-	// Registers a new target certification target
+	// Registers a new target target of evaluation
 	UpdateCertificationTarget(context.Context, *UpdateCertificationTargetRequest) (*TargetOfEvaluation, error)
-	// Retrieves a target certification target
+	// Retrieves a target target of evaluation
 	GetCertificationTarget(context.Context, *GetCertificationTargetRequest) (*TargetOfEvaluation, error)
 	// Lists all target certification targets
 	ListCertificationTargets(context.Context, *ListCertificationTargetsRequest) (*ListCertificationTargetsResponse, error)
-	// Removes a target certification target
+	// Removes a target target of evaluation
 	RemoveCertificationTarget(context.Context, *RemoveCertificationTargetRequest) (*emptypb.Empty, error)
-	// Retrieves target certification target statistics
+	// Retrieves target target of evaluation statistics
 	GetCertificationTargetStatistics(context.Context, *GetCertificationTargetStatisticsRequest) (*GetCertificationTargetStatisticsResponse, error)
 	// Updates a metric configuration (target value and operator) for a specific
-	// certification target and metric ID
+	// target of evaluation and metric ID
 	UpdateMetricConfiguration(context.Context, *UpdateMetricConfigurationRequest) (*assessment.MetricConfiguration, error)
 	// Retrieves a metric configuration (target value and operator) for a specific
-	// certification target and metric ID.
+	// target of evaluation and metric ID.
 	GetMetricConfiguration(context.Context, *GetMetricConfigurationRequest) (*assessment.MetricConfiguration, error)
 	// Lists all metric configurations (target value and operator) for a
-	// specific certification target ID
+	// specific target of evaluation ID
 	ListMetricConfigurations(context.Context, *ListMetricConfigurationRequest) (*ListMetricConfigurationResponse, error)
 	// Updates an existing metric implementation
 	UpdateMetricImplementation(context.Context, *UpdateMetricImplementationRequest) (*assessment.MetricImplementation, error)

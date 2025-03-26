@@ -29,7 +29,7 @@ func (svc *Service) CreateCertificate(ctx context.Context, req *orchestrator.Cre
 		return
 	}
 
-	// Check if client is allowed to access the corresponding certification target (targeted in the certificate)
+	// Check if client is allowed to access the corresponding target of evaluation (targeted in the certificate)
 	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req) {
 		err = service.ErrPermissionDenied
 		return
@@ -66,7 +66,7 @@ func (svc *Service) GetCertificate(ctx context.Context, req *orchestrator.GetCer
 		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
 
-	// Check if client is allowed to access the corresponding certification target (targeted in the certificate)
+	// Check if client is allowed to access the corresponding target of evaluation (targeted in the certificate)
 	all, allowed := svc.authz.AllowedCertificationTargets(ctx)
 	if !all && !slices.Contains(allowed, res.CertificationTargetId) {
 		// Important to nil the response since it is set already
@@ -85,7 +85,7 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 		return nil, err
 	}
 
-	// We only list certificates the user is authorized to see (w.r.t. the certification target)
+	// We only list certificates the user is authorized to see (w.r.t. the target of evaluation)
 	var (
 		query []string
 		args  []any
@@ -178,7 +178,7 @@ func (svc *Service) RemoveCertificate(ctx context.Context, req *orchestrator.Rem
 		return
 	}
 	// 2) Check if client is authorized to remove certificate.
-	// Only remove certificate if user is authorized for the corresponding certification target.
+	// Only remove certificate if user is authorized for the corresponding target of evaluation.
 	if err = svc.checkCertificateAuthorization(ctx, req); err != nil {
 		return
 	}

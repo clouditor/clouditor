@@ -392,7 +392,7 @@ type AssessmentResult struct {
 	ComplianceComment string `protobuf:"bytes,9,opt,name=compliance_comment,json=complianceComment,proto3" json:"compliance_comment,omitempty"`
 	// ComplianceDetails contains machine-readable details about which comparisons lead to a (non)-compliance.
 	ComplianceDetails []*ComparisonResult `protobuf:"bytes,10,rep,name=compliance_details,json=complianceDetails,proto3" json:"compliance_details,omitempty" gorm:"serializer:json"`
-	// The certification target which this assessment result belongs to
+	// The target of evaluation which this assessment result belongs to
 	CertificationTargetId string `protobuf:"bytes,20,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
 	// Reference to the tool which provided the assessment result
 	ToolId        *string `protobuf:"bytes,21,opt,name=tool_id,json=toolId,proto3,oneof" json:"tool_id,omitempty"`

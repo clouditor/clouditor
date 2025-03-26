@@ -45,7 +45,7 @@ message Evidence {
     (buf.validate.field).required = true
   ];
 
-  // Reference to a certification target (e.g., service, organization) this evidence was gathered from
+  // Reference to a target of evaluation (e.g., service, organization) this evidence was gathered from
   string certification_target_id = 3 [(buf.validate.field).string.uuid = true];
 
   // Reference to the tool which provided the evidence

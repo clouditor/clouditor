@@ -54,7 +54,7 @@ const (
 )
 
 func (s *Service) CreateCertificationTarget(ctx context.Context, req *orchestrator.CreateCertificationTargetRequest) (res *orchestrator.TargetOfEvaluation, err error) {
-	// A new certification target typically does not contain a UUID; therefore, we will add one here. This must be done before the validation check to prevent validation failure.
+	// A new target of evaluation typically does not contain a UUID; therefore, we will add one here. This must be done before the validation check to prevent validation failure.
 	req.TargetOfEvaluation.Id = uuid.NewString()
 
 	// Validate request
@@ -80,10 +80,10 @@ func (s *Service) CreateCertificationTarget(ctx context.Context, req *orchestrat
 		res.Metadata.Icon = req.TargetOfEvaluation.Metadata.Icon
 	}
 
-	// Persist the certification target in our database
+	// Persist the target of evaluation in our database
 	err = s.storage.Create(res)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not add certification target to the database: %v", err)
+		return nil, status.Errorf(codes.Internal, "could not add target of evaluation to the database: %v", err)
 	}
 
 	go s.informHooks(ctx, res, nil)
@@ -108,7 +108,7 @@ func (svc *Service) ListCertificationTargets(ctx context.Context, req *orchestra
 
 	res = new(orchestrator.ListCertificationTargetsResponse)
 
-	// Retrieve list of allowed certification target according to our authorization strategy. No need to specify any conditions
+	// Retrieve list of allowed target of evaluation according to our authorization strategy. No need to specify any conditions
 	// to our storage request, if we are allowed to see all certification targets.
 	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
 	if !all {
@@ -125,7 +125,7 @@ func (svc *Service) ListCertificationTargets(ctx context.Context, req *orchestra
 	return
 }
 
-// GetCertificationTarget implements method for OrchestratorServer interface for getting a certification target with provided id
+// GetCertificationTarget implements method for OrchestratorServer interface for getting a target of evaluation with provided id
 func (s *Service) GetCertificationTarget(ctx context.Context, req *orchestrator.GetCertificationTargetRequest) (response *orchestrator.TargetOfEvaluation, err error) {
 	// Validate request
 	err = api.Validate(req)
@@ -133,7 +133,7 @@ func (s *Service) GetCertificationTarget(ctx context.Context, req *orchestrator.
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
 	if !s.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -142,7 +142,7 @@ func (s *Service) GetCertificationTarget(ctx context.Context, req *orchestrator.
 
 	err = s.storage.Get(response, "Id = ?", req.CertificationTargetId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, "certification target not found")
+		return nil, status.Errorf(codes.NotFound, "target of evaluation not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -150,7 +150,7 @@ func (s *Service) GetCertificationTarget(ctx context.Context, req *orchestrator.
 	return response, nil
 }
 
-// UpdateCertificationTarget implements method for OrchestratorServer interface for updating a certification target
+// UpdateCertificationTarget implements method for OrchestratorServer interface for updating a target of evaluation
 func (s *Service) UpdateCertificationTarget(ctx context.Context, req *orchestrator.UpdateCertificationTargetRequest) (res *orchestrator.TargetOfEvaluation, err error) {
 	// Validate request
 	err = api.Validate(req)
@@ -158,7 +158,7 @@ func (s *Service) UpdateCertificationTarget(ctx context.Context, req *orchestrat
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
 	if !s.authz.CheckAccess(ctx, service.AccessUpdate, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -189,7 +189,7 @@ func (s *Service) UpdateCertificationTarget(ctx context.Context, req *orchestrat
 	return
 }
 
-// RemoveCertificationTarget implements method for OrchestratorServer interface for removing a certification target
+// RemoveCertificationTarget implements method for OrchestratorServer interface for removing a target of evaluation
 func (s *Service) RemoveCertificationTarget(ctx context.Context, req *orchestrator.RemoveCertificationTargetRequest) (response *emptypb.Empty, err error) {
 	// Validate request
 	err = api.Validate(req)
@@ -197,14 +197,14 @@ func (s *Service) RemoveCertificationTarget(ctx context.Context, req *orchestrat
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
 	if !s.authz.CheckAccess(ctx, service.AccessDelete, req) {
 		return nil, service.ErrPermissionDenied
 	}
 
 	err = s.storage.Delete(&orchestrator.TargetOfEvaluation{Id: req.CertificationTargetId})
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, "certification target not found")
+		return nil, status.Errorf(codes.NotFound, "target of evaluation not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -216,7 +216,7 @@ func (s *Service) RemoveCertificationTarget(ctx context.Context, req *orchestrat
 	return &emptypb.Empty{}, nil
 }
 
-// GetCertificationTargetStatistics implements method for OrchestratorServer interface for retrieving certification target statistics
+// GetCertificationTargetStatistics implements method for OrchestratorServer interface for retrieving target of evaluation statistics
 func (s *Service) GetCertificationTargetStatistics(ctx context.Context, req *orchestrator.GetCertificationTargetStatisticsRequest) (response *orchestrator.GetCertificationTargetStatisticsResponse, err error) {
 	var (
 		auditScopes *orchestrator.ListAuditScopesResponse
@@ -228,7 +228,7 @@ func (s *Service) GetCertificationTargetStatistics(ctx context.Context, req *orc
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
 	if !s.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -273,12 +273,12 @@ func (s *Service) GetCertificationTargetStatistics(ctx context.Context, req *orc
 	return response, nil
 }
 
-// CreateDefaultCertificationTarget creates a new "default" certification target,
-// if no certification target exists in the database.
+// CreateDefaultCertificationTarget creates a new "default" target of evaluation,
+// if no target of evaluation exists in the database.
 //
-// If a new certification target was created, it will be returned.
+// If a new target of evaluation was created, it will be returned.
 func (s *Service) CreateDefaultCertificationTarget() (target *orchestrator.TargetOfEvaluation, err error) {
-	log.Infof("Trying to create new default certification target...")
+	log.Infof("Trying to create new default target of evaluation...")
 
 	count, err := s.storage.Count(target)
 	if err != nil {
@@ -288,7 +288,7 @@ func (s *Service) CreateDefaultCertificationTarget() (target *orchestrator.Targe
 	if count == 0 {
 		now := timestamppb.Now()
 
-		// Create a default certification target
+		// Create a default target of evaluation
 		target =
 			&orchestrator.TargetOfEvaluation{
 				Id:          DefaultCertificationTargetId,
@@ -304,10 +304,10 @@ func (s *Service) CreateDefaultCertificationTarget() (target *orchestrator.Targe
 		if err != nil {
 			return nil, fmt.Errorf("storage error: %w", err)
 		} else {
-			log.Infof("Created new default target certification target: %s", target.Id)
+			log.Infof("Created new default target target of evaluation: %s", target.Id)
 		}
 	} else {
-		log.Infof("Default target certification target already exist.")
+		log.Infof("Default target target of evaluation already exist.")
 	}
 
 	return

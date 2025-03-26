@@ -396,7 +396,7 @@ func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrato
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -407,7 +407,7 @@ func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrato
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		// Otherwise, fall back to our default configuration
 		if config, ok := defaultMetricConfigurations[req.MetricId]; ok {
-			// Copy the metric configuration and set the certification target id
+			// Copy the metric configuration and set the target of evaluation id
 			newConfig := &assessment.MetricConfiguration{
 				Operator:              config.GetOperator(),
 				TargetValue:           config.GetTargetValue(),
@@ -436,7 +436,7 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -470,7 +470,7 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 }
 
 // ListMetricConfigurations retrieves a list of MetricConfiguration objects for a particular target
-// certification target specified in req.
+// target of evaluation specified in req.
 //
 // The list MUST include a configuration for each known metric. If the user did not specify a custom
 // configuration for a particular metric within the service, the default metric configuration is
@@ -482,7 +482,7 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}

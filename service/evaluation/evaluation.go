@@ -88,7 +88,7 @@ type Service struct {
 
 	scheduler *gocron.Scheduler
 
-	// authz defines our authorization strategy, e.g., which user can access which certification target and associated
+	// authz defines our authorization strategy, e.g., which user can access which target of evaluation and associated
 	// resources, such as evaluation results.
 	authz service.AuthorizationStrategy
 
@@ -171,7 +171,7 @@ func (svc *Service) Shutdown() {
 }
 
 // StartEvaluation is a method implementation of the evaluation interface: It periodically starts the evaluation of a
-// certification target and the given catalog in the audit_scope. If no interval time is given, the default value is
+// target of evaluation and the given catalog in the audit_scope. If no interval time is given, the default value is
 // used.
 func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEvaluationRequest) (resp *evaluation.StartEvaluationResponse, err error) {
 	var (
@@ -197,7 +197,7 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessCreate, auditScope) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -237,7 +237,7 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	} else if len(jobs) > 0 {
-		err = fmt.Errorf("evaluation for Audit Scope '%s' (certification target '%s' and catalog ID '%s') already started", auditScope.GetId(), auditScope.GetCertificationTargetId(), auditScope.GetCatalogId())
+		err = fmt.Errorf("evaluation for Audit Scope '%s' (target of evaluation '%s' and catalog ID '%s') already started", auditScope.GetId(), auditScope.GetCertificationTargetId(), auditScope.GetCatalogId())
 		log.Error(err)
 		return nil, status.Errorf(codes.AlreadyExists, "%s", err)
 	}
@@ -282,7 +282,7 @@ func (svc *Service) StopEvaluation(ctx context.Context, req *evaluation.StopEval
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessCreate, auditScope) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -319,12 +319,12 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 		return nil, err
 	}
 
-	// Retrieve list of allowed certification target according to our authorization strategy. No need to specify any conditions
+	// Retrieve list of allowed target of evaluation according to our authorization strategy. No need to specify any conditions
 	// to our storage request, if we are allowed to see all certification targets.
 	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
 
 	// Filtering evaluation results by
-	// * certification target ID
+	// * target of evaluation ID
 	// * control ID
 	// * sub-controls
 	if req.Filter != nil {
@@ -443,7 +443,7 @@ func (svc *Service) CreateEvaluationResult(ctx context.Context, req *evaluation.
 		return nil, status.Errorf(codes.InvalidArgument, "validity must be set")
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -690,14 +690,14 @@ func (svc *Service) evaluateControl(ctx context.Context, auditScope *orchestrato
 
 	err = svc.storage.Create(result)
 	if err != nil {
-		log.Errorf("error storing evaluation result for control ID '%s' (in certification target %s) in database: %v",
+		log.Errorf("error storing evaluation result for control ID '%s' (in target of evaluation %s) in database: %v",
 			control.Id,
 			auditScope.CertificationTargetId,
 			err)
 		return
 	}
 
-	log.Infof("Evaluation result for control ID '%s' (in certification target %s) was %s", control.Id, auditScope.CertificationTargetId, result.Status.String())
+	log.Infof("Evaluation result for control ID '%s' (in target of evaluation %s) was %s", control.Id, auditScope.CertificationTargetId, result.Status.String())
 
 	return
 }
@@ -724,7 +724,7 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, auditScope *orchestrat
 
 	if len(metrics) != 0 {
 		// Get latest assessment_results by resource_id filtered by
-		// * certification target id
+		// * target of evaluation id
 		// * metric ids
 		assessments, err = api.ListAllPaginated(&orchestrator.ListAssessmentResultsRequest{
 			Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
@@ -786,7 +786,7 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, auditScope *orchestrat
 		return nil, err
 	}
 
-	log.Infof("Evaluation result for %s (in certification target %s) was %s", control.Id, auditScope.GetCertificationTargetId(), eval.Status.String())
+	log.Infof("Evaluation result for %s (in target of evaluation %s) was %s", control.Id, auditScope.GetCertificationTargetId(), eval.Status.String())
 
 	return
 }

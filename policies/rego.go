@@ -230,7 +230,7 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 	}
 
 	// We build a key out of the metric and its configuration, so we are creating a new Rego implementation
-	// if the metric configuration (i.e. its hash) for a particular certification target has changed.
+	// if the metric configuration (i.e. its hash) for a particular target of evaluation has changed.
 	key = fmt.Sprintf("%s-%s-%s", metric.Id, targetID, config.Hash())
 
 	// Try to fetch a cached prepared query for the specified key. If the key is not found, we create a new query with

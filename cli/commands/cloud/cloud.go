@@ -42,7 +42,7 @@ import (
 func NewCreateCertificationTargetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "register [name]",
-		Short: "Registers a new target certification target",
+		Short: "Registers a new target target of evaluation",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
@@ -121,7 +121,7 @@ func NewListCertificationTargetsCommand() *cobra.Command {
 func NewGetCertificationTargetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get [id]",
-		Short: "Retrieves a target certification target by its ID",
+		Short: "Retrieves a target target of evaluation by its ID",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
@@ -154,7 +154,7 @@ func NewGetCertificationTargetCommand() *cobra.Command {
 func NewRemoveCertificationTargetComand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "remove [id]",
-		Short: "Removes a target certification target by its ID",
+		Short: "Removes a target target of evaluation by its ID",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
@@ -187,7 +187,7 @@ func NewRemoveCertificationTargetComand() *cobra.Command {
 func NewUpdateCertificationTargetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update",
-		Short: "Updates a target certification target",
+		Short: "Updates a target target of evaluation",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
@@ -216,8 +216,8 @@ func NewUpdateCertificationTargetCommand() *cobra.Command {
 		ValidArgsFunction: cli.DefaultArgsShellComp,
 	}
 
-	cmd.PersistentFlags().String("id", "", "the certification target id to update")
-	cmd.PersistentFlags().StringP("name", "n", "", "the name of the certification target")
+	cmd.PersistentFlags().String("id", "", "the target of evaluation id to update")
+	cmd.PersistentFlags().StringP("name", "n", "", "the name of the target of evaluation")
 	cmd.PersistentFlags().StringP("description", "d", "", "an optional description")
 
 	_ = cmd.MarkPersistentFlagRequired("id")
@@ -239,7 +239,7 @@ func NewUpdateCertificationTargetCommand() *cobra.Command {
 func NewGetMetricConfigurationCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get-metric-configuration",
-		Short: "Retrieves a metric configuration for a specific certification target",
+		Short: "Retrieves a metric configuration for a specific target of evaluation",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (

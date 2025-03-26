@@ -122,7 +122,7 @@ func TestLogRequest(t *testing.T) {
 			want: "",
 		},
 		{
-			name: "create certification target",
+			name: "create target of evaluation",
 			args: args{
 				level:   logrus.DebugLevel,
 				reqType: Register,
@@ -134,7 +134,7 @@ func TestLogRequest(t *testing.T) {
 		},
 
 		{
-			name: "create certification target",
+			name: "create target of evaluation",
 			args: args{
 				level:   logrus.DebugLevel,
 				reqType: Register,

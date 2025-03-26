@@ -103,7 +103,7 @@ const (
 	DefaultDBInMemory                            = false
 	DefaultCreateDefaultTarget                   = true
 	DefaultCertificationTargetName               = "default"
-	DefaultCertificationTargetDescription        = "The default certification target"
+	DefaultCertificationTargetDescription        = "The default target of evaluation"
 	DefaultCertificationTargetType               = orchestrator.CertificationTarget_TARGET_TYPE_CLOUD
 	DefaultDiscoveryAutoStart                    = false
 	DefaultDiscoveryResourceGroup                = ""
@@ -131,7 +131,7 @@ var (
 )
 
 const (
-	// DefaultCertificationTargetID is the default certification target ID. Currently, our discoverers have no way to differentiate between different
+	// DefaultCertificationTargetID is the default target of evaluation ID. Currently, our discoverers have no way to differentiate between different
 	// targets, but we need this feature in the future. This serves as a default to already prepare the necessary
 	// structures for this feature.
 	DefaultCertificationTargetID = "00000000-0000-0000-0000-000000000000"

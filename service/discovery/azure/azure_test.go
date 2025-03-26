@@ -1149,7 +1149,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 			},
 		},
 		{
-			name: "Happy path: with certification target id",
+			name: "Happy path: with target of evaluation id",
 			args: args{
 				opts: []DiscoveryOption{WithCertificationTargetID(testdata.MockCertificationTargetID1)},
 			},

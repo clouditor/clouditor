@@ -223,7 +223,7 @@ components:
                 certificationTargetId:
                     type: string
                     description: |-
-                        CertificationTargetId is the UUID for the certification target to which this resource
+                        CertificationTargetId is the UUID for the target of evaluation to which this resource
                          belongs to.
                 resourceType:
                     type: string

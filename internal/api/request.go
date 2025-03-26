@@ -12,7 +12,7 @@ type PayloadRequest interface {
 }
 
 // CertificationTargetRequest represents any kind of RPC request, that contains a
-// reference to a certification target. Defined in internal/api to avoid cyclic
+// reference to a target of evaluation. Defined in internal/api to avoid cyclic
 // dependencies.
 type CertificationTargetRequest interface {
 	GetCertificationTargetId() string

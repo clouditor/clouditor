@@ -126,7 +126,7 @@ service Orchestrator {
     option (google.api.http) = {delete: "/v1/orchestrator/metrics/{metric_id}"};
   }
 
-  // Registers a new target certification target
+  // Registers a new target target of evaluation
   rpc CreateCertificationTarget(CreateCertificationTargetRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {
       post: "/v1/orchestrator/certification_targets"
@@ -134,7 +134,7 @@ service Orchestrator {
     };
   }
 
-  // Registers a new target certification target
+  // Registers a new target target of evaluation
   rpc UpdateCertificationTarget(UpdateCertificationTargetRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {
       put: "/v1/orchestrator/certification_targets/{certification_target.id}"
@@ -142,7 +142,7 @@ service Orchestrator {
     };
   }
 
-  // Retrieves a target certification target
+  // Retrieves a target target of evaluation
   rpc GetCertificationTarget(GetCertificationTargetRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {get: "/v1/orchestrator/certification_targets/{certification_target_id}"};
   }
@@ -152,18 +152,18 @@ service Orchestrator {
     option (google.api.http) = {get: "/v1/orchestrator/certification_targets"};
   }
 
-  // Removes a target certification target
+  // Removes a target target of evaluation
   rpc RemoveCertificationTarget(RemoveCertificationTargetRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {delete: "/v1/orchestrator/certification_targets/{certification_target_id}"};
   }
 
-  // Retrieves target certification target statistics
+  // Retrieves target target of evaluation statistics
   rpc GetCertificationTargetStatistics(GetCertificationTargetStatisticsRequest) returns (GetCertificationTargetStatisticsResponse) {
     option (google.api.http) = {get: "/v1/orchestrator/certification_targets/statistics"};
   }
 
   // Updates a metric configuration (target value and operator) for a specific
-  // certification target and metric ID
+  // target of evaluation and metric ID
   rpc UpdateMetricConfiguration(UpdateMetricConfigurationRequest) returns (clouditor.assessment.v1.MetricConfiguration) {
     option (google.api.http) = {
       put:
@@ -175,7 +175,7 @@ service Orchestrator {
   }
 
   // Retrieves a metric configuration (target value and operator) for a specific
-  // certification target and metric ID.
+  // target of evaluation and metric ID.
   rpc GetMetricConfiguration(GetMetricConfigurationRequest) returns (clouditor.assessment.v1.MetricConfiguration) {
     option (google.api.http) = {get:
         "/v1/orchestrator/certification_targets/{certification_target_id}/"
@@ -185,7 +185,7 @@ service Orchestrator {
   }
 
   // Lists all metric configurations (target value and operator) for a
-  // specific certification target ID
+  // specific target of evaluation ID
   rpc ListMetricConfigurations(ListMetricConfigurationRequest) returns (ListMetricConfigurationResponse) {
     option (google.api.http) = {get:
         "/v1/orchestrator/certification_targets/{certification_target_id}/"
@@ -507,16 +507,16 @@ message GetCertificationTargetStatisticsRequest {
 }
 
 message GetCertificationTargetStatisticsResponse {
-  // number of discovered resources per certification target
+  // number of discovered resources per target of evaluation
   int64 number_of_discovered_resources = 1;
 
-  // number of assessment results per certification target
+  // number of assessment results per target of evaluation
   int64 number_of_assessment_results = 2;
 
-  // number of evidences per certification target
+  // number of evidences per target of evaluation
   int64 number_of_evidences = 3;
 
-  // number of selected catalogs per certification target
+  // number of selected catalogs per target of evaluation
   int64 number_of_selected_catalogs = 4;
 }
 
@@ -598,7 +598,7 @@ message MetricChangeEvent {
     (google.api.field_behavior) = REQUIRED
   ];
 
-  // The certification target id that is affected by this change. Primarily
+  // The target of evaluation id that is affected by this change. Primarily
   // concerns metric configuration changes.
   string certification_target_id = 3 [
     (buf.validate.field).string.uuid = true,
@@ -648,7 +648,7 @@ message TargetOfEvaluation {
     // a map of key/value pairs, e.g., env:prod
     map<string, string> labels = 1;
 
-    // an icon for the certification target used by the UI
+    // an icon for the target of evaluation used by the UI
     optional string icon = 2;
   }
 
@@ -658,10 +658,10 @@ message TargetOfEvaluation {
   // last update time of the certification_target
   optional google.protobuf.Timestamp updated_at = 7 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
 
-  // additional metadata of the certification target, mostly used for the UI
+  // additional metadata of the target of evaluation, mostly used for the UI
   optional Metadata metadata = 10 [(tagger.tags) = "gorm:\"serializer:json\""];
 
-  // TargetType represents the type of the certification target.
+  // TargetType represents the type of the target of evaluation.
   enum TargetType {
     TARGET_TYPE_UNSPECIFIED = 0;
 
@@ -709,7 +709,7 @@ message Catalog {
   string short_name = 9 [(google.api.field_behavior) = REQUIRED];
 
   message Metadata {
-    // a color for the certification target used by the UI
+    // a color for the target of evaluation used by the UI
     optional string color = 3;
   }
 
@@ -804,7 +804,7 @@ message Control {
   optional string assurance_level = 11;
 }
 
-// A Audit Scope binds a certification target to a catalog, so the certification target is
+// A Audit Scope binds a target of evaluation to a catalog, so the target of evaluation is
 // evaluated regarding this catalog's controls
 message AuditScope {
   // Audit Scope ID
@@ -832,7 +832,7 @@ message GetAssessmentResultRequest {
 
 message ListAssessmentResultsRequest {
   message Filter {
-    // Optional. List only assessment results of a specific certification target.
+    // Optional. List only assessment results of a specific target of evaluation.
     optional string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
     // Optional. List only compliant assessment results.
     optional bool compliant = 2;
@@ -884,9 +884,9 @@ message GetAuditScopeRequest {
 
 message ListAuditScopesRequest {
   message Filter {
-    // Optional. List only audit scopes of a specific certification target
+    // Optional. List only audit scopes of a specific target of evaluation
     optional string certification_target_id = 1;
-    // Optional. List only audit scopes that evaluate the given catalog for any certification target
+    // Optional. List only audit scopes that evaluate the given catalog for any target of evaluation
     optional string catalog_id = 2;
   }
 

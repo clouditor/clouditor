@@ -72,7 +72,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 			if viper.GetBool(config.CreateDefaultCertificationTargetFlag) {
 				_, err := svc.CreateDefaultCertificationTarget()
 				if err != nil {
-					return nil, fmt.Errorf("could not register default target certification target: %v", err)
+					return nil, fmt.Errorf("could not register default target target of evaluation: %v", err)
 				}
 			}
 
@@ -114,7 +114,7 @@ type Service struct {
 
 	events chan *orchestrator.MetricChangeEvent
 
-	// authz defines our authorization strategy, e.g., which user can access which certification target and associated
+	// authz defines our authorization strategy, e.g., which user can access which target of evaluation and associated
 	// resources, such as evidences and assessment results.
 	authz service.AuthorizationStrategy
 }

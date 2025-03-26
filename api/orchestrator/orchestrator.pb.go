@@ -105,7 +105,7 @@ func (MetricChangeEvent_Type) EnumDescriptor() ([]byte, []int) {
 	return file_api_orchestrator_orchestrator_proto_rawDescGZIP(), []int{30, 0}
 }
 
-// TargetType represents the type of the certification target.
+// TargetType represents the type of the target of evaluation.
 type CertificationTarget_TargetType int32
 
 const (
@@ -1301,13 +1301,13 @@ func (x *GetCertificationTargetStatisticsRequest) GetCertificationTargetId() str
 
 type GetCertificationTargetStatisticsResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// number of discovered resources per certification target
+	// number of discovered resources per target of evaluation
 	NumberOfDiscoveredResources int64 `protobuf:"varint,1,opt,name=number_of_discovered_resources,json=numberOfDiscoveredResources,proto3" json:"number_of_discovered_resources,omitempty"`
-	// number of assessment results per certification target
+	// number of assessment results per target of evaluation
 	NumberOfAssessmentResults int64 `protobuf:"varint,2,opt,name=number_of_assessment_results,json=numberOfAssessmentResults,proto3" json:"number_of_assessment_results,omitempty"`
-	// number of evidences per certification target
+	// number of evidences per target of evaluation
 	NumberOfEvidences int64 `protobuf:"varint,3,opt,name=number_of_evidences,json=numberOfEvidences,proto3" json:"number_of_evidences,omitempty"`
-	// number of selected catalogs per certification target
+	// number of selected catalogs per target of evaluation
 	NumberOfSelectedCatalogs int64 `protobuf:"varint,4,opt,name=number_of_selected_catalogs,json=numberOfSelectedCatalogs,proto3" json:"number_of_selected_catalogs,omitempty"`
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
@@ -1703,7 +1703,7 @@ type MetricChangeEvent struct {
 	Type  MetricChangeEvent_Type `protobuf:"varint,1,opt,name=type,proto3,enum=clouditor.orchestrator.v1.MetricChangeEvent_Type" json:"type,omitempty"`
 	// The metric that is changing.
 	MetricId string `protobuf:"bytes,2,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty"`
-	// The certification target id that is affected by this change. Primarily
+	// The target of evaluation id that is affected by this change. Primarily
 	// concerns metric configuration changes.
 	CertificationTargetId string `protobuf:"bytes,3,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
 	unknownFields         protoimpl.UnknownFields
@@ -1842,7 +1842,7 @@ type TargetOfEvaluation struct {
 	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3,oneof" json:"created_at,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
 	// last update time of the certification_target
 	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3,oneof" json:"updated_at,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
-	// additional metadata of the certification target, mostly used for the UI
+	// additional metadata of the target of evaluation, mostly used for the UI
 	Metadata *CertificationTarget_Metadata `protobuf:"bytes,10,opt,name=metadata,proto3,oneof" json:"metadata,omitempty" gorm:"serializer:json"`
 	// type of the target to be evaluated: cloud, product or organization
 	TargetType    CertificationTarget_TargetType `protobuf:"varint,11,opt,name=target_type,json=targetType,proto3,enum=clouditor.orchestrator.v1.CertificationTarget_TargetType" json:"target_type,omitempty"`
@@ -2253,7 +2253,7 @@ func (x *Control) GetAssuranceLevel() string {
 	return ""
 }
 
-// A Audit Scope binds a certification target to a catalog, so the certification target is
+// A Audit Scope binds a target of evaluation to a catalog, so the target of evaluation is
 // evaluated regarding this catalog's controls
 type AuditScope struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -4126,7 +4126,7 @@ type CertificationTarget_Metadata struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// a map of key/value pairs, e.g., env:prod
 	Labels map[string]string `protobuf:"bytes,1,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	// an icon for the certification target used by the UI
+	// an icon for the target of evaluation used by the UI
 	Icon          *string `protobuf:"bytes,2,opt,name=icon,proto3,oneof" json:"icon,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -4178,7 +4178,7 @@ func (x *CertificationTarget_Metadata) GetIcon() string {
 
 type Catalog_Metadata struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// a color for the certification target used by the UI
+	// a color for the target of evaluation used by the UI
 	Color         *string `protobuf:"bytes,3,opt,name=color,proto3,oneof" json:"color,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -4223,7 +4223,7 @@ func (x *Catalog_Metadata) GetColor() string {
 
 type ListAssessmentResultsRequest_Filter struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Optional. List only assessment results of a specific certification target.
+	// Optional. List only assessment results of a specific target of evaluation.
 	CertificationTargetId *string `protobuf:"bytes,1,opt,name=certification_target_id,json=certificationTargetId,proto3,oneof" json:"certification_target_id,omitempty"`
 	// Optional. List only compliant assessment results.
 	Compliant *bool `protobuf:"varint,2,opt,name=compliant,proto3,oneof" json:"compliant,omitempty"`
@@ -4312,9 +4312,9 @@ func (x *ListAssessmentResultsRequest_Filter) GetAssessmentResultIds() []string 
 
 type ListAuditScopesRequest_Filter struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Optional. List only audit scopes of a specific certification target
+	// Optional. List only audit scopes of a specific target of evaluation
 	CertificationTargetId *string `protobuf:"bytes,1,opt,name=certification_target_id,json=certificationTargetId,proto3,oneof" json:"certification_target_id,omitempty"`
-	// Optional. List only audit scopes that evaluate the given catalog for any certification target
+	// Optional. List only audit scopes that evaluate the given catalog for any target of evaluation
 	CatalogId     *string `protobuf:"bytes,2,opt,name=catalog_id,json=catalogId,proto3,oneof" json:"catalog_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache

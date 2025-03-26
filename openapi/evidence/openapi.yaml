@@ -121,7 +121,7 @@ components:
                     format: date-time
                 certificationTargetId:
                     type: string
-                    description: Reference to a certification target (e.g., service, organization) this evidence was gathered from
+                    description: Reference to a target of evaluation (e.g., service, organization) this evidence was gathered from
                 toolId:
                     type: string
                     description: Reference to the tool which provided the evidence

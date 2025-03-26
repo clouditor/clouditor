@@ -38,43 +38,43 @@ type CertificationTargetHookFunc func(ctx context.Context, cld *TargetOfEvaluati
 type AuditScopeHookFunc func(ctx context.Context, event *AuditScopeChangeEvent, err error)
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
-// the certification target ID of the inner object.
+// the target of evaluation ID of the inner object.
 func (req *StoreAssessmentResultRequest) GetCertificationTargetId() string {
 	return req.GetResult().GetCertificationTargetId()
 }
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
-// the certification target ID of the inner object.
+// the target of evaluation ID of the inner object.
 func (req *CreateCertificateRequest) GetCertificationTargetId() string {
 	return req.GetCertificate().GetCertificationTargetId()
 }
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
-// the certification target ID of the inner object.
+// the target of evaluation ID of the inner object.
 func (req *UpdateCertificateRequest) GetCertificationTargetId() string {
 	return req.GetCertificate().GetCertificationTargetId()
 }
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
-// the certification target ID of the inner object.
+// the target of evaluation ID of the inner object.
 func (req *CreateCertificationTargetRequest) GetCertificationTargetId() string {
 	return req.GetCertificationTarget().GetId()
 }
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
-// the certification target ID of the inner object.
+// the target of evaluation ID of the inner object.
 func (req *UpdateCertificationTargetRequest) GetCertificationTargetId() string {
 	return req.TargetOfEvaluation.GetId()
 }
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
-// the certification target ID of the inner object.
+// the target of evaluation ID of the inner object.
 func (req *CreateAuditScopeRequest) GetCertificationTargetId() string {
 	return req.GetAuditScope().GetCertificationTargetId()
 }
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
-// the certification target ID of the inner object.
+// the target of evaluation ID of the inner object.
 func (req *UpdateAuditScopeRequest) GetCertificationTargetId() string {
 	return req.GetAuditScope().GetCertificationTargetId()
 }

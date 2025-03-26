@@ -12,7 +12,7 @@ paths:
             tags:
                 - Evaluation
             description: |-
-                Evaluates periodically all assessment results of a certification target id based
+                Evaluates periodically all assessment results of a target of evaluation id based
                  on the given catalog id. Part of the public API, also exposed as REST.
             operationId: Evaluation_StartEvaluation
             parameters:
@@ -81,7 +81,7 @@ paths:
             parameters:
                 - name: filter.certificationTargetId
                   in: query
-                  description: Optional. Lists only evaluation results for a specific certification target.
+                  description: Optional. Lists only evaluation results for a specific target of evaluation.
                   schema:
                     type: string
                 - name: filter.catalogId
@@ -233,7 +233,7 @@ components:
                     format: date-time
             description: |-
                 A evaluation result resource, representing the result after evaluating the
-                 certification target with a specific control certification_target_id, category_name and
+                 target of evaluation with a specific control certification_target_id, category_name and
                  catalog_id are necessary to get the corresponding AuditScope
         GoogleProtobufAny:
             type: object

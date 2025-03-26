@@ -78,13 +78,13 @@ func TestService_GetCertificationTarget(t *testing.T) {
 			},
 		},
 		{
-			name: "certification target not found",
+			name: "target of evaluation not found",
 			svc:  NewService(),
 			ctx:  context.Background(),
 			req:  &orchestrator.GetCertificationTargetRequest{CertificationTargetId: testdata.MockCertificationTargetID1},
 			res:  nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "certification target not found") &&
+				return assert.ErrorContains(t, err, "target of evaluation not found") &&
 					assert.Equal(t, codes.NotFound, status.Code(err))
 			},
 		},
@@ -215,7 +215,7 @@ func TestService_RemoveCertificationTarget(t *testing.T) {
 	)
 	orchestratorService := NewService()
 
-	// 1st case: Empty certification target ID error
+	// 1st case: Empty target of evaluation ID error
 	_, err = orchestratorService.RemoveCertificationTarget(context.Background(), &orchestrator.RemoveCertificationTargetRequest{CertificationTargetId: ""})
 	assert.Error(t, err)
 	assert.Equal(t, status.Code(err), codes.InvalidArgument)
@@ -254,7 +254,7 @@ func TestService_CreateDefaultCertificationTarget(t *testing.T) {
 	)
 	orchestratorService := NewService()
 
-	// 1st case: No records for certification targets -> Default certification target is created
+	// 1st case: No records for certification targets -> Default target of evaluation is created
 	CertificationTargetResponse, err = orchestratorService.CreateDefaultCertificationTarget()
 	assert.NoError(t, err)
 	// Check timestamps and delete it for further tests
@@ -273,7 +273,7 @@ func TestService_CreateDefaultCertificationTarget(t *testing.T) {
 	// Check if TargetOfEvaluation is valid
 	assert.NoError(t, api.Validate(CertificationTargetResponse))
 
-	// 2nd case: There is already a record for the certification target (the default certification target) -> Nothing added and no error
+	// 2nd case: There is already a record for the target of evaluation (the default target of evaluation) -> Nothing added and no error
 	CertificationTargetResponse, err = orchestratorService.CreateDefaultCertificationTarget()
 	assert.NoError(t, err)
 	assert.Nil(t, CertificationTargetResponse)
@@ -338,7 +338,7 @@ func TestService_ListCertificationTargets(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "retrieve only allowed certification targets: no certification target is allowed",
+			name: "retrieve only allowed certification targets: no target of evaluation is allowed",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					// Store two certification targets, of which none we are allowed to retrieve in the test
@@ -494,14 +494,14 @@ func TestService_GetCertificationTargetStatistics(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					// Store one certification target
+					// Store one target of evaluation
 					assert.NoError(t, s.Create(&orchestrator.TargetOfEvaluation{
 						Id:          testdata.MockCertificationTargetID1,
 						Name:        testdata.MockCertificationTargetName1,
 						Description: testdata.MockCertificationTargetDescription1,
 					}))
 
-					// Store evidences for certification target
+					// Store evidences for target of evaluation
 					assert.NoError(t, s.Create(&evidence.Evidence{
 						Id:                    uuid.NewString(),
 						CertificationTargetId: testdata.MockCertificationTargetID1,
@@ -511,7 +511,7 @@ func TestService_GetCertificationTargetStatistics(t *testing.T) {
 						CertificationTargetId: testdata.MockCertificationTargetID2,
 					}))
 
-					// Store assessment results for certification target
+					// Store assessment results for target of evaluation
 					assert.NoError(t, s.Create(&assessment.AssessmentResult{
 						Id:                    uuid.NewString(),
 						CertificationTargetId: testdata.MockCertificationTargetID1,
@@ -626,7 +626,7 @@ func TestService_CreateCertificationTarget(t *testing.T) {
 			},
 			wantRes: assert.Nil[*orchestrator.TargetOfEvaluation],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not add certification target to the database:")
+				return assert.ErrorContains(t, err, "could not add target of evaluation to the database:")
 			},
 		},
 		{

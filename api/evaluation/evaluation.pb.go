@@ -468,7 +468,7 @@ func (x *ListEvaluationResultsResponse) GetNextPageToken() string {
 }
 
 // A evaluation result resource, representing the result after evaluating the
-// certification target with a specific control certification_target_id, category_name and
+// target of evaluation with a specific control certification_target_id, category_name and
 // catalog_id are necessary to get the corresponding AuditScope
 type EvaluationResult struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -617,7 +617,7 @@ func (x *EvaluationResult) GetValidUntil() *timestamppb.Timestamp {
 
 type ListEvaluationResultsRequest_Filter struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Optional. Lists only evaluation results for a specific certification target.
+	// Optional. Lists only evaluation results for a specific target of evaluation.
 	CertificationTargetId *string `protobuf:"bytes,1,opt,name=certification_target_id,json=certificationTargetId,proto3,oneof" json:"certification_target_id,omitempty"`
 	// Optional. Lists only evaluation results for a specific catalog.
 	CatalogId *string `protobuf:"bytes,2,opt,name=catalog_id,json=catalogId,proto3,oneof" json:"catalog_id,omitempty"`

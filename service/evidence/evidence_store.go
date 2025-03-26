@@ -76,7 +76,7 @@ type Service struct {
 	// mu is used for (un)locking result hook calls
 	mu sync.Mutex
 
-	// authz defines our authorization strategy, e.g., which user can access which certification target and associated
+	// authz defines our authorization strategy, e.g., which user can access which target of evaluation and associated
 	// resources, such as evidences and assessment results.
 	authz service.AuthorizationStrategy
 
@@ -130,7 +130,7 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -218,7 +218,7 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 		return nil, err
 	}
 
-	// Retrieve list of allowed certification target according to our authorization strategy. No need to specify any additional
+	// Retrieve list of allowed target of evaluation according to our authorization strategy. No need to specify any additional
 	// conditions to our storage request, if we are allowed to see all certification targets.
 	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
 	if !all && req.GetFilter().GetCertificationTargetId() != "" && !slices.Contains(allowed, req.GetFilter().GetCertificationTargetId()) {
@@ -270,7 +270,7 @@ func (svc *Service) GetEvidence(ctx context.Context, req *evidence.GetEvidenceRe
 		return nil, err
 	}
 
-	// Retrieve list of allowed certification target according to our authorization strategy. No need to specify any additional
+	// Retrieve list of allowed target of evaluation according to our authorization strategy. No need to specify any additional
 	// conditions to our storage request, if we are allowed to see all certification targets.
 	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
 	if !all {

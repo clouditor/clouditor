@@ -50,14 +50,14 @@ const (
 var ErrPermissionDenied = status.Errorf(codes.PermissionDenied, "access denied")
 
 // AuthorizationStrategy is an interface that implements a function which
-// checkers whether the current certification target request can be fulfilled using the
+// checkers whether the current target of evaluation request can be fulfilled using the
 // supplied context (e.g., based on the authenticated user).
 type AuthorizationStrategy interface {
 	CheckAccess(ctx context.Context, typ RequestType, req api.CertificationTargetRequest) bool
 	AllowedCertificationTargets(ctx context.Context) (all bool, IDs []string)
 }
 
-// AuthorizationStrategyJWT is an AuthorizationStrategy that expects a list of certification target IDs to be in a specific JWT
+// AuthorizationStrategyJWT is an AuthorizationStrategy that expects a list of target of evaluation IDs to be in a specific JWT
 // claim key.
 type AuthorizationStrategyJWT struct {
 	CertificationTargetsKey string
@@ -81,7 +81,7 @@ func (a *AuthorizationStrategyJWT) CheckAccess(ctx context.Context, _ RequestTyp
 	return slices.Contains(list, req.GetCertificationTargetId())
 }
 
-// AllowedCertificationTargets retrieves a list of allowed certification target IDs according to the current access strategy.
+// AllowedCertificationTargets retrieves a list of allowed target of evaluation IDs according to the current access strategy.
 func (a *AuthorizationStrategyJWT) AllowedCertificationTargets(ctx context.Context) (all bool, list []string) {
 	var (
 		err    error
@@ -145,7 +145,7 @@ func (*AuthorizationStrategyAllowAll) CheckAccess(_ context.Context, _ RequestTy
 	return true
 }
 
-// AllowedCertificationTargets retrieves a list of allowed certification target IDs according to the current access strategy. Returns
+// AllowedCertificationTargets retrieves a list of allowed target of evaluation IDs according to the current access strategy. Returns
 // `all = true` since strategy is `AuthorizationStrategyAllowAll`
 func (*AuthorizationStrategyAllowAll) AllowedCertificationTargets(_ context.Context) (all bool, list []string) {
 	return true, nil

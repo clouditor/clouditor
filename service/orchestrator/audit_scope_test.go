@@ -836,7 +836,7 @@ func TestService_RemoveAuditScope(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Happy path: with authorization for audit scopes with a certain specific certification target",
+			name: "Happy path: with authorization for audit scopes with a certain specific target of evaluation",
 			fields: fields{
 				svc: NewService(
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID2)),
@@ -933,7 +933,7 @@ func TestService_UpdateAuditScope(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: permission denied: with authorization for audit scopes with a certain specific certification target",
+			name: "Error: permission denied: with authorization for audit scopes with a certain specific target of evaluation",
 			fields: fields{
 				svc: NewService(
 					WithStorage(testutil.NewInMemoryStorage(t)),
@@ -1024,7 +1024,7 @@ func TestService_UpdateAuditScope(t *testing.T) {
 			},
 		},
 		{
-			name: "Happy path: with authorization for audit scopes with a certain specific certification target",
+			name: "Happy path: with authorization for audit scopes with a certain specific target of evaluation",
 			fields: fields{
 				svc: NewService(
 					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
