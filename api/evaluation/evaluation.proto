@@ -96,7 +96,7 @@ message StopEvaluationResponse {}
 message ListEvaluationResultsRequest {
   message Filter {
     // Optional. Lists only evaluation results for a specific target of evaluation.
-    optional string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
+    optional string target_of_evaluation_id = 1 [(buf.validate.field).string.uuid = true];
 
     // Optional. Lists only evaluation results for a specific catalog.
     optional string catalog_id = 2 [(buf.validate.field).string.min_len = 1];
@@ -133,7 +133,7 @@ message ListEvaluationResultsResponse {
 }
 
 // A evaluation result resource, representing the result after evaluating the
-// target of evaluation with a specific control certification_target_id, category_name and
+// target of evaluation with a specific control target_of_evaluation_id, category_name and
 // catalog_id are necessary to get the corresponding AuditScope
 message EvaluationResult {
   // Evaluation result id
@@ -143,7 +143,7 @@ message EvaluationResult {
   ];
 
   // The Target of Evaluation ID the evaluation belongs to
-  string certification_target_id = 2 [(buf.validate.field).string = {uuid: true}];
+  string target_of_evaluation_id = 2 [(buf.validate.field).string = {uuid: true}];
 
   // The Audit Scope ID the evaluation belongs to
   string audit_scope_id = 3 [(buf.validate.field).string = {uuid: true}];

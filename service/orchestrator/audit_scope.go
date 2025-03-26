@@ -135,9 +135,9 @@ func (svc *Service) ListAuditScopes(ctx context.Context, req *orchestrator.ListA
 	// * catalog ID
 	if req.Filter != nil {
 		if req.Filter.TargetOfEvaluationId != nil {
-			query = append(query, "certification_target_id = ?")
+			query = append(query, "target_of_evaluation_id = ?")
 			args = append(args, req.Filter.GetTargetOfEvaluationId())
-			// conds = append(conds, "certification_target_id = ?", req.TargetOfEvaluationId)
+			// conds = append(conds, "target_of_evaluation_id = ?", req.TargetOfEvaluationId)
 		}
 		if req.Filter.CatalogId != nil {
 			query = append(query, "catalog_id = ?")
@@ -151,7 +151,7 @@ func (svc *Service) ListAuditScopes(ctx context.Context, req *orchestrator.ListA
 	// In any case, we need to make sure that we only select audit scopes that we
 	// have access to (if we do not have access to all)
 	if !all {
-		query = append(query, "certification_target_id IN ?")
+		query = append(query, "target_of_evaluation_id IN ?")
 		args = append(args, allowed)
 	}
 

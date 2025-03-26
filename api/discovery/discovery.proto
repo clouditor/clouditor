@@ -65,7 +65,7 @@ message StartDiscoveryResponse {
 message ListResourcesRequest {
   message Filter {
     optional string type = 1;
-    optional string certification_target_id = 2;
+    optional string target_of_evaluation_id = 2;
     optional string tool_id = 3;
   }
 
@@ -94,7 +94,7 @@ message Resource {
   ];
   // TargetOfEvaluationId is the UUID for the target of evaluation to which this resource
   // belongs to.
-  string certification_target_id = 2 [
+  string target_of_evaluation_id = 2 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];

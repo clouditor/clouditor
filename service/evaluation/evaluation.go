@@ -328,13 +328,13 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 	// * control ID
 	// * sub-controls
 	if req.Filter != nil {
-		// Check if certification_target_id in filter is within allowed or one can access *all* the target of evaluations
+		// Check if target_of_evaluation_id in filter is within allowed or one can access *all* the target of evaluations
 		if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Filter) {
 			return nil, service.ErrPermissionDenied
 		}
 
 		if req.Filter.TargetOfEvaluationId != nil {
-			query = append(query, "certification_target_id = ?")
+			query = append(query, "target_of_evaluation_id = ?")
 			args = append(args, req.Filter.GetTargetOfEvaluationId())
 		}
 
@@ -373,7 +373,7 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 	// In any case, we need to make sure that we only select evaluation results of target of evaluations that we have access to
 	// (if we do not have access to all)
 	if !all {
-		query = append(query, "certification_target_id IN ?")
+		query = append(query, "target_of_evaluation_id IN ?")
 		args = append(args, allowed)
 	}
 

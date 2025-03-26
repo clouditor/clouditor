@@ -228,7 +228,7 @@ func TestService_StoreEvidences(t *testing.T) {
 			wantErr: false,
 			wantResMessage: &evidence.StoreEvidencesResponse{
 				Status:        false,
-				StatusMessage: "evidence.certification_target_id: value must be a valid UUID",
+				StatusMessage: "evidence.target_of_evaluation_id: value must be a valid UUID",
 			},
 		},
 		{
@@ -457,7 +457,7 @@ func TestService_ListEvidences(t *testing.T) {
 			wantRes: assert.Nil[*evidence.ListEvidencesResponse],
 		},
 		{
-			name: "Wrong Input handled correctly (certification_target_id not UUID)",
+			name: "Wrong Input handled correctly (target_of_evaluation_id not UUID)",
 			args: args{
 				in0: nil,
 				req: &evidence.ListEvidencesRequest{

@@ -54,7 +54,7 @@ func (svc *Service) ListGraphEdges(ctx context.Context, req *discovery.ListGraph
 
 	all, allowed = svc.authz.AllowedTargetOfEvaluations(ctx)
 	if !all {
-		query = append(query, "certification_target_id IN ?")
+		query = append(query, "target_of_evaluation_id IN ?")
 		args = append(args, allowed)
 	}
 

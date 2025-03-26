@@ -144,7 +144,7 @@ service Orchestrator {
 
   // Retrieves a target target of evaluation
   rpc GetTargetOfEvaluation(GetTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
-    option (google.api.http) = {get: "/v1/orchestrator/certification_targets/{certification_target_id}"};
+    option (google.api.http) = {get: "/v1/orchestrator/certification_targets/{target_of_evaluation_id}"};
   }
 
   // Lists all target target of evaluations
@@ -154,7 +154,7 @@ service Orchestrator {
 
   // Removes a target target of evaluation
   rpc RemoveTargetOfEvaluation(RemoveTargetOfEvaluationRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {delete: "/v1/orchestrator/certification_targets/{certification_target_id}"};
+    option (google.api.http) = {delete: "/v1/orchestrator/certification_targets/{target_of_evaluation_id}"};
   }
 
   // Retrieves target target of evaluation statistics
@@ -167,7 +167,7 @@ service Orchestrator {
   rpc UpdateMetricConfiguration(UpdateMetricConfigurationRequest) returns (clouditor.assessment.v1.MetricConfiguration) {
     option (google.api.http) = {
       put:
-        "/v1/orchestrator/certification_targets/{certification_target_id}/"
+        "/v1/orchestrator/certification_targets/{target_of_evaluation_id}/"
         "metric_configurations/"
         "{metric_id}"
       body: "configuration"
@@ -178,7 +178,7 @@ service Orchestrator {
   // target of evaluation and metric ID.
   rpc GetMetricConfiguration(GetMetricConfigurationRequest) returns (clouditor.assessment.v1.MetricConfiguration) {
     option (google.api.http) = {get:
-        "/v1/orchestrator/certification_targets/{certification_target_id}/"
+        "/v1/orchestrator/certification_targets/{target_of_evaluation_id}/"
         "metric_configurations/"
         "{metric_id}"
 };
@@ -188,7 +188,7 @@ service Orchestrator {
   // specific target of evaluation ID
   rpc ListMetricConfigurations(ListMetricConfigurationRequest) returns (ListMetricConfigurationResponse) {
     option (google.api.http) = {get:
-        "/v1/orchestrator/certification_targets/{certification_target_id}/"
+        "/v1/orchestrator/certification_targets/{target_of_evaluation_id}/"
         "metric_configurations"
 };
   }
@@ -328,7 +328,7 @@ service Orchestrator {
     option (google.api.http) = {
       put:
         "/v1/orchestrator/certification_targets/"
-        "{audit_scope.certification_target_id}/audit_scopes/"
+        "{audit_scope.target_of_evaluation_id}/audit_scopes/"
         "{audit_scope.catalog_id}"
       body: "audit_scope"
     };
@@ -457,7 +457,7 @@ message ListMetricsResponse {
 }
 
 message GetTargetOfEvaluationRequest {
-  string certification_target_id = 1 [
+  string target_of_evaluation_id = 1 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -478,7 +478,7 @@ message UpdateTargetOfEvaluationRequest {
 }
 
 message RemoveTargetOfEvaluationRequest {
-  string certification_target_id = 1 [
+  string target_of_evaluation_id = 1 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -500,7 +500,7 @@ message ListTargetOfEvaluationsResponse {
 }
 
 message GetTargetOfEvaluationStatisticsRequest {
-  string certification_target_id = 1 [
+  string target_of_evaluation_id = 1 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -521,7 +521,7 @@ message GetTargetOfEvaluationStatisticsResponse {
 }
 
 message UpdateMetricConfigurationRequest {
-  string certification_target_id = 1 [
+  string target_of_evaluation_id = 1 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -538,7 +538,7 @@ message UpdateMetricConfigurationRequest {
 }
 
 message GetMetricConfigurationRequest {
-  string certification_target_id = 1 [
+  string target_of_evaluation_id = 1 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -550,7 +550,7 @@ message GetMetricConfigurationRequest {
 }
 
 message ListMetricConfigurationRequest {
-  string certification_target_id = 10 [
+  string target_of_evaluation_id = 10 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -600,7 +600,7 @@ message MetricChangeEvent {
 
   // The target of evaluation id that is affected by this change. Primarily
   // concerns metric configuration changes.
-  string certification_target_id = 3 [
+  string target_of_evaluation_id = 3 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -813,7 +813,7 @@ message AuditScope {
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
-  string certification_target_id = 1 [
+  string target_of_evaluation_id = 1 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -833,7 +833,7 @@ message GetAssessmentResultRequest {
 message ListAssessmentResultsRequest {
   message Filter {
     // Optional. List only assessment results of a specific target of evaluation.
-    optional string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
+    optional string target_of_evaluation_id = 1 [(buf.validate.field).string.uuid = true];
     // Optional. List only compliant assessment results.
     optional bool compliant = 2;
     // Optional. List only assessment results of a specific metric id.
@@ -885,7 +885,7 @@ message GetAuditScopeRequest {
 message ListAuditScopesRequest {
   message Filter {
     // Optional. List only audit scopes of a specific target of evaluation
-    optional string certification_target_id = 1;
+    optional string target_of_evaluation_id = 1;
     // Optional. List only audit scopes that evaluate the given catalog for any target of evaluation
     optional string catalog_id = 2;
   }
@@ -1060,7 +1060,7 @@ message Certificate {
     (buf.validate.field).string.min_len = 1,
     (google.api.field_behavior) = REQUIRED
   ];
-  string certification_target_id = 3 [
+  string target_of_evaluation_id = 3 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];

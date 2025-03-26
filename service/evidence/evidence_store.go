@@ -230,7 +230,7 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 	// Apply filter options
 	if filter := req.GetFilter(); filter != nil {
 		if TargetOfEvaluationId := filter.GetTargetOfEvaluationId(); TargetOfEvaluationId != "" {
-			query = append(query, "certification_target_id = ?")
+			query = append(query, "target_of_evaluation_id = ?")
 			args = append(args, TargetOfEvaluationId)
 		}
 		if toolId := filter.GetToolId(); toolId != "" {
@@ -241,7 +241,7 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 
 	// In any case, we need to make sure that we only select evidences of target of evaluations that we have access to
 	if !all {
-		query = append(query, "certification_target_id IN ?")
+		query = append(query, "target_of_evaluation_id IN ?")
 		args = append(args, allowed)
 	}
 
@@ -274,7 +274,7 @@ func (svc *Service) GetEvidence(ctx context.Context, req *evidence.GetEvidenceRe
 	// conditions to our storage request, if we are allowed to see all target of evaluations.
 	all, allowed = svc.authz.AllowedTargetOfEvaluations(ctx)
 	if !all {
-		conds = []any{"id = ? AND certification_target_id IN ?", req.EvidenceId, allowed}
+		conds = []any{"id = ? AND target_of_evaluation_id IN ?", req.EvidenceId, allowed}
 	} else {
 		conds = []any{"id = ?", req.EvidenceId}
 	}

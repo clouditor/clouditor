@@ -403,7 +403,7 @@ func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrato
 
 	res = new(assessment.MetricConfiguration)
 
-	err = svc.storage.Get(res, gorm.WithoutPreload(), "certification_target_id = ? AND metric_id = ?", req.TargetOfEvaluationId, req.MetricId)
+	err = svc.storage.Get(res, gorm.WithoutPreload(), "target_of_evaluation_id = ? AND metric_id = ?", req.TargetOfEvaluationId, req.MetricId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		// Otherwise, fall back to our default configuration
 		if config, ok := defaultMetricConfigurations[req.MetricId]; ok {
@@ -445,7 +445,7 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 	req.Configuration.UpdatedAt = timestamppb.Now()
 	req.Configuration.IsDefault = false
 
-	err = svc.storage.Save(&req.Configuration, "metric_id = ? AND certification_target_id = ?", req.GetMetricId(), req.GetTargetOfEvaluationId())
+	err = svc.storage.Save(&req.Configuration, "metric_id = ? AND target_of_evaluation_id = ?", req.GetMetricId(), req.GetTargetOfEvaluationId())
 	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
 		return nil, status.Errorf(codes.NotFound, "metric or service does not exist")
 	} else if err != nil {

@@ -93,7 +93,7 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 
 	all, allowed := svc.authz.AllowedTargetOfEvaluations(ctx)
 	if !all {
-		query = append(query, "certification_target_id IN ?")
+		query = append(query, "target_of_evaluation_id IN ?")
 		args = append(args, allowed)
 	}
 
@@ -202,7 +202,7 @@ func (svc *Service) RemoveCertificate(ctx context.Context, req *orchestrator.Rem
 func (svc *Service) checkCertificateAuthorization(ctx context.Context, req *orchestrator.RemoveCertificateRequest) error {
 	all, allowed := svc.authz.AllowedTargetOfEvaluations(ctx)
 	if !all {
-		count2, err := svc.storage.Count(&orchestrator.Certificate{}, "id = ? AND certification_target_id IN ?",
+		count2, err := svc.storage.Count(&orchestrator.Certificate{}, "id = ? AND target_of_evaluation_id IN ?",
 			req.GetCertificateId(), allowed)
 		if err != nil {
 			return status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)

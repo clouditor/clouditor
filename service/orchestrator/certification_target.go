@@ -248,7 +248,7 @@ func (s *Service) GetTargetOfEvaluationStatistics(ctx context.Context, req *orch
 
 	// Get number of discovered resources
 	resources := new(discovery.Resource)
-	count, err := s.storage.Count(resources, "certification_target_id = ?", req.TargetOfEvaluationId)
+	count, err := s.storage.Count(resources, "target_of_evaluation_id = ?", req.TargetOfEvaluationId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error counting resources: %s", err)
 	}
@@ -256,7 +256,7 @@ func (s *Service) GetTargetOfEvaluationStatistics(ctx context.Context, req *orch
 
 	// Get number of evidences
 	ev := new(evidence.Evidence)
-	count, err = s.storage.Count(ev, "certification_target_id = ?", req.TargetOfEvaluationId)
+	count, err = s.storage.Count(ev, "target_of_evaluation_id = ?", req.TargetOfEvaluationId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error counting evidences: %s", err)
 	}
@@ -264,7 +264,7 @@ func (s *Service) GetTargetOfEvaluationStatistics(ctx context.Context, req *orch
 
 	// Get number of assessment results
 	res := new(assessment.AssessmentResult)
-	count, err = s.storage.Count(res, "certification_target_id = ?", req.TargetOfEvaluationId)
+	count, err = s.storage.Count(res, "target_of_evaluation_id = ?", req.TargetOfEvaluationId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error counting assessment results: %s", err)
 	}

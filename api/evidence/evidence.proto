@@ -46,7 +46,7 @@ message Evidence {
   ];
 
   // Reference to a target of evaluation (e.g., service, organization) this evidence was gathered from
-  string certification_target_id = 3 [(buf.validate.field).string.uuid = true];
+  string target_of_evaluation_id = 3 [(buf.validate.field).string.uuid = true];
 
   // Reference to the tool which provided the evidence
   string tool_id = 4 [(buf.validate.field).string.min_len = 1];

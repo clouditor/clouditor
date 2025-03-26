@@ -79,7 +79,7 @@ paths:
                  exposed as REST.
             operationId: Evaluation_ListEvaluationResults
             parameters:
-                - name: filter.targetOfEvaluationId
+                - name: filter.certificationTargetId
                   in: query
                   description: Optional. Lists only evaluation results for a specific target of evaluation.
                   schema:
@@ -184,7 +184,7 @@ components:
                 id:
                     type: string
                     description: Evaluation result id
-                targetOfEvaluationId:
+                certificationTargetId:
                     type: string
                     description: The Target of Evaluation ID the evaluation belongs to
                 auditScopeId:
@@ -233,7 +233,7 @@ components:
                     format: date-time
             description: |-
                 A evaluation result resource, representing the result after evaluating the
-                 target of evaluation with a specific control certification_target_id, category_name and
+                 target of evaluation with a specific control target_of_evaluation_id, category_name and
                  catalog_id are necessary to get the corresponding AuditScope
         GoogleProtobufAny:
             type: object

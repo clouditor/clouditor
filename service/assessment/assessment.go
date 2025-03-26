@@ -258,7 +258,7 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 		return nil, err
 	}
 
-	// Check if certification_target_id in the service is within allowed or one can access *all* the target of evaluations
+	// Check if target_of_evaluation_id in the service is within allowed or one can access *all* the target of evaluations
 	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
 		log.Error(service.ErrPermissionDenied)
 		return nil, service.ErrPermissionDenied
@@ -475,8 +475,9 @@ func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, r
 		types = ontology.ResourceTypes(resource)
 
 		result := &assessment.AssessmentResult{
-			Id:                   uuid.NewString(),
-			Timestamp:            timestamppb.Now(),
+			Id:        uuid.NewString(),
+			Timestamp: timestamppb.Now(),
+
 			TargetOfEvaluationId: ev.GetTargetOfEvaluationId(),
 			MetricId:             metricID,
 			MetricConfiguration:  data.Config,

@@ -14,7 +14,7 @@ paths:
             description: List all assessment results. Part of the public API, also exposed as REST.
             operationId: Orchestrator_ListAssessmentResults
             parameters:
-                - name: filter.targetOfEvaluationId
+                - name: filter.certificationTargetId
                   in: query
                   description: Optional. List only assessment results of a specific target of evaluation.
                   schema:
@@ -280,7 +280,7 @@ paths:
             description: Lists all Audit Scopes
             operationId: Orchestrator_ListAuditScopes
             parameters:
-                - name: filter.targetOfEvaluationId
+                - name: filter.certificationTargetId
                   in: query
                   description: Optional. List only audit scopes of a specific target of evaluation
                   schema:
@@ -929,7 +929,7 @@ paths:
             description: Retrieves target target of evaluation statistics
             operationId: Orchestrator_GetTargetOfEvaluationStatistics
             parameters:
-                - name: targetOfEvaluationId
+                - name: certificationTargetId
                   in: query
                   schema:
                     type: string
@@ -946,14 +946,14 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/certification_targets/{audit_scope.certification_target_id}/audit_scopes/{audit_scope.catalog_id}:
+    /v1/orchestrator/certification_targets/{audit_scope.target_of_evaluation_id}/audit_scopes/{audit_scope.catalog_id}:
         put:
             tags:
                 - Orchestrator
             description: Updates an existing Audit Scope
             operationId: Orchestrator_UpdateAuditScope
             parameters:
-                - name: audit_scope.certification_target_id
+                - name: audit_scope.target_of_evaluation_id
                   in: path
                   required: true
                   schema:
@@ -982,14 +982,14 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/certification_targets/{targetOfEvaluationId}:
+    /v1/orchestrator/certification_targets/{certificationTargetId}:
         get:
             tags:
                 - Orchestrator
             description: Retrieves a target target of evaluation
             operationId: Orchestrator_GetTargetOfEvaluation
             parameters:
-                - name: targetOfEvaluationId
+                - name: certificationTargetId
                   in: path
                   required: true
                   schema:
@@ -1013,7 +1013,7 @@ paths:
             description: Removes a target target of evaluation
             operationId: Orchestrator_RemoveTargetOfEvaluation
             parameters:
-                - name: targetOfEvaluationId
+                - name: certificationTargetId
                   in: path
                   required: true
                   schema:
@@ -1028,7 +1028,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/certification_targets/{targetOfEvaluationId}/metric_configurations:
+    /v1/orchestrator/certification_targets/{certificationTargetId}/metric_configurations:
         get:
             tags:
                 - Orchestrator
@@ -1037,7 +1037,7 @@ paths:
                  specific target of evaluation ID
             operationId: Orchestrator_ListMetricConfigurations
             parameters:
-                - name: targetOfEvaluationId
+                - name: certificationTargetId
                   in: path
                   required: true
                   schema:
@@ -1055,7 +1055,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/certification_targets/{targetOfEvaluationId}/metric_configurations/{metricId}:
+    /v1/orchestrator/certification_targets/{certificationTargetId}/metric_configurations/{metricId}:
         get:
             tags:
                 - Orchestrator
@@ -1064,7 +1064,7 @@ paths:
                  target of evaluation and metric ID.
             operationId: Orchestrator_GetMetricConfiguration
             parameters:
-                - name: targetOfEvaluationId
+                - name: certificationTargetId
                   in: path
                   required: true
                   schema:
@@ -1095,7 +1095,7 @@ paths:
                  target of evaluation and metric ID
             operationId: Orchestrator_UpdateMetricConfiguration
             parameters:
-                - name: targetOfEvaluationId
+                - name: certificationTargetId
                   in: path
                   required: true
                   schema:
@@ -1485,7 +1485,7 @@ components:
                 - resourceId
                 - resourceTypes
                 - complianceComment
-                - targetOfEvaluationId
+                - certificationTargetId
                 - toolId
             type: object
             properties:
@@ -1525,7 +1525,7 @@ components:
                     items:
                         $ref: '#/components/schemas/ComparisonResult'
                     description: ComplianceDetails contains machine-readable details about which comparisons lead to a (non)-compliance.
-                targetOfEvaluationId:
+                certificationTargetId:
                     type: string
                     description: The target of evaluation which this assessment result belongs to
                 toolId:
@@ -1557,14 +1557,14 @@ components:
         AuditScope:
             required:
                 - id
-                - targetOfEvaluationId
+                - certificationTargetId
                 - catalogId
             type: object
             properties:
                 id:
                     type: string
                     description: Audit Scope ID
-                targetOfEvaluationId:
+                certificationTargetId:
                     type: string
                 catalogId:
                     type: string
@@ -1642,14 +1642,14 @@ components:
             required:
                 - id
                 - name
-                - targetOfEvaluationId
+                - certificationTargetId
             type: object
             properties:
                 id:
                     type: string
                 name:
                     type: string
-                targetOfEvaluationId:
+                certificationTargetId:
                     type: string
                 issueDate:
                     type: string
@@ -1669,56 +1669,6 @@ components:
                         $ref: '#/components/schemas/State'
                     description: A list of states at specific times
             description: An ISO17021-based certificate
-        TargetOfEvaluation:
-            required:
-                - id
-                - name
-                - configuredMetrics
-                - targetType
-            type: object
-            properties:
-                id:
-                    type: string
-                name:
-                    type: string
-                description:
-                    type: string
-                configuredMetrics:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/Metric'
-                createdAt:
-                    type: string
-                    description: creation time of the certification_target
-                    format: date-time
-                updatedAt:
-                    type: string
-                    description: last update time of the certification_target
-                    format: date-time
-                metadata:
-                    allOf:
-                        - $ref: '#/components/schemas/TargetOfEvaluation_Metadata'
-                    description: additional metadata of the target of evaluation, mostly used for the UI
-                targetType:
-                    enum:
-                        - TARGET_TYPE_UNSPECIFIED
-                        - TARGET_TYPE_CLOUD
-                        - TARGET_TYPE_PRODUCT
-                        - TARGET_TYPE_ORGANIZATION
-                    type: string
-                    description: 'type of the target to be evaluated: cloud, product or organization'
-                    format: enum
-        TargetOfEvaluation_Metadata:
-            type: object
-            properties:
-                labels:
-                    type: object
-                    additionalProperties:
-                        type: string
-                    description: a map of key/value pairs, e.g., env:prod
-                icon:
-                    type: string
-                    description: an icon for the target of evaluation used by the UI
         ComparisonResult:
             required:
                 - property
@@ -1880,18 +1830,6 @@ components:
                         $ref: '#/components/schemas/Certificate'
                 nextPageToken:
                     type: string
-        ListTargetOfEvaluationsResponse:
-            required:
-                - targets
-                - targets
-            type: object
-            properties:
-                targets:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/TargetOfEvaluation'
-                nextPageToken:
-                    type: string
         ListControlsResponse:
             type: object
             properties:
@@ -1927,6 +1865,18 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Certificate'
+                nextPageToken:
+                    type: string
+        ListTargetOfEvaluationsResponse:
+            required:
+                - targets
+                - targets
+            type: object
+            properties:
+                targets:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/TargetOfEvaluation'
                 nextPageToken:
                     type: string
         Metric:
@@ -1985,7 +1935,7 @@ components:
                 - targetValue
                 - isDefault
                 - metricId
-                - targetOfEvaluationId
+                - certificationTargetId
             type: object
             properties:
                 operator:
@@ -2005,7 +1955,7 @@ components:
                 metricId:
                     type: string
                     description: The metric this configuration belongs to
-                targetOfEvaluationId:
+                certificationTargetId:
                     type: string
                     description: The target of evaluation this configuration belongs to
             description: Defines the operator and a target value for an individual metric
@@ -2132,5 +2082,55 @@ components:
                 StoreAssessmentResultReponse belongs to StoreAssessmentResult, which uses a
                  custom unary RPC and therefore requires a response message according to the
                  style convention. Since no return values are required, this is empty.
+        TargetOfEvaluation:
+            required:
+                - id
+                - name
+                - configuredMetrics
+                - targetType
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                description:
+                    type: string
+                configuredMetrics:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Metric'
+                createdAt:
+                    type: string
+                    description: creation time of the certification_target
+                    format: date-time
+                updatedAt:
+                    type: string
+                    description: last update time of the certification_target
+                    format: date-time
+                metadata:
+                    allOf:
+                        - $ref: '#/components/schemas/TargetOfEvaluation_Metadata'
+                    description: additional metadata of the target of evaluation, mostly used for the UI
+                targetType:
+                    enum:
+                        - TARGET_TYPE_UNSPECIFIED
+                        - TARGET_TYPE_CLOUD
+                        - TARGET_TYPE_PRODUCT
+                        - TARGET_TYPE_ORGANIZATION
+                    type: string
+                    description: 'type of the target to be evaluated: cloud, product or organization'
+                    format: enum
+        TargetOfEvaluation_Metadata:
+            type: object
+            properties:
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                    description: a map of key/value pairs, e.g., env:prod
+                icon:
+                    type: string
+                    description: an icon for the target of evaluation used by the UI
 tags:
     - name: Orchestrator

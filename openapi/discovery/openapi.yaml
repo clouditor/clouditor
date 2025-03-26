@@ -17,7 +17,7 @@ paths:
                   in: query
                   schema:
                     type: string
-                - name: filter.targetOfEvaluationId
+                - name: filter.certificationTargetId
                   in: query
                   schema:
                     type: string
@@ -208,7 +208,7 @@ components:
         Resource:
             required:
                 - id
-                - targetOfEvaluationId
+                - certificationTargetId
                 - resourceType
                 - toolId
                 - properties
@@ -220,7 +220,7 @@ components:
                         Id contains a unique ID for each resource. This is specific for the cloud
                          provider this resource was gathered for and can for example be a resource
                          URL.
-                targetOfEvaluationId:
+                certificationTargetId:
                     type: string
                     description: |-
                         TargetOfEvaluationId is the UUID for the target of evaluation to which this resource

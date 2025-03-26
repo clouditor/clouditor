@@ -257,7 +257,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 		},
 		{
-			name: "Filter latest_by_control_id, control_id, sub_controls, certification_target_id",
+			name: "Filter latest_by_control_id, control_id, sub_controls, target_of_evaluation_id",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
@@ -405,7 +405,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Filter certification_target_id",
+			name: "Filter target_of_evaluation_id",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
@@ -1757,7 +1757,7 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 			},
 			wantRes: assert.Nil[*evaluation.EvaluationResult],
 			wantErr: func(t *testing.T, err error) bool {
-				return assert.ErrorContains(t, err, " validation error:\n - result.certification_target_id: value is empty, which is not a valid UUID")
+				return assert.ErrorContains(t, err, " validation error:\n - result.target_of_evaluation_id: value is empty, which is not a valid UUID")
 			},
 		},
 		{

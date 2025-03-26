@@ -67,7 +67,7 @@ func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.G
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	// Check if certification_target_id in assessment_result is within allowed or one can access *all* the target of evaluations
+	// Check if target_of_evaluation_id in assessment_result is within allowed or one can access *all* the target of evaluations
 	all, allowed = svc.authz.AllowedTargetOfEvaluations(ctx)
 
 	// The content of the filtered target of evaluation ID must be in the list of allowed target of evaluation IDs,
@@ -113,7 +113,7 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 	// * assessment result ID(s)
 	if req.Filter != nil {
 		if req.Filter.TargetOfEvaluationId != nil {
-			query = append(query, "certification_target_id = ?")
+			query = append(query, "target_of_evaluation_id = ?")
 			args = append(args, req.Filter.GetTargetOfEvaluationId())
 		}
 		if req.Filter.Compliant != nil {
@@ -137,7 +137,7 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 	// In any case, we need to make sure that we only select assessment results of target of evaluations that we have access to
 	// (if we do not have access to all)
 	if !all {
-		query = append(query, "certification_target_id IN ?")
+		query = append(query, "target_of_evaluation_id IN ?")
 		args = append(args, allowed)
 	}
 
