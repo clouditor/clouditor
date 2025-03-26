@@ -38,7 +38,7 @@ type PayloadRequest = api.PayloadRequest
 // reference to a target of evaluation.
 //
 // Note: GetTargetOfEvaluationId() is already implemented by the generated protobuf
-// code for the following messages because they directly have a certification_target id
+// code for the following messages because they directly have a target_of_evaluation id
 // field:
 //   - orchestrator.RemoveControlFromScopeRequest
 //   - orchestrator.ListControlsInScopeRequest

@@ -129,37 +129,37 @@ service Orchestrator {
   // Registers a new target target of evaluation
   rpc CreateTargetOfEvaluation(CreateTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      post: "/v1/orchestrator/certification_targets"
-      body: "certification_target"
+      post: "/v1/orchestrator/target_of_evaluations"
+      body: "target_of_evaluation"
     };
   }
 
   // Registers a new target target of evaluation
   rpc UpdateTargetOfEvaluation(UpdateTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      put: "/v1/orchestrator/certification_targets/{certification_target.id}"
-      body: "certification_target"
+      put: "/v1/orchestrator/target_of_evaluations/{target_of_evaluation.id}"
+      body: "target_of_evaluation"
     };
   }
 
   // Retrieves a target target of evaluation
   rpc GetTargetOfEvaluation(GetTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
-    option (google.api.http) = {get: "/v1/orchestrator/certification_targets/{target_of_evaluation_id}"};
+    option (google.api.http) = {get: "/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}"};
   }
 
   // Lists all target target of evaluations
   rpc ListTargetOfEvaluations(ListTargetOfEvaluationsRequest) returns (ListTargetOfEvaluationsResponse) {
-    option (google.api.http) = {get: "/v1/orchestrator/certification_targets"};
+    option (google.api.http) = {get: "/v1/orchestrator/target_of_evaluations"};
   }
 
   // Removes a target target of evaluation
   rpc RemoveTargetOfEvaluation(RemoveTargetOfEvaluationRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {delete: "/v1/orchestrator/certification_targets/{target_of_evaluation_id}"};
+    option (google.api.http) = {delete: "/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}"};
   }
 
   // Retrieves target target of evaluation statistics
   rpc GetTargetOfEvaluationStatistics(GetTargetOfEvaluationStatisticsRequest) returns (GetTargetOfEvaluationStatisticsResponse) {
-    option (google.api.http) = {get: "/v1/orchestrator/certification_targets/statistics"};
+    option (google.api.http) = {get: "/v1/orchestrator/target_of_evaluations/statistics"};
   }
 
   // Updates a metric configuration (target value and operator) for a specific
@@ -167,7 +167,7 @@ service Orchestrator {
   rpc UpdateMetricConfiguration(UpdateMetricConfigurationRequest) returns (clouditor.assessment.v1.MetricConfiguration) {
     option (google.api.http) = {
       put:
-        "/v1/orchestrator/certification_targets/{target_of_evaluation_id}/"
+        "/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}/"
         "metric_configurations/"
         "{metric_id}"
       body: "configuration"
@@ -178,7 +178,7 @@ service Orchestrator {
   // target of evaluation and metric ID.
   rpc GetMetricConfiguration(GetMetricConfigurationRequest) returns (clouditor.assessment.v1.MetricConfiguration) {
     option (google.api.http) = {get:
-        "/v1/orchestrator/certification_targets/{target_of_evaluation_id}/"
+        "/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}/"
         "metric_configurations/"
         "{metric_id}"
 };
@@ -188,7 +188,7 @@ service Orchestrator {
   // specific target of evaluation ID
   rpc ListMetricConfigurations(ListMetricConfigurationRequest) returns (ListMetricConfigurationResponse) {
     option (google.api.http) = {get:
-        "/v1/orchestrator/certification_targets/{target_of_evaluation_id}/"
+        "/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}/"
         "metric_configurations"
 };
   }
@@ -327,7 +327,7 @@ service Orchestrator {
   rpc UpdateAuditScope(UpdateAuditScopeRequest) returns (AuditScope) {
     option (google.api.http) = {
       put:
-        "/v1/orchestrator/certification_targets/"
+        "/v1/orchestrator/target_of_evaluations/"
         "{audit_scope.target_of_evaluation_id}/audit_scopes/"
         "{audit_scope.catalog_id}"
       body: "audit_scope"
@@ -464,14 +464,14 @@ message GetTargetOfEvaluationRequest {
 }
 
 message CreateTargetOfEvaluationRequest {
-  TargetOfEvaluation certification_target = 1 [
+  TargetOfEvaluation target_of_evaluation = 1 [
     (buf.validate.field).required = true,
     (google.api.field_behavior) = REQUIRED
   ];
 }
 
 message UpdateTargetOfEvaluationRequest {
-  TargetOfEvaluation certification_target = 1 [
+  TargetOfEvaluation target_of_evaluation = 1 [
     (buf.validate.field).required = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -652,10 +652,10 @@ message TargetOfEvaluation {
     optional string icon = 2;
   }
 
-  // creation time of the certification_target
+  // creation time of the target_of_evaluation
   optional google.protobuf.Timestamp created_at = 6 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
 
-  // last update time of the certification_target
+  // last update time of the target_of_evaluation
   optional google.protobuf.Timestamp updated_at = 7 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
 
   // additional metadata of the target of evaluation, mostly used for the UI

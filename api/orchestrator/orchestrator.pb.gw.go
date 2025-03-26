@@ -509,13 +509,13 @@ func request_Orchestrator_UpdateTargetOfEvaluation_0(ctx context.Context, marsha
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.TargetOfEvaluation); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	val, ok := pathParams["certification_target.id"]
+	val, ok := pathParams["target_of_evaluation.id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certification_target.id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "target_of_evaluation.id")
 	}
-	err = runtime.PopulateFieldFromPath(&protoReq, "certification_target.id", val)
+	err = runtime.PopulateFieldFromPath(&protoReq, "target_of_evaluation.id", val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certification_target.id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "target_of_evaluation.id", err)
 	}
 	msg, err := client.UpdateTargetOfEvaluation(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -530,13 +530,13 @@ func local_request_Orchestrator_UpdateTargetOfEvaluation_0(ctx context.Context, 
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.TargetOfEvaluation); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	val, ok := pathParams["certification_target.id"]
+	val, ok := pathParams["target_of_evaluation.id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certification_target.id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "target_of_evaluation.id")
 	}
-	err = runtime.PopulateFieldFromPath(&protoReq, "certification_target.id", val)
+	err = runtime.PopulateFieldFromPath(&protoReq, "target_of_evaluation.id", val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certification_target.id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "target_of_evaluation.id", err)
 	}
 	msg, err := server.UpdateTargetOfEvaluation(ctx, &protoReq)
 	return msg, metadata, err
@@ -2055,7 +2055,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/CreateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/CreateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2075,7 +2075,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/{certification_target.id}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations/{target_of_evaluation.id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2095,7 +2095,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/{target_of_evaluation_id}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2115,7 +2115,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/ListTargetOfEvaluations", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/ListTargetOfEvaluations", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2135,7 +2135,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/RemoveTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/{target_of_evaluation_id}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/RemoveTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2155,7 +2155,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluationStatistics", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/statistics"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluationStatistics", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations/statistics"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2175,7 +2175,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricConfiguration", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/{target_of_evaluation_id}/metric_configurations/{metric_id}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricConfiguration", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}/metric_configurations/{metric_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2195,7 +2195,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/GetMetricConfiguration", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/{target_of_evaluation_id}/metric_configurations/{metric_id}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/GetMetricConfiguration", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}/metric_configurations/{metric_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2215,7 +2215,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/ListMetricConfigurations", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/{target_of_evaluation_id}/metric_configurations"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/ListMetricConfigurations", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}/metric_configurations"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2655,7 +2655,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateAuditScope", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/{audit_scope.target_of_evaluation_id}/audit_scopes/{audit_scope.catalog_id}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateAuditScope", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations/{audit_scope.target_of_evaluation_id}/audit_scopes/{audit_scope.catalog_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2974,7 +2974,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/CreateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/CreateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2991,7 +2991,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/{certification_target.id}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations/{target_of_evaluation.id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3008,7 +3008,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/{target_of_evaluation_id}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3025,7 +3025,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/ListTargetOfEvaluations", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/ListTargetOfEvaluations", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3042,7 +3042,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/RemoveTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/{target_of_evaluation_id}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/RemoveTargetOfEvaluation", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3059,7 +3059,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluationStatistics", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/statistics"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluationStatistics", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations/statistics"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3076,7 +3076,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricConfiguration", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/{target_of_evaluation_id}/metric_configurations/{metric_id}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricConfiguration", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}/metric_configurations/{metric_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3093,7 +3093,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/GetMetricConfiguration", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/{target_of_evaluation_id}/metric_configurations/{metric_id}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/GetMetricConfiguration", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}/metric_configurations/{metric_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3110,7 +3110,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/ListMetricConfigurations", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/{target_of_evaluation_id}/metric_configurations"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/ListMetricConfigurations", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}/metric_configurations"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3484,7 +3484,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateAuditScope", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/{audit_scope.target_of_evaluation_id}/audit_scopes/{audit_scope.catalog_id}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateAuditScope", runtime.WithHTTPPathPattern("/v1/orchestrator/target_of_evaluations/{audit_scope.target_of_evaluation_id}/audit_scopes/{audit_scope.catalog_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3548,15 +3548,15 @@ var (
 	pattern_Orchestrator_GetMetric_0                       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "metrics", "metric_id"}, ""))
 	pattern_Orchestrator_ListMetrics_0                     = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "metrics"}, ""))
 	pattern_Orchestrator_RemoveMetric_0                    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "metrics", "metric_id"}, ""))
-	pattern_Orchestrator_CreateTargetOfEvaluation_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "certification_targets"}, ""))
-	pattern_Orchestrator_UpdateTargetOfEvaluation_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "certification_targets", "certification_target.id"}, ""))
-	pattern_Orchestrator_GetTargetOfEvaluation_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "certification_targets", "target_of_evaluation_id"}, ""))
-	pattern_Orchestrator_ListTargetOfEvaluations_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "certification_targets"}, ""))
-	pattern_Orchestrator_RemoveTargetOfEvaluation_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "certification_targets", "target_of_evaluation_id"}, ""))
-	pattern_Orchestrator_GetTargetOfEvaluationStatistics_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "orchestrator", "certification_targets", "statistics"}, ""))
-	pattern_Orchestrator_UpdateMetricConfiguration_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "certification_targets", "target_of_evaluation_id", "metric_configurations", "metric_id"}, ""))
-	pattern_Orchestrator_GetMetricConfiguration_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "certification_targets", "target_of_evaluation_id", "metric_configurations", "metric_id"}, ""))
-	pattern_Orchestrator_ListMetricConfigurations_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "orchestrator", "certification_targets", "target_of_evaluation_id", "metric_configurations"}, ""))
+	pattern_Orchestrator_CreateTargetOfEvaluation_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "target_of_evaluations"}, ""))
+	pattern_Orchestrator_UpdateTargetOfEvaluation_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "target_of_evaluations", "target_of_evaluation.id"}, ""))
+	pattern_Orchestrator_GetTargetOfEvaluation_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "target_of_evaluations", "target_of_evaluation_id"}, ""))
+	pattern_Orchestrator_ListTargetOfEvaluations_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "target_of_evaluations"}, ""))
+	pattern_Orchestrator_RemoveTargetOfEvaluation_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "target_of_evaluations", "target_of_evaluation_id"}, ""))
+	pattern_Orchestrator_GetTargetOfEvaluationStatistics_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "orchestrator", "target_of_evaluations", "statistics"}, ""))
+	pattern_Orchestrator_UpdateMetricConfiguration_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "target_of_evaluations", "target_of_evaluation_id", "metric_configurations", "metric_id"}, ""))
+	pattern_Orchestrator_GetMetricConfiguration_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "target_of_evaluations", "target_of_evaluation_id", "metric_configurations", "metric_id"}, ""))
+	pattern_Orchestrator_ListMetricConfigurations_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "orchestrator", "target_of_evaluations", "target_of_evaluation_id", "metric_configurations"}, ""))
 	pattern_Orchestrator_UpdateMetricImplementation_0      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "orchestrator", "metrics", "implementation.metric_id", "implementation"}, ""))
 	pattern_Orchestrator_GetMetricImplementation_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "orchestrator", "metrics", "metric_id", "implementation"}, ""))
 	pattern_Orchestrator_CreateCertificate_0               = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "certificates"}, ""))
@@ -3578,7 +3578,7 @@ var (
 	pattern_Orchestrator_CreateAuditScope_0                = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "audit_scopes"}, ""))
 	pattern_Orchestrator_GetAuditScope_0                   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "audit_scopes", "audit_scope_id"}, ""))
 	pattern_Orchestrator_ListAuditScopes_0                 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "audit_scopes"}, ""))
-	pattern_Orchestrator_UpdateAuditScope_0                = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "certification_targets", "audit_scope.target_of_evaluation_id", "audit_scopes", "audit_scope.catalog_id"}, ""))
+	pattern_Orchestrator_UpdateAuditScope_0                = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "target_of_evaluations", "audit_scope.target_of_evaluation_id", "audit_scopes", "audit_scope.catalog_id"}, ""))
 	pattern_Orchestrator_RemoveAuditScope_0                = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "audit_scopes", "audit_scope_id"}, ""))
 	pattern_Orchestrator_GetRuntimeInfo_0                  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "runtime_info"}, ""))
 )

@@ -1004,10 +1004,10 @@ func (x *GetTargetOfEvaluationRequest) GetTargetOfEvaluationId() string {
 }
 
 type CreateTargetOfEvaluationRequest struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	CertificationTarget *TargetOfEvaluation    `protobuf:"bytes,1,opt,name=certification_target,json=certificationTarget,proto3" json:"certification_target,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	TargetOfEvaluation *TargetOfEvaluation    `protobuf:"bytes,1,opt,name=target_of_evaluation,json=targetOfEvaluation,proto3" json:"target_of_evaluation,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *CreateTargetOfEvaluationRequest) Reset() {
@@ -1040,18 +1040,18 @@ func (*CreateTargetOfEvaluationRequest) Descriptor() ([]byte, []int) {
 	return file_api_orchestrator_orchestrator_proto_rawDescGZIP(), []int{16}
 }
 
-func (x *CreateTargetOfEvaluationRequest) GetCertificationTarget() *TargetOfEvaluation {
+func (x *CreateTargetOfEvaluationRequest) GetTargetOfEvaluation() *TargetOfEvaluation {
 	if x != nil {
-		return x.CertificationTarget
+		return x.TargetOfEvaluation
 	}
 	return nil
 }
 
 type UpdateTargetOfEvaluationRequest struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	CertificationTarget *TargetOfEvaluation    `protobuf:"bytes,1,opt,name=certification_target,json=certificationTarget,proto3" json:"certification_target,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	TargetOfEvaluation *TargetOfEvaluation    `protobuf:"bytes,1,opt,name=target_of_evaluation,json=targetOfEvaluation,proto3" json:"target_of_evaluation,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *UpdateTargetOfEvaluationRequest) Reset() {
@@ -1084,9 +1084,9 @@ func (*UpdateTargetOfEvaluationRequest) Descriptor() ([]byte, []int) {
 	return file_api_orchestrator_orchestrator_proto_rawDescGZIP(), []int{17}
 }
 
-func (x *UpdateTargetOfEvaluationRequest) GetCertificationTarget() *TargetOfEvaluation {
+func (x *UpdateTargetOfEvaluationRequest) GetTargetOfEvaluation() *TargetOfEvaluation {
 	if x != nil {
-		return x.CertificationTarget
+		return x.TargetOfEvaluation
 	}
 	return nil
 }
@@ -1838,9 +1838,9 @@ type TargetOfEvaluation struct {
 	Name              string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Description       string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	ConfiguredMetrics []*assessment.Metric   `protobuf:"bytes,5,rep,name=configured_metrics,json=configuredMetrics,proto3" json:"configured_metrics,omitempty" gorm:"many2many:metric_configurations"`
-	// creation time of the certification_target
+	// creation time of the target_of_evaluation
 	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3,oneof" json:"created_at,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
-	// last update time of the certification_target
+	// last update time of the target_of_evaluation
 	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3,oneof" json:"updated_at,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
 	// additional metadata of the target of evaluation, mostly used for the UI
 	Metadata *TargetOfEvaluation_Metadata `protobuf:"bytes,10,opt,name=metadata,proto3,oneof" json:"metadata,omitempty" gorm:"serializer:json"`
@@ -4469,11 +4469,11 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\ametrics\x18\x01 \x03(\v2\x1f.clouditor.assessment.v1.MetricB\x03\xe0A\x02R\ametrics\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"b\n" +
 	"\x1cGetTargetOfEvaluationRequest\x12B\n" +
-	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"\x8e\x01\n" +
-	"\x1fCreateTargetOfEvaluationRequest\x12k\n" +
-	"\x14certification_target\x18\x01 \x01(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x13certificationTarget\"\x8e\x01\n" +
-	"\x1fUpdateTargetOfEvaluationRequest\x12k\n" +
-	"\x14certification_target\x18\x01 \x01(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x13certificationTarget\"e\n" +
+	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"\x8d\x01\n" +
+	"\x1fCreateTargetOfEvaluationRequest\x12j\n" +
+	"\x14target_of_evaluation\x18\x01 \x01(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x12targetOfEvaluation\"\x8d\x01\n" +
+	"\x1fUpdateTargetOfEvaluationRequest\x12j\n" +
+	"\x14target_of_evaluation\x18\x01 \x01(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x12targetOfEvaluation\"e\n" +
 	"\x1fRemoveTargetOfEvaluationRequest\x12B\n" +
 	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"\x89\x01\n" +
 	"\x1eListTargetOfEvaluationsRequest\x12\x1b\n" +
@@ -4804,15 +4804,15 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\tGetMetric\x12+.clouditor.orchestrator.v1.GetMetricRequest\x1a\x1f.clouditor.assessment.v1.Metric\",\x82\xd3\xe4\x93\x02&\x12$/v1/orchestrator/metrics/{metric_id}\x12\x8e\x01\n" +
 	"\vListMetrics\x12-.clouditor.orchestrator.v1.ListMetricsRequest\x1a..clouditor.orchestrator.v1.ListMetricsResponse\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/v1/orchestrator/metrics\x12\x84\x01\n" +
 	"\fRemoveMetric\x12..clouditor.orchestrator.v1.RemoveMetricRequest\x1a\x16.google.protobuf.Empty\",\x82\xd3\xe4\x93\x02&*$/v1/orchestrator/metrics/{metric_id}\x12\xcb\x01\n" +
-	"\x18CreateTargetOfEvaluation\x12:.clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest\x1a-.clouditor.orchestrator.v1.TargetOfEvaluation\"D\x82\xd3\xe4\x93\x02>:\x14certification_target\"&/v1/orchestrator/certification_targets\x12\xe5\x01\n" +
-	"\x18UpdateTargetOfEvaluation\x12:.clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest\x1a-.clouditor.orchestrator.v1.TargetOfEvaluation\"^\x82\xd3\xe4\x93\x02X:\x14certification_target\x1a@/v1/orchestrator/certification_targets/{certification_target.id}\x12\xc9\x01\n" +
-	"\x15GetTargetOfEvaluation\x127.clouditor.orchestrator.v1.GetTargetOfEvaluationRequest\x1a-.clouditor.orchestrator.v1.TargetOfEvaluation\"H\x82\xd3\xe4\x93\x02B\x12@/v1/orchestrator/certification_targets/{target_of_evaluation_id}\x12\xc0\x01\n" +
-	"\x17ListTargetOfEvaluations\x129.clouditor.orchestrator.v1.ListTargetOfEvaluationsRequest\x1a:.clouditor.orchestrator.v1.ListTargetOfEvaluationsResponse\".\x82\xd3\xe4\x93\x02(\x12&/v1/orchestrator/certification_targets\x12\xb8\x01\n" +
-	"\x18RemoveTargetOfEvaluation\x12:.clouditor.orchestrator.v1.RemoveTargetOfEvaluationRequest\x1a\x16.google.protobuf.Empty\"H\x82\xd3\xe4\x93\x02B*@/v1/orchestrator/certification_targets/{target_of_evaluation_id}\x12\xe3\x01\n" +
-	"\x1fGetTargetOfEvaluationStatistics\x12A.clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsRequest\x1aB.clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsResponse\"9\x82\xd3\xe4\x93\x023\x121/v1/orchestrator/certification_targets/statistics\x12\x81\x02\n" +
-	"\x19UpdateMetricConfiguration\x12;.clouditor.orchestrator.v1.UpdateMetricConfigurationRequest\x1a,.clouditor.assessment.v1.MetricConfiguration\"y\x82\xd3\xe4\x93\x02s:\rconfiguration\x1ab/v1/orchestrator/certification_targets/{target_of_evaluation_id}/metric_configurations/{metric_id}\x12\xec\x01\n" +
-	"\x16GetMetricConfiguration\x128.clouditor.orchestrator.v1.GetMetricConfigurationRequest\x1a,.clouditor.assessment.v1.MetricConfiguration\"j\x82\xd3\xe4\x93\x02d\x12b/v1/orchestrator/certification_targets/{target_of_evaluation_id}/metric_configurations/{metric_id}\x12\xf1\x01\n" +
-	"\x18ListMetricConfigurations\x129.clouditor.orchestrator.v1.ListMetricConfigurationRequest\x1a:.clouditor.orchestrator.v1.ListMetricConfigurationResponse\"^\x82\xd3\xe4\x93\x02X\x12V/v1/orchestrator/certification_targets/{target_of_evaluation_id}/metric_configurations\x12\xe5\x01\n" +
+	"\x18CreateTargetOfEvaluation\x12:.clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest\x1a-.clouditor.orchestrator.v1.TargetOfEvaluation\"D\x82\xd3\xe4\x93\x02>:\x14target_of_evaluation\"&/v1/orchestrator/target_of_evaluations\x12\xe5\x01\n" +
+	"\x18UpdateTargetOfEvaluation\x12:.clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest\x1a-.clouditor.orchestrator.v1.TargetOfEvaluation\"^\x82\xd3\xe4\x93\x02X:\x14target_of_evaluation\x1a@/v1/orchestrator/target_of_evaluations/{target_of_evaluation.id}\x12\xc9\x01\n" +
+	"\x15GetTargetOfEvaluation\x127.clouditor.orchestrator.v1.GetTargetOfEvaluationRequest\x1a-.clouditor.orchestrator.v1.TargetOfEvaluation\"H\x82\xd3\xe4\x93\x02B\x12@/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}\x12\xc0\x01\n" +
+	"\x17ListTargetOfEvaluations\x129.clouditor.orchestrator.v1.ListTargetOfEvaluationsRequest\x1a:.clouditor.orchestrator.v1.ListTargetOfEvaluationsResponse\".\x82\xd3\xe4\x93\x02(\x12&/v1/orchestrator/target_of_evaluations\x12\xb8\x01\n" +
+	"\x18RemoveTargetOfEvaluation\x12:.clouditor.orchestrator.v1.RemoveTargetOfEvaluationRequest\x1a\x16.google.protobuf.Empty\"H\x82\xd3\xe4\x93\x02B*@/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}\x12\xe3\x01\n" +
+	"\x1fGetTargetOfEvaluationStatistics\x12A.clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsRequest\x1aB.clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsResponse\"9\x82\xd3\xe4\x93\x023\x121/v1/orchestrator/target_of_evaluations/statistics\x12\x81\x02\n" +
+	"\x19UpdateMetricConfiguration\x12;.clouditor.orchestrator.v1.UpdateMetricConfigurationRequest\x1a,.clouditor.assessment.v1.MetricConfiguration\"y\x82\xd3\xe4\x93\x02s:\rconfiguration\x1ab/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}/metric_configurations/{metric_id}\x12\xec\x01\n" +
+	"\x16GetMetricConfiguration\x128.clouditor.orchestrator.v1.GetMetricConfigurationRequest\x1a,.clouditor.assessment.v1.MetricConfiguration\"j\x82\xd3\xe4\x93\x02d\x12b/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}/metric_configurations/{metric_id}\x12\xf1\x01\n" +
+	"\x18ListMetricConfigurations\x129.clouditor.orchestrator.v1.ListMetricConfigurationRequest\x1a:.clouditor.orchestrator.v1.ListMetricConfigurationResponse\"^\x82\xd3\xe4\x93\x02X\x12V/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}/metric_configurations\x12\xe5\x01\n" +
 	"\x1aUpdateMetricImplementation\x12<.clouditor.orchestrator.v1.UpdateMetricImplementationRequest\x1a-.clouditor.assessment.v1.MetricImplementation\"Z\x82\xd3\xe4\x93\x02T:\x0eimplementation\x1aB/v1/orchestrator/metrics/{implementation.metric_id}/implementation\x12\xc0\x01\n" +
 	"\x17GetMetricImplementation\x129.clouditor.orchestrator.v1.GetMetricImplementationRequest\x1a-.clouditor.assessment.v1.MetricImplementation\";\x82\xd3\xe4\x93\x025\x123/v1/orchestrator/metrics/{metric_id}/implementation\x12\x8d\x01\n" +
 	"\x1bSubscribeMetricChangeEvents\x12<.clouditor.orchestrator.v1.SubscribeMetricChangeEventRequest\x1a,.clouditor.orchestrator.v1.MetricChangeEvent\"\x000\x01\x12\xa4\x01\n" +
@@ -4835,7 +4835,7 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x10CreateAuditScope\x122.clouditor.orchestrator.v1.CreateAuditScopeRequest\x1a%.clouditor.orchestrator.v1.AuditScope\"2\x82\xd3\xe4\x93\x02,:\vaudit_scope\"\x1d/v1/orchestrator/audit_scopes\x12\x9f\x01\n" +
 	"\rGetAuditScope\x12/.clouditor.orchestrator.v1.GetAuditScopeRequest\x1a%.clouditor.orchestrator.v1.AuditScope\"6\x82\xd3\xe4\x93\x020\x12./v1/orchestrator/audit_scopes/{audit_scope_id}\x12\x9f\x01\n" +
 	"\x0fListAuditScopes\x121.clouditor.orchestrator.v1.ListAuditScopesRequest\x1a2.clouditor.orchestrator.v1.ListAuditScopesResponse\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/orchestrator/audit_scopes\x12\xf8\x01\n" +
-	"\x10UpdateAuditScope\x122.clouditor.orchestrator.v1.UpdateAuditScopeRequest\x1a%.clouditor.orchestrator.v1.AuditScope\"\x88\x01\x82\xd3\xe4\x93\x02\x81\x01:\vaudit_scope\x1ar/v1/orchestrator/certification_targets/{audit_scope.target_of_evaluation_id}/audit_scopes/{audit_scope.catalog_id}\x12\x96\x01\n" +
+	"\x10UpdateAuditScope\x122.clouditor.orchestrator.v1.UpdateAuditScopeRequest\x1a%.clouditor.orchestrator.v1.AuditScope\"\x88\x01\x82\xd3\xe4\x93\x02\x81\x01:\vaudit_scope\x1ar/v1/orchestrator/target_of_evaluations/{audit_scope.target_of_evaluation_id}/audit_scopes/{audit_scope.catalog_id}\x12\x96\x01\n" +
 	"\x10RemoveAuditScope\x122.clouditor.orchestrator.v1.RemoveAuditScopeRequest\x1a\x16.google.protobuf.Empty\"6\x82\xd3\xe4\x93\x020*./v1/orchestrator/audit_scopes/{audit_scope_id}\x12\x83\x01\n" +
 	"\x0eGetRuntimeInfo\x12+.clouditor.runtime.v1.GetRuntimeInfoRequest\x1a\x1d.clouditor.runtime.v1.Runtime\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/orchestrator/runtime_infoB,Z*clouditor.io/clouditor/v2/api/orchestratorb\x06proto3"
 
@@ -4952,8 +4952,8 @@ var file_api_orchestrator_orchestrator_proto_depIdxs = []int32{
 	80, // 6: clouditor.orchestrator.v1.UpdateMetricRequest.metric:type_name -> clouditor.assessment.v1.Metric
 	71, // 7: clouditor.orchestrator.v1.ListMetricsRequest.filter:type_name -> clouditor.orchestrator.v1.ListMetricsRequest.Filter
 	80, // 8: clouditor.orchestrator.v1.ListMetricsResponse.metrics:type_name -> clouditor.assessment.v1.Metric
-	35, // 9: clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest.certification_target:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
-	35, // 10: clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest.certification_target:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
+	35, // 9: clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest.target_of_evaluation:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
+	35, // 10: clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest.target_of_evaluation:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
 	35, // 11: clouditor.orchestrator.v1.ListTargetOfEvaluationsResponse.targets:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
 	81, // 12: clouditor.orchestrator.v1.UpdateMetricConfigurationRequest.configuration:type_name -> clouditor.assessment.v1.MetricConfiguration
 	72, // 13: clouditor.orchestrator.v1.ListMetricConfigurationResponse.configurations:type_name -> clouditor.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntry

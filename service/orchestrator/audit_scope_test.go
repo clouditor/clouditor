@@ -106,7 +106,7 @@ func TestService_CreateAuditScope(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
-				return assert.ErrorContains(t, err, "audit_scope.certification_target_id: value is empty")
+				return assert.ErrorContains(t, err, "audit_scope.target_of_evaluation_id: value is empty")
 			},
 			wantSvc: assert.NotNil[*Service],
 			want:    assert.Nil[*orchestrator.AuditScope],

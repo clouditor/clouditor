@@ -611,7 +611,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 			},
 			wantRes: assert.Nil[*orchestrator.TargetOfEvaluation],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, " validation error:\n - certification_target.name: value length must be at least 1 characters [string.min_len]")
+				return assert.ErrorContains(t, err, " validation error:\n - target_of_evaluation.name: value length must be at least 1 characters [string.min_len]")
 			},
 		},
 		{

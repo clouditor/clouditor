@@ -861,300 +861,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/certification_targets:
-        get:
-            tags:
-                - Orchestrator
-            description: Lists all target target of evaluations
-            operationId: Orchestrator_ListTargetOfEvaluations
-            parameters:
-                - name: pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pageToken
-                  in: query
-                  schema:
-                    type: string
-                - name: orderBy
-                  in: query
-                  schema:
-                    type: string
-                - name: asc
-                  in: query
-                  schema:
-                    type: boolean
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ListTargetOfEvaluationsResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-        post:
-            tags:
-                - Orchestrator
-            description: Registers a new target target of evaluation
-            operationId: Orchestrator_CreateTargetOfEvaluation
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/TargetOfEvaluation'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/TargetOfEvaluation'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /v1/orchestrator/certification_targets/statistics:
-        get:
-            tags:
-                - Orchestrator
-            description: Retrieves target target of evaluation statistics
-            operationId: Orchestrator_GetTargetOfEvaluationStatistics
-            parameters:
-                - name: targetOfEvaluationId
-                  in: query
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/GetTargetOfEvaluationStatisticsResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /v1/orchestrator/certification_targets/{audit_scope.target_of_evaluation_id}/audit_scopes/{audit_scope.catalog_id}:
-        put:
-            tags:
-                - Orchestrator
-            description: Updates an existing Audit Scope
-            operationId: Orchestrator_UpdateAuditScope
-            parameters:
-                - name: audit_scope.target_of_evaluation_id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: audit_scope.catalog_id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/AuditScope'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/AuditScope'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /v1/orchestrator/certification_targets/{certification_target.id}:
-        put:
-            tags:
-                - Orchestrator
-            description: Registers a new target target of evaluation
-            operationId: Orchestrator_UpdateTargetOfEvaluation
-            parameters:
-                - name: certification_target.id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/TargetOfEvaluation'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/TargetOfEvaluation'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /v1/orchestrator/certification_targets/{targetOfEvaluationId}:
-        get:
-            tags:
-                - Orchestrator
-            description: Retrieves a target target of evaluation
-            operationId: Orchestrator_GetTargetOfEvaluation
-            parameters:
-                - name: targetOfEvaluationId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/TargetOfEvaluation'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-        delete:
-            tags:
-                - Orchestrator
-            description: Removes a target target of evaluation
-            operationId: Orchestrator_RemoveTargetOfEvaluation
-            parameters:
-                - name: targetOfEvaluationId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /v1/orchestrator/certification_targets/{targetOfEvaluationId}/metric_configurations:
-        get:
-            tags:
-                - Orchestrator
-            description: |-
-                Lists all metric configurations (target value and operator) for a
-                 specific target of evaluation ID
-            operationId: Orchestrator_ListMetricConfigurations
-            parameters:
-                - name: targetOfEvaluationId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ListMetricConfigurationResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /v1/orchestrator/certification_targets/{targetOfEvaluationId}/metric_configurations/{metricId}:
-        get:
-            tags:
-                - Orchestrator
-            description: |-
-                Retrieves a metric configuration (target value and operator) for a specific
-                 target of evaluation and metric ID.
-            operationId: Orchestrator_GetMetricConfiguration
-            parameters:
-                - name: targetOfEvaluationId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: metricId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/MetricConfiguration'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-        put:
-            tags:
-                - Orchestrator
-            description: |-
-                Updates a metric configuration (target value and operator) for a specific
-                 target of evaluation and metric ID
-            operationId: Orchestrator_UpdateMetricConfiguration
-            parameters:
-                - name: targetOfEvaluationId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: metricId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/MetricConfiguration'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/MetricConfiguration'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/controls:
         get:
             tags:
@@ -1459,6 +1165,300 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Runtime'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/target_of_evaluations:
+        get:
+            tags:
+                - Orchestrator
+            description: Lists all target target of evaluations
+            operationId: Orchestrator_ListTargetOfEvaluations
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListTargetOfEvaluationsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - Orchestrator
+            description: Registers a new target target of evaluation
+            operationId: Orchestrator_CreateTargetOfEvaluation
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TargetOfEvaluation'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TargetOfEvaluation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/target_of_evaluations/statistics:
+        get:
+            tags:
+                - Orchestrator
+            description: Retrieves target target of evaluation statistics
+            operationId: Orchestrator_GetTargetOfEvaluationStatistics
+            parameters:
+                - name: targetOfEvaluationId
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetTargetOfEvaluationStatisticsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/target_of_evaluations/{audit_scope.target_of_evaluation_id}/audit_scopes/{audit_scope.catalog_id}:
+        put:
+            tags:
+                - Orchestrator
+            description: Updates an existing Audit Scope
+            operationId: Orchestrator_UpdateAuditScope
+            parameters:
+                - name: audit_scope.target_of_evaluation_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: audit_scope.catalog_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AuditScope'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AuditScope'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/target_of_evaluations/{targetOfEvaluationId}:
+        get:
+            tags:
+                - Orchestrator
+            description: Retrieves a target target of evaluation
+            operationId: Orchestrator_GetTargetOfEvaluation
+            parameters:
+                - name: targetOfEvaluationId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TargetOfEvaluation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - Orchestrator
+            description: Removes a target target of evaluation
+            operationId: Orchestrator_RemoveTargetOfEvaluation
+            parameters:
+                - name: targetOfEvaluationId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/target_of_evaluations/{targetOfEvaluationId}/metric_configurations:
+        get:
+            tags:
+                - Orchestrator
+            description: |-
+                Lists all metric configurations (target value and operator) for a
+                 specific target of evaluation ID
+            operationId: Orchestrator_ListMetricConfigurations
+            parameters:
+                - name: targetOfEvaluationId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListMetricConfigurationResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/target_of_evaluations/{targetOfEvaluationId}/metric_configurations/{metricId}:
+        get:
+            tags:
+                - Orchestrator
+            description: |-
+                Retrieves a metric configuration (target value and operator) for a specific
+                 target of evaluation and metric ID.
+            operationId: Orchestrator_GetMetricConfiguration
+            parameters:
+                - name: targetOfEvaluationId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: metricId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MetricConfiguration'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        put:
+            tags:
+                - Orchestrator
+            description: |-
+                Updates a metric configuration (target value and operator) for a specific
+                 target of evaluation and metric ID
+            operationId: Orchestrator_UpdateMetricConfiguration
+            parameters:
+                - name: targetOfEvaluationId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: metricId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/MetricConfiguration'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MetricConfiguration'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/target_of_evaluations/{target_of_evaluation.id}:
+        put:
+            tags:
+                - Orchestrator
+            description: Registers a new target target of evaluation
+            operationId: Orchestrator_UpdateTargetOfEvaluation
+            parameters:
+                - name: target_of_evaluation.id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TargetOfEvaluation'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TargetOfEvaluation'
                 default:
                     description: Default error response
                     content:
@@ -2102,11 +2102,11 @@ components:
                         $ref: '#/components/schemas/Metric'
                 createdAt:
                     type: string
-                    description: creation time of the certification_target
+                    description: creation time of the target_of_evaluation
                     format: date-time
                 updatedAt:
                     type: string
-                    description: last update time of the certification_target
+                    description: last update time of the target_of_evaluation
                     format: date-time
                 metadata:
                     allOf:

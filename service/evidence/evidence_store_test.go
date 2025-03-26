@@ -342,7 +342,7 @@ func TestService_ListEvidences(t *testing.T) {
 			},
 		},
 		{
-			name: "Only certification_target_Id filter applied, when Tool_Id filter off",
+			name: "Only target_of_evaluation_Id filter applied, when Tool_Id filter off",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(true),
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
@@ -373,7 +373,7 @@ func TestService_ListEvidences(t *testing.T) {
 			},
 		},
 		{
-			name: "Only Tool_Id filter applied, when certification_target_Id filter off",
+			name: "Only Tool_Id filter applied, when target_of_evaluation_Id filter off",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(true),
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
