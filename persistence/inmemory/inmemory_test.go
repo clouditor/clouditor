@@ -21,7 +21,7 @@ func TestNewStorage(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Test if we get same user via its name
-	userOutput := &orchestrator.CertificationTarget{}
+	userOutput := &orchestrator.TargetOfEvaluation{}
 	err = s.Get(userOutput, "name = ?", testdata.MockCertificationTargetName1)
 	assert.NoError(t, err)
 	assert.NoError(t, api.Validate(userOutput))

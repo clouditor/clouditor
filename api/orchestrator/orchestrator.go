@@ -34,7 +34,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type CertificationTargetHookFunc func(ctx context.Context, cld *CertificationTarget, err error)
+type CertificationTargetHookFunc func(ctx context.Context, cld *TargetOfEvaluation, err error)
 type AuditScopeHookFunc func(ctx context.Context, event *AuditScopeChangeEvent, err error)
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
@@ -64,7 +64,7 @@ func (req *CreateCertificationTargetRequest) GetCertificationTargetId() string {
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
 // the certification target ID of the inner object.
 func (req *UpdateCertificationTargetRequest) GetCertificationTargetId() string {
-	return req.CertificationTarget.GetId()
+	return req.TargetOfEvaluation.GetId()
 }
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
@@ -120,15 +120,15 @@ func (req *RemoveCertificateRequest) GetPayload() proto.Message {
 }
 
 func (req *CreateCertificationTargetRequest) GetPayload() proto.Message {
-	return req.CertificationTarget
+	return req.TargetOfEvaluation
 }
 
 func (req *UpdateCertificationTargetRequest) GetPayload() proto.Message {
-	return req.CertificationTarget
+	return req.TargetOfEvaluation
 }
 
 func (req *RemoveCertificationTargetRequest) GetPayload() proto.Message {
-	return &CertificationTarget{Id: req.CertificationTargetId}
+	return &TargetOfEvaluation{Id: req.CertificationTargetId}
 }
 
 func (req *CreateMetricRequest) GetPayload() proto.Message {

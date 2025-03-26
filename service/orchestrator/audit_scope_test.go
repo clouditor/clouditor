@@ -115,7 +115,7 @@ func TestService_CreateAuditScope(t *testing.T) {
 			name: "error: permission denied",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1}))
+					assert.NoError(t, s.Create(&orchestrator.TargetOfEvaluation{Id: testdata.MockCertificationTargetID1}))
 				}),
 				authz: servicetest.NewAuthorizationStrategy(false),
 			},
@@ -190,7 +190,7 @@ func TestService_CreateAuditScope(t *testing.T) {
 			name: "valid and assurance level set",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					err := s.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
+					err := s.Create(&orchestrator.TargetOfEvaluation{Id: testdata.MockCertificationTargetID1})
 					assert.NoError(t, err)
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),

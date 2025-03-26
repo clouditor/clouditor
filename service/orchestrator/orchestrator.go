@@ -214,7 +214,7 @@ func (svc *Service) Init() {}
 func (svc *Service) Shutdown() {}
 
 // informHooks informs the registered hook functions
-func (s *Service) informHooks(ctx context.Context, cld *orchestrator.CertificationTarget, err error) {
+func (s *Service) informHooks(ctx context.Context, cld *orchestrator.TargetOfEvaluation, err error) {
 	s.hookMutex.RLock()
 	hooks := s.CertificationTargetHooks
 	defer s.hookMutex.RUnlock()

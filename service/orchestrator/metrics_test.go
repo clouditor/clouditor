@@ -1096,7 +1096,7 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(&assessment.Metric{Id: testdata.MockMetricID1})
-					_ = s.Create(&orchestrator.CertificationTarget{
+					_ = s.Create(&orchestrator.TargetOfEvaluation{
 						Id: testdata.MockCertificationTargetID1,
 					})
 					_ = s.Create(&assessment.MetricConfiguration{
@@ -1232,7 +1232,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(&assessment.Metric{Id: testdata.MockMetricID1})
-					_ = s.Create(&orchestrator.CertificationTarget{
+					_ = s.Create(&orchestrator.TargetOfEvaluation{
 						Id: testdata.MockCertificationTargetID1,
 					})
 					_ = s.Create(MockMetricConfiguration1)
@@ -1537,7 +1537,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			},
 		},
 		{
-			name: "CertificationTarget does not exist in storage",
+			name: "TargetOfEvaluation does not exist in storage",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(&assessment.Metric{Id: testdata.MockMetricID1})
@@ -1566,7 +1566,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(&assessment.Metric{Id: testdata.MockMetricID1})
-					_ = s.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
+					_ = s.Create(&orchestrator.TargetOfEvaluation{Id: testdata.MockCertificationTargetID1})
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),
 			},
@@ -1601,7 +1601,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(&assessment.Metric{Id: testdata.MockMetricID1})
-					_ = s.Create(&orchestrator.CertificationTarget{
+					_ = s.Create(&orchestrator.TargetOfEvaluation{
 						Id: testdata.MockCertificationTargetID1,
 					})
 					_ = s.Create(&assessment.MetricConfiguration{

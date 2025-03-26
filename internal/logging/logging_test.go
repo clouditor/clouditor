@@ -127,10 +127,10 @@ func TestLogRequest(t *testing.T) {
 				level:   logrus.DebugLevel,
 				reqType: Register,
 				req: &orchestrator.CreateCertificationTargetRequest{
-					CertificationTarget: &orchestrator.CertificationTarget{},
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{},
 				},
 			},
-			want: "level=debug msg=CertificationTarget registered.\n",
+			want: "level=debug msg=TargetOfEvaluation registered.\n",
 		},
 
 		{
@@ -139,10 +139,10 @@ func TestLogRequest(t *testing.T) {
 				level:   logrus.DebugLevel,
 				reqType: Register,
 				req: &orchestrator.CreateCertificationTargetRequest{
-					CertificationTarget: &orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1},
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{Id: testdata.MockCertificationTargetID1},
 				},
 			},
-			want: "level=debug msg=CertificationTarget with ID '11111111-1111-1111-1111-111111111111' registered.\n",
+			want: "level=debug msg=TargetOfEvaluation with ID '11111111-1111-1111-1111-111111111111' registered.\n",
 		},
 		{
 			name: "Update AuditScope",

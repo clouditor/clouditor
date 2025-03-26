@@ -907,7 +907,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/CertificationTarget'
+                            $ref: '#/components/schemas/TargetOfEvaluation'
                 required: true
             responses:
                 "200":
@@ -915,7 +915,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/CertificationTarget'
+                                $ref: '#/components/schemas/TargetOfEvaluation'
                 default:
                     description: Default error response
                     content:
@@ -1000,7 +1000,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/CertificationTarget'
+                                $ref: '#/components/schemas/TargetOfEvaluation'
                 default:
                     description: Default error response
                     content:
@@ -1140,7 +1140,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/CertificationTarget'
+                            $ref: '#/components/schemas/TargetOfEvaluation'
                 required: true
             responses:
                 "200":
@@ -1148,7 +1148,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/CertificationTarget'
+                                $ref: '#/components/schemas/TargetOfEvaluation'
                 default:
                     description: Default error response
                     content:
@@ -1669,7 +1669,7 @@ components:
                         $ref: '#/components/schemas/State'
                     description: A list of states at specific times
             description: An ISO17021-based certificate
-        CertificationTarget:
+        TargetOfEvaluation:
             required:
                 - id
                 - name
@@ -1889,7 +1889,7 @@ components:
                 targets:
                     type: array
                     items:
-                        $ref: '#/components/schemas/CertificationTarget'
+                        $ref: '#/components/schemas/TargetOfEvaluation'
                 nextPageToken:
                     type: string
         ListControlsResponse:

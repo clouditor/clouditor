@@ -118,8 +118,8 @@ func NewAuditScope(assuranceLevel, auditScopeId, certificationTargetID string) *
 	return auditScope
 }
 
-func NewCertificationTarget() *orchestrator.CertificationTarget {
-	return &orchestrator.CertificationTarget{
+func NewCertificationTarget() *orchestrator.TargetOfEvaluation {
+	return &orchestrator.TargetOfEvaluation{
 		Id:                testdata.MockCertificationTargetID1,
 		Name:              testdata.MockCertificationTargetName1,
 		Description:       testdata.MockCertificationTargetDescription1,
@@ -127,8 +127,8 @@ func NewCertificationTarget() *orchestrator.CertificationTarget {
 	}
 }
 
-func NewAnotherCertificationTarget() *orchestrator.CertificationTarget {
-	return &orchestrator.CertificationTarget{
+func NewAnotherCertificationTarget() *orchestrator.TargetOfEvaluation {
+	return &orchestrator.TargetOfEvaluation{
 		Id:                testdata.MockCertificationTargetID2,
 		Name:              testdata.MockCertificationTargetName2,
 		Description:       testdata.MockCertificationTargetDescription2,

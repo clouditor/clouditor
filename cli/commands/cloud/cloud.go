@@ -49,7 +49,7 @@ func NewCreateCertificationTargetCommand() *cobra.Command {
 				err     error
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
-				res     *orchestrator.CertificationTarget
+				res     *orchestrator.TargetOfEvaluation
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -62,7 +62,7 @@ func NewCreateCertificationTargetCommand() *cobra.Command {
 			name := args[0]
 
 			res, err = client.CreateCertificationTarget(context.Background(), &orchestrator.CreateCertificationTargetRequest{
-				CertificationTarget: &orchestrator.CertificationTarget{
+				TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 					Name: name,
 				},
 			})
@@ -88,7 +88,7 @@ func NewListCertificationTargetsCommand() *cobra.Command {
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
 				res     *orchestrator.ListCertificationTargetsResponse
-				target  []*orchestrator.CertificationTarget
+				target  []*orchestrator.TargetOfEvaluation
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -98,7 +98,7 @@ func NewListCertificationTargetsCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			target, err = api.ListAllPaginated(&orchestrator.ListCertificationTargetsRequest{}, client.ListCertificationTargets, func(res *orchestrator.ListCertificationTargetsResponse) []*orchestrator.CertificationTarget {
+			target, err = api.ListAllPaginated(&orchestrator.ListCertificationTargetsRequest{}, client.ListCertificationTargets, func(res *orchestrator.ListCertificationTargetsResponse) []*orchestrator.TargetOfEvaluation {
 				return res.Targets
 			})
 
@@ -128,7 +128,7 @@ func NewGetCertificationTargetCommand() *cobra.Command {
 				err     error
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
-				res     *orchestrator.CertificationTarget
+				res     *orchestrator.TargetOfEvaluation
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -193,7 +193,7 @@ func NewUpdateCertificationTargetCommand() *cobra.Command {
 				err     error
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
-				res     *orchestrator.CertificationTarget
+				res     *orchestrator.TargetOfEvaluation
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -204,7 +204,7 @@ func NewUpdateCertificationTargetCommand() *cobra.Command {
 			client = orchestrator.NewOrchestratorClient(session)
 
 			res, err = client.UpdateCertificationTarget(context.Background(), &orchestrator.UpdateCertificationTargetRequest{
-				CertificationTarget: &orchestrator.CertificationTarget{
+				TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 					Id:          viper.GetString("id"),
 					Name:        viper.GetString("name"),
 					Description: viper.GetString("description"),

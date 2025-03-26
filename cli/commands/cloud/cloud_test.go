@@ -65,7 +65,7 @@ func TestNewCloudCommand(t *testing.T) {
 
 func TestCreateCertificationTargetCommand(t *testing.T) {
 	var (
-		response orchestrator.CertificationTarget
+		response orchestrator.TargetOfEvaluation
 		svc      *service_orchestrator.Service
 		err      error
 		b        bytes.Buffer
@@ -119,8 +119,8 @@ func TestListCertificationTargetsCommand(t *testing.T) {
 
 func TestGetCertificationTargetCommand(t *testing.T) {
 	var (
-		response orchestrator.CertificationTarget
-		target   *orchestrator.CertificationTarget
+		response orchestrator.TargetOfEvaluation
+		target   *orchestrator.TargetOfEvaluation
 		svc      *service_orchestrator.Service
 
 		err error
@@ -154,7 +154,7 @@ func TestGetCertificationTargetCommand(t *testing.T) {
 func TestRemoveCertificationTargetsCommand(t *testing.T) {
 	var (
 		response emptypb.Empty
-		target   *orchestrator.CertificationTarget
+		target   *orchestrator.TargetOfEvaluation
 		svc      *service_orchestrator.Service
 
 		err error
@@ -187,8 +187,8 @@ func TestRemoveCertificationTargetsCommand(t *testing.T) {
 
 func TestUpdateCertificationTargetCommand(t *testing.T) {
 	var (
-		response orchestrator.CertificationTarget
-		target   *orchestrator.CertificationTarget
+		response orchestrator.TargetOfEvaluation
+		target   *orchestrator.TargetOfEvaluation
 		svc      *service_orchestrator.Service
 
 		err error
@@ -225,7 +225,7 @@ func TestUpdateCertificationTargetCommand(t *testing.T) {
 
 func TestGetMetricConfiguration(t *testing.T) {
 	var (
-		target *orchestrator.CertificationTarget
+		target *orchestrator.TargetOfEvaluation
 		svc    *service_orchestrator.Service
 
 		err error
@@ -242,7 +242,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 		cli.Output = &b
 
 		// create a new target service
-		target, err = svc.CreateCertificationTarget(context.TODO(), &orchestrator.CreateCertificationTargetRequest{CertificationTarget: &orchestrator.CertificationTarget{Name: "myTarget"}})
+		target, err = svc.CreateCertificationTarget(context.TODO(), &orchestrator.CreateCertificationTargetRequest{TargetOfEvaluation: &orchestrator.TargetOfEvaluation{Name: "myTarget"}})
 
 		assert.NotNil(t, target)
 		assert.NoError(t, err)

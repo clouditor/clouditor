@@ -53,9 +53,9 @@ const (
 	DefaultCertificationTargetId = "00000000-0000-0000-0000-000000000000"
 )
 
-func (s *Service) CreateCertificationTarget(ctx context.Context, req *orchestrator.CreateCertificationTargetRequest) (res *orchestrator.CertificationTarget, err error) {
+func (s *Service) CreateCertificationTarget(ctx context.Context, req *orchestrator.CreateCertificationTargetRequest) (res *orchestrator.TargetOfEvaluation, err error) {
 	// A new certification target typically does not contain a UUID; therefore, we will add one here. This must be done before the validation check to prevent validation failure.
-	req.CertificationTarget.Id = uuid.NewString()
+	req.TargetOfEvaluation.Id = uuid.NewString()
 
 	// Validate request
 	err = api.Validate(req)
@@ -63,11 +63,11 @@ func (s *Service) CreateCertificationTarget(ctx context.Context, req *orchestrat
 		return nil, err
 	}
 
-	res = new(orchestrator.CertificationTarget)
+	res = new(orchestrator.TargetOfEvaluation)
 
-	res.Id = req.CertificationTarget.Id
-	res.Name = req.CertificationTarget.Name
-	res.Description = req.CertificationTarget.Description
+	res.Id = req.TargetOfEvaluation.Id
+	res.Name = req.TargetOfEvaluation.Name
+	res.Description = req.TargetOfEvaluation.Description
 
 	now := timestamppb.Now()
 
@@ -75,9 +75,9 @@ func (s *Service) CreateCertificationTarget(ctx context.Context, req *orchestrat
 	res.UpdatedAt = now
 
 	res.Metadata = &orchestrator.CertificationTarget_Metadata{}
-	if req.CertificationTarget.Metadata != nil {
-		res.Metadata.Labels = req.CertificationTarget.Metadata.Labels
-		res.Metadata.Icon = req.CertificationTarget.Metadata.Icon
+	if req.TargetOfEvaluation.Metadata != nil {
+		res.Metadata.Labels = req.TargetOfEvaluation.Metadata.Labels
+		res.Metadata.Icon = req.TargetOfEvaluation.Metadata.Icon
 	}
 
 	// Persist the certification target in our database
@@ -116,7 +116,7 @@ func (svc *Service) ListCertificationTargets(ctx context.Context, req *orchestra
 	}
 
 	// Paginate the certification targets according to the request
-	res.Targets, res.NextPageToken, err = service.PaginateStorage[*orchestrator.CertificationTarget](req, svc.storage,
+	res.Targets, res.NextPageToken, err = service.PaginateStorage[*orchestrator.TargetOfEvaluation](req, svc.storage,
 		service.DefaultPaginationOpts, conds...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
@@ -126,7 +126,7 @@ func (svc *Service) ListCertificationTargets(ctx context.Context, req *orchestra
 }
 
 // GetCertificationTarget implements method for OrchestratorServer interface for getting a certification target with provided id
-func (s *Service) GetCertificationTarget(ctx context.Context, req *orchestrator.GetCertificationTargetRequest) (response *orchestrator.CertificationTarget, err error) {
+func (s *Service) GetCertificationTarget(ctx context.Context, req *orchestrator.GetCertificationTargetRequest) (response *orchestrator.TargetOfEvaluation, err error) {
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
@@ -138,7 +138,7 @@ func (s *Service) GetCertificationTarget(ctx context.Context, req *orchestrator.
 		return nil, service.ErrPermissionDenied
 	}
 
-	response = new(orchestrator.CertificationTarget)
+	response = new(orchestrator.TargetOfEvaluation)
 
 	err = s.storage.Get(response, "Id = ?", req.CertificationTargetId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
@@ -151,7 +151,7 @@ func (s *Service) GetCertificationTarget(ctx context.Context, req *orchestrator.
 }
 
 // UpdateCertificationTarget implements method for OrchestratorServer interface for updating a certification target
-func (s *Service) UpdateCertificationTarget(ctx context.Context, req *orchestrator.UpdateCertificationTargetRequest) (res *orchestrator.CertificationTarget, err error) {
+func (s *Service) UpdateCertificationTarget(ctx context.Context, req *orchestrator.UpdateCertificationTargetRequest) (res *orchestrator.TargetOfEvaluation, err error) {
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
@@ -163,7 +163,7 @@ func (s *Service) UpdateCertificationTarget(ctx context.Context, req *orchestrat
 		return nil, service.ErrPermissionDenied
 	}
 
-	count, err := s.storage.Count(req.CertificationTarget, "id = ?", req.CertificationTarget.Id)
+	count, err := s.storage.Count(req.TargetOfEvaluation, "id = ?", req.TargetOfEvaluation.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -173,11 +173,11 @@ func (s *Service) UpdateCertificationTarget(ctx context.Context, req *orchestrat
 	}
 
 	// Add id to response because otherwise it will overwrite ID with empty string
-	res = req.CertificationTarget
+	res = req.TargetOfEvaluation
 	res.UpdatedAt = timestamppb.Now()
 
 	// Since UpdateCertificationTarget is a PUT method, we use storage.Save
-	err = s.storage.Save(res, "Id = ?", req.CertificationTarget.Id)
+	err = s.storage.Save(res, "Id = ?", req.TargetOfEvaluation.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
@@ -202,7 +202,7 @@ func (s *Service) RemoveCertificationTarget(ctx context.Context, req *orchestrat
 		return nil, service.ErrPermissionDenied
 	}
 
-	err = s.storage.Delete(&orchestrator.CertificationTarget{Id: req.CertificationTargetId})
+	err = s.storage.Delete(&orchestrator.TargetOfEvaluation{Id: req.CertificationTargetId})
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "certification target not found")
 	} else if err != nil {
@@ -277,7 +277,7 @@ func (s *Service) GetCertificationTargetStatistics(ctx context.Context, req *orc
 // if no certification target exists in the database.
 //
 // If a new certification target was created, it will be returned.
-func (s *Service) CreateDefaultCertificationTarget() (target *orchestrator.CertificationTarget, err error) {
+func (s *Service) CreateDefaultCertificationTarget() (target *orchestrator.TargetOfEvaluation, err error) {
 	log.Infof("Trying to create new default certification target...")
 
 	count, err := s.storage.Count(target)
@@ -290,7 +290,7 @@ func (s *Service) CreateDefaultCertificationTarget() (target *orchestrator.Certi
 
 		// Create a default certification target
 		target =
-			&orchestrator.CertificationTarget{
+			&orchestrator.TargetOfEvaluation{
 				Id:          DefaultCertificationTargetId,
 				Name:        viper.GetString(config.DefaultCertificationTargetNameFlag),
 				Description: viper.GetString(config.DefaultCertificationTargetDescriptionFlag),

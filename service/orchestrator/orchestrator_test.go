@@ -136,13 +136,13 @@ func TestCertificationTargetHooks(t *testing.T) {
 
 	wg.Add(hookCounts)
 
-	firstHookFunction := func(_ context.Context, CertificationTarget *orchestrator.CertificationTarget, err error) {
+	firstHookFunction := func(_ context.Context, TargetOfEvaluation *orchestrator.TargetOfEvaluation, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the firstHookFunction")
 		wg.Done()
 	}
 
-	secondHookFunction := func(_ context.Context, CertificationTarget *orchestrator.CertificationTarget, err error) {
+	secondHookFunction := func(_ context.Context, TargetOfEvaluation *orchestrator.TargetOfEvaluation, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the secondHookFunction")
 		wg.Done()
@@ -156,7 +156,7 @@ func TestCertificationTargetHooks(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		wantRes assert.Want[*orchestrator.CertificationTarget]
+		wantRes assert.Want[*orchestrator.TargetOfEvaluation]
 		wantErr assert.WantErr
 	}{
 		{
@@ -164,7 +164,7 @@ func TestCertificationTargetHooks(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				targetUpdate: &orchestrator.UpdateCertificationTargetRequest{
-					CertificationTarget: &orchestrator.CertificationTarget{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						Id:          "00000000-0000-0000-0000-000000000000",
 						Name:        "test target",
 						Description: "test target",
@@ -173,7 +173,7 @@ func TestCertificationTargetHooks(t *testing.T) {
 				CertificationTargetHooks: []orchestrator.CertificationTargetHookFunc{firstHookFunction, secondHookFunction},
 			},
 			wantErr: assert.Nil[error],
-			wantRes: func(t *testing.T, got *orchestrator.CertificationTarget) bool {
+			wantRes: func(t *testing.T, got *orchestrator.TargetOfEvaluation) bool {
 				return assert.Equal(t, "00000000-0000-0000-0000-000000000000", got.Id) &&
 					assert.Equal(t, "test target", got.Name) && assert.Equal(t, "test target", got.Description)
 			},

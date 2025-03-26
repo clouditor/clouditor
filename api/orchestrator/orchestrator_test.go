@@ -34,7 +34,7 @@ import (
 
 func TestUpdateCertificationTargetRequest_GetCertificationTargetId(t *testing.T) {
 	type fields struct {
-		CertificationTarget *CertificationTarget
+		TargetOfEvaluation *TargetOfEvaluation
 	}
 	tests := []struct {
 		name   string
@@ -44,7 +44,7 @@ func TestUpdateCertificationTargetRequest_GetCertificationTargetId(t *testing.T)
 		{
 			name: "Happy path",
 			fields: fields{
-				&CertificationTarget{
+				&TargetOfEvaluation{
 					Id: testdata.MockCertificationTargetID1,
 				},
 			},
@@ -54,7 +54,7 @@ func TestUpdateCertificationTargetRequest_GetCertificationTargetId(t *testing.T)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			req := &UpdateCertificationTargetRequest{
-				CertificationTarget: tt.fields.CertificationTarget,
+				TargetOfEvaluation: tt.fields.TargetOfEvaluation,
 			}
 			if got := req.GetCertificationTargetId(); got != tt.want {
 				t.Errorf("UpdateCertificationTargetRequest.GetCertificationTargetId() = %v, want %v", got, tt.want)
@@ -189,7 +189,7 @@ func TestUpdateCertificateRequest_GetCertificationTargetId(t *testing.T) {
 
 func TestCreateCertificationTargetRequest_GetCertificationTargetId(t *testing.T) {
 	type fields struct {
-		CertificationTarget *CertificationTarget
+		TargetOfEvaluation *TargetOfEvaluation
 	}
 	tests := []struct {
 		name   string
@@ -199,7 +199,7 @@ func TestCreateCertificationTargetRequest_GetCertificationTargetId(t *testing.T)
 		{
 			name: "Happy path",
 			fields: fields{
-				CertificationTarget: &CertificationTarget{},
+				TargetOfEvaluation: &TargetOfEvaluation{},
 			},
 			want: "",
 		},
@@ -207,7 +207,7 @@ func TestCreateCertificationTargetRequest_GetCertificationTargetId(t *testing.T)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			req := &CreateCertificationTargetRequest{
-				CertificationTarget: tt.fields.CertificationTarget,
+				TargetOfEvaluation: tt.fields.TargetOfEvaluation,
 			}
 			if got := req.GetCertificationTargetId(); got != tt.want {
 				t.Errorf("CreateCertificationTargetRequest.GetCertificationTargetId() = %v, want %v", got, tt.want)

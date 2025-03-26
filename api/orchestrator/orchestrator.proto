@@ -127,7 +127,7 @@ service Orchestrator {
   }
 
   // Registers a new target certification target
-  rpc CreateCertificationTarget(CreateCertificationTargetRequest) returns (CertificationTarget) {
+  rpc CreateCertificationTarget(CreateCertificationTargetRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {
       post: "/v1/orchestrator/certification_targets"
       body: "certification_target"
@@ -135,7 +135,7 @@ service Orchestrator {
   }
 
   // Registers a new target certification target
-  rpc UpdateCertificationTarget(UpdateCertificationTargetRequest) returns (CertificationTarget) {
+  rpc UpdateCertificationTarget(UpdateCertificationTargetRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {
       put: "/v1/orchestrator/certification_targets/{certification_target.id}"
       body: "certification_target"
@@ -143,7 +143,7 @@ service Orchestrator {
   }
 
   // Retrieves a target certification target
-  rpc GetCertificationTarget(GetCertificationTargetRequest) returns (CertificationTarget) {
+  rpc GetCertificationTarget(GetCertificationTargetRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {get: "/v1/orchestrator/certification_targets/{certification_target_id}"};
   }
 
@@ -464,14 +464,14 @@ message GetCertificationTargetRequest {
 }
 
 message CreateCertificationTargetRequest {
-  CertificationTarget certification_target = 1 [
+  TargetOfEvaluation certification_target = 1 [
     (buf.validate.field).required = true,
     (google.api.field_behavior) = REQUIRED
   ];
 }
 
 message UpdateCertificationTargetRequest {
-  CertificationTarget certification_target = 1 [
+  TargetOfEvaluation certification_target = 1 [
     (buf.validate.field).required = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -492,7 +492,7 @@ message ListCertificationTargetsRequest {
 }
 
 message ListCertificationTargetsResponse {
-  repeated CertificationTarget targets = 1 [
+  repeated TargetOfEvaluation targets = 1 [
     (google.api.field_behavior) = REQUIRED,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -625,7 +625,7 @@ message AssessmentTool {
   ];
 }
 
-message CertificationTarget {
+message TargetOfEvaluation {
   string id = 1 [
     (buf.validate.field).string = {uuid: true},
     (google.api.field_behavior) = REQUIRED

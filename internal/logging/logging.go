@@ -124,7 +124,7 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 	// information about the target certification target. However, we only want to do
 	// that, if the payload type is not a certification target itself.
 	ctreq, ok := req.(api.CertificationTargetRequest)
-	if name != "CertificationTarget" && ok {
+	if name != "TargetOfEvaluation" && ok {
 		buffer.WriteString(fmt.Sprintf(" for Certification Target '%s'", ctreq.GetCertificationTargetId()))
 	}
 

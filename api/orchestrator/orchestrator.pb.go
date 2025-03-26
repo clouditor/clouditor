@@ -1005,7 +1005,7 @@ func (x *GetCertificationTargetRequest) GetCertificationTargetId() string {
 
 type CreateCertificationTargetRequest struct {
 	state               protoimpl.MessageState `protogen:"open.v1"`
-	CertificationTarget *CertificationTarget   `protobuf:"bytes,1,opt,name=certification_target,json=certificationTarget,proto3" json:"certification_target,omitempty"`
+	TargetOfEvaluation *TargetOfEvaluation   `protobuf:"bytes,1,opt,name=certification_target,json=certificationTarget,proto3" json:"certification_target,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -1040,16 +1040,16 @@ func (*CreateCertificationTargetRequest) Descriptor() ([]byte, []int) {
 	return file_api_orchestrator_orchestrator_proto_rawDescGZIP(), []int{16}
 }
 
-func (x *CreateCertificationTargetRequest) GetCertificationTarget() *CertificationTarget {
+func (x *CreateCertificationTargetRequest) GetCertificationTarget() *TargetOfEvaluation {
 	if x != nil {
-		return x.CertificationTarget
+		return x.TargetOfEvaluation
 	}
 	return nil
 }
 
 type UpdateCertificationTargetRequest struct {
 	state               protoimpl.MessageState `protogen:"open.v1"`
-	CertificationTarget *CertificationTarget   `protobuf:"bytes,1,opt,name=certification_target,json=certificationTarget,proto3" json:"certification_target,omitempty"`
+	TargetOfEvaluation *TargetOfEvaluation   `protobuf:"bytes,1,opt,name=certification_target,json=certificationTarget,proto3" json:"certification_target,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -1084,9 +1084,9 @@ func (*UpdateCertificationTargetRequest) Descriptor() ([]byte, []int) {
 	return file_api_orchestrator_orchestrator_proto_rawDescGZIP(), []int{17}
 }
 
-func (x *UpdateCertificationTargetRequest) GetCertificationTarget() *CertificationTarget {
+func (x *UpdateCertificationTargetRequest) GetCertificationTarget() *TargetOfEvaluation {
 	if x != nil {
-		return x.CertificationTarget
+		return x.TargetOfEvaluation
 	}
 	return nil
 }
@@ -1205,7 +1205,7 @@ func (x *ListCertificationTargetsRequest) GetAsc() bool {
 
 type ListCertificationTargetsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Targets       []*CertificationTarget `protobuf:"bytes,1,rep,name=targets,proto3" json:"targets,omitempty"`
+	Targets       []*TargetOfEvaluation `protobuf:"bytes,1,rep,name=targets,proto3" json:"targets,omitempty"`
 	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1241,7 +1241,7 @@ func (*ListCertificationTargetsResponse) Descriptor() ([]byte, []int) {
 	return file_api_orchestrator_orchestrator_proto_rawDescGZIP(), []int{20}
 }
 
-func (x *ListCertificationTargetsResponse) GetTargets() []*CertificationTarget {
+func (x *ListCertificationTargetsResponse) GetTargets() []*TargetOfEvaluation {
 	if x != nil {
 		return x.Targets
 	}
@@ -1832,7 +1832,7 @@ func (x *AssessmentTool) GetAvailableMetrics() []string {
 	return nil
 }
 
-type CertificationTarget struct {
+type TargetOfEvaluation struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
 	Id                string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name              string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
@@ -1850,20 +1850,20 @@ type CertificationTarget struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CertificationTarget) Reset() {
-	*x = CertificationTarget{}
+func (x *TargetOfEvaluation) Reset() {
+	*x = TargetOfEvaluation{}
 	mi := &file_api_orchestrator_orchestrator_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CertificationTarget) String() string {
+func (x *TargetOfEvaluation) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CertificationTarget) ProtoMessage() {}
+func (*TargetOfEvaluation) ProtoMessage() {}
 
-func (x *CertificationTarget) ProtoReflect() protoreflect.Message {
+func (x *TargetOfEvaluation) ProtoReflect() protoreflect.Message {
 	mi := &file_api_orchestrator_orchestrator_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1875,61 +1875,61 @@ func (x *CertificationTarget) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CertificationTarget.ProtoReflect.Descriptor instead.
-func (*CertificationTarget) Descriptor() ([]byte, []int) {
+// Deprecated: Use TargetOfEvaluation.ProtoReflect.Descriptor instead.
+func (*TargetOfEvaluation) Descriptor() ([]byte, []int) {
 	return file_api_orchestrator_orchestrator_proto_rawDescGZIP(), []int{32}
 }
 
-func (x *CertificationTarget) GetId() string {
+func (x *TargetOfEvaluation) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-func (x *CertificationTarget) GetName() string {
+func (x *TargetOfEvaluation) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-func (x *CertificationTarget) GetDescription() string {
+func (x *TargetOfEvaluation) GetDescription() string {
 	if x != nil {
 		return x.Description
 	}
 	return ""
 }
 
-func (x *CertificationTarget) GetConfiguredMetrics() []*assessment.Metric {
+func (x *TargetOfEvaluation) GetConfiguredMetrics() []*assessment.Metric {
 	if x != nil {
 		return x.ConfiguredMetrics
 	}
 	return nil
 }
 
-func (x *CertificationTarget) GetCreatedAt() *timestamppb.Timestamp {
+func (x *TargetOfEvaluation) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
 	}
 	return nil
 }
 
-func (x *CertificationTarget) GetUpdatedAt() *timestamppb.Timestamp {
+func (x *TargetOfEvaluation) GetUpdatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.UpdatedAt
 	}
 	return nil
 }
 
-func (x *CertificationTarget) GetMetadata() *CertificationTarget_Metadata {
+func (x *TargetOfEvaluation) GetMetadata() *CertificationTarget_Metadata {
 	if x != nil {
 		return x.Metadata
 	}
 	return nil
 }
 
-func (x *CertificationTarget) GetTargetType() CertificationTarget_TargetType {
+func (x *TargetOfEvaluation) GetTargetType() CertificationTarget_TargetType {
 	if x != nil {
 		return x.TargetType
 	}
@@ -5771,7 +5771,7 @@ var file_api_orchestrator_orchestrator_proto_enumTypes = make([]protoimpl.EnumIn
 var file_api_orchestrator_orchestrator_proto_msgTypes = make([]protoimpl.MessageInfo, 76)
 var file_api_orchestrator_orchestrator_proto_goTypes = []any{
 	(MetricChangeEvent_Type)(0),                      // 0: clouditor.orchestrator.v1.MetricChangeEvent.Type
-	(CertificationTarget_TargetType)(0),              // 1: clouditor.orchestrator.v1.CertificationTarget.TargetType
+	(CertificationTarget_TargetType)(0),              // 1: clouditor.orchestrator.v1.TargetOfEvaluation.TargetType
 	(AuditScopeChangeEvent_Type)(0),                  // 2: clouditor.orchestrator.v1.AuditScopeChangeEvent.Type
 	(*RegisterAssessmentToolRequest)(nil),            // 3: clouditor.orchestrator.v1.RegisterAssessmentToolRequest
 	(*ListAssessmentToolsRequest)(nil),               // 4: clouditor.orchestrator.v1.ListAssessmentToolsRequest
@@ -5805,7 +5805,7 @@ var file_api_orchestrator_orchestrator_proto_goTypes = []any{
 	(*SubscribeMetricChangeEventRequest)(nil),        // 32: clouditor.orchestrator.v1.SubscribeMetricChangeEventRequest
 	(*MetricChangeEvent)(nil),                        // 33: clouditor.orchestrator.v1.MetricChangeEvent
 	(*AssessmentTool)(nil),                           // 34: clouditor.orchestrator.v1.AssessmentTool
-	(*CertificationTarget)(nil),                      // 35: clouditor.orchestrator.v1.CertificationTarget
+	(*TargetOfEvaluation)(nil),                      // 35: clouditor.orchestrator.v1.TargetOfEvaluation
 	(*Catalog)(nil),                                  // 36: clouditor.orchestrator.v1.Catalog
 	(*Category)(nil),                                 // 37: clouditor.orchestrator.v1.Category
 	(*Control)(nil),                                  // 38: clouditor.orchestrator.v1.Control
@@ -5843,8 +5843,8 @@ var file_api_orchestrator_orchestrator_proto_goTypes = []any{
 	(*ListAssessmentToolsRequest_Filter)(nil),        // 70: clouditor.orchestrator.v1.ListAssessmentToolsRequest.Filter
 	(*ListMetricsRequest_Filter)(nil),                // 71: clouditor.orchestrator.v1.ListMetricsRequest.Filter
 	nil,                                              // 72: clouditor.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntry
-	(*CertificationTarget_Metadata)(nil),             // 73: clouditor.orchestrator.v1.CertificationTarget.Metadata
-	nil,                                              // 74: clouditor.orchestrator.v1.CertificationTarget.Metadata.LabelsEntry
+	(*CertificationTarget_Metadata)(nil),             // 73: clouditor.orchestrator.v1.TargetOfEvaluation.Metadata
+	nil,                                              // 74: clouditor.orchestrator.v1.TargetOfEvaluation.Metadata.LabelsEntry
 	(*Catalog_Metadata)(nil),                         // 75: clouditor.orchestrator.v1.Catalog.Metadata
 	(*ListAssessmentResultsRequest_Filter)(nil),      // 76: clouditor.orchestrator.v1.ListAssessmentResultsRequest.Filter
 	(*ListAuditScopesRequest_Filter)(nil),            // 77: clouditor.orchestrator.v1.ListAuditScopesRequest.Filter
@@ -5868,18 +5868,18 @@ var file_api_orchestrator_orchestrator_proto_depIdxs = []int32{
 	80, // 6: clouditor.orchestrator.v1.UpdateMetricRequest.metric:type_name -> clouditor.assessment.v1.Metric
 	71, // 7: clouditor.orchestrator.v1.ListMetricsRequest.filter:type_name -> clouditor.orchestrator.v1.ListMetricsRequest.Filter
 	80, // 8: clouditor.orchestrator.v1.ListMetricsResponse.metrics:type_name -> clouditor.assessment.v1.Metric
-	35, // 9: clouditor.orchestrator.v1.CreateCertificationTargetRequest.certification_target:type_name -> clouditor.orchestrator.v1.CertificationTarget
-	35, // 10: clouditor.orchestrator.v1.UpdateCertificationTargetRequest.certification_target:type_name -> clouditor.orchestrator.v1.CertificationTarget
-	35, // 11: clouditor.orchestrator.v1.ListCertificationTargetsResponse.targets:type_name -> clouditor.orchestrator.v1.CertificationTarget
+	35, // 9: clouditor.orchestrator.v1.CreateCertificationTargetRequest.certification_target:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
+	35, // 10: clouditor.orchestrator.v1.UpdateCertificationTargetRequest.certification_target:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
+	35, // 11: clouditor.orchestrator.v1.ListCertificationTargetsResponse.targets:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
 	81, // 12: clouditor.orchestrator.v1.UpdateMetricConfigurationRequest.configuration:type_name -> clouditor.assessment.v1.MetricConfiguration
 	72, // 13: clouditor.orchestrator.v1.ListMetricConfigurationResponse.configurations:type_name -> clouditor.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntry
 	82, // 14: clouditor.orchestrator.v1.UpdateMetricImplementationRequest.implementation:type_name -> clouditor.assessment.v1.MetricImplementation
 	0,  // 15: clouditor.orchestrator.v1.MetricChangeEvent.type:type_name -> clouditor.orchestrator.v1.MetricChangeEvent.Type
-	80, // 16: clouditor.orchestrator.v1.CertificationTarget.configured_metrics:type_name -> clouditor.assessment.v1.Metric
-	83, // 17: clouditor.orchestrator.v1.CertificationTarget.created_at:type_name -> google.protobuf.Timestamp
-	83, // 18: clouditor.orchestrator.v1.CertificationTarget.updated_at:type_name -> google.protobuf.Timestamp
-	73, // 19: clouditor.orchestrator.v1.CertificationTarget.metadata:type_name -> clouditor.orchestrator.v1.CertificationTarget.Metadata
-	1,  // 20: clouditor.orchestrator.v1.CertificationTarget.target_type:type_name -> clouditor.orchestrator.v1.CertificationTarget.TargetType
+	80, // 16: clouditor.orchestrator.v1.TargetOfEvaluation.configured_metrics:type_name -> clouditor.assessment.v1.Metric
+	83, // 17: clouditor.orchestrator.v1.TargetOfEvaluation.created_at:type_name -> google.protobuf.Timestamp
+	83, // 18: clouditor.orchestrator.v1.TargetOfEvaluation.updated_at:type_name -> google.protobuf.Timestamp
+	73, // 19: clouditor.orchestrator.v1.TargetOfEvaluation.metadata:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation.Metadata
+	1,  // 20: clouditor.orchestrator.v1.TargetOfEvaluation.target_type:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation.TargetType
 	37, // 21: clouditor.orchestrator.v1.Catalog.categories:type_name -> clouditor.orchestrator.v1.Category
 	75, // 22: clouditor.orchestrator.v1.Catalog.metadata:type_name -> clouditor.orchestrator.v1.Catalog.Metadata
 	38, // 23: clouditor.orchestrator.v1.Category.controls:type_name -> clouditor.orchestrator.v1.Control
@@ -5904,7 +5904,7 @@ var file_api_orchestrator_orchestrator_proto_depIdxs = []int32{
 	2,  // 42: clouditor.orchestrator.v1.AuditScopeChangeEvent.type:type_name -> clouditor.orchestrator.v1.AuditScopeChangeEvent.Type
 	39, // 43: clouditor.orchestrator.v1.AuditScopeChangeEvent.audit_scope:type_name -> clouditor.orchestrator.v1.AuditScope
 	81, // 44: clouditor.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntry.value:type_name -> clouditor.assessment.v1.MetricConfiguration
-	74, // 45: clouditor.orchestrator.v1.CertificationTarget.Metadata.labels:type_name -> clouditor.orchestrator.v1.CertificationTarget.Metadata.LabelsEntry
+	74, // 45: clouditor.orchestrator.v1.TargetOfEvaluation.Metadata.labels:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation.Metadata.LabelsEntry
 	3,  // 46: clouditor.orchestrator.v1.Orchestrator.RegisterAssessmentTool:input_type -> clouditor.orchestrator.v1.RegisterAssessmentToolRequest
 	4,  // 47: clouditor.orchestrator.v1.Orchestrator.ListAssessmentTools:input_type -> clouditor.orchestrator.v1.ListAssessmentToolsRequest
 	6,  // 48: clouditor.orchestrator.v1.Orchestrator.GetAssessmentTool:input_type -> clouditor.orchestrator.v1.GetAssessmentToolRequest
@@ -5965,9 +5965,9 @@ var file_api_orchestrator_orchestrator_proto_depIdxs = []int32{
 	80, // 103: clouditor.orchestrator.v1.Orchestrator.GetMetric:output_type -> clouditor.assessment.v1.Metric
 	17, // 104: clouditor.orchestrator.v1.Orchestrator.ListMetrics:output_type -> clouditor.orchestrator.v1.ListMetricsResponse
 	85, // 105: clouditor.orchestrator.v1.Orchestrator.RemoveMetric:output_type -> google.protobuf.Empty
-	35, // 106: clouditor.orchestrator.v1.Orchestrator.CreateCertificationTarget:output_type -> clouditor.orchestrator.v1.CertificationTarget
-	35, // 107: clouditor.orchestrator.v1.Orchestrator.UpdateCertificationTarget:output_type -> clouditor.orchestrator.v1.CertificationTarget
-	35, // 108: clouditor.orchestrator.v1.Orchestrator.GetCertificationTarget:output_type -> clouditor.orchestrator.v1.CertificationTarget
+	35, // 106: clouditor.orchestrator.v1.Orchestrator.CreateCertificationTarget:output_type -> clouditor.orchestrator.v1.TargetOfEvaluation
+	35, // 107: clouditor.orchestrator.v1.Orchestrator.UpdateCertificationTarget:output_type -> clouditor.orchestrator.v1.TargetOfEvaluation
+	35, // 108: clouditor.orchestrator.v1.Orchestrator.GetCertificationTarget:output_type -> clouditor.orchestrator.v1.TargetOfEvaluation
 	23, // 109: clouditor.orchestrator.v1.Orchestrator.ListCertificationTargets:output_type -> clouditor.orchestrator.v1.ListCertificationTargetsResponse
 	85, // 110: clouditor.orchestrator.v1.Orchestrator.RemoveCertificationTarget:output_type -> google.protobuf.Empty
 	25, // 111: clouditor.orchestrator.v1.Orchestrator.GetCertificationTargetStatistics:output_type -> clouditor.orchestrator.v1.GetCertificationTargetStatisticsResponse

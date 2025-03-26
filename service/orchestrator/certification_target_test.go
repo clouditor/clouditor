@@ -63,7 +63,7 @@ func TestService_GetCertificationTarget(t *testing.T) {
 		svc     *Service
 		ctx     context.Context
 		req     *orchestrator.GetCertificationTargetRequest
-		res     *orchestrator.CertificationTarget
+		res     *orchestrator.TargetOfEvaluation
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -93,7 +93,7 @@ func TestService_GetCertificationTarget(t *testing.T) {
 			svc:  NewService(),
 			ctx:  context.Background(),
 			req:  &orchestrator.GetCertificationTargetRequest{CertificationTargetId: DefaultCertificationTargetId},
-			res: &orchestrator.CertificationTarget{
+			res: &orchestrator.TargetOfEvaluation{
 				Id:          DefaultCertificationTargetId,
 				Name:        config.DefaultCertificationTargetName,
 				Description: config.DefaultCertificationTargetDescription,
@@ -115,7 +115,7 @@ func TestService_GetCertificationTarget(t *testing.T) {
 		{
 			name: "permission granted",
 			svc: NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1)), WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-				_ = s.Create(&orchestrator.CertificationTarget{
+				_ = s.Create(&orchestrator.TargetOfEvaluation{
 					Id:        testdata.MockCertificationTargetID1,
 					Name:      "target1",
 					CreatedAt: timestamppb.Now(),
@@ -124,7 +124,7 @@ func TestService_GetCertificationTarget(t *testing.T) {
 			}))),
 			ctx: context.TODO(),
 			req: &orchestrator.GetCertificationTargetRequest{CertificationTargetId: testdata.MockCertificationTargetID1},
-			res: &orchestrator.CertificationTarget{
+			res: &orchestrator.TargetOfEvaluation{
 				Id:   testdata.MockCertificationTargetID1,
 				Name: "target1",
 			},
@@ -157,7 +157,7 @@ func TestService_GetCertificationTarget(t *testing.T) {
 
 func TestService_UpdateCertificationTarget(t *testing.T) {
 	var (
-		target *orchestrator.CertificationTarget
+		target *orchestrator.TargetOfEvaluation
 		err    error
 	)
 	orchestratorService := NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1)))
@@ -168,13 +168,13 @@ func TestService_UpdateCertificationTarget(t *testing.T) {
 
 	// 2nd case: Certification Target ID is nil
 	_, err = orchestratorService.UpdateCertificationTarget(context.TODO(), &orchestrator.UpdateCertificationTargetRequest{
-		CertificationTarget: &orchestrator.CertificationTarget{},
+		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{},
 	})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 
 	// 3rd case: Certification Target not found since there are no certification targets yet
 	_, err = orchestratorService.UpdateCertificationTarget(context.TODO(), &orchestrator.UpdateCertificationTargetRequest{
-		CertificationTarget: &orchestrator.CertificationTarget{
+		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 			Id:          testdata.MockCertificationTargetID1,
 			Name:        config.DefaultCertificationTargetName,
 			Description: config.DefaultCertificationTargetDescription,
@@ -183,7 +183,7 @@ func TestService_UpdateCertificationTarget(t *testing.T) {
 	assert.Equal(t, codes.NotFound, status.Code(err))
 
 	// 4th case: Certification Target updated successfully
-	err = orchestratorService.storage.Create(&orchestrator.CertificationTarget{
+	err = orchestratorService.storage.Create(&orchestrator.TargetOfEvaluation{
 		Id:          testdata.MockCertificationTargetID1,
 		Name:        config.DefaultCertificationTargetName,
 		Description: config.DefaultCertificationTargetDescription,
@@ -193,7 +193,7 @@ func TestService_UpdateCertificationTarget(t *testing.T) {
 		return
 	}
 	target, err = orchestratorService.UpdateCertificationTarget(context.TODO(), &orchestrator.UpdateCertificationTargetRequest{
-		CertificationTarget: &orchestrator.CertificationTarget{
+		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 			Id:          testdata.MockCertificationTargetID1,
 			Name:        "NewName",
 			Description: "",
@@ -209,7 +209,7 @@ func TestService_UpdateCertificationTarget(t *testing.T) {
 
 func TestService_RemoveCertificationTarget(t *testing.T) {
 	var (
-		CertificationTargetResponse      *orchestrator.CertificationTarget
+		CertificationTargetResponse      *orchestrator.TargetOfEvaluation
 		err                              error
 		listCertificationTargetsResponse *orchestrator.ListCertificationTargetsResponse
 	)
@@ -249,7 +249,7 @@ func TestService_RemoveCertificationTarget(t *testing.T) {
 
 func TestService_CreateDefaultCertificationTarget(t *testing.T) {
 	var (
-		CertificationTargetResponse *orchestrator.CertificationTarget
+		CertificationTargetResponse *orchestrator.TargetOfEvaluation
 		err                         error
 	)
 	orchestratorService := NewService()
@@ -263,14 +263,14 @@ func TestService_CreateDefaultCertificationTarget(t *testing.T) {
 	CertificationTargetResponse.CreatedAt = nil
 	CertificationTargetResponse.UpdatedAt = nil
 
-	assert.Equal(t, &orchestrator.CertificationTarget{
+	assert.Equal(t, &orchestrator.TargetOfEvaluation{
 		Id:          DefaultCertificationTargetId,
 		Name:        config.DefaultCertificationTargetName,
 		Description: config.DefaultCertificationTargetDescription,
 		TargetType:  config.DefaultCertificationTargetType,
 	}, CertificationTargetResponse)
 
-	// Check if CertificationTarget is valid
+	// Check if TargetOfEvaluation is valid
 	assert.NoError(t, api.Validate(CertificationTargetResponse))
 
 	// 2nd case: There is already a record for the certification target (the default certification target) -> Nothing added and no error
@@ -316,7 +316,7 @@ func TestService_ListCertificationTargets(t *testing.T) {
 			args: args{req: &orchestrator.ListCertificationTargetsRequest{}},
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					target := &orchestrator.CertificationTarget{
+					target := &orchestrator.TargetOfEvaluation{
 						Id:          DefaultCertificationTargetId,
 						Name:        config.DefaultCertificationTargetName,
 						Description: config.DefaultCertificationTargetDescription,
@@ -327,7 +327,7 @@ func TestService_ListCertificationTargets(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			wantRes: &orchestrator.ListCertificationTargetsResponse{
-				Targets: []*orchestrator.CertificationTarget{
+				Targets: []*orchestrator.TargetOfEvaluation{
 					{
 						Id:          DefaultCertificationTargetId,
 						Name:        config.DefaultCertificationTargetName,
@@ -342,11 +342,11 @@ func TestService_ListCertificationTargets(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					// Store two certification targets, of which none we are allowed to retrieve in the test
-					_ = s.Create(&orchestrator.CertificationTarget{
+					_ = s.Create(&orchestrator.TargetOfEvaluation{
 						Id:   testdata.MockCertificationTargetID1,
 						Name: testdata.MockCertificationTargetName1,
 					})
-					_ = s.Create(&orchestrator.CertificationTarget{
+					_ = s.Create(&orchestrator.TargetOfEvaluation{
 						Id:   testdata.MockCertificationTargetID2,
 						Name: testdata.MockCertificationTargetName2,
 					})
@@ -358,7 +358,7 @@ func TestService_ListCertificationTargets(t *testing.T) {
 				req: &orchestrator.ListCertificationTargetsRequest{},
 			},
 			wantRes: &orchestrator.ListCertificationTargetsResponse{
-				Targets: []*orchestrator.CertificationTarget{
+				Targets: []*orchestrator.TargetOfEvaluation{
 					{
 						Id:   testdata.MockCertificationTargetID1,
 						Name: testdata.MockCertificationTargetName1,
@@ -372,11 +372,11 @@ func TestService_ListCertificationTargets(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					// Store two certification targets, of which only one we are allowed to retrieve in the test
-					_ = s.Create(&orchestrator.CertificationTarget{
+					_ = s.Create(&orchestrator.TargetOfEvaluation{
 						Id:   testdata.MockCertificationTargetID1,
 						Name: testdata.MockCertificationTargetName1,
 					})
-					_ = s.Create(&orchestrator.CertificationTarget{
+					_ = s.Create(&orchestrator.TargetOfEvaluation{
 						Id:   testdata.MockCertificationTargetID2,
 						Name: testdata.MockCertificationTargetName1,
 					})
@@ -388,7 +388,7 @@ func TestService_ListCertificationTargets(t *testing.T) {
 				req: &orchestrator.ListCertificationTargetsRequest{},
 			},
 			wantRes: &orchestrator.ListCertificationTargetsResponse{
-				Targets: []*orchestrator.CertificationTarget{
+				Targets: []*orchestrator.TargetOfEvaluation{
 					{
 						Id:   testdata.MockCertificationTargetID1,
 						Name: testdata.MockCertificationTargetName1,
@@ -495,7 +495,7 @@ func TestService_GetCertificationTargetStatistics(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					// Store one certification target
-					assert.NoError(t, s.Create(&orchestrator.CertificationTarget{
+					assert.NoError(t, s.Create(&orchestrator.TargetOfEvaluation{
 						Id:          testdata.MockCertificationTargetID1,
 						Name:        testdata.MockCertificationTargetName1,
 						Description: testdata.MockCertificationTargetDescription1,
@@ -599,17 +599,17 @@ func TestService_CreateCertificationTarget(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		wantRes assert.Want[*orchestrator.CertificationTarget]
+		wantRes assert.Want[*orchestrator.TargetOfEvaluation]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Request validation error",
 			args: args{
 				req: &orchestrator.CreateCertificationTargetRequest{
-					CertificationTarget: &orchestrator.CertificationTarget{},
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{},
 				},
 			},
-			wantRes: assert.Nil[*orchestrator.CertificationTarget],
+			wantRes: assert.Nil[*orchestrator.TargetOfEvaluation],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, " validation error:\n - certification_target.name: value length must be at least 1 characters [string.min_len]")
 			},
@@ -621,10 +621,10 @@ func TestService_CreateCertificationTarget(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.CreateCertificationTargetRequest{
-					CertificationTarget: orchestratortest.NewCertificationTarget(),
+					TargetOfEvaluation: orchestratortest.NewCertificationTarget(),
 				},
 			},
-			wantRes: assert.Nil[*orchestrator.CertificationTarget],
+			wantRes: assert.Nil[*orchestrator.TargetOfEvaluation],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "could not add certification target to the database:")
 			},
@@ -636,7 +636,7 @@ func TestService_CreateCertificationTarget(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.CreateCertificationTargetRequest{
-					CertificationTarget: &orchestrator.CertificationTarget{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						Name:        "test",
 						Description: "some",
 						Metadata: &orchestrator.CertificationTarget_Metadata{
@@ -648,8 +648,8 @@ func TestService_CreateCertificationTarget(t *testing.T) {
 					},
 				},
 			},
-			wantRes: func(t *testing.T, got *orchestrator.CertificationTarget) bool {
-				want := &orchestrator.CertificationTarget{
+			wantRes: func(t *testing.T, got *orchestrator.TargetOfEvaluation) bool {
+				want := &orchestrator.TargetOfEvaluation{
 					Name:        "test",
 					Description: "some",
 					CreatedAt:   &timestamppb.Timestamp{},
@@ -685,14 +685,14 @@ func TestService_CreateCertificationTarget(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.CreateCertificationTargetRequest{
-					CertificationTarget: &orchestrator.CertificationTarget{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						Name:        "test",
 						Description: "some",
 					},
 				},
 			},
-			wantRes: func(t *testing.T, got *orchestrator.CertificationTarget) bool {
-				want := &orchestrator.CertificationTarget{
+			wantRes: func(t *testing.T, got *orchestrator.TargetOfEvaluation) bool {
+				want := &orchestrator.TargetOfEvaluation{
 					Name:        "test",
 					Description: "some",
 					CreatedAt:   &timestamppb.Timestamp{},

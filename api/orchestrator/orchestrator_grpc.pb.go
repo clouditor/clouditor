@@ -133,11 +133,11 @@ type OrchestratorClient interface {
 	// Removes a new metric
 	RemoveMetric(ctx context.Context, in *RemoveMetricRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Registers a new target certification target
-	CreateCertificationTarget(ctx context.Context, in *CreateCertificationTargetRequest, opts ...grpc.CallOption) (*CertificationTarget, error)
+	CreateCertificationTarget(ctx context.Context, in *CreateCertificationTargetRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
 	// Registers a new target certification target
-	UpdateCertificationTarget(ctx context.Context, in *UpdateCertificationTargetRequest, opts ...grpc.CallOption) (*CertificationTarget, error)
+	UpdateCertificationTarget(ctx context.Context, in *UpdateCertificationTargetRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
 	// Retrieves a target certification target
-	GetCertificationTarget(ctx context.Context, in *GetCertificationTargetRequest, opts ...grpc.CallOption) (*CertificationTarget, error)
+	GetCertificationTarget(ctx context.Context, in *GetCertificationTargetRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
 	// Lists all target certification targets
 	ListCertificationTargets(ctx context.Context, in *ListCertificationTargetsRequest, opts ...grpc.CallOption) (*ListCertificationTargetsResponse, error)
 	// Removes a target certification target
@@ -360,9 +360,9 @@ func (c *orchestratorClient) RemoveMetric(ctx context.Context, in *RemoveMetricR
 	return out, nil
 }
 
-func (c *orchestratorClient) CreateCertificationTarget(ctx context.Context, in *CreateCertificationTargetRequest, opts ...grpc.CallOption) (*CertificationTarget, error) {
+func (c *orchestratorClient) CreateCertificationTarget(ctx context.Context, in *CreateCertificationTargetRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CertificationTarget)
+	out := new(TargetOfEvaluation)
 	err := c.cc.Invoke(ctx, Orchestrator_CreateCertificationTarget_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -370,9 +370,9 @@ func (c *orchestratorClient) CreateCertificationTarget(ctx context.Context, in *
 	return out, nil
 }
 
-func (c *orchestratorClient) UpdateCertificationTarget(ctx context.Context, in *UpdateCertificationTargetRequest, opts ...grpc.CallOption) (*CertificationTarget, error) {
+func (c *orchestratorClient) UpdateCertificationTarget(ctx context.Context, in *UpdateCertificationTargetRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CertificationTarget)
+	out := new(TargetOfEvaluation)
 	err := c.cc.Invoke(ctx, Orchestrator_UpdateCertificationTarget_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -380,9 +380,9 @@ func (c *orchestratorClient) UpdateCertificationTarget(ctx context.Context, in *
 	return out, nil
 }
 
-func (c *orchestratorClient) GetCertificationTarget(ctx context.Context, in *GetCertificationTargetRequest, opts ...grpc.CallOption) (*CertificationTarget, error) {
+func (c *orchestratorClient) GetCertificationTarget(ctx context.Context, in *GetCertificationTargetRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CertificationTarget)
+	out := new(TargetOfEvaluation)
 	err := c.cc.Invoke(ctx, Orchestrator_GetCertificationTarget_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -727,11 +727,11 @@ type OrchestratorServer interface {
 	// Removes a new metric
 	RemoveMetric(context.Context, *RemoveMetricRequest) (*emptypb.Empty, error)
 	// Registers a new target certification target
-	CreateCertificationTarget(context.Context, *CreateCertificationTargetRequest) (*CertificationTarget, error)
+	CreateCertificationTarget(context.Context, *CreateCertificationTargetRequest) (*TargetOfEvaluation, error)
 	// Registers a new target certification target
-	UpdateCertificationTarget(context.Context, *UpdateCertificationTargetRequest) (*CertificationTarget, error)
+	UpdateCertificationTarget(context.Context, *UpdateCertificationTargetRequest) (*TargetOfEvaluation, error)
 	// Retrieves a target certification target
-	GetCertificationTarget(context.Context, *GetCertificationTargetRequest) (*CertificationTarget, error)
+	GetCertificationTarget(context.Context, *GetCertificationTargetRequest) (*TargetOfEvaluation, error)
 	// Lists all target certification targets
 	ListCertificationTargets(context.Context, *ListCertificationTargetsRequest) (*ListCertificationTargetsResponse, error)
 	// Removes a target certification target
@@ -853,13 +853,13 @@ func (UnimplementedOrchestratorServer) ListMetrics(context.Context, *ListMetrics
 func (UnimplementedOrchestratorServer) RemoveMetric(context.Context, *RemoveMetricRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveMetric not implemented")
 }
-func (UnimplementedOrchestratorServer) CreateCertificationTarget(context.Context, *CreateCertificationTargetRequest) (*CertificationTarget, error) {
+func (UnimplementedOrchestratorServer) CreateCertificationTarget(context.Context, *CreateCertificationTargetRequest) (*TargetOfEvaluation, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateCertificationTarget not implemented")
 }
-func (UnimplementedOrchestratorServer) UpdateCertificationTarget(context.Context, *UpdateCertificationTargetRequest) (*CertificationTarget, error) {
+func (UnimplementedOrchestratorServer) UpdateCertificationTarget(context.Context, *UpdateCertificationTargetRequest) (*TargetOfEvaluation, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateCertificationTarget not implemented")
 }
-func (UnimplementedOrchestratorServer) GetCertificationTarget(context.Context, *GetCertificationTargetRequest) (*CertificationTarget, error) {
+func (UnimplementedOrchestratorServer) GetCertificationTarget(context.Context, *GetCertificationTargetRequest) (*TargetOfEvaluation, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCertificationTarget not implemented")
 }
 func (UnimplementedOrchestratorServer) ListCertificationTargets(context.Context, *ListCertificationTargetsRequest) (*ListCertificationTargetsResponse, error) {
