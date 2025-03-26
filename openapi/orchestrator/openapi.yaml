@@ -14,7 +14,7 @@ paths:
             description: List all assessment results. Part of the public API, also exposed as REST.
             operationId: Orchestrator_ListAssessmentResults
             parameters:
-                - name: filter.certificationTargetId
+                - name: filter.targetOfEvaluationId
                   in: query
                   description: Optional. List only assessment results of a specific target of evaluation.
                   schema:
@@ -280,7 +280,7 @@ paths:
             description: Lists all Audit Scopes
             operationId: Orchestrator_ListAuditScopes
             parameters:
-                - name: filter.certificationTargetId
+                - name: filter.targetOfEvaluationId
                   in: query
                   description: Optional. List only audit scopes of a specific target of evaluation
                   schema:
@@ -929,7 +929,7 @@ paths:
             description: Retrieves target target of evaluation statistics
             operationId: Orchestrator_GetTargetOfEvaluationStatistics
             parameters:
-                - name: certificationTargetId
+                - name: targetOfEvaluationId
                   in: query
                   schema:
                     type: string
@@ -982,14 +982,14 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/certification_targets/{certificationTargetId}:
+    /v1/orchestrator/certification_targets/{targetOfEvaluationId}:
         get:
             tags:
                 - Orchestrator
             description: Retrieves a target target of evaluation
             operationId: Orchestrator_GetTargetOfEvaluation
             parameters:
-                - name: certificationTargetId
+                - name: targetOfEvaluationId
                   in: path
                   required: true
                   schema:
@@ -1013,7 +1013,7 @@ paths:
             description: Removes a target target of evaluation
             operationId: Orchestrator_RemoveTargetOfEvaluation
             parameters:
-                - name: certificationTargetId
+                - name: targetOfEvaluationId
                   in: path
                   required: true
                   schema:
@@ -1028,7 +1028,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/certification_targets/{certificationTargetId}/metric_configurations:
+    /v1/orchestrator/certification_targets/{targetOfEvaluationId}/metric_configurations:
         get:
             tags:
                 - Orchestrator
@@ -1037,7 +1037,7 @@ paths:
                  specific target of evaluation ID
             operationId: Orchestrator_ListMetricConfigurations
             parameters:
-                - name: certificationTargetId
+                - name: targetOfEvaluationId
                   in: path
                   required: true
                   schema:
@@ -1055,7 +1055,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/certification_targets/{certificationTargetId}/metric_configurations/{metricId}:
+    /v1/orchestrator/certification_targets/{targetOfEvaluationId}/metric_configurations/{metricId}:
         get:
             tags:
                 - Orchestrator
@@ -1064,7 +1064,7 @@ paths:
                  target of evaluation and metric ID.
             operationId: Orchestrator_GetMetricConfiguration
             parameters:
-                - name: certificationTargetId
+                - name: targetOfEvaluationId
                   in: path
                   required: true
                   schema:
@@ -1095,7 +1095,7 @@ paths:
                  target of evaluation and metric ID
             operationId: Orchestrator_UpdateMetricConfiguration
             parameters:
-                - name: certificationTargetId
+                - name: targetOfEvaluationId
                   in: path
                   required: true
                   schema:
@@ -1485,7 +1485,7 @@ components:
                 - resourceId
                 - resourceTypes
                 - complianceComment
-                - certificationTargetId
+                - targetOfEvaluationId
                 - toolId
             type: object
             properties:
@@ -1525,7 +1525,7 @@ components:
                     items:
                         $ref: '#/components/schemas/ComparisonResult'
                     description: ComplianceDetails contains machine-readable details about which comparisons lead to a (non)-compliance.
-                certificationTargetId:
+                targetOfEvaluationId:
                     type: string
                     description: The target of evaluation which this assessment result belongs to
                 toolId:
@@ -1557,14 +1557,14 @@ components:
         AuditScope:
             required:
                 - id
-                - certificationTargetId
+                - targetOfEvaluationId
                 - catalogId
             type: object
             properties:
                 id:
                     type: string
                     description: Audit Scope ID
-                certificationTargetId:
+                targetOfEvaluationId:
                     type: string
                 catalogId:
                     type: string
@@ -1642,14 +1642,14 @@ components:
             required:
                 - id
                 - name
-                - certificationTargetId
+                - targetOfEvaluationId
             type: object
             properties:
                 id:
                     type: string
                 name:
                     type: string
-                certificationTargetId:
+                targetOfEvaluationId:
                     type: string
                 issueDate:
                     type: string
@@ -1985,7 +1985,7 @@ components:
                 - targetValue
                 - isDefault
                 - metricId
-                - certificationTargetId
+                - targetOfEvaluationId
             type: object
             properties:
                 operator:
@@ -2005,7 +2005,7 @@ components:
                 metricId:
                     type: string
                     description: The metric this configuration belongs to
-                certificationTargetId:
+                targetOfEvaluationId:
                     type: string
                     description: The target of evaluation this configuration belongs to
             description: Defines the operator and a target value for an individual metric

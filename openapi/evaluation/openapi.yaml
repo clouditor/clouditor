@@ -79,7 +79,7 @@ paths:
                  exposed as REST.
             operationId: Evaluation_ListEvaluationResults
             parameters:
-                - name: filter.certificationTargetId
+                - name: filter.targetOfEvaluationId
                   in: query
                   description: Optional. Lists only evaluation results for a specific target of evaluation.
                   schema:
@@ -184,7 +184,7 @@ components:
                 id:
                     type: string
                     description: Evaluation result id
-                certificationTargetId:
+                targetOfEvaluationId:
                     type: string
                     description: The Target of Evaluation ID the evaluation belongs to
                 auditScopeId:
