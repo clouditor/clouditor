@@ -474,7 +474,7 @@ type EvaluationResult struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Evaluation result id
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// The Certification Target ID the evaluation belongs to
+	// The Target of Evaluation ID the evaluation belongs to
 	CertificationTargetId string `protobuf:"bytes,2,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
 	// The Audit Scope ID the evaluation belongs to
 	AuditScopeId string `protobuf:"bytes,3,opt,name=audit_scope_id,json=auditScopeId,proto3" json:"audit_scope_id,omitempty"`

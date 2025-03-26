@@ -27,12 +27,12 @@ const (
 	MockAuthClientID     = "client"
 	MockAuthClientSecret = "secret"
 
-	// Certification Target
+	// Target of Evaluation
 	MockCertificationTargetID1          = "11111111-1111-1111-1111-111111111111"
-	MockCertificationTargetName1        = "Mock Certification Target"
+	MockCertificationTargetName1        = "Mock Target of Evaluation"
 	MockCertificationTargetDescription1 = "This is a mock certification target"
 	MockCertificationTargetID2          = "22222222-2222-2222-2222-222222222222"
-	MockCertificationTargetName2        = "Another Mock Certification Target"
+	MockCertificationTargetName2        = "Another Mock Target of Evaluation"
 	MockCertificationTargetDescription2 = "This is another mock certification target"
 
 	// Catalog

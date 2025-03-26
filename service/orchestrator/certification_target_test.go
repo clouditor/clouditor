@@ -162,17 +162,17 @@ func TestService_UpdateCertificationTarget(t *testing.T) {
 	)
 	orchestratorService := NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1)))
 
-	// 1st case: Certification Target is nil
+	// 1st case: Target of Evaluation is nil
 	_, err = orchestratorService.UpdateCertificationTarget(context.TODO(), &orchestrator.UpdateCertificationTargetRequest{})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 
-	// 2nd case: Certification Target ID is nil
+	// 2nd case: Target of Evaluation ID is nil
 	_, err = orchestratorService.UpdateCertificationTarget(context.TODO(), &orchestrator.UpdateCertificationTargetRequest{
 		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{},
 	})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 
-	// 3rd case: Certification Target not found since there are no certification targets yet
+	// 3rd case: Target of Evaluation not found since there are no certification targets yet
 	_, err = orchestratorService.UpdateCertificationTarget(context.TODO(), &orchestrator.UpdateCertificationTargetRequest{
 		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 			Id:          testdata.MockCertificationTargetID1,
@@ -182,7 +182,7 @@ func TestService_UpdateCertificationTarget(t *testing.T) {
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
 
-	// 4th case: Certification Target updated successfully
+	// 4th case: Target of Evaluation updated successfully
 	err = orchestratorService.storage.Create(&orchestrator.TargetOfEvaluation{
 		Id:          testdata.MockCertificationTargetID1,
 		Name:        config.DefaultCertificationTargetName,

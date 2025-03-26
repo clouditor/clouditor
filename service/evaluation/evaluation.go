@@ -558,7 +558,7 @@ func (svc *Service) evaluateCatalog(ctx context.Context, auditScope *orchestrato
 		}
 	}
 
-	log.Infof("Starting catalog evaluation for Certification Target '%s', Catalog ID '%s'. Waiting for the evaluation of %d control(s)",
+	log.Infof("Starting catalog evaluation for Target of Evaluation '%s', Catalog ID '%s'. Waiting for the evaluation of %d control(s)",
 		auditScope.CertificationTargetId,
 		auditScope.CatalogId,
 		len(relevant),
@@ -621,7 +621,7 @@ func (svc *Service) evaluateControl(ctx context.Context, auditScope *orchestrato
 		}
 	}
 
-	log.Infof("Starting control evaluation for Certification Target '%s', Catalog ID '%s' and Control '%s'. Waiting for the evaluation of %d sub-control(s)",
+	log.Infof("Starting control evaluation for Target of Evaluation '%s', Catalog ID '%s' and Control '%s'. Waiting for the evaluation of %d sub-control(s)",
 		auditScope.CertificationTargetId,
 		auditScope.CatalogId,
 		control.Id,
@@ -718,7 +718,7 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, auditScope *orchestrat
 	// Get metrics from control and sub-controls
 	metrics, err := svc.getAllMetricsFromControl(auditScope.GetCatalogId(), control.CategoryName, control.Id)
 	if err != nil {
-		log.Errorf("could not get metrics for controlID '%s' and Certification Target '%s' from Orchestrator: %v", control.Id, auditScope.GetCertificationTargetId(), err)
+		log.Errorf("could not get metrics for controlID '%s' and Target of Evaluation '%s' from Orchestrator: %v", control.Id, auditScope.GetCertificationTargetId(), err)
 		return
 	}
 
@@ -739,11 +739,11 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, auditScope *orchestrat
 		if err != nil {
 			// We let the scheduler running if we do not get the assessment results from the orchestrator, maybe it is
 			// only a temporary network problem
-			log.Errorf("could not get assessment results for Certification Target ID '%s' and MetricIds '%s' from Orchestrator: %v", auditScope.GetCertificationTargetId(), getMetricIds(metrics), err)
+			log.Errorf("could not get assessment results for Target of Evaluation ID '%s' and MetricIds '%s' from Orchestrator: %v", auditScope.GetCertificationTargetId(), getMetricIds(metrics), err)
 		} else if len(assessments) == 0 {
 			// We let the scheduler running if we do not get the assessment results from the orchestrator, maybe it is
 			// only a temporary network problem
-			log.Debugf("no assessment results for Certification Target ID '%s' and MetricIds '%s' available", auditScope.GetCertificationTargetId(), getMetricIds(metrics))
+			log.Debugf("no assessment results for Target of Evaluation ID '%s' and MetricIds '%s' available", auditScope.GetCertificationTargetId(), getMetricIds(metrics))
 		}
 	} else {
 		log.Debugf("no metrics are available for the given control")

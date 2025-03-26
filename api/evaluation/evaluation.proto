@@ -142,7 +142,7 @@ message EvaluationResult {
     (google.api.field_behavior) = REQUIRED
   ];
 
-  // The Certification Target ID the evaluation belongs to
+  // The Target of Evaluation ID the evaluation belongs to
   string certification_target_id = 2 [(buf.validate.field).string = {uuid: true}];
 
   // The Audit Scope ID the evaluation belongs to

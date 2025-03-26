@@ -168,7 +168,7 @@ func WithAssessmentAddress(target string, opts ...grpc.DialOption) service.Optio
 // WithCertificationTargetID is an option to configure the certification target ID for which resources will be discovered.
 func WithCertificationTargetID(ID string) service.Option[*Service] {
 	return func(svc *Service) {
-		log.Infof("Certification Target ID is set to %s", ID)
+		log.Infof("Target of Evaluation ID is set to %s", ID)
 
 		svc.ctID = ID
 	}

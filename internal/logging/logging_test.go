@@ -156,7 +156,7 @@ func TestLogRequest(t *testing.T) {
 					},
 				},
 			},
-			want: "level=debug msg=AuditScope updated for Certification Target '11111111-1111-1111-1111-111111111111'.\n",
+			want: "level=debug msg=AuditScope updated for Target of Evaluation '11111111-1111-1111-1111-111111111111'.\n",
 		},
 		{
 			name: "Update AuditScope with params",
@@ -171,7 +171,7 @@ func TestLogRequest(t *testing.T) {
 				},
 				params: []string{fmt.Sprintf("and Catalog '%s'", testdata.MockCatalogID1)},
 			},
-			want: "level=debug msg=AuditScope updated for Certification Target '11111111-1111-1111-1111-111111111111' and Catalog 'Catalog 1'.\n",
+			want: "level=debug msg=AuditScope updated for Target of Evaluation '11111111-1111-1111-1111-111111111111' and Catalog 'Catalog 1'.\n",
 		},
 		{
 			name: "Send Evidence to queue",
@@ -186,7 +186,7 @@ func TestLogRequest(t *testing.T) {
 				},
 				params: []string{fmt.Sprintf("back into queue for %s (%s)", "orchestrator", "localhost")},
 			},
-			want: "level=debug msg=Evidence with ID '11111111-1111-1111-1111-111111111111' stored for Certification Target '11111111-1111-1111-1111-111111111111' back into queue for orchestrator (localhost).\n",
+			want: "level=debug msg=Evidence with ID '11111111-1111-1111-1111-111111111111' stored for Target of Evaluation '11111111-1111-1111-1111-111111111111' back into queue for orchestrator (localhost).\n",
 		},
 	}
 	for _, tt := range tests {

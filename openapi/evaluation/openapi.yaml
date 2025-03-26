@@ -186,7 +186,7 @@ components:
                     description: Evaluation result id
                 certificationTargetId:
                     type: string
-                    description: The Certification Target ID the evaluation belongs to
+                    description: The Target of Evaluation ID the evaluation belongs to
                 auditScopeId:
                     type: string
                     description: The Audit Scope ID the evaluation belongs to
