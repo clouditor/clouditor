@@ -41,7 +41,7 @@ paths:
             description: Returns all stored evidences. Part of the public API, also exposed as REST.
             operationId: EvidenceStore_ListEvidences
             parameters:
-                - name: filter.certificationTargetId
+                - name: filter.targetOfEvaluationId
                   in: query
                   schema:
                     type: string
@@ -119,7 +119,7 @@ components:
                     type: string
                     description: time of evidence creation
                     format: date-time
-                certificationTargetId:
+                targetOfEvaluationId:
                     type: string
                     description: Reference to a target of evaluation (e.g., service, organization) this evidence was gathered from
                 toolId:

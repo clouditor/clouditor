@@ -393,7 +393,7 @@ type AssessmentResult struct {
 	// ComplianceDetails contains machine-readable details about which comparisons lead to a (non)-compliance.
 	ComplianceDetails []*ComparisonResult `protobuf:"bytes,10,rep,name=compliance_details,json=complianceDetails,proto3" json:"compliance_details,omitempty" gorm:"serializer:json"`
 	// The target of evaluation which this assessment result belongs to
-	CertificationTargetId string `protobuf:"bytes,20,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
+	TargetOfEvaluationId string `protobuf:"bytes,20,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
 	// Reference to the tool which provided the assessment result
 	ToolId        *string `protobuf:"bytes,21,opt,name=tool_id,json=toolId,proto3,oneof" json:"tool_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -500,9 +500,9 @@ func (x *AssessmentResult) GetComplianceDetails() []*ComparisonResult {
 	return nil
 }
 
-func (x *AssessmentResult) GetCertificationTargetId() string {
+func (x *AssessmentResult) GetTargetOfEvaluationId() string {
 	if x != nil {
-		return x.CertificationTargetId
+		return x.TargetOfEvaluationId
 	}
 	return ""
 }
@@ -612,7 +612,7 @@ const file_api_assessment_assessment_proto_rawDesc = "" +
 	"\x06status\x18\x01 \x01(\x0e2).clouditor.assessment.v1.AssessmentStatusR\x06status\"\x83\x01\n" +
 	"\x17AssessEvidencesResponse\x12A\n" +
 	"\x06status\x18\x01 \x01(\x0e2).clouditor.assessment.v1.AssessmentStatusR\x06status\x12%\n" +
-	"\x0estatus_message\x18\x02 \x01(\tR\rstatusMessage\"\xcb\x06\n" +
+	"\x0estatus_message\x18\x02 \x01(\tR\rstatusMessage\"\xca\x06\n" +
 	"\x10AssessmentResult\x12\x1b\n" +
 	"\x02id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12t\n" +
 	"\ttimestamp\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB:\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\ttimestamp\x12'\n" +
@@ -629,8 +629,8 @@ const file_api_assessment_assessment_proto_rawDesc = "" +
 	"\x12compliance_comment\x18\t \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x11complianceComment\x12u\n" +
 	"\x12compliance_details\x18\n" +
-	" \x03(\v2).clouditor.assessment.v1.ComparisonResultB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\x11complianceDetails\x12C\n" +
-	"\x17certification_target_id\x18\x14 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\x12(\n" +
+	" \x03(\v2).clouditor.assessment.v1.ComparisonResultB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\x11complianceDetails\x12B\n" +
+	"\x17target_of_evaluation_id\x18\x14 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12(\n" +
 	"\atool_id\x18\x15 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01H\x00R\x06toolId\x88\x01\x01B\n" +
 	"\n" +

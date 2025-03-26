@@ -475,9 +475,8 @@ func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, r
 		types = ontology.ResourceTypes(resource)
 
 		result := &assessment.AssessmentResult{
-			Id:        uuid.NewString(),
-			Timestamp: timestamppb.Now(),
-
+			Id:                   uuid.NewString(),
+			Timestamp:            timestamppb.Now(),
 			TargetOfEvaluationId: ev.GetTargetOfEvaluationId(),
 			MetricId:             metricID,
 			MetricConfiguration:  data.Config,

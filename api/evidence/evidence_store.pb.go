@@ -261,11 +261,11 @@ func (x *ListEvidencesRequest) GetAsc() bool {
 
 // Allows specifying Filters for ListEvidencesRequest
 type Filter struct {
-	state                 protoimpl.MessageState `protogen:"open.v1"`
-	CertificationTargetId *string                `protobuf:"bytes,1,opt,name=certification_target_id,json=certificationTargetId,proto3,oneof" json:"certification_target_id,omitempty"`
-	ToolId                *string                `protobuf:"bytes,2,opt,name=tool_id,json=toolId,proto3,oneof" json:"tool_id,omitempty"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	TargetOfEvaluationId *string                `protobuf:"bytes,1,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3,oneof" json:"target_of_evaluation_id,omitempty"`
+	ToolId               *string                `protobuf:"bytes,2,opt,name=tool_id,json=toolId,proto3,oneof" json:"tool_id,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *Filter) Reset() {
@@ -298,9 +298,9 @@ func (*Filter) Descriptor() ([]byte, []int) {
 	return file_api_evidence_evidence_store_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *Filter) GetCertificationTargetId() string {
-	if x != nil && x.CertificationTargetId != nil {
-		return *x.CertificationTargetId
+func (x *Filter) GetTargetOfEvaluationId() string {
+	if x != nil && x.TargetOfEvaluationId != nil {
+		return *x.TargetOfEvaluationId
 	}
 	return ""
 }
@@ -427,11 +427,11 @@ const file_api_evidence_evidence_store_proto_rawDesc = "" +
 	"page_token\x18\v \x01(\tR\tpageToken\x12\x19\n" +
 	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
 	"\x03asc\x18\r \x01(\bR\x03ascB\t\n" +
-	"\a_filter\"\x9f\x01\n" +
-	"\x06Filter\x12E\n" +
-	"\x17certification_target_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x00R\x15certificationTargetId\x88\x01\x01\x12&\n" +
+	"\a_filter\"\x9e\x01\n" +
+	"\x06Filter\x12D\n" +
+	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x00R\x14targetOfEvaluationId\x88\x01\x01\x12&\n" +
 	"\atool_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x01R\x06toolId\x88\x01\x01B\x1a\n" +
-	"\x18_certification_target_idB\n" +
+	"\x18_target_of_evaluation_idB\n" +
 	"\n" +
 	"\b_tool_id\"~\n" +
 	"\x15ListEvidencesResponse\x12=\n" +

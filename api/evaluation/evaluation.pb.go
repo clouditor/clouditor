@@ -468,14 +468,14 @@ func (x *ListEvaluationResultsResponse) GetNextPageToken() string {
 }
 
 // A evaluation result resource, representing the result after evaluating the
-// target of evaluation with a specific control certification_target_id, category_name and
+// target of evaluation with a specific control target_of_evaluation_id, category_name and
 // catalog_id are necessary to get the corresponding AuditScope
 type EvaluationResult struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Evaluation result id
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// The Target of Evaluation ID the evaluation belongs to
-	CertificationTargetId string `protobuf:"bytes,2,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
+	TargetOfEvaluationId string `protobuf:"bytes,2,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
 	// The Audit Scope ID the evaluation belongs to
 	AuditScopeId string `protobuf:"bytes,3,opt,name=audit_scope_id,json=auditScopeId,proto3" json:"audit_scope_id,omitempty"`
 	// The control id the evaluation was based on
@@ -538,9 +538,9 @@ func (x *EvaluationResult) GetId() string {
 	return ""
 }
 
-func (x *EvaluationResult) GetCertificationTargetId() string {
+func (x *EvaluationResult) GetTargetOfEvaluationId() string {
 	if x != nil {
-		return x.CertificationTargetId
+		return x.TargetOfEvaluationId
 	}
 	return ""
 }
@@ -618,7 +618,7 @@ func (x *EvaluationResult) GetValidUntil() *timestamppb.Timestamp {
 type ListEvaluationResultsRequest_Filter struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Optional. Lists only evaluation results for a specific target of evaluation.
-	CertificationTargetId *string `protobuf:"bytes,1,opt,name=certification_target_id,json=certificationTargetId,proto3,oneof" json:"certification_target_id,omitempty"`
+	TargetOfEvaluationId *string `protobuf:"bytes,1,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3,oneof" json:"target_of_evaluation_id,omitempty"`
 	// Optional. Lists only evaluation results for a specific catalog.
 	CatalogId *string `protobuf:"bytes,2,opt,name=catalog_id,json=catalogId,proto3,oneof" json:"catalog_id,omitempty"`
 	// Optional. Lists only evaluation results for a specific control id.
@@ -665,9 +665,9 @@ func (*ListEvaluationResultsRequest_Filter) Descriptor() ([]byte, []int) {
 	return file_api_evaluation_evaluation_proto_rawDescGZIP(), []int{5, 0}
 }
 
-func (x *ListEvaluationResultsRequest_Filter) GetCertificationTargetId() string {
-	if x != nil && x.CertificationTargetId != nil {
-		return *x.CertificationTargetId
+func (x *ListEvaluationResultsRequest_Filter) GetTargetOfEvaluationId() string {
+	if x != nil && x.TargetOfEvaluationId != nil {
+		return *x.TargetOfEvaluationId
 	}
 	return ""
 }
@@ -724,7 +724,7 @@ const file_api_evaluation_evaluation_proto_rawDesc = "" +
 	"\x06result\x18\x01 \x01(\v2).clouditor.evaluation.v1.EvaluationResultB\x06\xbaH\x03\xc8\x01\x01R\x06result\"J\n" +
 	"\x15StopEvaluationRequest\x121\n" +
 	"\x0eaudit_scope_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\fauditScopeId\"\x18\n" +
-	"\x16StopEvaluationResponse\"\xe4\x05\n" +
+	"\x16StopEvaluationResponse\"\xe3\x05\n" +
 	"\x1cListEvaluationResultsRequest\x12Y\n" +
 	"\x06filter\x18\x01 \x01(\v2<.clouditor.evaluation.v1.ListEvaluationResultsRequest.FilterH\x00R\x06filter\x88\x01\x01\x124\n" +
 	"\x14latest_by_control_id\x18\x02 \x01(\bH\x01R\x11latestByControlId\x88\x01\x01\x12\x1b\n" +
@@ -733,9 +733,9 @@ const file_api_evaluation_evaluation_proto_rawDesc = "" +
 	"\n" +
 	"page_token\x18\v \x01(\tR\tpageToken\x12\x19\n" +
 	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
-	"\x03asc\x18\r \x01(\bR\x03asc\x1a\xa5\x03\n" +
-	"\x06Filter\x12E\n" +
-	"\x17certification_target_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x00R\x15certificationTargetId\x88\x01\x01\x12+\n" +
+	"\x03asc\x18\r \x01(\bR\x03asc\x1a\xa4\x03\n" +
+	"\x06Filter\x12D\n" +
+	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x00R\x14targetOfEvaluationId\x88\x01\x01\x12+\n" +
 	"\n" +
 	"catalog_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x01R\tcatalogId\x88\x01\x01\x12+\n" +
 	"\n" +
@@ -743,7 +743,7 @@ const file_api_evaluation_evaluation_proto_rawDesc = "" +
 	"\fsub_controls\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x03R\vsubControls\x88\x01\x01\x12&\n" +
 	"\fparents_only\x18\x05 \x01(\bH\x04R\vparentsOnly\x88\x01\x01\x12/\n" +
 	"\x11valid_manual_only\x18\x06 \x01(\bH\x05R\x0fvalidManualOnly\x88\x01\x01B\x1a\n" +
-	"\x18_certification_target_idB\r\n" +
+	"\x18_target_of_evaluation_idB\r\n" +
 	"\v_catalog_idB\r\n" +
 	"\v_control_idB\x0f\n" +
 	"\r_sub_controlsB\x0f\n" +
@@ -753,10 +753,10 @@ const file_api_evaluation_evaluation_proto_rawDesc = "" +
 	"\x15_latest_by_control_id\"\x8c\x01\n" +
 	"\x1dListEvaluationResultsResponse\x12C\n" +
 	"\aresults\x18\x01 \x03(\v2).clouditor.evaluation.v1.EvaluationResultR\aresults\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xd4\x06\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xd3\x06\n" +
 	"\x10EvaluationResult\x12\x1b\n" +
-	"\x02id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12@\n" +
-	"\x17certification_target_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\x12.\n" +
+	"\x02id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12?\n" +
+	"\x17target_of_evaluation_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12.\n" +
 	"\x0eaudit_scope_id\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\fauditScopeId\x12&\n" +
 	"\n" +
 	"control_id\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tcontrolId\x12;\n" +

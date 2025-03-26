@@ -58,7 +58,7 @@ type Evidence struct {
 	// time of evidence creation
 	Timestamp *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
 	// Reference to a target of evaluation (e.g., service, organization) this evidence was gathered from
-	CertificationTargetId string `protobuf:"bytes,3,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
+	TargetOfEvaluationId string `protobuf:"bytes,3,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
 	// Reference to the tool which provided the evidence
 	ToolId string `protobuf:"bytes,4,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`
 	// Semantic representation of the Cloud resource according to our defined
@@ -118,9 +118,9 @@ func (x *Evidence) GetTimestamp() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *Evidence) GetCertificationTargetId() string {
+func (x *Evidence) GetTargetOfEvaluationId() string {
 	if x != nil {
-		return x.CertificationTargetId
+		return x.TargetOfEvaluationId
 	}
 	return ""
 }
@@ -150,11 +150,11 @@ var File_api_evidence_evidence_proto protoreflect.FileDescriptor
 
 const file_api_evidence_evidence_proto_rawDesc = "" +
 	"\n" +
-	"\x1bapi/evidence/evidence.proto\x12\x15clouditor.evidence.v1\x1a\x1bbuf/validate/validate.proto\x1a\x19google/protobuf/any.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\xc4\x03\n" +
+	"\x1bapi/evidence/evidence.proto\x12\x15clouditor.evidence.v1\x1a\x1bbuf/validate/validate.proto\x1a\x19google/protobuf/any.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\xc3\x03\n" +
 	"\bEvidence\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12q\n" +
-	"\ttimestamp\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB7\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\ttimestamp\x12@\n" +
-	"\x17certification_target_id\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\x12 \n" +
+	"\ttimestamp\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB7\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\ttimestamp\x12?\n" +
+	"\x17target_of_evaluation_id\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12 \n" +
 	"\atool_id\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06toolId\x12^\n" +
 	"\bresource\x18\x06 \x01(\v2\x14.google.protobuf.AnyB,\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03!gorm:\"serializer:anypb;type:json\"R\bresource\x12g\n" +
 	"!experimental_related_resource_ids\x18\xe7\a \x03(\tB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\x1eexperimentalRelatedResourceIdsB(Z&clouditor.io/clouditor/v2/api/evidenceb\x06proto3"

@@ -553,7 +553,7 @@ func request_Orchestrator_GetTargetOfEvaluation_0(ctx context.Context, marshaler
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "target_of_evaluation_id")
 	}
-	protoReq.CertificationTargetId, err = runtime.String(val)
+	protoReq.TargetOfEvaluationId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "target_of_evaluation_id", err)
 	}
@@ -571,7 +571,7 @@ func local_request_Orchestrator_GetTargetOfEvaluation_0(ctx context.Context, mar
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "target_of_evaluation_id")
 	}
-	protoReq.CertificationTargetId, err = runtime.String(val)
+	protoReq.TargetOfEvaluationId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "target_of_evaluation_id", err)
 	}
@@ -623,7 +623,7 @@ func request_Orchestrator_RemoveTargetOfEvaluation_0(ctx context.Context, marsha
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "target_of_evaluation_id")
 	}
-	protoReq.CertificationTargetId, err = runtime.String(val)
+	protoReq.TargetOfEvaluationId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "target_of_evaluation_id", err)
 	}
@@ -641,7 +641,7 @@ func local_request_Orchestrator_RemoveTargetOfEvaluation_0(ctx context.Context, 
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "target_of_evaluation_id")
 	}
-	protoReq.CertificationTargetId, err = runtime.String(val)
+	protoReq.TargetOfEvaluationId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "target_of_evaluation_id", err)
 	}
@@ -695,7 +695,7 @@ func request_Orchestrator_UpdateMetricConfiguration_0(ctx context.Context, marsh
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "target_of_evaluation_id")
 	}
-	protoReq.CertificationTargetId, err = runtime.String(val)
+	protoReq.TargetOfEvaluationId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "target_of_evaluation_id", err)
 	}
@@ -724,7 +724,7 @@ func local_request_Orchestrator_UpdateMetricConfiguration_0(ctx context.Context,
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "target_of_evaluation_id")
 	}
-	protoReq.CertificationTargetId, err = runtime.String(val)
+	protoReq.TargetOfEvaluationId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "target_of_evaluation_id", err)
 	}
@@ -751,7 +751,7 @@ func request_Orchestrator_GetMetricConfiguration_0(ctx context.Context, marshale
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "target_of_evaluation_id")
 	}
-	protoReq.CertificationTargetId, err = runtime.String(val)
+	protoReq.TargetOfEvaluationId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "target_of_evaluation_id", err)
 	}
@@ -777,7 +777,7 @@ func local_request_Orchestrator_GetMetricConfiguration_0(ctx context.Context, ma
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "target_of_evaluation_id")
 	}
-	protoReq.CertificationTargetId, err = runtime.String(val)
+	protoReq.TargetOfEvaluationId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "target_of_evaluation_id", err)
 	}
@@ -804,7 +804,7 @@ func request_Orchestrator_ListMetricConfigurations_0(ctx context.Context, marsha
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "target_of_evaluation_id")
 	}
-	protoReq.CertificationTargetId, err = runtime.String(val)
+	protoReq.TargetOfEvaluationId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "target_of_evaluation_id", err)
 	}
@@ -822,7 +822,7 @@ func local_request_Orchestrator_ListMetricConfigurations_0(ctx context.Context, 
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "target_of_evaluation_id")
 	}
-	protoReq.CertificationTargetId, err = runtime.String(val)
+	protoReq.TargetOfEvaluationId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "target_of_evaluation_id", err)
 	}

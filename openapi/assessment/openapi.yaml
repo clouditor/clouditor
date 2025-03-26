@@ -63,7 +63,7 @@ components:
                     type: string
                     description: time of evidence creation
                     format: date-time
-                certificationTargetId:
+                targetOfEvaluationId:
                     type: string
                     description: Reference to a target of evaluation (e.g., service, organization) this evidence was gathered from
                 toolId:

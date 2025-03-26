@@ -960,10 +960,10 @@ func (x *ListMetricsResponse) GetNextPageToken() string {
 }
 
 type GetTargetOfEvaluationRequest struct {
-	state                 protoimpl.MessageState `protogen:"open.v1"`
-	CertificationTargetId string                 `protobuf:"bytes,1,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	TargetOfEvaluationId string                 `protobuf:"bytes,1,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *GetTargetOfEvaluationRequest) Reset() {
@@ -996,9 +996,9 @@ func (*GetTargetOfEvaluationRequest) Descriptor() ([]byte, []int) {
 	return file_api_orchestrator_orchestrator_proto_rawDescGZIP(), []int{15}
 }
 
-func (x *GetTargetOfEvaluationRequest) GetCertificationTargetId() string {
+func (x *GetTargetOfEvaluationRequest) GetTargetOfEvaluationId() string {
 	if x != nil {
-		return x.CertificationTargetId
+		return x.TargetOfEvaluationId
 	}
 	return ""
 }
@@ -1092,10 +1092,10 @@ func (x *UpdateTargetOfEvaluationRequest) GetCertificationTarget() *TargetOfEval
 }
 
 type RemoveTargetOfEvaluationRequest struct {
-	state                 protoimpl.MessageState `protogen:"open.v1"`
-	CertificationTargetId string                 `protobuf:"bytes,1,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	TargetOfEvaluationId string                 `protobuf:"bytes,1,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *RemoveTargetOfEvaluationRequest) Reset() {
@@ -1128,9 +1128,9 @@ func (*RemoveTargetOfEvaluationRequest) Descriptor() ([]byte, []int) {
 	return file_api_orchestrator_orchestrator_proto_rawDescGZIP(), []int{18}
 }
 
-func (x *RemoveTargetOfEvaluationRequest) GetCertificationTargetId() string {
+func (x *RemoveTargetOfEvaluationRequest) GetTargetOfEvaluationId() string {
 	if x != nil {
-		return x.CertificationTargetId
+		return x.TargetOfEvaluationId
 	}
 	return ""
 }
@@ -1256,10 +1256,10 @@ func (x *ListTargetOfEvaluationsResponse) GetNextPageToken() string {
 }
 
 type GetTargetOfEvaluationStatisticsRequest struct {
-	state                 protoimpl.MessageState `protogen:"open.v1"`
-	CertificationTargetId string                 `protobuf:"bytes,1,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	TargetOfEvaluationId string                 `protobuf:"bytes,1,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *GetTargetOfEvaluationStatisticsRequest) Reset() {
@@ -1292,9 +1292,9 @@ func (*GetTargetOfEvaluationStatisticsRequest) Descriptor() ([]byte, []int) {
 	return file_api_orchestrator_orchestrator_proto_rawDescGZIP(), []int{21}
 }
 
-func (x *GetTargetOfEvaluationStatisticsRequest) GetCertificationTargetId() string {
+func (x *GetTargetOfEvaluationStatisticsRequest) GetTargetOfEvaluationId() string {
 	if x != nil {
-		return x.CertificationTargetId
+		return x.TargetOfEvaluationId
 	}
 	return ""
 }
@@ -1372,12 +1372,12 @@ func (x *GetTargetOfEvaluationStatisticsResponse) GetNumberOfSelectedCatalogs() 
 }
 
 type UpdateMetricConfigurationRequest struct {
-	state                 protoimpl.MessageState          `protogen:"open.v1"`
-	CertificationTargetId string                          `protobuf:"bytes,1,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
-	MetricId              string                          `protobuf:"bytes,2,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty"`
-	Configuration         *assessment.MetricConfiguration `protobuf:"bytes,3,opt,name=configuration,proto3" json:"configuration,omitempty"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	state                protoimpl.MessageState          `protogen:"open.v1"`
+	TargetOfEvaluationId string                          `protobuf:"bytes,1,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
+	MetricId             string                          `protobuf:"bytes,2,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty"`
+	Configuration        *assessment.MetricConfiguration `protobuf:"bytes,3,opt,name=configuration,proto3" json:"configuration,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *UpdateMetricConfigurationRequest) Reset() {
@@ -1410,9 +1410,9 @@ func (*UpdateMetricConfigurationRequest) Descriptor() ([]byte, []int) {
 	return file_api_orchestrator_orchestrator_proto_rawDescGZIP(), []int{23}
 }
 
-func (x *UpdateMetricConfigurationRequest) GetCertificationTargetId() string {
+func (x *UpdateMetricConfigurationRequest) GetTargetOfEvaluationId() string {
 	if x != nil {
-		return x.CertificationTargetId
+		return x.TargetOfEvaluationId
 	}
 	return ""
 }
@@ -1432,11 +1432,11 @@ func (x *UpdateMetricConfigurationRequest) GetConfiguration() *assessment.Metric
 }
 
 type GetMetricConfigurationRequest struct {
-	state                 protoimpl.MessageState `protogen:"open.v1"`
-	CertificationTargetId string                 `protobuf:"bytes,1,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
-	MetricId              string                 `protobuf:"bytes,2,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	TargetOfEvaluationId string                 `protobuf:"bytes,1,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
+	MetricId             string                 `protobuf:"bytes,2,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *GetMetricConfigurationRequest) Reset() {
@@ -1469,9 +1469,9 @@ func (*GetMetricConfigurationRequest) Descriptor() ([]byte, []int) {
 	return file_api_orchestrator_orchestrator_proto_rawDescGZIP(), []int{24}
 }
 
-func (x *GetMetricConfigurationRequest) GetCertificationTargetId() string {
+func (x *GetMetricConfigurationRequest) GetTargetOfEvaluationId() string {
 	if x != nil {
-		return x.CertificationTargetId
+		return x.TargetOfEvaluationId
 	}
 	return ""
 }
@@ -1484,10 +1484,10 @@ func (x *GetMetricConfigurationRequest) GetMetricId() string {
 }
 
 type ListMetricConfigurationRequest struct {
-	state                 protoimpl.MessageState `protogen:"open.v1"`
-	CertificationTargetId string                 `protobuf:"bytes,10,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	TargetOfEvaluationId string                 `protobuf:"bytes,10,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *ListMetricConfigurationRequest) Reset() {
@@ -1520,9 +1520,9 @@ func (*ListMetricConfigurationRequest) Descriptor() ([]byte, []int) {
 	return file_api_orchestrator_orchestrator_proto_rawDescGZIP(), []int{25}
 }
 
-func (x *ListMetricConfigurationRequest) GetCertificationTargetId() string {
+func (x *ListMetricConfigurationRequest) GetTargetOfEvaluationId() string {
 	if x != nil {
-		return x.CertificationTargetId
+		return x.TargetOfEvaluationId
 	}
 	return ""
 }
@@ -1705,9 +1705,9 @@ type MetricChangeEvent struct {
 	MetricId string `protobuf:"bytes,2,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty"`
 	// The target of evaluation id that is affected by this change. Primarily
 	// concerns metric configuration changes.
-	CertificationTargetId string `protobuf:"bytes,3,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	TargetOfEvaluationId string `protobuf:"bytes,3,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *MetricChangeEvent) Reset() {
@@ -1754,9 +1754,9 @@ func (x *MetricChangeEvent) GetMetricId() string {
 	return ""
 }
 
-func (x *MetricChangeEvent) GetCertificationTargetId() string {
+func (x *MetricChangeEvent) GetTargetOfEvaluationId() string {
 	if x != nil {
-		return x.CertificationTargetId
+		return x.TargetOfEvaluationId
 	}
 	return ""
 }
@@ -2258,9 +2258,9 @@ func (x *Control) GetAssuranceLevel() string {
 type AuditScope struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Audit Scope ID
-	Id                    string `protobuf:"bytes,4,opt,name=id,proto3" json:"id,omitempty" gorm:"primaryKey"`
-	CertificationTargetId string `protobuf:"bytes,1,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
-	CatalogId             string `protobuf:"bytes,2,opt,name=catalog_id,json=catalogId,proto3" json:"catalog_id,omitempty"`
+	Id                   string `protobuf:"bytes,4,opt,name=id,proto3" json:"id,omitempty" gorm:"primaryKey"`
+	TargetOfEvaluationId string `protobuf:"bytes,1,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
+	CatalogId            string `protobuf:"bytes,2,opt,name=catalog_id,json=catalogId,proto3" json:"catalog_id,omitempty"`
 	// an assurance level is not offered by every catalog, therefore it is
 	// optional
 	AssuranceLevel *string `protobuf:"bytes,3,opt,name=assurance_level,json=assuranceLevel,proto3,oneof" json:"assurance_level,omitempty"`
@@ -2305,9 +2305,9 @@ func (x *AuditScope) GetId() string {
 	return ""
 }
 
-func (x *AuditScope) GetCertificationTargetId() string {
+func (x *AuditScope) GetTargetOfEvaluationId() string {
 	if x != nil {
-		return x.CertificationTargetId
+		return x.TargetOfEvaluationId
 	}
 	return ""
 }
@@ -3790,16 +3790,16 @@ func (x *RemoveCertificateRequest) GetCertificateId() string {
 
 // An ISO17021-based certificate
 type Certificate struct {
-	state                 protoimpl.MessageState `protogen:"open.v1"`
-	Id                    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name                  string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	CertificationTargetId string                 `protobuf:"bytes,3,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
-	IssueDate             string                 `protobuf:"bytes,4,opt,name=issue_date,json=issueDate,proto3" json:"issue_date,omitempty"`
-	ExpirationDate        string                 `protobuf:"bytes,5,opt,name=expiration_date,json=expirationDate,proto3" json:"expiration_date,omitempty"`
-	Standard              string                 `protobuf:"bytes,6,opt,name=standard,proto3" json:"standard,omitempty"`
-	AssuranceLevel        string                 `protobuf:"bytes,7,opt,name=assurance_level,json=assuranceLevel,proto3" json:"assurance_level,omitempty"`
-	Cab                   string                 `protobuf:"bytes,8,opt,name=cab,proto3" json:"cab,omitempty"`
-	Description           string                 `protobuf:"bytes,9,opt,name=description,proto3" json:"description,omitempty"`
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	Id                   string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name                 string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	TargetOfEvaluationId string                 `protobuf:"bytes,3,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
+	IssueDate            string                 `protobuf:"bytes,4,opt,name=issue_date,json=issueDate,proto3" json:"issue_date,omitempty"`
+	ExpirationDate       string                 `protobuf:"bytes,5,opt,name=expiration_date,json=expirationDate,proto3" json:"expiration_date,omitempty"`
+	Standard             string                 `protobuf:"bytes,6,opt,name=standard,proto3" json:"standard,omitempty"`
+	AssuranceLevel       string                 `protobuf:"bytes,7,opt,name=assurance_level,json=assuranceLevel,proto3" json:"assurance_level,omitempty"`
+	Cab                  string                 `protobuf:"bytes,8,opt,name=cab,proto3" json:"cab,omitempty"`
+	Description          string                 `protobuf:"bytes,9,opt,name=description,proto3" json:"description,omitempty"`
 	// A list of states at specific times
 	States        []*State `protobuf:"bytes,10,rep,name=states,proto3" json:"states,omitempty" gorm:"constraint:OnDelete:CASCADE"`
 	unknownFields protoimpl.UnknownFields
@@ -3850,9 +3850,9 @@ func (x *Certificate) GetName() string {
 	return ""
 }
 
-func (x *Certificate) GetCertificationTargetId() string {
+func (x *Certificate) GetTargetOfEvaluationId() string {
 	if x != nil {
-		return x.CertificationTargetId
+		return x.TargetOfEvaluationId
 	}
 	return ""
 }
@@ -4224,7 +4224,7 @@ func (x *Catalog_Metadata) GetColor() string {
 type ListAssessmentResultsRequest_Filter struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Optional. List only assessment results of a specific target of evaluation.
-	CertificationTargetId *string `protobuf:"bytes,1,opt,name=certification_target_id,json=certificationTargetId,proto3,oneof" json:"certification_target_id,omitempty"`
+	TargetOfEvaluationId *string `protobuf:"bytes,1,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3,oneof" json:"target_of_evaluation_id,omitempty"`
 	// Optional. List only compliant assessment results.
 	Compliant *bool `protobuf:"varint,2,opt,name=compliant,proto3,oneof" json:"compliant,omitempty"`
 	// Optional. List only assessment results of a specific metric id.
@@ -4268,9 +4268,9 @@ func (*ListAssessmentResultsRequest_Filter) Descriptor() ([]byte, []int) {
 	return file_api_orchestrator_orchestrator_proto_rawDescGZIP(), []int{38, 0}
 }
 
-func (x *ListAssessmentResultsRequest_Filter) GetCertificationTargetId() string {
-	if x != nil && x.CertificationTargetId != nil {
-		return *x.CertificationTargetId
+func (x *ListAssessmentResultsRequest_Filter) GetTargetOfEvaluationId() string {
+	if x != nil && x.TargetOfEvaluationId != nil {
+		return *x.TargetOfEvaluationId
 	}
 	return ""
 }
@@ -4313,7 +4313,7 @@ func (x *ListAssessmentResultsRequest_Filter) GetAssessmentResultIds() []string 
 type ListAuditScopesRequest_Filter struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Optional. List only audit scopes of a specific target of evaluation
-	CertificationTargetId *string `protobuf:"bytes,1,opt,name=certification_target_id,json=certificationTargetId,proto3,oneof" json:"certification_target_id,omitempty"`
+	TargetOfEvaluationId *string `protobuf:"bytes,1,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3,oneof" json:"target_of_evaluation_id,omitempty"`
 	// Optional. List only audit scopes that evaluate the given catalog for any target of evaluation
 	CatalogId     *string `protobuf:"bytes,2,opt,name=catalog_id,json=catalogId,proto3,oneof" json:"catalog_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -4350,9 +4350,9 @@ func (*ListAuditScopesRequest_Filter) Descriptor() ([]byte, []int) {
 	return file_api_orchestrator_orchestrator_proto_rawDescGZIP(), []int{43, 0}
 }
 
-func (x *ListAuditScopesRequest_Filter) GetCertificationTargetId() string {
-	if x != nil && x.CertificationTargetId != nil {
-		return *x.CertificationTargetId
+func (x *ListAuditScopesRequest_Filter) GetTargetOfEvaluationId() string {
+	if x != nil && x.TargetOfEvaluationId != nil {
+		return *x.TargetOfEvaluationId
 	}
 	return ""
 }
@@ -4467,15 +4467,15 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\"}\n" +
 	"\x13ListMetricsResponse\x12>\n" +
 	"\ametrics\x18\x01 \x03(\v2\x1f.clouditor.assessment.v1.MetricB\x03\xe0A\x02R\ametrics\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"c\n" +
-	"\x1cGetTargetOfEvaluationRequest\x12C\n" +
-	"\x17certification_target_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\"\x8e\x01\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"b\n" +
+	"\x1cGetTargetOfEvaluationRequest\x12B\n" +
+	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"\x8e\x01\n" +
 	"\x1fCreateTargetOfEvaluationRequest\x12k\n" +
 	"\x14certification_target\x18\x01 \x01(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x13certificationTarget\"\x8e\x01\n" +
 	"\x1fUpdateTargetOfEvaluationRequest\x12k\n" +
-	"\x14certification_target\x18\x01 \x01(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x13certificationTarget\"f\n" +
-	"\x1fRemoveTargetOfEvaluationRequest\x12C\n" +
-	"\x17certification_target_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\"\x89\x01\n" +
+	"\x14certification_target\x18\x01 \x01(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x13certificationTarget\"e\n" +
+	"\x1fRemoveTargetOfEvaluationRequest\x12B\n" +
+	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"\x89\x01\n" +
 	"\x1eListTargetOfEvaluationsRequest\x12\x1b\n" +
 	"\tpage_size\x18\n" +
 	" \x01(\x05R\bpageSize\x12\x1d\n" +
@@ -4485,26 +4485,26 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x03asc\x18\r \x01(\bR\x03asc\"\x9a\x01\n" +
 	"\x1fListTargetOfEvaluationsResponse\x12O\n" +
 	"\atargets\x18\x01 \x03(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB\x06\xe0A\x02\xe0A\x02R\atargets\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"m\n" +
-	"&GetTargetOfEvaluationStatisticsRequest\x12C\n" +
-	"\x17certification_target_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\"\x9e\x02\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"l\n" +
+	"&GetTargetOfEvaluationStatisticsRequest\x12B\n" +
+	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"\x9e\x02\n" +
 	"'GetTargetOfEvaluationStatisticsResponse\x12C\n" +
 	"\x1enumber_of_discovered_resources\x18\x01 \x01(\x03R\x1bnumberOfDiscoveredResources\x12?\n" +
 	"\x1cnumber_of_assessment_results\x18\x02 \x01(\x03R\x19numberOfAssessmentResults\x12.\n" +
 	"\x13number_of_evidences\x18\x03 \x01(\x03R\x11numberOfEvidences\x12=\n" +
-	"\x1bnumber_of_selected_catalogs\x18\x04 \x01(\x03R\x18numberOfSelectedCatalogs\"\xef\x01\n" +
-	" UpdateMetricConfigurationRequest\x12C\n" +
-	"\x17certification_target_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\x12'\n" +
+	"\x1bnumber_of_selected_catalogs\x18\x04 \x01(\x03R\x18numberOfSelectedCatalogs\"\xee\x01\n" +
+	" UpdateMetricConfigurationRequest\x12B\n" +
+	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12'\n" +
 	"\tmetric_id\x18\x02 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\x12]\n" +
-	"\rconfiguration\x18\x03 \x01(\v2,.clouditor.assessment.v1.MetricConfigurationB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\rconfiguration\"\x8d\x01\n" +
-	"\x1dGetMetricConfigurationRequest\x12C\n" +
-	"\x17certification_target_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\x12'\n" +
+	"\rconfiguration\x18\x03 \x01(\v2,.clouditor.assessment.v1.MetricConfigurationB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\rconfiguration\"\x8c\x01\n" +
+	"\x1dGetMetricConfigurationRequest\x12B\n" +
+	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12'\n" +
 	"\tmetric_id\x18\x02 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\"e\n" +
-	"\x1eListMetricConfigurationRequest\x12C\n" +
-	"\x17certification_target_id\x18\n" +
-	" \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\"\x8a\x02\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\"d\n" +
+	"\x1eListMetricConfigurationRequest\x12B\n" +
+	"\x17target_of_evaluation_id\x18\n" +
+	" \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"\x8a\x02\n" +
 	"\x1fListMetricConfigurationResponse\x12v\n" +
 	"\x0econfigurations\x18\x01 \x03(\v2N.clouditor.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntryR\x0econfigurations\x1ao\n" +
 	"\x13ConfigurationsEntry\x12\x10\n" +
@@ -4515,12 +4515,12 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x1eGetMetricImplementationRequest\x12'\n" +
 	"\tmetric_id\x18\x01 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\"#\n" +
-	"!SubscribeMetricChangeEventRequest\"\xc8\x02\n" +
+	"!SubscribeMetricChangeEventRequest\"\xc7\x02\n" +
 	"\x11MetricChangeEvent\x12R\n" +
 	"\x04type\x18\x01 \x01(\x0e21.clouditor.orchestrator.v1.MetricChangeEvent.TypeB\v\xe0A\x02\xbaH\x05\x82\x01\x02\x10\x01R\x04type\x12'\n" +
 	"\tmetric_id\x18\x02 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\x12C\n" +
-	"\x17certification_target_id\x18\x03 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\"q\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\x12B\n" +
+	"\x17target_of_evaluation_id\x18\x03 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"q\n" +
 	"\x04Type\x12\x14\n" +
 	"\x10TYPE_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13TYPE_CONFIG_CHANGED\x10\x01\x12\x1f\n" +
@@ -4604,18 +4604,18 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x12_parent_control_idB\x1f\n" +
 	"\x1d_parent_control_category_nameB%\n" +
 	"#_parent_control_category_catalog_idB\x12\n" +
-	"\x10_assurance_level\"\xf1\x01\n" +
+	"\x10_assurance_level\"\xf0\x01\n" +
 	"\n" +
 	"AuditScope\x121\n" +
-	"\x02id\x18\x04 \x01(\tB!\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\x02id\x12C\n" +
-	"\x17certification_target_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\x12)\n" +
+	"\x02id\x18\x04 \x01(\tB!\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\x02id\x12B\n" +
+	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12)\n" +
 	"\n" +
 	"catalog_id\x18\x02 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\tcatalogId\x12,\n" +
 	"\x0fassurance_level\x18\x03 \x01(\tH\x00R\x0eassuranceLevel\x88\x01\x01B\x12\n" +
 	"\x10_assurance_level\"6\n" +
 	"\x1aGetAssessmentResultRequest\x12\x18\n" +
-	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"\xbb\x05\n" +
+	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"\xba\x05\n" +
 	"\x1cListAssessmentResultsRequest\x12[\n" +
 	"\x06filter\x18\x01 \x01(\v2>.clouditor.orchestrator.v1.ListAssessmentResultsRequest.FilterH\x00R\x06filter\x88\x01\x01\x126\n" +
 	"\x15latest_by_resource_id\x18\x02 \x01(\bH\x01R\x12latestByResourceId\x88\x01\x01\x12\x1b\n" +
@@ -4624,16 +4624,16 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\n" +
 	"page_token\x18\v \x01(\tR\tpageToken\x12\x19\n" +
 	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
-	"\x03asc\x18\r \x01(\bR\x03asc\x1a\xf7\x02\n" +
-	"\x06Filter\x12E\n" +
-	"\x17certification_target_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x00R\x15certificationTargetId\x88\x01\x01\x12!\n" +
+	"\x03asc\x18\r \x01(\bR\x03asc\x1a\xf6\x02\n" +
+	"\x06Filter\x12D\n" +
+	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x00R\x14targetOfEvaluationId\x88\x01\x01\x12!\n" +
 	"\tcompliant\x18\x02 \x01(\bH\x01R\tcompliant\x88\x01\x01\x12+\n" +
 	"\n" +
 	"metric_ids\x18\x03 \x03(\tB\f\xbaH\t\x92\x01\x06\"\x04r\x02\x10\x01R\tmetricIds\x12)\n" +
 	"\tmetric_id\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x02R\bmetricId\x88\x01\x01\x12%\n" +
 	"\atool_id\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x03R\x06toolId\x88\x01\x01\x12@\n" +
 	"\x15assessment_result_ids\x18\x06 \x03(\tB\f\xbaH\t\x92\x01\x06\"\x04r\x02\x10\x01R\x13assessmentResultIdsB\x1a\n" +
-	"\x18_certification_target_idB\f\n" +
+	"\x18_target_of_evaluation_idB\f\n" +
 	"\n" +
 	"_compliantB\f\n" +
 	"\n" +
@@ -4652,7 +4652,7 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x0eaudit_scope_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\fauditScopeId\x12:\n" +
 	"\x19remove_evaluation_results\x18\x02 \x01(\bR\x17removeEvaluationResults\"I\n" +
 	"\x14GetAuditScopeRequest\x121\n" +
-	"\x0eaudit_scope_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\fauditScopeId\"\xfa\x02\n" +
+	"\x0eaudit_scope_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\fauditScopeId\"\xf9\x02\n" +
 	"\x16ListAuditScopesRequest\x12U\n" +
 	"\x06filter\x18\x01 \x01(\v28.clouditor.orchestrator.v1.ListAuditScopesRequest.FilterH\x00R\x06filter\x88\x01\x01\x12\x1b\n" +
 	"\tpage_size\x18\n" +
@@ -4660,12 +4660,12 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\n" +
 	"page_token\x18\v \x01(\tR\tpageToken\x12\x19\n" +
 	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
-	"\x03asc\x18\r \x01(\bR\x03asc\x1a\x94\x01\n" +
-	"\x06Filter\x12;\n" +
-	"\x17certification_target_id\x18\x01 \x01(\tH\x00R\x15certificationTargetId\x88\x01\x01\x12\"\n" +
+	"\x03asc\x18\r \x01(\bR\x03asc\x1a\x93\x01\n" +
+	"\x06Filter\x12:\n" +
+	"\x17target_of_evaluation_id\x18\x01 \x01(\tH\x00R\x14targetOfEvaluationId\x88\x01\x01\x12\"\n" +
 	"\n" +
 	"catalog_id\x18\x02 \x01(\tH\x01R\tcatalogId\x88\x01\x01B\x1a\n" +
-	"\x18_certification_target_idB\r\n" +
+	"\x18_target_of_evaluation_idB\r\n" +
 	"\v_catalog_idB\t\n" +
 	"\a_filter\"\x8b\x01\n" +
 	"\x17ListAuditScopesResponse\x12H\n" +
@@ -4757,13 +4757,13 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\vcertificate\x18\x01 \x01(\v2&.clouditor.orchestrator.v1.CertificateB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\vcertificate\"M\n" +
 	"\x18RemoveCertificateRequest\x121\n" +
 	"\x0ecertificate_id\x18\x01 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\rcertificateId\"\xb2\x03\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\rcertificateId\"\xb1\x03\n" +
 	"\vCertificate\x12\x1a\n" +
 	"\x02id\x18\x01 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\x12\x1e\n" +
 	"\x04name\x18\x02 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x04name\x12C\n" +
-	"\x17certification_target_id\x18\x03 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\x12\x1d\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x04name\x12B\n" +
+	"\x17target_of_evaluation_id\x18\x03 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12\x1d\n" +
 	"\n" +
 	"issue_date\x18\x04 \x01(\tR\tissueDate\x12'\n" +
 	"\x0fexpiration_date\x18\x05 \x01(\tR\x0eexpirationDate\x12\x1a\n" +
@@ -4806,13 +4806,13 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\fRemoveMetric\x12..clouditor.orchestrator.v1.RemoveMetricRequest\x1a\x16.google.protobuf.Empty\",\x82\xd3\xe4\x93\x02&*$/v1/orchestrator/metrics/{metric_id}\x12\xcb\x01\n" +
 	"\x18CreateTargetOfEvaluation\x12:.clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest\x1a-.clouditor.orchestrator.v1.TargetOfEvaluation\"D\x82\xd3\xe4\x93\x02>:\x14certification_target\"&/v1/orchestrator/certification_targets\x12\xe5\x01\n" +
 	"\x18UpdateTargetOfEvaluation\x12:.clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest\x1a-.clouditor.orchestrator.v1.TargetOfEvaluation\"^\x82\xd3\xe4\x93\x02X:\x14certification_target\x1a@/v1/orchestrator/certification_targets/{certification_target.id}\x12\xc9\x01\n" +
-	"\x15GetTargetOfEvaluation\x127.clouditor.orchestrator.v1.GetTargetOfEvaluationRequest\x1a-.clouditor.orchestrator.v1.TargetOfEvaluation\"H\x82\xd3\xe4\x93\x02B\x12@/v1/orchestrator/certification_targets/{certification_target_id}\x12\xc0\x01\n" +
+	"\x15GetTargetOfEvaluation\x127.clouditor.orchestrator.v1.GetTargetOfEvaluationRequest\x1a-.clouditor.orchestrator.v1.TargetOfEvaluation\"H\x82\xd3\xe4\x93\x02B\x12@/v1/orchestrator/certification_targets/{target_of_evaluation_id}\x12\xc0\x01\n" +
 	"\x17ListTargetOfEvaluations\x129.clouditor.orchestrator.v1.ListTargetOfEvaluationsRequest\x1a:.clouditor.orchestrator.v1.ListTargetOfEvaluationsResponse\".\x82\xd3\xe4\x93\x02(\x12&/v1/orchestrator/certification_targets\x12\xb8\x01\n" +
-	"\x18RemoveTargetOfEvaluation\x12:.clouditor.orchestrator.v1.RemoveTargetOfEvaluationRequest\x1a\x16.google.protobuf.Empty\"H\x82\xd3\xe4\x93\x02B*@/v1/orchestrator/certification_targets/{certification_target_id}\x12\xe3\x01\n" +
+	"\x18RemoveTargetOfEvaluation\x12:.clouditor.orchestrator.v1.RemoveTargetOfEvaluationRequest\x1a\x16.google.protobuf.Empty\"H\x82\xd3\xe4\x93\x02B*@/v1/orchestrator/certification_targets/{target_of_evaluation_id}\x12\xe3\x01\n" +
 	"\x1fGetTargetOfEvaluationStatistics\x12A.clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsRequest\x1aB.clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsResponse\"9\x82\xd3\xe4\x93\x023\x121/v1/orchestrator/certification_targets/statistics\x12\x81\x02\n" +
-	"\x19UpdateMetricConfiguration\x12;.clouditor.orchestrator.v1.UpdateMetricConfigurationRequest\x1a,.clouditor.assessment.v1.MetricConfiguration\"y\x82\xd3\xe4\x93\x02s:\rconfiguration\x1ab/v1/orchestrator/certification_targets/{certification_target_id}/metric_configurations/{metric_id}\x12\xec\x01\n" +
-	"\x16GetMetricConfiguration\x128.clouditor.orchestrator.v1.GetMetricConfigurationRequest\x1a,.clouditor.assessment.v1.MetricConfiguration\"j\x82\xd3\xe4\x93\x02d\x12b/v1/orchestrator/certification_targets/{certification_target_id}/metric_configurations/{metric_id}\x12\xf1\x01\n" +
-	"\x18ListMetricConfigurations\x129.clouditor.orchestrator.v1.ListMetricConfigurationRequest\x1a:.clouditor.orchestrator.v1.ListMetricConfigurationResponse\"^\x82\xd3\xe4\x93\x02X\x12V/v1/orchestrator/certification_targets/{certification_target_id}/metric_configurations\x12\xe5\x01\n" +
+	"\x19UpdateMetricConfiguration\x12;.clouditor.orchestrator.v1.UpdateMetricConfigurationRequest\x1a,.clouditor.assessment.v1.MetricConfiguration\"y\x82\xd3\xe4\x93\x02s:\rconfiguration\x1ab/v1/orchestrator/certification_targets/{target_of_evaluation_id}/metric_configurations/{metric_id}\x12\xec\x01\n" +
+	"\x16GetMetricConfiguration\x128.clouditor.orchestrator.v1.GetMetricConfigurationRequest\x1a,.clouditor.assessment.v1.MetricConfiguration\"j\x82\xd3\xe4\x93\x02d\x12b/v1/orchestrator/certification_targets/{target_of_evaluation_id}/metric_configurations/{metric_id}\x12\xf1\x01\n" +
+	"\x18ListMetricConfigurations\x129.clouditor.orchestrator.v1.ListMetricConfigurationRequest\x1a:.clouditor.orchestrator.v1.ListMetricConfigurationResponse\"^\x82\xd3\xe4\x93\x02X\x12V/v1/orchestrator/certification_targets/{target_of_evaluation_id}/metric_configurations\x12\xe5\x01\n" +
 	"\x1aUpdateMetricImplementation\x12<.clouditor.orchestrator.v1.UpdateMetricImplementationRequest\x1a-.clouditor.assessment.v1.MetricImplementation\"Z\x82\xd3\xe4\x93\x02T:\x0eimplementation\x1aB/v1/orchestrator/metrics/{implementation.metric_id}/implementation\x12\xc0\x01\n" +
 	"\x17GetMetricImplementation\x129.clouditor.orchestrator.v1.GetMetricImplementationRequest\x1a-.clouditor.assessment.v1.MetricImplementation\";\x82\xd3\xe4\x93\x025\x123/v1/orchestrator/metrics/{metric_id}/implementation\x12\x8d\x01\n" +
 	"\x1bSubscribeMetricChangeEvents\x12<.clouditor.orchestrator.v1.SubscribeMetricChangeEventRequest\x1a,.clouditor.orchestrator.v1.MetricChangeEvent\"\x000\x01\x12\xa4\x01\n" +
@@ -4835,7 +4835,7 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x10CreateAuditScope\x122.clouditor.orchestrator.v1.CreateAuditScopeRequest\x1a%.clouditor.orchestrator.v1.AuditScope\"2\x82\xd3\xe4\x93\x02,:\vaudit_scope\"\x1d/v1/orchestrator/audit_scopes\x12\x9f\x01\n" +
 	"\rGetAuditScope\x12/.clouditor.orchestrator.v1.GetAuditScopeRequest\x1a%.clouditor.orchestrator.v1.AuditScope\"6\x82\xd3\xe4\x93\x020\x12./v1/orchestrator/audit_scopes/{audit_scope_id}\x12\x9f\x01\n" +
 	"\x0fListAuditScopes\x121.clouditor.orchestrator.v1.ListAuditScopesRequest\x1a2.clouditor.orchestrator.v1.ListAuditScopesResponse\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/orchestrator/audit_scopes\x12\xf8\x01\n" +
-	"\x10UpdateAuditScope\x122.clouditor.orchestrator.v1.UpdateAuditScopeRequest\x1a%.clouditor.orchestrator.v1.AuditScope\"\x88\x01\x82\xd3\xe4\x93\x02\x81\x01:\vaudit_scope\x1ar/v1/orchestrator/certification_targets/{audit_scope.certification_target_id}/audit_scopes/{audit_scope.catalog_id}\x12\x96\x01\n" +
+	"\x10UpdateAuditScope\x122.clouditor.orchestrator.v1.UpdateAuditScopeRequest\x1a%.clouditor.orchestrator.v1.AuditScope\"\x88\x01\x82\xd3\xe4\x93\x02\x81\x01:\vaudit_scope\x1ar/v1/orchestrator/certification_targets/{audit_scope.target_of_evaluation_id}/audit_scopes/{audit_scope.catalog_id}\x12\x96\x01\n" +
 	"\x10RemoveAuditScope\x122.clouditor.orchestrator.v1.RemoveAuditScopeRequest\x1a\x16.google.protobuf.Empty\"6\x82\xd3\xe4\x93\x020*./v1/orchestrator/audit_scopes/{audit_scope_id}\x12\x83\x01\n" +
 	"\x0eGetRuntimeInfo\x12+.clouditor.runtime.v1.GetRuntimeInfoRequest\x1a\x1d.clouditor.runtime.v1.Runtime\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/orchestrator/runtime_infoB,Z*clouditor.io/clouditor/v2/api/orchestratorb\x06proto3"
 
