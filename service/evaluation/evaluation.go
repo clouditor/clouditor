@@ -237,7 +237,7 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	} else if len(jobs) > 0 {
-		err = fmt.Errorf("evaluation for Audit Scope '%s' (target of evaluation '%s' and catalog ID '%s') already started", auditScope.GetId(), auditScope.GetCertificationTargetId(), auditScope.GetCatalogId())
+		err = fmt.Errorf("evaluation for Audit Scope '%s' (target of evaluation '%s' and catalog ID '%s') already started", auditScope.GetId(), auditScope.GetTargetOfEvaluationId(), auditScope.GetCatalogId())
 		log.Error(err)
 		return nil, status.Errorf(codes.AlreadyExists, "%s", err)
 	}
@@ -320,22 +320,22 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 	}
 
 	// Retrieve list of allowed target of evaluation according to our authorization strategy. No need to specify any conditions
-	// to our storage request, if we are allowed to see all certification targets.
-	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
+	// to our storage request, if we are allowed to see all target of evaluations.
+	all, allowed = svc.authz.AllowedTargetOfEvaluations(ctx)
 
 	// Filtering evaluation results by
 	// * target of evaluation ID
 	// * control ID
 	// * sub-controls
 	if req.Filter != nil {
-		// Check if certification_target_id in filter is within allowed or one can access *all* the certification targets
+		// Check if certification_target_id in filter is within allowed or one can access *all* the target of evaluations
 		if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Filter) {
 			return nil, service.ErrPermissionDenied
 		}
 
-		if req.Filter.CertificationTargetId != nil {
+		if req.Filter.TargetOfEvaluationId != nil {
 			query = append(query, "certification_target_id = ?")
-			args = append(args, req.Filter.GetCertificationTargetId())
+			args = append(args, req.Filter.GetTargetOfEvaluationId())
 		}
 
 		if req.Filter.CatalogId != nil {
@@ -370,7 +370,7 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 		}
 	}
 
-	// In any case, we need to make sure that we only select evaluation results of certification targets that we have access to
+	// In any case, we need to make sure that we only select evaluation results of target of evaluations that we have access to
 	// (if we do not have access to all)
 	if !all {
 		query = append(query, "certification_target_id IN ?")
@@ -513,9 +513,9 @@ func (svc *Service) evaluateCatalog(ctx context.Context, auditScope *orchestrato
 	// might time out at some point
 	results, err := api.ListAllPaginated(&evaluation.ListEvaluationResultsRequest{
 		Filter: &evaluation.ListEvaluationResultsRequest_Filter{
-			CertificationTargetId: &auditScope.CertificationTargetId,
-			CatalogId:             &auditScope.CatalogId,
-			ValidManualOnly:       util.Ref(true),
+			TargetOfEvaluationId: &auditScope.TargetOfEvaluationId,
+			CatalogId:            &auditScope.CatalogId,
+			ValidManualOnly:      util.Ref(true),
 		},
 		LatestByControlId: util.Ref(true),
 	},
@@ -559,7 +559,7 @@ func (svc *Service) evaluateCatalog(ctx context.Context, auditScope *orchestrato
 	}
 
 	log.Infof("Starting catalog evaluation for Target of Evaluation '%s', Catalog ID '%s'. Waiting for the evaluation of %d control(s)",
-		auditScope.CertificationTargetId,
+		auditScope.TargetOfEvaluationId,
 		auditScope.CatalogId,
 		len(relevant),
 	)
@@ -622,7 +622,7 @@ func (svc *Service) evaluateControl(ctx context.Context, auditScope *orchestrato
 	}
 
 	log.Infof("Starting control evaluation for Target of Evaluation '%s', Catalog ID '%s' and Control '%s'. Waiting for the evaluation of %d sub-control(s)",
-		auditScope.CertificationTargetId,
+		auditScope.TargetOfEvaluationId,
 		auditScope.CatalogId,
 		control.Id,
 		len(relevant),
@@ -677,27 +677,27 @@ func (svc *Service) evaluateControl(ctx context.Context, auditScope *orchestrato
 
 	// Create evaluation result
 	result = &evaluation.EvaluationResult{
-		Id:                    uuid.NewString(),
-		Timestamp:             timestamppb.Now(),
-		ControlCategoryName:   control.CategoryName,
-		ControlCatalogId:      control.CategoryCatalogId,
-		ControlId:             control.Id,
-		CertificationTargetId: auditScope.CertificationTargetId,
-		AuditScopeId:          auditScope.Id,
-		Status:                status,
-		AssessmentResultIds:   resultIds,
+		Id:                   uuid.NewString(),
+		Timestamp:            timestamppb.Now(),
+		ControlCategoryName:  control.CategoryName,
+		ControlCatalogId:     control.CategoryCatalogId,
+		ControlId:            control.Id,
+		TargetOfEvaluationId: auditScope.TargetOfEvaluationId,
+		AuditScopeId:         auditScope.Id,
+		Status:               status,
+		AssessmentResultIds:  resultIds,
 	}
 
 	err = svc.storage.Create(result)
 	if err != nil {
 		log.Errorf("error storing evaluation result for control ID '%s' (in target of evaluation %s) in database: %v",
 			control.Id,
-			auditScope.CertificationTargetId,
+			auditScope.TargetOfEvaluationId,
 			err)
 		return
 	}
 
-	log.Infof("Evaluation result for control ID '%s' (in target of evaluation %s) was %s", control.Id, auditScope.CertificationTargetId, result.Status.String())
+	log.Infof("Evaluation result for control ID '%s' (in target of evaluation %s) was %s", control.Id, auditScope.TargetOfEvaluationId, result.Status.String())
 
 	return
 }
@@ -718,7 +718,7 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, auditScope *orchestrat
 	// Get metrics from control and sub-controls
 	metrics, err := svc.getAllMetricsFromControl(auditScope.GetCatalogId(), control.CategoryName, control.Id)
 	if err != nil {
-		log.Errorf("could not get metrics for controlID '%s' and Target of Evaluation '%s' from Orchestrator: %v", control.Id, auditScope.GetCertificationTargetId(), err)
+		log.Errorf("could not get metrics for controlID '%s' and Target of Evaluation '%s' from Orchestrator: %v", control.Id, auditScope.GetTargetOfEvaluationId(), err)
 		return
 	}
 
@@ -728,8 +728,8 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, auditScope *orchestrat
 		// * metric ids
 		assessments, err = api.ListAllPaginated(&orchestrator.ListAssessmentResultsRequest{
 			Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-				CertificationTargetId: &auditScope.CertificationTargetId,
-				MetricIds:             getMetricIds(metrics),
+				TargetOfEvaluationId: &auditScope.TargetOfEvaluationId,
+				MetricIds:            getMetricIds(metrics),
 			},
 			LatestByResourceId: util.Ref(true),
 		}, svc.orchestrator.Client.ListAssessmentResults, func(res *orchestrator.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
@@ -739,11 +739,11 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, auditScope *orchestrat
 		if err != nil {
 			// We let the scheduler running if we do not get the assessment results from the orchestrator, maybe it is
 			// only a temporary network problem
-			log.Errorf("could not get assessment results for Target of Evaluation ID '%s' and MetricIds '%s' from Orchestrator: %v", auditScope.GetCertificationTargetId(), getMetricIds(metrics), err)
+			log.Errorf("could not get assessment results for Target of Evaluation ID '%s' and MetricIds '%s' from Orchestrator: %v", auditScope.GetTargetOfEvaluationId(), getMetricIds(metrics), err)
 		} else if len(assessments) == 0 {
 			// We let the scheduler running if we do not get the assessment results from the orchestrator, maybe it is
 			// only a temporary network problem
-			log.Debugf("no assessment results for Target of Evaluation ID '%s' and MetricIds '%s' available", auditScope.GetCertificationTargetId(), getMetricIds(metrics))
+			log.Debugf("no assessment results for Target of Evaluation ID '%s' and MetricIds '%s' available", auditScope.GetTargetOfEvaluationId(), getMetricIds(metrics))
 		}
 	} else {
 		log.Debugf("no metrics are available for the given control")
@@ -768,16 +768,16 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, auditScope *orchestrat
 
 	// Create evaluation result
 	eval = &evaluation.EvaluationResult{
-		Id:                    uuid.NewString(),
-		Timestamp:             timestamppb.Now(),
-		ControlCategoryName:   control.CategoryName,
-		ControlCatalogId:      control.CategoryCatalogId,
-		ControlId:             control.Id,
-		ParentControlId:       control.ParentControlId,
-		CertificationTargetId: auditScope.CertificationTargetId,
-		AuditScopeId:          auditScope.Id,
-		Status:                status,
-		AssessmentResultIds:   resultIds,
+		Id:                   uuid.NewString(),
+		Timestamp:            timestamppb.Now(),
+		ControlCategoryName:  control.CategoryName,
+		ControlCatalogId:     control.CategoryCatalogId,
+		ControlId:            control.Id,
+		ParentControlId:      control.ParentControlId,
+		TargetOfEvaluationId: auditScope.TargetOfEvaluationId,
+		AuditScopeId:         auditScope.Id,
+		Status:               status,
+		AssessmentResultIds:  resultIds,
 	}
 
 	err = svc.storage.Create(eval)
@@ -786,7 +786,7 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, auditScope *orchestrat
 		return nil, err
 	}
 
-	log.Infof("Evaluation result for %s (in target of evaluation %s) was %s", control.Id, auditScope.GetCertificationTargetId(), eval.Status.String())
+	log.Infof("Evaluation result for %s (in target of evaluation %s) was %s", control.Id, auditScope.GetTargetOfEvaluationId(), eval.Status.String())
 
 	return
 }

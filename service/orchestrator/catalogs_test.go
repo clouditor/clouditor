@@ -318,14 +318,14 @@ func TestService_RemoveCatalog(t *testing.T) {
 
 func TestService_GetCategory(t *testing.T) {
 	type fields struct {
-		CertificationTargetHooks []orchestrator.CertificationTargetHookFunc
-		AssessmentResultHooks    []assessment.ResultHookFunc
-		storage                  persistence.Storage
-		metricsFile              string
-		loadMetricsFunc          func() ([]*assessment.Metric, error)
-		catalogsFile             string
-		loadCatalogsFunc         func() ([]*orchestrator.Catalog, error)
-		events                   chan *orchestrator.MetricChangeEvent
+		TargetOfEvaluationHooks []orchestrator.TargetOfEvaluationHookFunc
+		AssessmentResultHooks   []assessment.ResultHookFunc
+		storage                 persistence.Storage
+		metricsFile             string
+		loadMetricsFunc         func() ([]*assessment.Metric, error)
+		catalogsFile            string
+		loadCatalogsFunc        func() ([]*orchestrator.Catalog, error)
+		events                  chan *orchestrator.MetricChangeEvent
 	}
 	type args struct {
 		ctx context.Context
@@ -394,14 +394,14 @@ func TestService_GetCategory(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			srv := &Service{
-				CertificationTargetHooks: tt.fields.CertificationTargetHooks,
-				AssessmentResultHooks:    tt.fields.AssessmentResultHooks,
-				storage:                  tt.fields.storage,
-				metricsFile:              tt.fields.metricsFile,
-				loadMetricsFunc:          tt.fields.loadMetricsFunc,
-				catalogsFolder:           tt.fields.catalogsFile,
-				loadCatalogsFunc:         tt.fields.loadCatalogsFunc,
-				events:                   tt.fields.events,
+				TargetOfEvaluationHooks: tt.fields.TargetOfEvaluationHooks,
+				AssessmentResultHooks:   tt.fields.AssessmentResultHooks,
+				storage:                 tt.fields.storage,
+				metricsFile:             tt.fields.metricsFile,
+				loadMetricsFunc:         tt.fields.loadMetricsFunc,
+				catalogsFolder:          tt.fields.catalogsFile,
+				loadCatalogsFunc:        tt.fields.loadCatalogsFunc,
+				events:                  tt.fields.events,
 			}
 			gotRes, err := srv.GetCategory(tt.args.ctx, tt.args.req)
 
@@ -413,13 +413,13 @@ func TestService_GetCategory(t *testing.T) {
 
 func TestService_GetControl(t *testing.T) {
 	type fields struct {
-		CertificationTargetHooks []orchestrator.CertificationTargetHookFunc
-		AssessmentResultHooks    []assessment.ResultHookFunc
-		storage                  persistence.Storage
-		metricsFile              string
-		loadMetricsFunc          func() ([]*assessment.Metric, error)
-		catalogsFolder           string
-		loadCatalogsFunc         func() ([]*orchestrator.Catalog, error)
+		TargetOfEvaluationHooks []orchestrator.TargetOfEvaluationHookFunc
+		AssessmentResultHooks   []assessment.ResultHookFunc
+		storage                 persistence.Storage
+		metricsFile             string
+		loadMetricsFunc         func() ([]*assessment.Metric, error)
+		catalogsFolder          string
+		loadCatalogsFunc        func() ([]*orchestrator.Catalog, error)
 	}
 	type args struct {
 		ctx context.Context
@@ -480,13 +480,13 @@ func TestService_GetControl(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			srv := &Service{
-				CertificationTargetHooks: tt.fields.CertificationTargetHooks,
-				AssessmentResultHooks:    tt.fields.AssessmentResultHooks,
-				storage:                  tt.fields.storage,
-				metricsFile:              tt.fields.metricsFile,
-				loadMetricsFunc:          tt.fields.loadMetricsFunc,
-				catalogsFolder:           tt.fields.catalogsFolder,
-				loadCatalogsFunc:         tt.fields.loadCatalogsFunc,
+				TargetOfEvaluationHooks: tt.fields.TargetOfEvaluationHooks,
+				AssessmentResultHooks:   tt.fields.AssessmentResultHooks,
+				storage:                 tt.fields.storage,
+				metricsFile:             tt.fields.metricsFile,
+				loadMetricsFunc:         tt.fields.loadMetricsFunc,
+				catalogsFolder:          tt.fields.catalogsFolder,
+				loadCatalogsFunc:        tt.fields.loadCatalogsFunc,
 			}
 			gotRes, err := srv.GetControl(tt.args.ctx, tt.args.req)
 

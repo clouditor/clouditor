@@ -53,36 +53,36 @@ var ErrPermissionDenied = status.Errorf(codes.PermissionDenied, "access denied")
 // checkers whether the current target of evaluation request can be fulfilled using the
 // supplied context (e.g., based on the authenticated user).
 type AuthorizationStrategy interface {
-	CheckAccess(ctx context.Context, typ RequestType, req api.CertificationTargetRequest) bool
-	AllowedCertificationTargets(ctx context.Context) (all bool, IDs []string)
+	CheckAccess(ctx context.Context, typ RequestType, req api.TargetOfEvaluationRequest) bool
+	AllowedTargetOfEvaluations(ctx context.Context) (all bool, IDs []string)
 }
 
 // AuthorizationStrategyJWT is an AuthorizationStrategy that expects a list of target of evaluation IDs to be in a specific JWT
 // claim key.
 type AuthorizationStrategyJWT struct {
-	CertificationTargetsKey string
-	AllowAllKey             string
+	TargetOfEvaluationsKey string
+	AllowAllKey            string
 }
 
 // CheckAccess checks whether the current request can be fulfilled using the current access strategy.
-func (a *AuthorizationStrategyJWT) CheckAccess(ctx context.Context, _ RequestType, req api.CertificationTargetRequest) bool {
+func (a *AuthorizationStrategyJWT) CheckAccess(ctx context.Context, _ RequestType, req api.TargetOfEvaluationRequest) bool {
 	var (
 		list []string
 		all  bool
 	)
 
-	// Retrieve the list of allowed certification targets.
-	all, list = a.AllowedCertificationTargets(ctx)
+	// Retrieve the list of allowed target of evaluations.
+	all, list = a.AllowedTargetOfEvaluations(ctx)
 
 	if all {
 		return true
 	}
 
-	return slices.Contains(list, req.GetCertificationTargetId())
+	return slices.Contains(list, req.GetTargetOfEvaluationId())
 }
 
-// AllowedCertificationTargets retrieves a list of allowed target of evaluation IDs according to the current access strategy.
-func (a *AuthorizationStrategyJWT) AllowedCertificationTargets(ctx context.Context) (all bool, list []string) {
+// AllowedTargetOfEvaluations retrieves a list of allowed target of evaluation IDs according to the current access strategy.
+func (a *AuthorizationStrategyJWT) AllowedTargetOfEvaluations(ctx context.Context) (all bool, list []string) {
 	var (
 		err    error
 		ok     bool
@@ -94,14 +94,14 @@ func (a *AuthorizationStrategyJWT) AllowedCertificationTargets(ctx context.Conte
 
 	// Check, if the context is nil
 	if ctx == nil {
-		log.Debugf("Retrieving allowed certification targets failed because of an empty context")
+		log.Debugf("Retrieving allowed target of evaluations failed because of an empty context")
 		return false, nil
 	}
 
 	// Retrieve the raw token from the context
 	token, err = grpc_auth.AuthFromMD(ctx, "bearer")
 	if err != nil {
-		log.Debugf("Retrieving allowed certification targets from token failed: %v", err)
+		log.Debugf("Retrieving allowed target of evaluations from token failed: %v", err)
 		return false, nil
 	}
 
@@ -109,7 +109,7 @@ func (a *AuthorizationStrategyJWT) AllowedCertificationTargets(ctx context.Conte
 	parser := jwt.NewParser()
 	_, _, err = parser.ParseUnverified(token, &claims)
 	if err != nil {
-		log.Debugf("Retrieving allowed certification targets from token failed: %v", err)
+		log.Debugf("Retrieving allowed target of evaluations from token failed: %v", err)
 		return false, nil
 	}
 
@@ -119,8 +119,8 @@ func (a *AuthorizationStrategyJWT) AllowedCertificationTargets(ctx context.Conte
 	}
 
 	// We are looking for an array claim
-	if l, ok = claims[a.CertificationTargetsKey].([]interface{}); !ok {
-		log.Debug("Retrieving allowed certification targets from token failed: specified claims key is not an array", err)
+	if l, ok = claims[a.TargetOfEvaluationsKey].([]interface{}); !ok {
+		log.Debug("Retrieving allowed target of evaluations from token failed: specified claims key is not an array", err)
 		return false, nil
 	}
 
@@ -141,12 +141,12 @@ type AuthorizationStrategyAllowAll struct{}
 
 // CheckAccess checks whether the current request can be fulfilled using the current access strategy. Returns true since
 // strategy is `AuthorizationStrategyAllowAll`
-func (*AuthorizationStrategyAllowAll) CheckAccess(_ context.Context, _ RequestType, _ api.CertificationTargetRequest) bool {
+func (*AuthorizationStrategyAllowAll) CheckAccess(_ context.Context, _ RequestType, _ api.TargetOfEvaluationRequest) bool {
 	return true
 }
 
-// AllowedCertificationTargets retrieves a list of allowed target of evaluation IDs according to the current access strategy. Returns
+// AllowedTargetOfEvaluations retrieves a list of allowed target of evaluation IDs according to the current access strategy. Returns
 // `all = true` since strategy is `AuthorizationStrategyAllowAll`
-func (*AuthorizationStrategyAllowAll) AllowedCertificationTargets(_ context.Context) (all bool, list []string) {
+func (*AuthorizationStrategyAllowAll) AllowedTargetOfEvaluations(_ context.Context) (all bool, list []string) {
 	return true, nil
 }

@@ -127,7 +127,7 @@ service Orchestrator {
   }
 
   // Registers a new target target of evaluation
-  rpc CreateCertificationTarget(CreateCertificationTargetRequest) returns (TargetOfEvaluation) {
+  rpc CreateTargetOfEvaluation(CreateTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {
       post: "/v1/orchestrator/certification_targets"
       body: "certification_target"
@@ -135,7 +135,7 @@ service Orchestrator {
   }
 
   // Registers a new target target of evaluation
-  rpc UpdateCertificationTarget(UpdateCertificationTargetRequest) returns (TargetOfEvaluation) {
+  rpc UpdateTargetOfEvaluation(UpdateTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {
       put: "/v1/orchestrator/certification_targets/{certification_target.id}"
       body: "certification_target"
@@ -143,22 +143,22 @@ service Orchestrator {
   }
 
   // Retrieves a target target of evaluation
-  rpc GetCertificationTarget(GetCertificationTargetRequest) returns (TargetOfEvaluation) {
+  rpc GetTargetOfEvaluation(GetTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {get: "/v1/orchestrator/certification_targets/{certification_target_id}"};
   }
 
-  // Lists all target certification targets
-  rpc ListCertificationTargets(ListCertificationTargetsRequest) returns (ListCertificationTargetsResponse) {
+  // Lists all target target of evaluations
+  rpc ListTargetOfEvaluations(ListTargetOfEvaluationsRequest) returns (ListTargetOfEvaluationsResponse) {
     option (google.api.http) = {get: "/v1/orchestrator/certification_targets"};
   }
 
   // Removes a target target of evaluation
-  rpc RemoveCertificationTarget(RemoveCertificationTargetRequest) returns (google.protobuf.Empty) {
+  rpc RemoveTargetOfEvaluation(RemoveTargetOfEvaluationRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {delete: "/v1/orchestrator/certification_targets/{certification_target_id}"};
   }
 
   // Retrieves target target of evaluation statistics
-  rpc GetCertificationTargetStatistics(GetCertificationTargetStatisticsRequest) returns (GetCertificationTargetStatisticsResponse) {
+  rpc GetTargetOfEvaluationStatistics(GetTargetOfEvaluationStatisticsRequest) returns (GetTargetOfEvaluationStatisticsResponse) {
     option (google.api.http) = {get: "/v1/orchestrator/certification_targets/statistics"};
   }
 
@@ -456,42 +456,42 @@ message ListMetricsResponse {
   string next_page_token = 2;
 }
 
-message GetCertificationTargetRequest {
+message GetTargetOfEvaluationRequest {
   string certification_target_id = 1 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
 }
 
-message CreateCertificationTargetRequest {
+message CreateTargetOfEvaluationRequest {
   TargetOfEvaluation certification_target = 1 [
     (buf.validate.field).required = true,
     (google.api.field_behavior) = REQUIRED
   ];
 }
 
-message UpdateCertificationTargetRequest {
+message UpdateTargetOfEvaluationRequest {
   TargetOfEvaluation certification_target = 1 [
     (buf.validate.field).required = true,
     (google.api.field_behavior) = REQUIRED
   ];
 }
 
-message RemoveCertificationTargetRequest {
+message RemoveTargetOfEvaluationRequest {
   string certification_target_id = 1 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
 }
 
-message ListCertificationTargetsRequest {
+message ListTargetOfEvaluationsRequest {
   int32 page_size = 10;
   string page_token = 11;
   string order_by = 12;
   bool asc = 13;
 }
 
-message ListCertificationTargetsResponse {
+message ListTargetOfEvaluationsResponse {
   repeated TargetOfEvaluation targets = 1 [
     (google.api.field_behavior) = REQUIRED,
     (google.api.field_behavior) = REQUIRED
@@ -499,14 +499,14 @@ message ListCertificationTargetsResponse {
   string next_page_token = 2;
 }
 
-message GetCertificationTargetStatisticsRequest {
+message GetTargetOfEvaluationStatisticsRequest {
   string certification_target_id = 1 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
 }
 
-message GetCertificationTargetStatisticsResponse {
+message GetTargetOfEvaluationStatisticsResponse {
   // number of discovered resources per target of evaluation
   int64 number_of_discovered_resources = 1;
 

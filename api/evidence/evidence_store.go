@@ -26,8 +26,8 @@
 
 package evidence
 
-// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
+// GetTargetOfEvaluationId is a shortcut to implement TargetOfEvaluationRequest. It returns
 // the target of evaluation ID of the inner object.
-func (req *StoreEvidenceRequest) GetCertificationTargetId() string {
-	return req.GetEvidence().GetCertificationTargetId()
+func (req *StoreEvidenceRequest) GetTargetOfEvaluationId() string {
+	return req.GetEvidence().GetTargetOfEvaluationId()
 }

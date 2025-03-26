@@ -57,7 +57,7 @@ func TestMain(m *testing.M) {
 	clitest.AutoChdir()
 
 	svc = service_orchestrator.NewService()
-	_, err = svc.CreateDefaultCertificationTarget()
+	_, err = svc.CreateDefaultTargetOfEvaluation()
 	if err != nil {
 		panic(err)
 	}
@@ -82,7 +82,7 @@ func TestSession(t *testing.T) {
 
 	// Do a simple authenticated call
 	oc := orchestrator.NewOrchestratorClient(session)
-	_, err = oc.ListCertificationTargets(context.Background(), &orchestrator.ListCertificationTargetsRequest{})
+	_, err = oc.ListTargetOfEvaluations(context.Background(), &orchestrator.ListTargetOfEvaluationsRequest{})
 	assert.NoError(t, err)
 }
 
@@ -326,7 +326,7 @@ func TestValidArgsGetControls(t *testing.T) {
 	}
 }
 
-func TestValidArgsGetCertificationTargets(t *testing.T) {
+func TestValidArgsGetTargetOfEvaluations(t *testing.T) {
 	type args struct {
 		in0        *cobra.Command
 		args       []string
@@ -339,7 +339,7 @@ func TestValidArgsGetCertificationTargets(t *testing.T) {
 		want1 cobra.ShellCompDirective
 	}{
 		{
-			name: "some certification targets",
+			name: "some target of evaluations",
 			args: args{
 				toComplete: "",
 			},
@@ -350,7 +350,7 @@ func TestValidArgsGetCertificationTargets(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := cli.ValidArgsGetCertificationTargets(tt.args.in0, tt.args.args, tt.args.toComplete)
+			got, got1 := cli.ValidArgsGetTargetOfEvaluations(tt.args.in0, tt.args.args, tt.args.toComplete)
 			tt.want(t, got)
 			assert.Equal(t, tt.want1, got1)
 		})

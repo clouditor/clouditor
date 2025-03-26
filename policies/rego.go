@@ -147,7 +147,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, rel
 			// assessed within the Clouditor toolset but we need to know that the metric exists, e.g., because it is
 			// evaluated by an external tool. In this case, we can just pretend that the metric is not applicable for us
 			// and continue.
-			runMap, err := re.evalMap(baseDir, evidence.CertificationTargetId, metric, m, src)
+			runMap, err := re.evalMap(baseDir, evidence.TargetOfEvaluationId, metric, m, src)
 			if err != nil {
 				// Try to retrieve the gRPC status from the error, to check if the metric implementation just does not exist.
 				status, ok := status.FromError(err)
@@ -181,7 +181,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, rel
 		re.mrtc.Unlock()
 	} else {
 		for _, metric := range cached {
-			runMap, err := re.evalMap(baseDir, evidence.CertificationTargetId, metric, m, src)
+			runMap, err := re.evalMap(baseDir, evidence.TargetOfEvaluationId, metric, m, src)
 			if err != nil {
 				return nil, err
 			}

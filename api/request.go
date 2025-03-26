@@ -34,16 +34,16 @@ import (
 // which should be updated or created.
 type PayloadRequest = api.PayloadRequest
 
-// CertificationTargetRequest represents any kind of RPC request, that contains a
+// TargetOfEvaluationRequest represents any kind of RPC request, that contains a
 // reference to a target of evaluation.
 //
-// Note: GetCertificationTargetId() is already implemented by the generated protobuf
+// Note: GetTargetOfEvaluationId() is already implemented by the generated protobuf
 // code for the following messages because they directly have a certification_target id
 // field:
 //   - orchestrator.RemoveControlFromScopeRequest
 //   - orchestrator.ListControlsInScopeRequest
-//   - orchestrator.GetCertificationTargetRequest
-//   - orchestrator.RemoveCertificationTargetRequest
+//   - orchestrator.GetTargetOfEvaluationRequest
+//   - orchestrator.RemoveTargetOfEvaluationRequest
 //   - orchestrator.UpdateMetricConfigurationRequest
 //   - orchestrator.GetMetricConfigurationRequest
 //   - orchestrator.ListMetricConfigurationRequest
@@ -57,4 +57,4 @@ type PayloadRequest = api.PayloadRequest
 // All other requests, especially in cases where the target of evaluation ID is
 // embedded in a sub-field need to explicitly implement this interface in order.
 // This interface is for example used by authorization checks.
-type CertificationTargetRequest = api.CertificationTargetRequest
+type TargetOfEvaluationRequest = api.TargetOfEvaluationRequest

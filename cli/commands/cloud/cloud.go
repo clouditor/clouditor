@@ -38,8 +38,8 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-// NewCreateCertificationTargetCommand returns a cobra command for the `discover` subcommand
-func NewCreateCertificationTargetCommand() *cobra.Command {
+// NewCreateTargetOfEvaluationCommand returns a cobra command for the `discover` subcommand
+func NewCreateTargetOfEvaluationCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "register [name]",
 		Short: "Registers a new target target of evaluation",
@@ -61,7 +61,7 @@ func NewCreateCertificationTargetCommand() *cobra.Command {
 
 			name := args[0]
 
-			res, err = client.CreateCertificationTarget(context.Background(), &orchestrator.CreateCertificationTargetRequest{
+			res, err = client.CreateTargetOfEvaluation(context.Background(), &orchestrator.CreateTargetOfEvaluationRequest{
 				TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 					Name: name,
 				},
@@ -77,17 +77,17 @@ func NewCreateCertificationTargetCommand() *cobra.Command {
 	return cmd
 }
 
-// NewListCertificationTargetsCommand returns a cobra command for the `list` subcommand
-func NewListCertificationTargetsCommand() *cobra.Command {
+// NewListTargetOfEvaluationsCommand returns a cobra command for the `list` subcommand
+func NewListTargetOfEvaluationsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "Lists all target certification targets",
+		Short: "Lists all target target of evaluations",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
-				res     *orchestrator.ListCertificationTargetsResponse
+				res     *orchestrator.ListTargetOfEvaluationsResponse
 				target  []*orchestrator.TargetOfEvaluation
 			)
 
@@ -98,12 +98,12 @@ func NewListCertificationTargetsCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			target, err = api.ListAllPaginated(&orchestrator.ListCertificationTargetsRequest{}, client.ListCertificationTargets, func(res *orchestrator.ListCertificationTargetsResponse) []*orchestrator.TargetOfEvaluation {
+			target, err = api.ListAllPaginated(&orchestrator.ListTargetOfEvaluationsRequest{}, client.ListTargetOfEvaluations, func(res *orchestrator.ListTargetOfEvaluationsResponse) []*orchestrator.TargetOfEvaluation {
 				return res.Targets
 			})
 
-			// Build a response with all certification targets
-			res = &orchestrator.ListCertificationTargetsResponse{
+			// Build a response with all target of evaluations
+			res = &orchestrator.ListTargetOfEvaluationsResponse{
 				Targets: target,
 			}
 
@@ -117,8 +117,8 @@ func NewListCertificationTargetsCommand() *cobra.Command {
 	return cmd
 }
 
-// NewGetCertificationTargetCommand returns a cobra command for the `get` subcommand
-func NewGetCertificationTargetCommand() *cobra.Command {
+// NewGetTargetOfEvaluationCommand returns a cobra command for the `get` subcommand
+func NewGetTargetOfEvaluationCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get [id]",
 		Short: "Retrieves a target target of evaluation by its ID",
@@ -140,7 +140,7 @@ func NewGetCertificationTargetCommand() *cobra.Command {
 
 			targetID := args[0]
 
-			res, err = client.GetCertificationTarget(context.Background(), &orchestrator.GetCertificationTargetRequest{CertificationTargetId: targetID})
+			res, err = client.GetTargetOfEvaluation(context.Background(), &orchestrator.GetTargetOfEvaluationRequest{TargetOfEvaluationId: targetID})
 
 			return session.HandleResponse(res, err)
 		},
@@ -150,8 +150,8 @@ func NewGetCertificationTargetCommand() *cobra.Command {
 	return cmd
 }
 
-// NewRemoveCertificationTargetComand returns a cobra command for the `get` subcommand
-func NewRemoveCertificationTargetComand() *cobra.Command {
+// NewRemoveTargetOfEvaluationComand returns a cobra command for the `get` subcommand
+func NewRemoveTargetOfEvaluationComand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "remove [id]",
 		Short: "Removes a target target of evaluation by its ID",
@@ -173,7 +173,7 @@ func NewRemoveCertificationTargetComand() *cobra.Command {
 
 			targetID := args[0]
 
-			res, err = client.RemoveCertificationTarget(context.Background(), &orchestrator.RemoveCertificationTargetRequest{CertificationTargetId: targetID})
+			res, err = client.RemoveTargetOfEvaluation(context.Background(), &orchestrator.RemoveTargetOfEvaluationRequest{TargetOfEvaluationId: targetID})
 
 			return session.HandleResponse(res, err)
 		},
@@ -183,8 +183,8 @@ func NewRemoveCertificationTargetComand() *cobra.Command {
 	return cmd
 }
 
-// NewUpdateCertificationTargetCommand returns a cobra command for the `update` subcommand
-func NewUpdateCertificationTargetCommand() *cobra.Command {
+// NewUpdateTargetOfEvaluationCommand returns a cobra command for the `update` subcommand
+func NewUpdateTargetOfEvaluationCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update",
 		Short: "Updates a target target of evaluation",
@@ -203,7 +203,7 @@ func NewUpdateCertificationTargetCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			res, err = client.UpdateCertificationTarget(context.Background(), &orchestrator.UpdateCertificationTargetRequest{
+			res, err = client.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
 				TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 					Id:          viper.GetString("id"),
 					Name:        viper.GetString("name"),
@@ -227,7 +227,7 @@ func NewUpdateCertificationTargetCommand() *cobra.Command {
 	_ = viper.BindPFlag("description", cmd.PersistentFlags().Lookup("description"))
 	_ = viper.BindPFlag("control-ids", cmd.PersistentFlags().Lookup("control-ids"))
 
-	_ = cmd.RegisterFlagCompletionFunc("id", cli.ValidArgsGetCertificationTargets)
+	_ = cmd.RegisterFlagCompletionFunc("id", cli.ValidArgsGetTargetOfEvaluations)
 	_ = cmd.RegisterFlagCompletionFunc("name", cli.DefaultArgsShellComp)
 	_ = cmd.RegisterFlagCompletionFunc("description", cli.DefaultArgsShellComp)
 
@@ -259,7 +259,7 @@ func NewGetMetricConfigurationCommand() *cobra.Command {
 			targetID := args[0]
 			metricID := args[1]
 
-			res, err = client.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{CertificationTargetId: targetID, MetricId: metricID})
+			res, err = client.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{TargetOfEvaluationId: targetID, MetricId: metricID})
 
 			return session.HandleResponse(res, err)
 		},
@@ -275,7 +275,7 @@ func NewGetMetricConfigurationCommand() *cobra.Command {
 func NewCloudCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "cloud",
-		Short: "Target certification targets commands",
+		Short: "Target target of evaluations commands",
 	}
 
 	AddCommands(cmd)
@@ -286,11 +286,11 @@ func NewCloudCommand() *cobra.Command {
 // AddCommands adds all subcommands
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
-		NewCreateCertificationTargetCommand(),
-		NewListCertificationTargetsCommand(),
-		NewGetCertificationTargetCommand(),
-		NewUpdateCertificationTargetCommand(),
-		NewRemoveCertificationTargetComand(),
+		NewCreateTargetOfEvaluationCommand(),
+		NewListTargetOfEvaluationsCommand(),
+		NewGetTargetOfEvaluationCommand(),
+		NewUpdateTargetOfEvaluationCommand(),
+		NewRemoveTargetOfEvaluationComand(),
 		NewGetMetricConfigurationCommand(),
 	)
 }

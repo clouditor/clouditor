@@ -79,14 +79,14 @@ func TestService_ListGraphEdges(t *testing.T) {
 		{
 			name: "only allowed target of evaluation",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1),
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(
 						panicToDiscoveryResource(t, &ontology.ObjectStorage{
 							Id:       "some-id",
 							Name:     "some-name",
 							ParentId: util.Ref("some-storage-account-id"),
-						}, testdata.MockCertificationTargetID2, testdata.MockEvidenceToolID1)))
+						}, testdata.MockTargetOfEvaluationID2, testdata.MockEvidenceToolID1)))
 					assert.NoError(t, s.Create(
 						panicToDiscoveryResource(t, &ontology.ObjectStorageService{
 							StorageIds: []string{"some-id"},
@@ -99,7 +99,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 									ProtocolVersion: 1.2,
 								},
 							},
-						}, testdata.MockCertificationTargetID1, testdata.MockEvidenceToolID1)))
+						}, testdata.MockTargetOfEvaluationID1, testdata.MockEvidenceToolID1)))
 				}),
 			},
 			args: args{
@@ -127,7 +127,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 							Id:       "some-id",
 							Name:     "some-name",
 							ParentId: util.Ref("some-storage-account-id"),
-						}, testdata.MockCertificationTargetID2, testdata.MockEvidenceToolID1)))
+						}, testdata.MockTargetOfEvaluationID2, testdata.MockEvidenceToolID1)))
 					assert.NoError(t, s.Create(
 						panicToDiscoveryResource(t, &ontology.ObjectStorageService{
 							StorageIds: []string{"some-id"},
@@ -140,7 +140,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 									ProtocolVersion: 1.2,
 								},
 							},
-						}, testdata.MockCertificationTargetID2, testdata.MockEvidenceToolID1)))
+						}, testdata.MockTargetOfEvaluationID2, testdata.MockEvidenceToolID1)))
 				}),
 			},
 			args: args{
@@ -216,13 +216,13 @@ func TestService_UpdateResource(t *testing.T) {
 		{
 			name: "validation failed",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID2),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID2),
 			},
 			args: args{
 				req: &discovery.UpdateResourceRequest{
 					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
 						Name: "some-name",
-					}, testdata.MockCertificationTargetID1, testdata.MockEvidenceToolID1),
+					}, testdata.MockTargetOfEvaluationID1, testdata.MockEvidenceToolID1),
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -232,14 +232,14 @@ func TestService_UpdateResource(t *testing.T) {
 		{
 			name: "auth failed",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID2),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID2),
 			},
 			args: args{
 				req: &discovery.UpdateResourceRequest{
 					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
 						Id:   "my-id",
 						Name: "some-name",
-					}, testdata.MockCertificationTargetID1, testdata.MockEvidenceToolID1),
+					}, testdata.MockTargetOfEvaluationID1, testdata.MockEvidenceToolID1),
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -257,13 +257,13 @@ func TestService_UpdateResource(t *testing.T) {
 					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
 						Id:   "my-id",
 						Name: "some-name",
-					}, testdata.MockCertificationTargetID1, testdata.MockEvidenceToolID1),
+					}, testdata.MockTargetOfEvaluationID1, testdata.MockEvidenceToolID1),
 				},
 			},
 			wantRes: panicToDiscoveryResource(t, &ontology.VirtualMachine{
 				Id:   "my-id",
 				Name: "some-name",
-			}, testdata.MockCertificationTargetID1, testdata.MockEvidenceToolID1),
+			}, testdata.MockTargetOfEvaluationID1, testdata.MockEvidenceToolID1),
 			wantErr: assert.NoError,
 		},
 	}

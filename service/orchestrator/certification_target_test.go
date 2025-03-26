@@ -52,17 +52,17 @@ import (
 )
 
 func init() {
-	viper.Set(config.DefaultCertificationTargetNameFlag, config.DefaultCertificationTargetName)
-	viper.Set(config.DefaultCertificationTargetDescriptionFlag, config.DefaultCertificationTargetDescription)
-	viper.Set(config.DefaultCertificationTargetTypeFlag, int32(config.DefaultCertificationTargetType))
+	viper.Set(config.DefaultTargetOfEvaluationNameFlag, config.DefaultTargetOfEvaluationName)
+	viper.Set(config.DefaultTargetOfEvaluationDescriptionFlag, config.DefaultTargetOfEvaluationDescription)
+	viper.Set(config.DefaultTargetOfEvaluationTypeFlag, int32(config.DefaultTargetOfEvaluationType))
 }
 
-func TestService_GetCertificationTarget(t *testing.T) {
+func TestService_GetTargetOfEvaluation(t *testing.T) {
 	tests := []struct {
 		name    string
 		svc     *Service
 		ctx     context.Context
-		req     *orchestrator.GetCertificationTargetRequest
+		req     *orchestrator.GetTargetOfEvaluationRequest
 		res     *orchestrator.TargetOfEvaluation
 		wantErr assert.ErrorAssertionFunc
 	}{
@@ -81,7 +81,7 @@ func TestService_GetCertificationTarget(t *testing.T) {
 			name: "target of evaluation not found",
 			svc:  NewService(),
 			ctx:  context.Background(),
-			req:  &orchestrator.GetCertificationTargetRequest{CertificationTargetId: testdata.MockCertificationTargetID1},
+			req:  &orchestrator.GetTargetOfEvaluationRequest{TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1},
 			res:  nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "target of evaluation not found") &&
@@ -92,20 +92,20 @@ func TestService_GetCertificationTarget(t *testing.T) {
 			name: "valid",
 			svc:  NewService(),
 			ctx:  context.Background(),
-			req:  &orchestrator.GetCertificationTargetRequest{CertificationTargetId: DefaultCertificationTargetId},
+			req:  &orchestrator.GetTargetOfEvaluationRequest{TargetOfEvaluationId: DefaultTargetOfEvaluationId},
 			res: &orchestrator.TargetOfEvaluation{
-				Id:          DefaultCertificationTargetId,
-				Name:        config.DefaultCertificationTargetName,
-				Description: config.DefaultCertificationTargetDescription,
-				TargetType:  config.DefaultCertificationTargetType,
+				Id:          DefaultTargetOfEvaluationId,
+				Name:        config.DefaultTargetOfEvaluationName,
+				Description: config.DefaultTargetOfEvaluationDescription,
+				TargetType:  config.DefaultTargetOfEvaluationType,
 			},
 			wantErr: assert.NoError,
 		},
 		{
 			name: "permission denied",
-			svc:  NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1))),
+			svc:  NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1))),
 			ctx:  context.TODO(),
-			req:  &orchestrator.GetCertificationTargetRequest{CertificationTargetId: DefaultCertificationTargetId},
+			req:  &orchestrator.GetTargetOfEvaluationRequest{TargetOfEvaluationId: DefaultTargetOfEvaluationId},
 			res:  nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error()) &&
@@ -114,18 +114,18 @@ func TestService_GetCertificationTarget(t *testing.T) {
 		},
 		{
 			name: "permission granted",
-			svc: NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1)), WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+			svc: NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1)), WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 				_ = s.Create(&orchestrator.TargetOfEvaluation{
-					Id:        testdata.MockCertificationTargetID1,
+					Id:        testdata.MockTargetOfEvaluationID1,
 					Name:      "target1",
 					CreatedAt: timestamppb.Now(),
 					UpdatedAt: timestamppb.Now(),
 				})
 			}))),
 			ctx: context.TODO(),
-			req: &orchestrator.GetCertificationTargetRequest{CertificationTargetId: testdata.MockCertificationTargetID1},
+			req: &orchestrator.GetTargetOfEvaluationRequest{TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1},
 			res: &orchestrator.TargetOfEvaluation{
-				Id:   testdata.MockCertificationTargetID1,
+				Id:   testdata.MockTargetOfEvaluationID1,
 				Name: "target1",
 			},
 			wantErr: assert.NoError,
@@ -134,10 +134,10 @@ func TestService_GetCertificationTarget(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.svc.CreateDefaultCertificationTarget()
+			_, err := tt.svc.CreateDefaultTargetOfEvaluation()
 			assert.NoError(t, err)
 
-			res, err := tt.svc.GetCertificationTarget(tt.ctx, tt.req)
+			res, err := tt.svc.GetTargetOfEvaluation(tt.ctx, tt.req)
 			tt.wantErr(t, err)
 
 			if tt.res != nil {
@@ -155,46 +155,46 @@ func TestService_GetCertificationTarget(t *testing.T) {
 	}
 }
 
-func TestService_UpdateCertificationTarget(t *testing.T) {
+func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 	var (
 		target *orchestrator.TargetOfEvaluation
 		err    error
 	)
-	orchestratorService := NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1)))
+	orchestratorService := NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1)))
 
 	// 1st case: Target of Evaluation is nil
-	_, err = orchestratorService.UpdateCertificationTarget(context.TODO(), &orchestrator.UpdateCertificationTargetRequest{})
+	_, err = orchestratorService.UpdateTargetOfEvaluation(context.TODO(), &orchestrator.UpdateTargetOfEvaluationRequest{})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 
 	// 2nd case: Target of Evaluation ID is nil
-	_, err = orchestratorService.UpdateCertificationTarget(context.TODO(), &orchestrator.UpdateCertificationTargetRequest{
+	_, err = orchestratorService.UpdateTargetOfEvaluation(context.TODO(), &orchestrator.UpdateTargetOfEvaluationRequest{
 		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{},
 	})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 
-	// 3rd case: Target of Evaluation not found since there are no certification targets yet
-	_, err = orchestratorService.UpdateCertificationTarget(context.TODO(), &orchestrator.UpdateCertificationTargetRequest{
+	// 3rd case: Target of Evaluation not found since there are no target of evaluations yet
+	_, err = orchestratorService.UpdateTargetOfEvaluation(context.TODO(), &orchestrator.UpdateTargetOfEvaluationRequest{
 		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-			Id:          testdata.MockCertificationTargetID1,
-			Name:        config.DefaultCertificationTargetName,
-			Description: config.DefaultCertificationTargetDescription,
+			Id:          testdata.MockTargetOfEvaluationID1,
+			Name:        config.DefaultTargetOfEvaluationName,
+			Description: config.DefaultTargetOfEvaluationDescription,
 		},
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
 
 	// 4th case: Target of Evaluation updated successfully
 	err = orchestratorService.storage.Create(&orchestrator.TargetOfEvaluation{
-		Id:          testdata.MockCertificationTargetID1,
-		Name:        config.DefaultCertificationTargetName,
-		Description: config.DefaultCertificationTargetDescription,
+		Id:          testdata.MockTargetOfEvaluationID1,
+		Name:        config.DefaultTargetOfEvaluationName,
+		Description: config.DefaultTargetOfEvaluationDescription,
 	})
 	assert.NoError(t, err)
 	if err != nil {
 		return
 	}
-	target, err = orchestratorService.UpdateCertificationTarget(context.TODO(), &orchestrator.UpdateCertificationTargetRequest{
+	target, err = orchestratorService.UpdateTargetOfEvaluation(context.TODO(), &orchestrator.UpdateTargetOfEvaluationRequest{
 		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-			Id:          testdata.MockCertificationTargetID1,
+			Id:          testdata.MockTargetOfEvaluationID1,
 			Name:        "NewName",
 			Description: "",
 		},
@@ -207,79 +207,79 @@ func TestService_UpdateCertificationTarget(t *testing.T) {
 	assert.Equal(t, "", target.Description)
 }
 
-func TestService_RemoveCertificationTarget(t *testing.T) {
+func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 	var (
-		CertificationTargetResponse      *orchestrator.TargetOfEvaluation
-		err                              error
-		listCertificationTargetsResponse *orchestrator.ListCertificationTargetsResponse
+		TargetOfEvaluationResponse      *orchestrator.TargetOfEvaluation
+		err                             error
+		listTargetOfEvaluationsResponse *orchestrator.ListTargetOfEvaluationsResponse
 	)
 	orchestratorService := NewService()
 
 	// 1st case: Empty target of evaluation ID error
-	_, err = orchestratorService.RemoveCertificationTarget(context.Background(), &orchestrator.RemoveCertificationTargetRequest{CertificationTargetId: ""})
+	_, err = orchestratorService.RemoveTargetOfEvaluation(context.Background(), &orchestrator.RemoveTargetOfEvaluationRequest{TargetOfEvaluationId: ""})
 	assert.Error(t, err)
 	assert.Equal(t, status.Code(err), codes.InvalidArgument)
 
 	// 2nd case: ErrRecordNotFound
-	_, err = orchestratorService.RemoveCertificationTarget(context.Background(), &orchestrator.RemoveCertificationTargetRequest{CertificationTargetId: DefaultCertificationTargetId})
+	_, err = orchestratorService.RemoveTargetOfEvaluation(context.Background(), &orchestrator.RemoveTargetOfEvaluationRequest{TargetOfEvaluationId: DefaultTargetOfEvaluationId})
 	assert.Error(t, err)
 	assert.Equal(t, status.Code(err), codes.NotFound)
 
 	// 3rd case: Record removed successfully
-	CertificationTargetResponse, err = orchestratorService.CreateDefaultCertificationTarget()
+	TargetOfEvaluationResponse, err = orchestratorService.CreateDefaultTargetOfEvaluation()
 	assert.NoError(t, err)
-	assert.NotNil(t, CertificationTargetResponse)
+	assert.NotNil(t, TargetOfEvaluationResponse)
 
-	// There is a record for certification targets in the DB (default one)
-	listCertificationTargetsResponse, err = orchestratorService.ListCertificationTargets(context.Background(), &orchestrator.ListCertificationTargetsRequest{})
+	// There is a record for target of evaluations in the DB (default one)
+	listTargetOfEvaluationsResponse, err = orchestratorService.ListTargetOfEvaluations(context.Background(), &orchestrator.ListTargetOfEvaluationsRequest{})
 	assert.NoError(t, err)
-	assert.NotNil(t, listCertificationTargetsResponse.Targets)
-	assert.NotEmpty(t, listCertificationTargetsResponse.Targets)
+	assert.NotNil(t, listTargetOfEvaluationsResponse.Targets)
+	assert.NotEmpty(t, listTargetOfEvaluationsResponse.Targets)
 
 	// Remove record
-	_, err = orchestratorService.RemoveCertificationTarget(context.Background(), &orchestrator.RemoveCertificationTargetRequest{CertificationTargetId: DefaultCertificationTargetId})
+	_, err = orchestratorService.RemoveTargetOfEvaluation(context.Background(), &orchestrator.RemoveTargetOfEvaluationRequest{TargetOfEvaluationId: DefaultTargetOfEvaluationId})
 	assert.NoError(t, err)
 
-	// There is a record for certification targets in the DB (default one)
-	listCertificationTargetsResponse, err = orchestratorService.ListCertificationTargets(context.Background(), &orchestrator.ListCertificationTargetsRequest{})
+	// There is a record for target of evaluations in the DB (default one)
+	listTargetOfEvaluationsResponse, err = orchestratorService.ListTargetOfEvaluations(context.Background(), &orchestrator.ListTargetOfEvaluationsRequest{})
 	assert.NoError(t, err)
-	assert.NotNil(t, listCertificationTargetsResponse.Targets)
-	assert.Empty(t, listCertificationTargetsResponse.Targets)
+	assert.NotNil(t, listTargetOfEvaluationsResponse.Targets)
+	assert.Empty(t, listTargetOfEvaluationsResponse.Targets)
 }
 
-func TestService_CreateDefaultCertificationTarget(t *testing.T) {
+func TestService_CreateDefaultTargetOfEvaluation(t *testing.T) {
 	var (
-		CertificationTargetResponse *orchestrator.TargetOfEvaluation
-		err                         error
+		TargetOfEvaluationResponse *orchestrator.TargetOfEvaluation
+		err                        error
 	)
 	orchestratorService := NewService()
 
-	// 1st case: No records for certification targets -> Default target of evaluation is created
-	CertificationTargetResponse, err = orchestratorService.CreateDefaultCertificationTarget()
+	// 1st case: No records for target of evaluations -> Default target of evaluation is created
+	TargetOfEvaluationResponse, err = orchestratorService.CreateDefaultTargetOfEvaluation()
 	assert.NoError(t, err)
 	// Check timestamps and delete it for further tests
-	assert.NotEmpty(t, CertificationTargetResponse.CreatedAt)
-	assert.NotEmpty(t, CertificationTargetResponse.UpdatedAt)
-	CertificationTargetResponse.CreatedAt = nil
-	CertificationTargetResponse.UpdatedAt = nil
+	assert.NotEmpty(t, TargetOfEvaluationResponse.CreatedAt)
+	assert.NotEmpty(t, TargetOfEvaluationResponse.UpdatedAt)
+	TargetOfEvaluationResponse.CreatedAt = nil
+	TargetOfEvaluationResponse.UpdatedAt = nil
 
 	assert.Equal(t, &orchestrator.TargetOfEvaluation{
-		Id:          DefaultCertificationTargetId,
-		Name:        config.DefaultCertificationTargetName,
-		Description: config.DefaultCertificationTargetDescription,
-		TargetType:  config.DefaultCertificationTargetType,
-	}, CertificationTargetResponse)
+		Id:          DefaultTargetOfEvaluationId,
+		Name:        config.DefaultTargetOfEvaluationName,
+		Description: config.DefaultTargetOfEvaluationDescription,
+		TargetType:  config.DefaultTargetOfEvaluationType,
+	}, TargetOfEvaluationResponse)
 
 	// Check if TargetOfEvaluation is valid
-	assert.NoError(t, api.Validate(CertificationTargetResponse))
+	assert.NoError(t, api.Validate(TargetOfEvaluationResponse))
 
 	// 2nd case: There is already a record for the target of evaluation (the default target of evaluation) -> Nothing added and no error
-	CertificationTargetResponse, err = orchestratorService.CreateDefaultCertificationTarget()
+	TargetOfEvaluationResponse, err = orchestratorService.CreateDefaultTargetOfEvaluation()
 	assert.NoError(t, err)
-	assert.Nil(t, CertificationTargetResponse)
+	assert.Nil(t, TargetOfEvaluationResponse)
 }
 
-func TestService_ListCertificationTargets(t *testing.T) {
+func TestService_ListTargetOfEvaluations(t *testing.T) {
 	type fields struct {
 		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
@@ -292,106 +292,106 @@ func TestService_ListCertificationTargets(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		req *orchestrator.ListCertificationTargetsRequest
+		req *orchestrator.ListTargetOfEvaluationsRequest
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantRes *orchestrator.ListCertificationTargetsResponse
+		wantRes *orchestrator.ListTargetOfEvaluationsResponse
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "retrieve empty list",
-			args: args{req: &orchestrator.ListCertificationTargetsRequest{}},
+			args: args{req: &orchestrator.ListTargetOfEvaluationsRequest{}},
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
-			wantRes: &orchestrator.ListCertificationTargetsResponse{},
+			wantRes: &orchestrator.ListTargetOfEvaluationsResponse{},
 			wantErr: assert.NoError,
 		},
 		{
 			name: "list with one item",
-			args: args{req: &orchestrator.ListCertificationTargetsRequest{}},
+			args: args{req: &orchestrator.ListTargetOfEvaluationsRequest{}},
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					target := &orchestrator.TargetOfEvaluation{
-						Id:          DefaultCertificationTargetId,
-						Name:        config.DefaultCertificationTargetName,
-						Description: config.DefaultCertificationTargetDescription,
+						Id:          DefaultTargetOfEvaluationId,
+						Name:        config.DefaultTargetOfEvaluationName,
+						Description: config.DefaultTargetOfEvaluationDescription,
 					}
 
 					_ = s.Create(target)
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),
 			},
-			wantRes: &orchestrator.ListCertificationTargetsResponse{
+			wantRes: &orchestrator.ListTargetOfEvaluationsResponse{
 				Targets: []*orchestrator.TargetOfEvaluation{
 					{
-						Id:          DefaultCertificationTargetId,
-						Name:        config.DefaultCertificationTargetName,
-						Description: config.DefaultCertificationTargetDescription,
+						Id:          DefaultTargetOfEvaluationId,
+						Name:        config.DefaultTargetOfEvaluationName,
+						Description: config.DefaultTargetOfEvaluationDescription,
 					},
 				},
 			},
 			wantErr: assert.NoError,
 		},
 		{
-			name: "retrieve only allowed certification targets: no target of evaluation is allowed",
+			name: "retrieve only allowed target of evaluations: no target of evaluation is allowed",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					// Store two certification targets, of which none we are allowed to retrieve in the test
+					// Store two target of evaluations, of which none we are allowed to retrieve in the test
 					_ = s.Create(&orchestrator.TargetOfEvaluation{
-						Id:   testdata.MockCertificationTargetID1,
-						Name: testdata.MockCertificationTargetName1,
+						Id:   testdata.MockTargetOfEvaluationID1,
+						Name: testdata.MockTargetOfEvaluationName1,
 					})
 					_ = s.Create(&orchestrator.TargetOfEvaluation{
-						Id:   testdata.MockCertificationTargetID2,
-						Name: testdata.MockCertificationTargetName2,
+						Id:   testdata.MockTargetOfEvaluationID2,
+						Name: testdata.MockTargetOfEvaluationName2,
 					})
 				}),
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1),
 			},
 			args: args{
 				ctx: context.TODO(),
-				req: &orchestrator.ListCertificationTargetsRequest{},
+				req: &orchestrator.ListTargetOfEvaluationsRequest{},
 			},
-			wantRes: &orchestrator.ListCertificationTargetsResponse{
+			wantRes: &orchestrator.ListTargetOfEvaluationsResponse{
 				Targets: []*orchestrator.TargetOfEvaluation{
 					{
-						Id:   testdata.MockCertificationTargetID1,
-						Name: testdata.MockCertificationTargetName1,
+						Id:   testdata.MockTargetOfEvaluationID1,
+						Name: testdata.MockTargetOfEvaluationName1,
 					},
 				},
 			},
 			wantErr: assert.NoError,
 		},
 		{
-			name: "retrieve only allowed certification targets",
+			name: "retrieve only allowed target of evaluations",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					// Store two certification targets, of which only one we are allowed to retrieve in the test
+					// Store two target of evaluations, of which only one we are allowed to retrieve in the test
 					_ = s.Create(&orchestrator.TargetOfEvaluation{
-						Id:   testdata.MockCertificationTargetID1,
-						Name: testdata.MockCertificationTargetName1,
+						Id:   testdata.MockTargetOfEvaluationID1,
+						Name: testdata.MockTargetOfEvaluationName1,
 					})
 					_ = s.Create(&orchestrator.TargetOfEvaluation{
-						Id:   testdata.MockCertificationTargetID2,
-						Name: testdata.MockCertificationTargetName1,
+						Id:   testdata.MockTargetOfEvaluationID2,
+						Name: testdata.MockTargetOfEvaluationName1,
 					})
 				}),
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1),
 			},
 			args: args{
 				ctx: context.TODO(),
-				req: &orchestrator.ListCertificationTargetsRequest{},
+				req: &orchestrator.ListTargetOfEvaluationsRequest{},
 			},
-			wantRes: &orchestrator.ListCertificationTargetsResponse{
+			wantRes: &orchestrator.ListTargetOfEvaluationsResponse{
 				Targets: []*orchestrator.TargetOfEvaluation{
 					{
-						Id:   testdata.MockCertificationTargetID1,
-						Name: testdata.MockCertificationTargetName1,
+						Id:   testdata.MockTargetOfEvaluationID1,
+						Name: testdata.MockTargetOfEvaluationName1,
 					},
 				},
 			},
@@ -412,7 +412,7 @@ func TestService_ListCertificationTargets(t *testing.T) {
 				authz:                 tt.fields.authz,
 			}
 
-			gotRes, err := svc.ListCertificationTargets(tt.args.ctx, tt.args.req)
+			gotRes, err := svc.ListTargetOfEvaluations(tt.args.ctx, tt.args.req)
 			assert.NoError(t, api.Validate(gotRes))
 
 			tt.wantErr(t, err, tt.args)
@@ -421,28 +421,28 @@ func TestService_ListCertificationTargets(t *testing.T) {
 	}
 }
 
-func TestService_GetCertificationTargetStatistics(t *testing.T) {
+func TestService_GetTargetOfEvaluationStatistics(t *testing.T) {
 	type fields struct {
-		CertificationTargetHooks []orchestrator.CertificationTargetHookFunc
-		auditScopeHooks          []orchestrator.AuditScopeHookFunc
-		AssessmentResultHooks    []assessment.ResultHookFunc
-		storage                  persistence.Storage
-		metricsFile              string
-		loadMetricsFunc          func() ([]*assessment.Metric, error)
-		catalogsFolder           string
-		loadCatalogsFunc         func() ([]*orchestrator.Catalog, error)
-		events                   chan *orchestrator.MetricChangeEvent
-		authz                    service.AuthorizationStrategy
+		TargetOfEvaluationHooks []orchestrator.TargetOfEvaluationHookFunc
+		auditScopeHooks         []orchestrator.AuditScopeHookFunc
+		AssessmentResultHooks   []assessment.ResultHookFunc
+		storage                 persistence.Storage
+		metricsFile             string
+		loadMetricsFunc         func() ([]*assessment.Metric, error)
+		catalogsFolder          string
+		loadCatalogsFunc        func() ([]*orchestrator.Catalog, error)
+		events                  chan *orchestrator.MetricChangeEvent
+		authz                   service.AuthorizationStrategy
 	}
 	type args struct {
 		ctx context.Context
-		req *orchestrator.GetCertificationTargetStatisticsRequest
+		req *orchestrator.GetTargetOfEvaluationStatisticsRequest
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantRes *orchestrator.GetCertificationTargetStatisticsResponse
+		wantRes *orchestrator.GetTargetOfEvaluationStatisticsResponse
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -458,12 +458,12 @@ func TestService_GetCertificationTargetStatistics(t *testing.T) {
 		{
 			name: "Permission denied",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID2),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID2),
 			},
 			args: args{
 				ctx: context.TODO(),
-				req: &orchestrator.GetCertificationTargetStatisticsRequest{
-					CertificationTargetId: testdata.MockCertificationTargetID1,
+				req: &orchestrator.GetTargetOfEvaluationStatisticsRequest{
+					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 				},
 			},
 			wantRes: nil,
@@ -476,12 +476,12 @@ func TestService_GetCertificationTargetStatistics(t *testing.T) {
 			name: "Storage error: getting resources",
 			fields: fields{
 				storage: &testutil.StorageWithError{CountErr: gorm.ErrInvalidDB},
-				authz:   servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
+				authz:   servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1),
 			},
 			args: args{
 				ctx: context.TODO(),
-				req: &orchestrator.GetCertificationTargetStatisticsRequest{
-					CertificationTargetId: testdata.MockCertificationTargetID1,
+				req: &orchestrator.GetTargetOfEvaluationStatisticsRequest{
+					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 				},
 			},
 			wantRes: nil,
@@ -496,58 +496,58 @@ func TestService_GetCertificationTargetStatistics(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					// Store one target of evaluation
 					assert.NoError(t, s.Create(&orchestrator.TargetOfEvaluation{
-						Id:          testdata.MockCertificationTargetID1,
-						Name:        testdata.MockCertificationTargetName1,
-						Description: testdata.MockCertificationTargetDescription1,
+						Id:          testdata.MockTargetOfEvaluationID1,
+						Name:        testdata.MockTargetOfEvaluationName1,
+						Description: testdata.MockTargetOfEvaluationDescription1,
 					}))
 
 					// Store evidences for target of evaluation
 					assert.NoError(t, s.Create(&evidence.Evidence{
-						Id:                    uuid.NewString(),
-						CertificationTargetId: testdata.MockCertificationTargetID1,
+						Id:                   uuid.NewString(),
+						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 					}))
 					assert.NoError(t, s.Create(&evidence.Evidence{
-						Id:                    uuid.NewString(),
-						CertificationTargetId: testdata.MockCertificationTargetID2,
+						Id:                   uuid.NewString(),
+						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 					}))
 
 					// Store assessment results for target of evaluation
 					assert.NoError(t, s.Create(&assessment.AssessmentResult{
-						Id:                    uuid.NewString(),
-						CertificationTargetId: testdata.MockCertificationTargetID1,
+						Id:                   uuid.NewString(),
+						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 					}))
 					assert.NoError(t, s.Create(&assessment.AssessmentResult{
-						Id:                    uuid.NewString(),
-						CertificationTargetId: testdata.MockCertificationTargetID1,
+						Id:                   uuid.NewString(),
+						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 					}))
 					assert.NoError(t, s.Create(&assessment.AssessmentResult{
-						Id:                    uuid.NewString(),
-						CertificationTargetId: testdata.MockCertificationTargetID2,
+						Id:                   uuid.NewString(),
+						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 					}))
 
 					// Store audit scopes
-					assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", "", testdata.MockCertificationTargetID1)))
-					assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", "", testdata.MockCertificationTargetID1)))
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", "", testdata.MockTargetOfEvaluationID1)))
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", "", testdata.MockTargetOfEvaluationID1)))
 
 					// Store resources
 					assert.NoError(t, s.Create(&discovery.Resource{
-						Id:                    uuid.NewString(),
-						CertificationTargetId: testdata.MockCertificationTargetID1,
+						Id:                   uuid.NewString(),
+						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 					}))
 					assert.NoError(t, s.Create(&discovery.Resource{
-						Id:                    uuid.NewString(),
-						CertificationTargetId: testdata.MockCertificationTargetID2,
+						Id:                   uuid.NewString(),
+						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 					}))
 				}),
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1),
 			},
 			args: args{
 				ctx: context.TODO(),
-				req: &orchestrator.GetCertificationTargetStatisticsRequest{
-					CertificationTargetId: testdata.MockCertificationTargetID1,
+				req: &orchestrator.GetTargetOfEvaluationStatisticsRequest{
+					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 				},
 			},
-			wantRes: &orchestrator.GetCertificationTargetStatisticsResponse{
+			wantRes: &orchestrator.GetTargetOfEvaluationStatisticsResponse{
 				NumberOfDiscoveredResources: 1,
 				NumberOfAssessmentResults:   2,
 				NumberOfEvidences:           1,
@@ -559,28 +559,28 @@ func TestService_GetCertificationTargetStatistics(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				CertificationTargetHooks: tt.fields.CertificationTargetHooks,
-				auditScopeHooks:          tt.fields.auditScopeHooks,
-				AssessmentResultHooks:    tt.fields.AssessmentResultHooks,
-				storage:                  tt.fields.storage,
-				metricsFile:              tt.fields.metricsFile,
-				loadMetricsFunc:          tt.fields.loadMetricsFunc,
-				catalogsFolder:           tt.fields.catalogsFolder,
-				loadCatalogsFunc:         tt.fields.loadCatalogsFunc,
-				events:                   tt.fields.events,
-				authz:                    tt.fields.authz,
+				TargetOfEvaluationHooks: tt.fields.TargetOfEvaluationHooks,
+				auditScopeHooks:         tt.fields.auditScopeHooks,
+				AssessmentResultHooks:   tt.fields.AssessmentResultHooks,
+				storage:                 tt.fields.storage,
+				metricsFile:             tt.fields.metricsFile,
+				loadMetricsFunc:         tt.fields.loadMetricsFunc,
+				catalogsFolder:          tt.fields.catalogsFolder,
+				loadCatalogsFunc:        tt.fields.loadCatalogsFunc,
+				events:                  tt.fields.events,
+				authz:                   tt.fields.authz,
 			}
-			gotRes, err := s.GetCertificationTargetStatistics(tt.args.ctx, tt.args.req)
+			gotRes, err := s.GetTargetOfEvaluationStatistics(tt.args.ctx, tt.args.req)
 			tt.wantErr(t, err)
 			assert.Equal(t, tt.wantRes, gotRes)
 		})
 	}
 }
 
-func TestService_CreateCertificationTarget(t *testing.T) {
+func TestService_CreateTargetOfEvaluation(t *testing.T) {
 	type fields struct {
 		UnimplementedOrchestratorServer orchestrator.UnimplementedOrchestratorServer
-		CertificationTargetHooks        []orchestrator.CertificationTargetHookFunc
+		TargetOfEvaluationHooks         []orchestrator.TargetOfEvaluationHookFunc
 		auditScopeHooks                 []orchestrator.AuditScopeHookFunc
 		AssessmentResultHooks           []assessment.ResultHookFunc
 		storage                         persistence.Storage
@@ -593,7 +593,7 @@ func TestService_CreateCertificationTarget(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		req *orchestrator.CreateCertificationTargetRequest
+		req *orchestrator.CreateTargetOfEvaluationRequest
 	}
 	tests := []struct {
 		name    string
@@ -605,7 +605,7 @@ func TestService_CreateCertificationTarget(t *testing.T) {
 		{
 			name: "Request validation error",
 			args: args{
-				req: &orchestrator.CreateCertificationTargetRequest{
+				req: &orchestrator.CreateTargetOfEvaluationRequest{
 					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{},
 				},
 			},
@@ -620,8 +620,8 @@ func TestService_CreateCertificationTarget(t *testing.T) {
 				storage: &testutil.StorageWithError{CreateErr: gorm.ErrInvalidDB},
 			},
 			args: args{
-				req: &orchestrator.CreateCertificationTargetRequest{
-					TargetOfEvaluation: orchestratortest.NewCertificationTarget(),
+				req: &orchestrator.CreateTargetOfEvaluationRequest{
+					TargetOfEvaluation: orchestratortest.NewTargetOfEvaluation(),
 				},
 			},
 			wantRes: assert.Nil[*orchestrator.TargetOfEvaluation],
@@ -635,11 +635,11 @@ func TestService_CreateCertificationTarget(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t),
 			},
 			args: args{
-				req: &orchestrator.CreateCertificationTargetRequest{
+				req: &orchestrator.CreateTargetOfEvaluationRequest{
 					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						Name:        "test",
 						Description: "some",
-						Metadata: &orchestrator.CertificationTarget_Metadata{
+						Metadata: &orchestrator.TargetOfEvaluation_Metadata{
 							Labels: map[string]string{
 								"owner": "testOwner",
 								"env":   "prod",
@@ -654,7 +654,7 @@ func TestService_CreateCertificationTarget(t *testing.T) {
 					Description: "some",
 					CreatedAt:   &timestamppb.Timestamp{},
 					UpdatedAt:   &timestamppb.Timestamp{},
-					Metadata: &orchestrator.CertificationTarget_Metadata{
+					Metadata: &orchestrator.TargetOfEvaluation_Metadata{
 						Labels: map[string]string{
 							"owner": "testOwner",
 							"env":   "prod",
@@ -684,7 +684,7 @@ func TestService_CreateCertificationTarget(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t),
 			},
 			args: args{
-				req: &orchestrator.CreateCertificationTargetRequest{
+				req: &orchestrator.CreateTargetOfEvaluationRequest{
 					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						Name:        "test",
 						Description: "some",
@@ -697,7 +697,7 @@ func TestService_CreateCertificationTarget(t *testing.T) {
 					Description: "some",
 					CreatedAt:   &timestamppb.Timestamp{},
 					UpdatedAt:   &timestamppb.Timestamp{},
-					Metadata:    &orchestrator.CertificationTarget_Metadata{},
+					Metadata:    &orchestrator.TargetOfEvaluation_Metadata{},
 				}
 
 				// Check if ID is set and delete it for the comparison
@@ -721,7 +721,7 @@ func TestService_CreateCertificationTarget(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
 				UnimplementedOrchestratorServer: tt.fields.UnimplementedOrchestratorServer,
-				CertificationTargetHooks:        tt.fields.CertificationTargetHooks,
+				TargetOfEvaluationHooks:         tt.fields.TargetOfEvaluationHooks,
 				auditScopeHooks:                 tt.fields.auditScopeHooks,
 				AssessmentResultHooks:           tt.fields.AssessmentResultHooks,
 				storage:                         tt.fields.storage,
@@ -732,7 +732,7 @@ func TestService_CreateCertificationTarget(t *testing.T) {
 				events:                          tt.fields.events,
 				authz:                           tt.fields.authz,
 			}
-			gotRes, err := s.CreateCertificationTarget(tt.args.ctx, tt.args.req)
+			gotRes, err := s.CreateTargetOfEvaluation(tt.args.ctx, tt.args.req)
 
 			tt.wantErr(t, err)
 			tt.wantRes(t, gotRes)

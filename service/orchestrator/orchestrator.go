@@ -69,8 +69,8 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 			// svc.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
 
 			// Create default Target of Evaluation
-			if viper.GetBool(config.CreateDefaultCertificationTargetFlag) {
-				_, err := svc.CreateDefaultCertificationTarget()
+			if viper.GetBool(config.CreateDefaultTargetOfEvaluationFlag) {
+				_, err := svc.CreateDefaultTargetOfEvaluation()
 				if err != nil {
 					return nil, fmt.Errorf("could not register default target target of evaluation: %v", err)
 				}
@@ -85,9 +85,9 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 type Service struct {
 	orchestrator.UnimplementedOrchestratorServer
 
-	// CertificationTargetHooks is a list of hook functions that can be used to inform
-	// about updated CertificationTargets
-	CertificationTargetHooks []orchestrator.CertificationTargetHookFunc
+	// TargetOfEvaluationHooks is a list of hook functions that can be used to inform
+	// about updated TargetOfEvaluations
+	TargetOfEvaluationHooks []orchestrator.TargetOfEvaluationHookFunc
 
 	// auditScopeHooks is a list of hook functions that can be used to inform about updated Audit Scopes
 	auditScopeHooks []orchestrator.AuditScopeHookFunc
@@ -161,7 +161,7 @@ func WithStorage(storage persistence.Storage) service.Option[*Service] {
 // WithAuthorizationStrategyJWT is an option that configures an JWT-based authorization strategy using a specific claim key.
 func WithAuthorizationStrategyJWT(key string, allowAllKey string) service.Option[*Service] {
 	return func(s *Service) {
-		s.authz = &service.AuthorizationStrategyJWT{CertificationTargetsKey: key, AllowAllKey: allowAllKey}
+		s.authz = &service.AuthorizationStrategyJWT{TargetOfEvaluationsKey: key, AllowAllKey: allowAllKey}
 	}
 }
 
@@ -216,7 +216,7 @@ func (svc *Service) Shutdown() {}
 // informHooks informs the registered hook functions
 func (s *Service) informHooks(ctx context.Context, cld *orchestrator.TargetOfEvaluation, err error) {
 	s.hookMutex.RLock()
-	hooks := s.CertificationTargetHooks
+	hooks := s.TargetOfEvaluationHooks
 	defer s.hookMutex.RUnlock()
 
 	// Inform our hook, if we have any
@@ -228,10 +228,10 @@ func (s *Service) informHooks(ctx context.Context, cld *orchestrator.TargetOfEva
 	}
 }
 
-func (s *Service) CreateCertificationTargetHook(hook orchestrator.CertificationTargetHookFunc) {
+func (s *Service) CreateTargetOfEvaluationHook(hook orchestrator.TargetOfEvaluationHookFunc) {
 	s.hookMutex.Lock()
 	defer s.hookMutex.Unlock()
-	s.CertificationTargetHooks = append(s.CertificationTargetHooks, hook)
+	s.TargetOfEvaluationHooks = append(s.TargetOfEvaluationHooks, hook)
 }
 
 // GetRuntimeInfo implements a method to retrieve runtime information

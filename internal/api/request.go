@@ -11,9 +11,9 @@ type PayloadRequest interface {
 	proto.Message
 }
 
-// CertificationTargetRequest represents any kind of RPC request, that contains a
+// TargetOfEvaluationRequest represents any kind of RPC request, that contains a
 // reference to a target of evaluation. Defined in internal/api to avoid cyclic
 // dependencies.
-type CertificationTargetRequest interface {
-	GetCertificationTargetId() string
+type TargetOfEvaluationRequest interface {
+	GetTargetOfEvaluationId() string
 }

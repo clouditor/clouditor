@@ -127,7 +127,7 @@ func TestNewService(t *testing.T) {
 	}
 }
 
-func TestCertificationTargetHooks(t *testing.T) {
+func TestTargetOfEvaluationHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
 		wg              sync.WaitGroup
@@ -149,9 +149,9 @@ func TestCertificationTargetHooks(t *testing.T) {
 	}
 
 	type args struct {
-		in0                      context.Context
-		targetUpdate             *orchestrator.UpdateCertificationTargetRequest
-		CertificationTargetHooks []orchestrator.CertificationTargetHookFunc
+		in0                     context.Context
+		targetUpdate            *orchestrator.UpdateTargetOfEvaluationRequest
+		TargetOfEvaluationHooks []orchestrator.TargetOfEvaluationHookFunc
 	}
 	tests := []struct {
 		name    string
@@ -163,14 +163,14 @@ func TestCertificationTargetHooks(t *testing.T) {
 			name: "Update Target of Evaluation",
 			args: args{
 				in0: context.TODO(),
-				targetUpdate: &orchestrator.UpdateCertificationTargetRequest{
+				targetUpdate: &orchestrator.UpdateTargetOfEvaluationRequest{
 					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						Id:          "00000000-0000-0000-0000-000000000000",
 						Name:        "test target",
 						Description: "test target",
 					},
 				},
-				CertificationTargetHooks: []orchestrator.CertificationTargetHookFunc{firstHookFunction, secondHookFunction},
+				TargetOfEvaluationHooks: []orchestrator.TargetOfEvaluationHookFunc{firstHookFunction, secondHookFunction},
 			},
 			wantErr: assert.Nil[error],
 			wantRes: func(t *testing.T, got *orchestrator.TargetOfEvaluation) bool {
@@ -185,24 +185,24 @@ func TestCertificationTargetHooks(t *testing.T) {
 			hookCallCounter = 0
 			s := NewService()
 
-			_, err := s.CreateDefaultCertificationTarget()
+			_, err := s.CreateDefaultTargetOfEvaluation()
 			if err != nil {
-				t.Errorf("CreateCertificationTarget() error = %v", err)
+				t.Errorf("CreateTargetOfEvaluation() error = %v", err)
 			}
 
-			for i, hookFunction := range tt.args.CertificationTargetHooks {
-				s.CreateCertificationTargetHook(hookFunction)
+			for i, hookFunction := range tt.args.TargetOfEvaluationHooks {
+				s.CreateTargetOfEvaluationHook(hookFunction)
 
 				// Check if hook is registered
-				funcName1 := runtime.FuncForPC(reflect.ValueOf(s.CertificationTargetHooks[i]).Pointer()).Name()
+				funcName1 := runtime.FuncForPC(reflect.ValueOf(s.TargetOfEvaluationHooks[i]).Pointer()).Name()
 				funcName2 := runtime.FuncForPC(reflect.ValueOf(hookFunction).Pointer()).Name()
 				assert.Equal(t, funcName1, funcName2)
 			}
 
 			// To test the hooks we have to call a function that calls the hook function
-			gotRes, err := s.UpdateCertificationTarget(tt.args.in0, tt.args.targetUpdate)
+			gotRes, err := s.UpdateTargetOfEvaluation(tt.args.in0, tt.args.targetUpdate)
 
-			// wait for all hooks (2 certification targets * 2 hooks)
+			// wait for all hooks (2 target of evaluations * 2 hooks)
 			wg.Wait()
 
 			tt.wantErr(t, err)

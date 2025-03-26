@@ -290,8 +290,8 @@ func ValidArgsGetControls(_ *cobra.Command, args []string, toComplete string) ([
 	}
 }
 
-func ValidArgsGetCertificationTargets(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	return getCertificationTargets(toComplete), cobra.ShellCompDirectiveNoFileComp
+func ValidArgsGetTargetOfEvaluations(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return getTargetOfEvaluations(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
 
 func getTools(_ string) []string {
@@ -431,12 +431,12 @@ func getControls(catalogID string, categoryName string, _ string) []string {
 	return output
 }
 
-func getCertificationTargets(_ string) []string {
+func getTargetOfEvaluations(_ string) []string {
 	var (
 		err     error
 		session *Session
 		client  orchestrator.OrchestratorClient
-		res     *orchestrator.ListCertificationTargetsResponse
+		res     *orchestrator.ListTargetOfEvaluationsResponse
 	)
 
 	if session, err = ContinueSession(); err != nil {
@@ -446,7 +446,7 @@ func getCertificationTargets(_ string) []string {
 
 	client = orchestrator.NewOrchestratorClient(session)
 
-	if res, err = client.ListCertificationTargets(context.Background(), &orchestrator.ListCertificationTargetsRequest{}); err != nil {
+	if res, err = client.ListTargetOfEvaluations(context.Background(), &orchestrator.ListTargetOfEvaluationsRequest{}); err != nil {
 		return []string{}
 	}
 

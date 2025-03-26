@@ -96,8 +96,8 @@ func (svc *Service) GetAuditScope(ctx context.Context, req *orchestrator.GetAudi
 	}
 
 	// Check if client is allowed to access the audit scope
-	all, allowed := svc.authz.AllowedCertificationTargets(ctx)
-	if !all && !slices.Contains(allowed, res.CertificationTargetId) {
+	all, allowed := svc.authz.AllowedTargetOfEvaluations(ctx)
+	if !all && !slices.Contains(allowed, res.TargetOfEvaluationId) {
 		// Important to nil the response since it is set already
 		return nil, status.Error(codes.PermissionDenied, service.ErrPermissionDenied.Error())
 	}
@@ -116,14 +116,14 @@ func (svc *Service) ListAuditScopes(ctx context.Context, req *orchestrator.ListA
 		return nil, err
 	}
 
-	// Retrieve a list of allowed certification targets according to our
+	// Retrieve a list of allowed target of evaluations according to our
 	// authorization strategy. No need to specify any conditions to our storage
-	// request, if we are allowed to see all certification targets.
-	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
+	// request, if we are allowed to see all target of evaluations.
+	all, allowed = svc.authz.AllowedTargetOfEvaluations(ctx)
 
 	// The content of the filtered target of evaluation ID must be in the list of allowed target of evaluation IDs,
-	// unless one can access *all* the certification targets.
-	if !all && req.Filter != nil && req.Filter.CertificationTargetId != nil && !slices.Contains(allowed, req.Filter.GetCertificationTargetId()) {
+	// unless one can access *all* the target of evaluations.
+	if !all && req.Filter != nil && req.Filter.TargetOfEvaluationId != nil && !slices.Contains(allowed, req.Filter.GetTargetOfEvaluationId()) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -134,10 +134,10 @@ func (svc *Service) ListAuditScopes(ctx context.Context, req *orchestrator.ListA
 	// * target of evaluation ID
 	// * catalog ID
 	if req.Filter != nil {
-		if req.Filter.CertificationTargetId != nil {
+		if req.Filter.TargetOfEvaluationId != nil {
 			query = append(query, "certification_target_id = ?")
-			args = append(args, req.Filter.GetCertificationTargetId())
-			// conds = append(conds, "certification_target_id = ?", req.CertificationTargetId)
+			args = append(args, req.Filter.GetTargetOfEvaluationId())
+			// conds = append(conds, "certification_target_id = ?", req.TargetOfEvaluationId)
 		}
 		if req.Filter.CatalogId != nil {
 			query = append(query, "catalog_id = ?")

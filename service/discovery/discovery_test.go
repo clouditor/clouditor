@@ -89,14 +89,14 @@ func TestNewService(t *testing.T) {
 			},
 		},
 		{
-			name: "Create service with option 'WithDefaultCertificationTargetID'",
+			name: "Create service with option 'WithDefaultTargetOfEvaluationID'",
 			args: args{
 				opts: []service.Option[*Service]{
-					WithCertificationTargetID(testdata.MockCertificationTargetID1),
+					WithTargetOfEvaluationID(testdata.MockTargetOfEvaluationID1),
 				},
 			},
 			want: func(t *testing.T, got *Service) bool {
-				return assert.Equal(t, testdata.MockCertificationTargetID1, got.ctID)
+				return assert.Equal(t, testdata.MockTargetOfEvaluationID1, got.ctID)
 			},
 		},
 		{
@@ -158,11 +158,11 @@ func TestNewService(t *testing.T) {
 			name: "Create service with option 'WithAdditionalDiscoverers'",
 			args: args{
 				opts: []service.Option[*Service]{
-					WithAdditionalDiscoverers([]discovery.Discoverer{&discoverytest.TestDiscoverer{ServiceId: config.DefaultCertificationTargetID}}),
+					WithAdditionalDiscoverers([]discovery.Discoverer{&discoverytest.TestDiscoverer{ServiceId: config.DefaultTargetOfEvaluationID}}),
 				},
 			},
 			want: func(t *testing.T, got *Service) bool {
-				return assert.Contains(t, got.discoverers, &discoverytest.TestDiscoverer{ServiceId: config.DefaultCertificationTargetID})
+				return assert.Contains(t, got.discoverers, &discoverytest.TestDiscoverer{ServiceId: config.DefaultTargetOfEvaluationID})
 			},
 		},
 		{
@@ -201,15 +201,15 @@ func TestService_StartDiscovery(t *testing.T) {
 		{
 			name: "Err in discoverer",
 			fields: fields{
-				discoverer: &discoverytest.TestDiscoverer{TestCase: 0, ServiceId: config.DefaultCertificationTargetID},
-				ctID:       config.DefaultCertificationTargetID,
+				discoverer: &discoverytest.TestDiscoverer{TestCase: 0, ServiceId: config.DefaultTargetOfEvaluationID},
+				ctID:       config.DefaultTargetOfEvaluationID,
 			},
 		},
 		{
 			name: "No err with default target of evaluation ID",
 			fields: fields{
-				discoverer:  &discoverytest.TestDiscoverer{TestCase: 2, ServiceId: config.DefaultCertificationTargetID},
-				ctID:        config.DefaultCertificationTargetID,
+				discoverer:  &discoverytest.TestDiscoverer{TestCase: 2, ServiceId: config.DefaultTargetOfEvaluationID},
+				ctID:        config.DefaultTargetOfEvaluationID,
 				collectorID: config.DefaultEvidenceCollectorToolID,
 			},
 			checkEvidence: true,
@@ -217,8 +217,8 @@ func TestService_StartDiscovery(t *testing.T) {
 		{
 			name: "No err with custom target of evaluation ID",
 			fields: fields{
-				discoverer:  &discoverytest.TestDiscoverer{TestCase: 2, ServiceId: testdata.MockCertificationTargetID1},
-				ctID:        testdata.MockCertificationTargetID1,
+				discoverer:  &discoverytest.TestDiscoverer{TestCase: 2, ServiceId: testdata.MockTargetOfEvaluationID1},
+				ctID:        testdata.MockTargetOfEvaluationID1,
 				collectorID: config.DefaultEvidenceCollectorToolID,
 			},
 			checkEvidence: true,
@@ -263,7 +263,7 @@ func TestService_StartDiscovery(t *testing.T) {
 				assert.Equal(t, eWant.GetId()[:len(eWant.GetId())-3], or.GetId()[:len(or.GetId())-3])
 
 				// Assert target of evaluation ID
-				assert.Equal(t, tt.fields.ctID, eGot.CertificationTargetId)
+				assert.Equal(t, tt.fields.ctID, eGot.TargetOfEvaluationId)
 			}
 		})
 	}
@@ -290,7 +290,7 @@ func TestService_ListResources(t *testing.T) {
 			name: "Filter type, allow all",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(true),
-				ctID:  testdata.MockCertificationTargetID1,
+				ctID:  testdata.MockTargetOfEvaluationID1,
 			},
 			args: args{req: &discovery.ListResourcesRequest{
 				Filter: &discovery.ListResourcesRequest_Filter{
@@ -304,12 +304,12 @@ func TestService_ListResources(t *testing.T) {
 		{
 			name: "Filter target of evaluation, allow",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
-				ctID:  testdata.MockCertificationTargetID1,
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1),
+				ctID:  testdata.MockTargetOfEvaluationID1,
 			},
 			args: args{req: &discovery.ListResourcesRequest{
 				Filter: &discovery.ListResourcesRequest_Filter{
-					CertificationTargetId: util.Ref(testdata.MockCertificationTargetID1),
+					TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
 				},
 			}},
 			numberOfQueriedResources: 2,
@@ -318,12 +318,12 @@ func TestService_ListResources(t *testing.T) {
 		{
 			name: "Filter target of evaluation, not allowed",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
-				ctID:  testdata.MockCertificationTargetID1,
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1),
+				ctID:  testdata.MockTargetOfEvaluationID1,
 			},
 			args: args{req: &discovery.ListResourcesRequest{
 				Filter: &discovery.ListResourcesRequest_Filter{
-					CertificationTargetId: util.Ref(testdata.MockCertificationTargetID2),
+					TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID2),
 				},
 			}},
 			numberOfQueriedResources: 0,
@@ -334,14 +334,14 @@ func TestService_ListResources(t *testing.T) {
 		{
 			name: "Filter toolID, allow",
 			fields: fields{
-				authz:       servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
-				ctID:        testdata.MockCertificationTargetID1,
+				authz:       servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1),
+				ctID:        testdata.MockTargetOfEvaluationID1,
 				collectorID: testdata.MockEvidenceToolID1,
 			},
 			args: args{req: &discovery.ListResourcesRequest{
 				Filter: &discovery.ListResourcesRequest_Filter{
-					CertificationTargetId: util.Ref(testdata.MockCertificationTargetID1),
-					ToolId:                util.Ref(testdata.MockEvidenceToolID1),
+					TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
+					ToolId:               util.Ref(testdata.MockEvidenceToolID1),
 				},
 			}},
 			numberOfQueriedResources: 2,
@@ -351,8 +351,8 @@ func TestService_ListResources(t *testing.T) {
 		{
 			name: "Filter toolID, not allowed",
 			fields: fields{
-				authz:       servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
-				ctID:        testdata.MockCertificationTargetID1,
+				authz:       servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1),
+				ctID:        testdata.MockTargetOfEvaluationID1,
 				collectorID: testdata.MockEvidenceToolID1,
 			},
 			args: args{req: &discovery.ListResourcesRequest{
@@ -369,7 +369,7 @@ func TestService_ListResources(t *testing.T) {
 			name: "No filtering, allow all",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(true),
-				ctID:  testdata.MockCertificationTargetID1,
+				ctID:  testdata.MockTargetOfEvaluationID1,
 			},
 			args:                     args{req: &discovery.ListResourcesRequest{}},
 			numberOfQueriedResources: 2,
@@ -378,8 +378,8 @@ func TestService_ListResources(t *testing.T) {
 		{
 			name: "No filtering, allow different target of evaluation, empty result",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID2),
-				ctID:  testdata.MockCertificationTargetID1,
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID2),
+				ctID:  testdata.MockTargetOfEvaluationID1,
 			},
 			args:                     args{req: &discovery.ListResourcesRequest{}},
 			numberOfQueriedResources: 0,
@@ -559,7 +559,7 @@ func TestService_Start(t *testing.T) {
 		{
 			name: "Wrong permission",
 			fields: fields{
-				authz:     servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID2),
+				authz:     servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID2),
 				scheduler: gocron.NewScheduler(time.UTC),
 				providers: []string{},
 			},

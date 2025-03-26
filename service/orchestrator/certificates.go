@@ -67,8 +67,8 @@ func (svc *Service) GetCertificate(ctx context.Context, req *orchestrator.GetCer
 	}
 
 	// Check if client is allowed to access the corresponding target of evaluation (targeted in the certificate)
-	all, allowed := svc.authz.AllowedCertificationTargets(ctx)
-	if !all && !slices.Contains(allowed, res.CertificationTargetId) {
+	all, allowed := svc.authz.AllowedTargetOfEvaluations(ctx)
+	if !all && !slices.Contains(allowed, res.TargetOfEvaluationId) {
 		// Important to nil the response since it is set already
 		return nil, status.Error(codes.PermissionDenied, service.ErrPermissionDenied.Error())
 	}
@@ -91,7 +91,7 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 		args  []any
 	)
 
-	all, allowed := svc.authz.AllowedCertificationTargets(ctx)
+	all, allowed := svc.authz.AllowedTargetOfEvaluations(ctx)
 	if !all {
 		query = append(query, "certification_target_id IN ?")
 		args = append(args, allowed)
@@ -196,11 +196,11 @@ func (svc *Service) RemoveCertificate(ctx context.Context, req *orchestrator.Rem
 
 // checkCertificateAuthorization checks if client is authorized to remove certificate by
 // 1) checking admin flag: If it is enabled (`all`) the client is authorized
-// 2) querying the DB within the range of certification targets (`allowed`) the client is allowed to access
+// 2) querying the DB within the range of target of evaluations (`allowed`) the client is allowed to access
 // Error is returned if not authorized or internal DB error occurred.
 // Note: Use the checkExistence before to ensure that the entry is in the DB!
 func (svc *Service) checkCertificateAuthorization(ctx context.Context, req *orchestrator.RemoveCertificateRequest) error {
-	all, allowed := svc.authz.AllowedCertificationTargets(ctx)
+	all, allowed := svc.authz.AllowedTargetOfEvaluations(ctx)
 	if !all {
 		count2, err := svc.storage.Count(&orchestrator.Certificate{}, "id = ? AND certification_target_id IN ?",
 			req.GetCertificateId(), allowed)

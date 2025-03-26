@@ -68,7 +68,7 @@ func TestNewOpenstackDiscovery(t *testing.T) {
 						TenantName:       testdata.MockOpenstackTenantName,
 						AllowReauth:      true,
 					}),
-					WithCertificationTargetID(testdata.MockCertificationTargetID2),
+					WithTargetOfEvaluationID(testdata.MockTargetOfEvaluationID2),
 				},
 			},
 			want: func(t *testing.T, got discovery.Discoverer) bool {
@@ -86,11 +86,11 @@ func TestNewOpenstackDiscovery(t *testing.T) {
 						TenantName:       testdata.MockOpenstackTenantName,
 						AllowReauth:      true,
 					}),
-					WithCertificationTargetID(testdata.MockCertificationTargetID2),
+					WithTargetOfEvaluationID(testdata.MockTargetOfEvaluationID2),
 				},
 			},
 			want: func(t *testing.T, got discovery.Discoverer) bool {
-				assert.Equal(t, testdata.MockCertificationTargetID2, got.CertificationTargetID())
+				assert.Equal(t, testdata.MockTargetOfEvaluationID2, got.TargetOfEvaluationID())
 				return assert.NotNil(t, got)
 			},
 		},
@@ -108,7 +108,7 @@ func TestNewOpenstackDiscovery(t *testing.T) {
 				},
 			},
 			want: func(t *testing.T, got discovery.Discoverer) bool {
-				assert.Equal(t, config.DefaultCertificationTargetID, got.CertificationTargetID())
+				assert.Equal(t, config.DefaultTargetOfEvaluationID, got.TargetOfEvaluationID())
 				return assert.NotNil(t, got)
 			},
 		},

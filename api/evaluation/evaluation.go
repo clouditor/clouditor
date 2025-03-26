@@ -25,8 +25,8 @@
 
 package evaluation
 
-// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
+// GetTargetOfEvaluationId is a shortcut to implement TargetOfEvaluationRequest. It returns
 // the target of evaluation ID of the inner object.
-func (req *CreateEvaluationResultRequest) GetCertificationTargetId() string {
-	return req.GetResult().GetCertificationTargetId()
+func (req *CreateEvaluationResultRequest) GetTargetOfEvaluationId() string {
+	return req.GetResult().GetTargetOfEvaluationId()
 }

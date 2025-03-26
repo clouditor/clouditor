@@ -258,7 +258,7 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 		return nil, err
 	}
 
-	// Check if certification_target_id in the service is within allowed or one can access *all* the certification targets
+	// Check if certification_target_id in the service is within allowed or one can access *all* the target of evaluations
 	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
 		log.Error(service.ErrPermissionDenied)
 		return nil, service.ErrPermissionDenied
@@ -475,18 +475,18 @@ func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, r
 		types = ontology.ResourceTypes(resource)
 
 		result := &assessment.AssessmentResult{
-			Id:                    uuid.NewString(),
-			Timestamp:             timestamppb.Now(),
-			CertificationTargetId: ev.GetCertificationTargetId(),
-			MetricId:              metricID,
-			MetricConfiguration:   data.Config,
-			Compliant:             data.Compliant,
-			EvidenceId:            ev.GetId(),
-			ResourceId:            resource.GetId(),
-			ResourceTypes:         types,
-			ComplianceComment:     data.Message,
-			ComplianceDetails:     data.ComparisonResult,
-			ToolId:                util.Ref(assessment.AssessmentToolId),
+			Id:                   uuid.NewString(),
+			Timestamp:            timestamppb.Now(),
+			TargetOfEvaluationId: ev.GetTargetOfEvaluationId(),
+			MetricId:             metricID,
+			MetricConfiguration:  data.Config,
+			Compliant:            data.Compliant,
+			EvidenceId:           ev.GetId(),
+			ResourceId:           resource.GetId(),
+			ResourceTypes:        types,
+			ComplianceComment:    data.Message,
+			ComplianceDetails:    data.ComparisonResult,
+			ToolId:               util.Ref(assessment.AssessmentToolId),
 		}
 
 		// Inform hooks about new assessment result
@@ -599,7 +599,7 @@ func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_La
 
 // MetricConfiguration implements MetricsSource by getting the corresponding metric configuration for the
 // default target target of evaluation
-func (svc *Service) MetricConfiguration(CertificationTargetID string, metric *assessment.Metric) (config *assessment.MetricConfiguration, err error) {
+func (svc *Service) MetricConfiguration(TargetOfEvaluationID string, metric *assessment.Metric) (config *assessment.MetricConfiguration, err error) {
 	var (
 		ok    bool
 		cache cachedConfiguration
@@ -607,7 +607,7 @@ func (svc *Service) MetricConfiguration(CertificationTargetID string, metric *as
 	)
 
 	// Calculate the cache key
-	key = fmt.Sprintf("%s-%s", CertificationTargetID, metric.Id)
+	key = fmt.Sprintf("%s-%s", TargetOfEvaluationID, metric.Id)
 
 	// Retrieve our cached entry
 	svc.confMutex.Lock()
@@ -617,8 +617,8 @@ func (svc *Service) MetricConfiguration(CertificationTargetID string, metric *as
 	// Check if entry is not there or is expired
 	if !ok || cache.cachedAt.After(time.Now().Add(EvictionTime)) {
 		config, err = svc.orchestrator.Client.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{
-			CertificationTargetId: CertificationTargetID,
-			MetricId:              metric.Id,
+			TargetOfEvaluationId: TargetOfEvaluationID,
+			MetricId:             metric.Id,
 		})
 
 		if err != nil {
@@ -678,7 +678,7 @@ func (svc *Service) handleMetricEvent(event *orchestrator.MetricChangeEvent) {
 		svc.confMutex.Lock()
 
 		// Calculate the cache key
-		key = fmt.Sprintf("%s-%s", event.CertificationTargetId, event.MetricId)
+		key = fmt.Sprintf("%s-%s", event.TargetOfEvaluationId, event.MetricId)
 
 		delete(svc.cachedConfigurations, key)
 		svc.confMutex.Unlock()

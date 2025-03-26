@@ -123,9 +123,9 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 	// Check, if it is a target of evaluation request. In this case we can append the
 	// information about the target target of evaluation. However, we only want to do
 	// that, if the payload type is not a target of evaluation itself.
-	ctreq, ok := req.(api.CertificationTargetRequest)
+	ctreq, ok := req.(api.TargetOfEvaluationRequest)
 	if name != "TargetOfEvaluation" && ok {
-		buffer.WriteString(fmt.Sprintf(" for Target of Evaluation '%s'", ctreq.GetCertificationTargetId()))
+		buffer.WriteString(fmt.Sprintf(" for Target of Evaluation '%s'", ctreq.GetTargetOfEvaluationId()))
 	}
 
 	// If params is not empty, the elements are joined and added to the message

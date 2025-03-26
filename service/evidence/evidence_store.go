@@ -219,9 +219,9 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 	}
 
 	// Retrieve list of allowed target of evaluation according to our authorization strategy. No need to specify any additional
-	// conditions to our storage request, if we are allowed to see all certification targets.
-	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
-	if !all && req.GetFilter().GetCertificationTargetId() != "" && !slices.Contains(allowed, req.GetFilter().GetCertificationTargetId()) {
+	// conditions to our storage request, if we are allowed to see all target of evaluations.
+	all, allowed = svc.authz.AllowedTargetOfEvaluations(ctx)
+	if !all && req.GetFilter().GetTargetOfEvaluationId() != "" && !slices.Contains(allowed, req.GetFilter().GetTargetOfEvaluationId()) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -229,9 +229,9 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 
 	// Apply filter options
 	if filter := req.GetFilter(); filter != nil {
-		if CertificationTargetId := filter.GetCertificationTargetId(); CertificationTargetId != "" {
+		if TargetOfEvaluationId := filter.GetTargetOfEvaluationId(); TargetOfEvaluationId != "" {
 			query = append(query, "certification_target_id = ?")
-			args = append(args, CertificationTargetId)
+			args = append(args, TargetOfEvaluationId)
 		}
 		if toolId := filter.GetToolId(); toolId != "" {
 			query = append(query, "tool_id = ?")
@@ -239,7 +239,7 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 		}
 	}
 
-	// In any case, we need to make sure that we only select evidences of certification targets that we have access to
+	// In any case, we need to make sure that we only select evidences of target of evaluations that we have access to
 	if !all {
 		query = append(query, "certification_target_id IN ?")
 		args = append(args, allowed)
@@ -271,8 +271,8 @@ func (svc *Service) GetEvidence(ctx context.Context, req *evidence.GetEvidenceRe
 	}
 
 	// Retrieve list of allowed target of evaluation according to our authorization strategy. No need to specify any additional
-	// conditions to our storage request, if we are allowed to see all certification targets.
-	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
+	// conditions to our storage request, if we are allowed to see all target of evaluations.
+	all, allowed = svc.authz.AllowedTargetOfEvaluations(ctx)
 	if !all {
 		conds = []any{"id = ? AND certification_target_id IN ?", req.EvidenceId, allowed}
 	} else {

@@ -91,13 +91,13 @@ func (*openstackDiscovery) Description() string {
 	return "Discovery OpenStack."
 }
 
-func (d *openstackDiscovery) CertificationTargetID() string {
+func (d *openstackDiscovery) TargetOfEvaluationID() string {
 	return d.ctID
 }
 
 type DiscoveryOption func(d *openstackDiscovery)
 
-func WithCertificationTargetID(ctID string) DiscoveryOption {
+func WithTargetOfEvaluationID(ctID string) DiscoveryOption {
 	return func(d *openstackDiscovery) {
 		d.ctID = ctID
 	}
@@ -121,7 +121,7 @@ func NewOpenstackDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	}
 
 	d := &openstackDiscovery{
-		ctID:   config.DefaultCertificationTargetID,
+		ctID:   config.DefaultTargetOfEvaluationID,
 		region: os.Getenv(RegionName),
 		domain: &domain{
 			domainID:   os.Getenv(DomainID),

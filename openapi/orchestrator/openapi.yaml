@@ -865,8 +865,8 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Lists all target certification targets
-            operationId: Orchestrator_ListCertificationTargets
+            description: Lists all target target of evaluations
+            operationId: Orchestrator_ListTargetOfEvaluations
             parameters:
                 - name: pageSize
                   in: query
@@ -891,7 +891,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ListCertificationTargetsResponse'
+                                $ref: '#/components/schemas/ListTargetOfEvaluationsResponse'
                 default:
                     description: Default error response
                     content:
@@ -902,7 +902,7 @@ paths:
             tags:
                 - Orchestrator
             description: Registers a new target target of evaluation
-            operationId: Orchestrator_CreateCertificationTarget
+            operationId: Orchestrator_CreateTargetOfEvaluation
             requestBody:
                 content:
                     application/json:
@@ -927,7 +927,7 @@ paths:
             tags:
                 - Orchestrator
             description: Retrieves target target of evaluation statistics
-            operationId: Orchestrator_GetCertificationTargetStatistics
+            operationId: Orchestrator_GetTargetOfEvaluationStatistics
             parameters:
                 - name: certificationTargetId
                   in: query
@@ -939,7 +939,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/GetCertificationTargetStatisticsResponse'
+                                $ref: '#/components/schemas/GetTargetOfEvaluationStatisticsResponse'
                 default:
                     description: Default error response
                     content:
@@ -987,7 +987,7 @@ paths:
             tags:
                 - Orchestrator
             description: Retrieves a target target of evaluation
-            operationId: Orchestrator_GetCertificationTarget
+            operationId: Orchestrator_GetTargetOfEvaluation
             parameters:
                 - name: certificationTargetId
                   in: path
@@ -1011,7 +1011,7 @@ paths:
             tags:
                 - Orchestrator
             description: Removes a target target of evaluation
-            operationId: Orchestrator_RemoveCertificationTarget
+            operationId: Orchestrator_RemoveTargetOfEvaluation
             parameters:
                 - name: certificationTargetId
                   in: path
@@ -1129,7 +1129,7 @@ paths:
             tags:
                 - Orchestrator
             description: Registers a new target target of evaluation
-            operationId: Orchestrator_UpdateCertificationTarget
+            operationId: Orchestrator_UpdateTargetOfEvaluation
             parameters:
                 - name: certification_target.id
                   in: path
@@ -1697,7 +1697,7 @@ components:
                     format: date-time
                 metadata:
                     allOf:
-                        - $ref: '#/components/schemas/CertificationTarget_Metadata'
+                        - $ref: '#/components/schemas/TargetOfEvaluation_Metadata'
                     description: additional metadata of the target of evaluation, mostly used for the UI
                 targetType:
                     enum:
@@ -1708,7 +1708,7 @@ components:
                     type: string
                     description: 'type of the target to be evaluated: cloud, product or organization'
                     format: enum
-        CertificationTarget_Metadata:
+        TargetOfEvaluation_Metadata:
             type: object
             properties:
                 labels:
@@ -1810,7 +1810,7 @@ components:
                     type: string
                 version:
                     type: string
-        GetCertificationTargetStatisticsResponse:
+        GetTargetOfEvaluationStatisticsResponse:
             type: object
             properties:
                 numberOfDiscoveredResources:
@@ -1880,7 +1880,7 @@ components:
                         $ref: '#/components/schemas/Certificate'
                 nextPageToken:
                     type: string
-        ListCertificationTargetsResponse:
+        ListTargetOfEvaluationsResponse:
             required:
                 - targets
                 - targets

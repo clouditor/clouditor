@@ -403,7 +403,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 			fields{
 				functionAPI: mockLambdaAPI{},
 				awsConfig:   mockClient,
-				ctID:        testdata.MockCertificationTargetID1,
+				ctID:        testdata.MockTargetOfEvaluationID1,
 			},
 			//args: args{client: mockClient},
 			[]*ontology.Function{
@@ -487,13 +487,13 @@ func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 		want discovery.Discoverer
 	}{
 		{
-			args: args{client: mockClient, ctID: testdata.MockCertificationTargetID1},
+			args: args{client: mockClient, ctID: testdata.MockTargetOfEvaluationID1},
 			want: &computeDiscovery{
 				virtualMachineAPI: &ec2.Client{},
 				functionAPI:       &lambda.Client{},
 				isDiscovering:     true,
 				awsConfig:         mockClient,
-				ctID:              testdata.MockCertificationTargetID1,
+				ctID:              testdata.MockTargetOfEvaluationID1,
 			},
 		},
 	}
@@ -505,7 +505,7 @@ func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 	}
 }
 
-func Test_computeDiscovery_CertificationTargetID(t *testing.T) {
+func Test_computeDiscovery_TargetOfEvaluationID(t *testing.T) {
 	type fields struct {
 		virtualMachineAPI EC2API
 		functionAPI       LambdaAPI
@@ -521,9 +521,9 @@ func Test_computeDiscovery_CertificationTargetID(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				ctID: testdata.MockCertificationTargetID1,
+				ctID: testdata.MockTargetOfEvaluationID1,
 			},
-			want: testdata.MockCertificationTargetID1,
+			want: testdata.MockTargetOfEvaluationID1,
 		},
 	}
 	for _, tt := range tests {
@@ -535,8 +535,8 @@ func Test_computeDiscovery_CertificationTargetID(t *testing.T) {
 				awsConfig:         tt.fields.awsConfig,
 				ctID:              tt.fields.ctID,
 			}
-			if got := d.CertificationTargetID(); got != tt.want {
-				t.Errorf("computeDiscovery.CertificationTargetID() = %v, want %v", got, tt.want)
+			if got := d.TargetOfEvaluationID(); got != tt.want {
+				t.Errorf("computeDiscovery.TargetOfEvaluationID() = %v, want %v", got, tt.want)
 			}
 		})
 	}

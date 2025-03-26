@@ -61,12 +61,12 @@ const (
 	Orchestrator_GetMetric_FullMethodName                        = "/clouditor.orchestrator.v1.Orchestrator/GetMetric"
 	Orchestrator_ListMetrics_FullMethodName                      = "/clouditor.orchestrator.v1.Orchestrator/ListMetrics"
 	Orchestrator_RemoveMetric_FullMethodName                     = "/clouditor.orchestrator.v1.Orchestrator/RemoveMetric"
-	Orchestrator_CreateCertificationTarget_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/CreateCertificationTarget"
-	Orchestrator_UpdateCertificationTarget_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/UpdateCertificationTarget"
-	Orchestrator_GetCertificationTarget_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/GetCertificationTarget"
-	Orchestrator_ListCertificationTargets_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/ListCertificationTargets"
-	Orchestrator_RemoveCertificationTarget_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/RemoveCertificationTarget"
-	Orchestrator_GetCertificationTargetStatistics_FullMethodName = "/clouditor.orchestrator.v1.Orchestrator/GetCertificationTargetStatistics"
+	Orchestrator_CreateTargetOfEvaluation_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/CreateTargetOfEvaluation"
+	Orchestrator_UpdateTargetOfEvaluation_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/UpdateTargetOfEvaluation"
+	Orchestrator_GetTargetOfEvaluation_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluation"
+	Orchestrator_ListTargetOfEvaluations_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/ListTargetOfEvaluations"
+	Orchestrator_RemoveTargetOfEvaluation_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/RemoveTargetOfEvaluation"
+	Orchestrator_GetTargetOfEvaluationStatistics_FullMethodName = "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluationStatistics"
 	Orchestrator_UpdateMetricConfiguration_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricConfiguration"
 	Orchestrator_GetMetricConfiguration_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/GetMetricConfiguration"
 	Orchestrator_ListMetricConfigurations_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/ListMetricConfigurations"
@@ -133,17 +133,17 @@ type OrchestratorClient interface {
 	// Removes a new metric
 	RemoveMetric(ctx context.Context, in *RemoveMetricRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Registers a new target target of evaluation
-	CreateCertificationTarget(ctx context.Context, in *CreateCertificationTargetRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
+	CreateTargetOfEvaluation(ctx context.Context, in *CreateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
 	// Registers a new target target of evaluation
-	UpdateCertificationTarget(ctx context.Context, in *UpdateCertificationTargetRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
+	UpdateTargetOfEvaluation(ctx context.Context, in *UpdateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
 	// Retrieves a target target of evaluation
-	GetCertificationTarget(ctx context.Context, in *GetCertificationTargetRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
-	// Lists all target certification targets
-	ListCertificationTargets(ctx context.Context, in *ListCertificationTargetsRequest, opts ...grpc.CallOption) (*ListCertificationTargetsResponse, error)
+	GetTargetOfEvaluation(ctx context.Context, in *GetTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
+	// Lists all target target of evaluations
+	ListTargetOfEvaluations(ctx context.Context, in *ListTargetOfEvaluationsRequest, opts ...grpc.CallOption) (*ListTargetOfEvaluationsResponse, error)
 	// Removes a target target of evaluation
-	RemoveCertificationTarget(ctx context.Context, in *RemoveCertificationTargetRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	RemoveTargetOfEvaluation(ctx context.Context, in *RemoveTargetOfEvaluationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Retrieves target target of evaluation statistics
-	GetCertificationTargetStatistics(ctx context.Context, in *GetCertificationTargetStatisticsRequest, opts ...grpc.CallOption) (*GetCertificationTargetStatisticsResponse, error)
+	GetTargetOfEvaluationStatistics(ctx context.Context, in *GetTargetOfEvaluationStatisticsRequest, opts ...grpc.CallOption) (*GetTargetOfEvaluationStatisticsResponse, error)
 	// Updates a metric configuration (target value and operator) for a specific
 	// target of evaluation and metric ID
 	UpdateMetricConfiguration(ctx context.Context, in *UpdateMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error)
@@ -360,60 +360,60 @@ func (c *orchestratorClient) RemoveMetric(ctx context.Context, in *RemoveMetricR
 	return out, nil
 }
 
-func (c *orchestratorClient) CreateCertificationTarget(ctx context.Context, in *CreateCertificationTargetRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
+func (c *orchestratorClient) CreateTargetOfEvaluation(ctx context.Context, in *CreateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(TargetOfEvaluation)
-	err := c.cc.Invoke(ctx, Orchestrator_CreateCertificationTarget_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Orchestrator_CreateTargetOfEvaluation_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *orchestratorClient) UpdateCertificationTarget(ctx context.Context, in *UpdateCertificationTargetRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
+func (c *orchestratorClient) UpdateTargetOfEvaluation(ctx context.Context, in *UpdateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(TargetOfEvaluation)
-	err := c.cc.Invoke(ctx, Orchestrator_UpdateCertificationTarget_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Orchestrator_UpdateTargetOfEvaluation_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *orchestratorClient) GetCertificationTarget(ctx context.Context, in *GetCertificationTargetRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
+func (c *orchestratorClient) GetTargetOfEvaluation(ctx context.Context, in *GetTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(TargetOfEvaluation)
-	err := c.cc.Invoke(ctx, Orchestrator_GetCertificationTarget_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Orchestrator_GetTargetOfEvaluation_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *orchestratorClient) ListCertificationTargets(ctx context.Context, in *ListCertificationTargetsRequest, opts ...grpc.CallOption) (*ListCertificationTargetsResponse, error) {
+func (c *orchestratorClient) ListTargetOfEvaluations(ctx context.Context, in *ListTargetOfEvaluationsRequest, opts ...grpc.CallOption) (*ListTargetOfEvaluationsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListCertificationTargetsResponse)
-	err := c.cc.Invoke(ctx, Orchestrator_ListCertificationTargets_FullMethodName, in, out, cOpts...)
+	out := new(ListTargetOfEvaluationsResponse)
+	err := c.cc.Invoke(ctx, Orchestrator_ListTargetOfEvaluations_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *orchestratorClient) RemoveCertificationTarget(ctx context.Context, in *RemoveCertificationTargetRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *orchestratorClient) RemoveTargetOfEvaluation(ctx context.Context, in *RemoveTargetOfEvaluationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Orchestrator_RemoveCertificationTarget_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Orchestrator_RemoveTargetOfEvaluation_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *orchestratorClient) GetCertificationTargetStatistics(ctx context.Context, in *GetCertificationTargetStatisticsRequest, opts ...grpc.CallOption) (*GetCertificationTargetStatisticsResponse, error) {
+func (c *orchestratorClient) GetTargetOfEvaluationStatistics(ctx context.Context, in *GetTargetOfEvaluationStatisticsRequest, opts ...grpc.CallOption) (*GetTargetOfEvaluationStatisticsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetCertificationTargetStatisticsResponse)
-	err := c.cc.Invoke(ctx, Orchestrator_GetCertificationTargetStatistics_FullMethodName, in, out, cOpts...)
+	out := new(GetTargetOfEvaluationStatisticsResponse)
+	err := c.cc.Invoke(ctx, Orchestrator_GetTargetOfEvaluationStatistics_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -727,17 +727,17 @@ type OrchestratorServer interface {
 	// Removes a new metric
 	RemoveMetric(context.Context, *RemoveMetricRequest) (*emptypb.Empty, error)
 	// Registers a new target target of evaluation
-	CreateCertificationTarget(context.Context, *CreateCertificationTargetRequest) (*TargetOfEvaluation, error)
+	CreateTargetOfEvaluation(context.Context, *CreateTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
 	// Registers a new target target of evaluation
-	UpdateCertificationTarget(context.Context, *UpdateCertificationTargetRequest) (*TargetOfEvaluation, error)
+	UpdateTargetOfEvaluation(context.Context, *UpdateTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
 	// Retrieves a target target of evaluation
-	GetCertificationTarget(context.Context, *GetCertificationTargetRequest) (*TargetOfEvaluation, error)
-	// Lists all target certification targets
-	ListCertificationTargets(context.Context, *ListCertificationTargetsRequest) (*ListCertificationTargetsResponse, error)
+	GetTargetOfEvaluation(context.Context, *GetTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
+	// Lists all target target of evaluations
+	ListTargetOfEvaluations(context.Context, *ListTargetOfEvaluationsRequest) (*ListTargetOfEvaluationsResponse, error)
 	// Removes a target target of evaluation
-	RemoveCertificationTarget(context.Context, *RemoveCertificationTargetRequest) (*emptypb.Empty, error)
+	RemoveTargetOfEvaluation(context.Context, *RemoveTargetOfEvaluationRequest) (*emptypb.Empty, error)
 	// Retrieves target target of evaluation statistics
-	GetCertificationTargetStatistics(context.Context, *GetCertificationTargetStatisticsRequest) (*GetCertificationTargetStatisticsResponse, error)
+	GetTargetOfEvaluationStatistics(context.Context, *GetTargetOfEvaluationStatisticsRequest) (*GetTargetOfEvaluationStatisticsResponse, error)
 	// Updates a metric configuration (target value and operator) for a specific
 	// target of evaluation and metric ID
 	UpdateMetricConfiguration(context.Context, *UpdateMetricConfigurationRequest) (*assessment.MetricConfiguration, error)
@@ -853,23 +853,23 @@ func (UnimplementedOrchestratorServer) ListMetrics(context.Context, *ListMetrics
 func (UnimplementedOrchestratorServer) RemoveMetric(context.Context, *RemoveMetricRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveMetric not implemented")
 }
-func (UnimplementedOrchestratorServer) CreateCertificationTarget(context.Context, *CreateCertificationTargetRequest) (*TargetOfEvaluation, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateCertificationTarget not implemented")
+func (UnimplementedOrchestratorServer) CreateTargetOfEvaluation(context.Context, *CreateTargetOfEvaluationRequest) (*TargetOfEvaluation, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateTargetOfEvaluation not implemented")
 }
-func (UnimplementedOrchestratorServer) UpdateCertificationTarget(context.Context, *UpdateCertificationTargetRequest) (*TargetOfEvaluation, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateCertificationTarget not implemented")
+func (UnimplementedOrchestratorServer) UpdateTargetOfEvaluation(context.Context, *UpdateTargetOfEvaluationRequest) (*TargetOfEvaluation, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateTargetOfEvaluation not implemented")
 }
-func (UnimplementedOrchestratorServer) GetCertificationTarget(context.Context, *GetCertificationTargetRequest) (*TargetOfEvaluation, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetCertificationTarget not implemented")
+func (UnimplementedOrchestratorServer) GetTargetOfEvaluation(context.Context, *GetTargetOfEvaluationRequest) (*TargetOfEvaluation, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTargetOfEvaluation not implemented")
 }
-func (UnimplementedOrchestratorServer) ListCertificationTargets(context.Context, *ListCertificationTargetsRequest) (*ListCertificationTargetsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListCertificationTargets not implemented")
+func (UnimplementedOrchestratorServer) ListTargetOfEvaluations(context.Context, *ListTargetOfEvaluationsRequest) (*ListTargetOfEvaluationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListTargetOfEvaluations not implemented")
 }
-func (UnimplementedOrchestratorServer) RemoveCertificationTarget(context.Context, *RemoveCertificationTargetRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemoveCertificationTarget not implemented")
+func (UnimplementedOrchestratorServer) RemoveTargetOfEvaluation(context.Context, *RemoveTargetOfEvaluationRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveTargetOfEvaluation not implemented")
 }
-func (UnimplementedOrchestratorServer) GetCertificationTargetStatistics(context.Context, *GetCertificationTargetStatisticsRequest) (*GetCertificationTargetStatisticsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetCertificationTargetStatistics not implemented")
+func (UnimplementedOrchestratorServer) GetTargetOfEvaluationStatistics(context.Context, *GetTargetOfEvaluationStatisticsRequest) (*GetTargetOfEvaluationStatisticsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTargetOfEvaluationStatistics not implemented")
 }
 func (UnimplementedOrchestratorServer) UpdateMetricConfiguration(context.Context, *UpdateMetricConfigurationRequest) (*assessment.MetricConfiguration, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateMetricConfiguration not implemented")
@@ -1211,110 +1211,110 @@ func _Orchestrator_RemoveMetric_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_CreateCertificationTarget_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateCertificationTargetRequest)
+func _Orchestrator_CreateTargetOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateTargetOfEvaluationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).CreateCertificationTarget(ctx, in)
+		return srv.(OrchestratorServer).CreateTargetOfEvaluation(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_CreateCertificationTarget_FullMethodName,
+		FullMethod: Orchestrator_CreateTargetOfEvaluation_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).CreateCertificationTarget(ctx, req.(*CreateCertificationTargetRequest))
+		return srv.(OrchestratorServer).CreateTargetOfEvaluation(ctx, req.(*CreateTargetOfEvaluationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_UpdateCertificationTarget_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateCertificationTargetRequest)
+func _Orchestrator_UpdateTargetOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateTargetOfEvaluationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).UpdateCertificationTarget(ctx, in)
+		return srv.(OrchestratorServer).UpdateTargetOfEvaluation(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_UpdateCertificationTarget_FullMethodName,
+		FullMethod: Orchestrator_UpdateTargetOfEvaluation_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).UpdateCertificationTarget(ctx, req.(*UpdateCertificationTargetRequest))
+		return srv.(OrchestratorServer).UpdateTargetOfEvaluation(ctx, req.(*UpdateTargetOfEvaluationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_GetCertificationTarget_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetCertificationTargetRequest)
+func _Orchestrator_GetTargetOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTargetOfEvaluationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).GetCertificationTarget(ctx, in)
+		return srv.(OrchestratorServer).GetTargetOfEvaluation(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_GetCertificationTarget_FullMethodName,
+		FullMethod: Orchestrator_GetTargetOfEvaluation_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).GetCertificationTarget(ctx, req.(*GetCertificationTargetRequest))
+		return srv.(OrchestratorServer).GetTargetOfEvaluation(ctx, req.(*GetTargetOfEvaluationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_ListCertificationTargets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListCertificationTargetsRequest)
+func _Orchestrator_ListTargetOfEvaluations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListTargetOfEvaluationsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).ListCertificationTargets(ctx, in)
+		return srv.(OrchestratorServer).ListTargetOfEvaluations(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_ListCertificationTargets_FullMethodName,
+		FullMethod: Orchestrator_ListTargetOfEvaluations_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).ListCertificationTargets(ctx, req.(*ListCertificationTargetsRequest))
+		return srv.(OrchestratorServer).ListTargetOfEvaluations(ctx, req.(*ListTargetOfEvaluationsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_RemoveCertificationTarget_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RemoveCertificationTargetRequest)
+func _Orchestrator_RemoveTargetOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveTargetOfEvaluationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).RemoveCertificationTarget(ctx, in)
+		return srv.(OrchestratorServer).RemoveTargetOfEvaluation(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_RemoveCertificationTarget_FullMethodName,
+		FullMethod: Orchestrator_RemoveTargetOfEvaluation_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).RemoveCertificationTarget(ctx, req.(*RemoveCertificationTargetRequest))
+		return srv.(OrchestratorServer).RemoveTargetOfEvaluation(ctx, req.(*RemoveTargetOfEvaluationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_GetCertificationTargetStatistics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetCertificationTargetStatisticsRequest)
+func _Orchestrator_GetTargetOfEvaluationStatistics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTargetOfEvaluationStatisticsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).GetCertificationTargetStatistics(ctx, in)
+		return srv.(OrchestratorServer).GetTargetOfEvaluationStatistics(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_GetCertificationTargetStatistics_FullMethodName,
+		FullMethod: Orchestrator_GetTargetOfEvaluationStatistics_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).GetCertificationTargetStatistics(ctx, req.(*GetCertificationTargetStatisticsRequest))
+		return srv.(OrchestratorServer).GetTargetOfEvaluationStatistics(ctx, req.(*GetTargetOfEvaluationStatisticsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1840,28 +1840,28 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Orchestrator_RemoveMetric_Handler,
 		},
 		{
-			MethodName: "CreateCertificationTarget",
-			Handler:    _Orchestrator_CreateCertificationTarget_Handler,
+			MethodName: "CreateTargetOfEvaluation",
+			Handler:    _Orchestrator_CreateTargetOfEvaluation_Handler,
 		},
 		{
-			MethodName: "UpdateCertificationTarget",
-			Handler:    _Orchestrator_UpdateCertificationTarget_Handler,
+			MethodName: "UpdateTargetOfEvaluation",
+			Handler:    _Orchestrator_UpdateTargetOfEvaluation_Handler,
 		},
 		{
-			MethodName: "GetCertificationTarget",
-			Handler:    _Orchestrator_GetCertificationTarget_Handler,
+			MethodName: "GetTargetOfEvaluation",
+			Handler:    _Orchestrator_GetTargetOfEvaluation_Handler,
 		},
 		{
-			MethodName: "ListCertificationTargets",
-			Handler:    _Orchestrator_ListCertificationTargets_Handler,
+			MethodName: "ListTargetOfEvaluations",
+			Handler:    _Orchestrator_ListTargetOfEvaluations_Handler,
 		},
 		{
-			MethodName: "RemoveCertificationTarget",
-			Handler:    _Orchestrator_RemoveCertificationTarget_Handler,
+			MethodName: "RemoveTargetOfEvaluation",
+			Handler:    _Orchestrator_RemoveTargetOfEvaluation_Handler,
 		},
 		{
-			MethodName: "GetCertificationTargetStatistics",
-			Handler:    _Orchestrator_GetCertificationTargetStatistics_Handler,
+			MethodName: "GetTargetOfEvaluationStatistics",
+			Handler:    _Orchestrator_GetTargetOfEvaluationStatistics_Handler,
 		},
 		{
 			MethodName: "UpdateMetricConfiguration",
