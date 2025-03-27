@@ -129,7 +129,7 @@ service Orchestrator {
   // Registers a new target target of evaluation
   rpc CreateTargetOfEvaluation(CreateTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      post: "/v1/orchestrator/target_of_evaluations"
+      post: "/v1/orchestrator/targets_of_evaluation"
       body: "target_of_evaluation"
     };
   }
@@ -137,29 +137,29 @@ service Orchestrator {
   // Registers a new target target of evaluation
   rpc UpdateTargetOfEvaluation(UpdateTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      put: "/v1/orchestrator/target_of_evaluations/{target_of_evaluation.id}"
+      put: "/v1/orchestrator/targets_of_evaluation/{target_of_evaluation.id}"
       body: "target_of_evaluation"
     };
   }
 
   // Retrieves a target target of evaluation
   rpc GetTargetOfEvaluation(GetTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
-    option (google.api.http) = {get: "/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}"};
+    option (google.api.http) = {get: "/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}"};
   }
 
   // Lists all target target of evaluations
   rpc ListTargetOfEvaluations(ListTargetOfEvaluationsRequest) returns (ListTargetOfEvaluationsResponse) {
-    option (google.api.http) = {get: "/v1/orchestrator/target_of_evaluations"};
+    option (google.api.http) = {get: "/v1/orchestrator/targets_of_evaluation"};
   }
 
   // Removes a target target of evaluation
   rpc RemoveTargetOfEvaluation(RemoveTargetOfEvaluationRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {delete: "/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}"};
+    option (google.api.http) = {delete: "/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}"};
   }
 
   // Retrieves target target of evaluation statistics
   rpc GetTargetOfEvaluationStatistics(GetTargetOfEvaluationStatisticsRequest) returns (GetTargetOfEvaluationStatisticsResponse) {
-    option (google.api.http) = {get: "/v1/orchestrator/target_of_evaluations/statistics"};
+    option (google.api.http) = {get: "/v1/orchestrator/targets_of_evaluation/statistics"};
   }
 
   // Updates a metric configuration (target value and operator) for a specific
@@ -167,7 +167,7 @@ service Orchestrator {
   rpc UpdateMetricConfiguration(UpdateMetricConfigurationRequest) returns (clouditor.assessment.v1.MetricConfiguration) {
     option (google.api.http) = {
       put:
-        "/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}/"
+        "/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}/"
         "metric_configurations/"
         "{metric_id}"
       body: "configuration"
@@ -178,7 +178,7 @@ service Orchestrator {
   // target of evaluation and metric ID.
   rpc GetMetricConfiguration(GetMetricConfigurationRequest) returns (clouditor.assessment.v1.MetricConfiguration) {
     option (google.api.http) = {get:
-        "/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}/"
+        "/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}/"
         "metric_configurations/"
         "{metric_id}"
 };
@@ -188,7 +188,7 @@ service Orchestrator {
   // specific target of evaluation ID
   rpc ListMetricConfigurations(ListMetricConfigurationRequest) returns (ListMetricConfigurationResponse) {
     option (google.api.http) = {get:
-        "/v1/orchestrator/target_of_evaluations/{target_of_evaluation_id}/"
+        "/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}/"
         "metric_configurations"
 };
   }
@@ -327,7 +327,7 @@ service Orchestrator {
   rpc UpdateAuditScope(UpdateAuditScopeRequest) returns (AuditScope) {
     option (google.api.http) = {
       put:
-        "/v1/orchestrator/target_of_evaluations/"
+        "/v1/orchestrator/targets_of_evaluation/"
         "{audit_scope.target_of_evaluation_id}/audit_scopes/"
         "{audit_scope.catalog_id}"
       body: "audit_scope"

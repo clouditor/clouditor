@@ -1171,7 +1171,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/target_of_evaluations:
+    /v1/orchestrator/targets_of_evaluation:
         get:
             tags:
                 - Orchestrator
@@ -1232,7 +1232,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/target_of_evaluations/statistics:
+    /v1/orchestrator/targets_of_evaluation/statistics:
         get:
             tags:
                 - Orchestrator
@@ -1256,7 +1256,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/target_of_evaluations/{audit_scope.target_of_evaluation_id}/audit_scopes/{audit_scope.catalog_id}:
+    /v1/orchestrator/targets_of_evaluation/{audit_scope.target_of_evaluation_id}/audit_scopes/{audit_scope.catalog_id}:
         put:
             tags:
                 - Orchestrator
@@ -1292,7 +1292,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/target_of_evaluations/{targetOfEvaluationId}:
+    /v1/orchestrator/targets_of_evaluation/{targetOfEvaluationId}:
         get:
             tags:
                 - Orchestrator
@@ -1338,7 +1338,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/target_of_evaluations/{targetOfEvaluationId}/metric_configurations:
+    /v1/orchestrator/targets_of_evaluation/{targetOfEvaluationId}/metric_configurations:
         get:
             tags:
                 - Orchestrator
@@ -1365,7 +1365,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/target_of_evaluations/{targetOfEvaluationId}/metric_configurations/{metricId}:
+    /v1/orchestrator/targets_of_evaluation/{targetOfEvaluationId}/metric_configurations/{metricId}:
         get:
             tags:
                 - Orchestrator
@@ -1434,7 +1434,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/target_of_evaluations/{target_of_evaluation.id}:
+    /v1/orchestrator/targets_of_evaluation/{target_of_evaluation.id}:
         put:
             tags:
                 - Orchestrator
