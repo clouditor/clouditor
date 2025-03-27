@@ -3,6 +3,7 @@
         "streetsidesoftware.code-spell-checker",
         "golang.go",
         "bufbuild.vscode-buf",
-        "stkb.rewrap"
+        "stkb.rewrap",
+        "zxh404.vscode-proto3"
     ]
 }

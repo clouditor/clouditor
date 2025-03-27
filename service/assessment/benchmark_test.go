@@ -19,7 +19,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -75,7 +74,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 		go func() {
 			// Create evidences for n resources (1 per resource)
 			for i := 0; i < n; i++ {
-				a, _ := anypb.New(&ontology.VirtualMachine{
+				vm := ontology.ProtoResource(&ontology.VirtualMachine{
 					Id: fmt.Sprintf("%d", i),
 				})
 
@@ -83,7 +82,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 					Id:        uuid.NewString(),
 					Timestamp: timestamppb.Now(),
 					ToolId:    "mytool",
-					Resource:  a,
+					Resource:  vm,
 				}
 
 				if i%100 == 0 {

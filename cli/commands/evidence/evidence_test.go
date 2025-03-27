@@ -37,7 +37,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
-	"clouditor.io/clouditor/v2/internal/testutil/prototest"
 	"clouditor.io/clouditor/v2/server"
 	service_evidence "clouditor.io/clouditor/v2/service/evidence"
 
@@ -58,7 +57,7 @@ func TestMain(m *testing.M) {
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 		ToolId:               testdata.MockEvidenceToolID1,
 		Timestamp:            timestamppb.Now(),
-		Resource:             prototest.NewAnyWithPanic(&ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+		Resource:             ontology.ProtoResource(&ontology.VirtualMachine{Id: testdata.MockResourceID1}),
 	}})
 	if err != nil {
 		panic(err)

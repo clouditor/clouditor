@@ -27,6 +27,7 @@ syntax = "proto3";
 
 package clouditor.evidence.v1;
 
+import "api/ontology/ontology.proto";
 import "buf/validate/validate.proto";
 import "google/protobuf/any.proto";
 import "google/protobuf/timestamp.proto";
@@ -53,8 +54,8 @@ message Evidence {
 
   // Semantic representation of the Cloud resource according to our defined
   // ontology
-  google.protobuf.Any resource = 6 [
-    (tagger.tags) = "gorm:\"serializer:anypb;type:json\"",
+  clouditor.ontology.v1.Resource resource = 6 [
+    (tagger.tags) = "gorm:\"serializer:json\"",
     (buf.validate.field).required = true
   ];
 

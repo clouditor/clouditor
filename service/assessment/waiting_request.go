@@ -79,15 +79,12 @@ func (l *waitingRequest) WaitAndHandle() {
 					break
 				}
 
-				msg, err := e.Resource.UnmarshalNew()
-				if err != nil {
+				msg := e.GetOntologyResource()
+				if msg == nil {
 					break
 				}
 
-				additional[r], ok = msg.(ontology.IsResource)
-				if !ok {
-					break
-				}
+				additional[r] = msg
 			}
 
 			// Let's go

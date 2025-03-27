@@ -409,19 +409,13 @@ func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, r
 		resource ontology.IsResource
 	)
 
-	// First, try to extract the resource out of the evidence and validate it
-	m, err = ev.Resource.UnmarshalNew()
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not unmarshal resource proto message: %v", err)
-	}
-
 	err = api.Validate(m)
 	if err != nil {
 		return nil, err
 	}
 
-	resource, ok := m.(ontology.IsResource)
-	if !ok {
+	resource = ev.GetOntologyResource()
+	if resource == nil {
 		return nil, status.Errorf(codes.Internal, "invalid embedded resource: %v", discovery.ErrNotOntologyResource)
 	}
 

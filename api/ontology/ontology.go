@@ -2,9 +2,10 @@ package ontology
 
 import (
 	"encoding/json"
-	"google.golang.org/protobuf/reflect/protoreflect"
 	"slices"
 	"strings"
+
+	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -141,4 +142,23 @@ func ResourceIDs(r []IsResource) []string {
 	}
 
 	return a
+}
+
+// ProtoResource converrts a [IsResource] to a [Resource]
+func ProtoResource(resource IsResource) *Resource {
+	var (
+		r  Resource
+		m  protoreflect.Message         = r.ProtoReflect()
+		od protoreflect.OneofDescriptor = m.Descriptor().Oneofs().ByName("type")
+	)
+
+	for i := range od.Fields().Len() {
+		field := od.Fields().Get(i)
+		if field.Message() == resource.ProtoReflect().Descriptor() {
+			m.Set(field, protoreflect.ValueOfMessage(resource.ProtoReflect()))
+			break
+		}
+	}
+
+	return &r
 }

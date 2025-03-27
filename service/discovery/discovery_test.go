@@ -38,7 +38,6 @@ import (
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evidence"
-	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
@@ -254,9 +253,7 @@ func TestService_StartDiscovery(t *testing.T) {
 				assert.NotNil(t, eGot)
 				assert.NoError(t, err)
 
-				m, err := eGot.Resource.UnmarshalNew()
-				assert.NoError(t, err)
-				or := m.(ontology.IsResource)
+				or := eGot.GetOntologyResource()
 
 				// Only the last element sent can be checked
 				// The TestDiscoverer adds a random number to the ID, so we have to delete the last 3 characters as we do not know which random number will be added.

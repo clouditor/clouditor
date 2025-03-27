@@ -7,7 +7,6 @@ import (
 
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
-
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -186,6 +185,39 @@ func TestListResourceIDs(t *testing.T) {
 			if got := ResourceIDs(tt.args.r); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ListResourceIDs() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestProtoResource(t *testing.T) {
+	type args struct {
+		resource IsResource
+	}
+	tests := []struct {
+		name string
+		args args
+		want *Resource
+	}{
+		{
+			name: "happy path",
+			args: args{
+				resource: &VirtualMachine{
+					Id: "vm-1",
+				},
+			},
+			want: &Resource{
+				Type: &Resource_VirtualMachine{
+					VirtualMachine: &VirtualMachine{
+						Id: "vm-1",
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, ProtoResource(tt.args.resource))
 		})
 	}
 }
