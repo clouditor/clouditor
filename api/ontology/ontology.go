@@ -162,3 +162,11 @@ func ProtoResource(resource IsResource) *Resource {
 
 	return &r
 }
+
+func (x *Resource) MarshalJSON() (b []byte, err error) {
+	return protojson.Marshal(x)
+}
+
+func (x *Resource) UnmarshalJSON(b []byte) (err error) {
+	return protojson.Unmarshal(b, x)
+}

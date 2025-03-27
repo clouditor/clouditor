@@ -123,7 +123,8 @@ func TestService_StoreEvidence(t *testing.T) {
 						Resource: &ontology.Resource{
 							Type: &ontology.Resource_VirtualMachine{
 								VirtualMachine: &ontology.VirtualMachine{
-									Id: "mock-id",
+									Id:   "mock-id",
+									Name: "my-vm",
 								},
 							},
 						},
@@ -152,7 +153,8 @@ func TestService_StoreEvidence(t *testing.T) {
 						Resource: &ontology.Resource{
 							Type: &ontology.Resource_VirtualMachine{
 								VirtualMachine: &ontology.VirtualMachine{
-									Id: "mock-id",
+									Id:   "mock-id",
+									Name: "mock-name",
 								},
 							},
 						},
@@ -229,7 +231,8 @@ func TestService_StoreEvidences(t *testing.T) {
 							Resource: &ontology.Resource{
 								Type: &ontology.Resource_VirtualMachine{
 									VirtualMachine: &ontology.VirtualMachine{
-										Id: "mock-id-1",
+										Id:   "mock-id-1",
+										Name: "mock-name-1",
 									},
 								},
 							},
@@ -582,7 +585,8 @@ func TestService_EvidenceHook(t *testing.T) {
 					Resource: &ontology.Resource{
 						Type: &ontology.Resource_VirtualMachine{
 							VirtualMachine: &ontology.VirtualMachine{
-								Id: "mock-id-1",
+								Id:   "mock-id-1",
+								Name: "mock-name-1",
 							},
 						},
 					},
@@ -630,7 +634,8 @@ func createStoreEvidenceRequestMocks(t *testing.T, count int) []*evidence.StoreE
 				Resource: &ontology.Resource{
 					Type: &ontology.Resource_VirtualMachine{
 						VirtualMachine: &ontology.VirtualMachine{
-							Id: "mock-id-1",
+							Id:   "mock-id-1",
+							Name: "my-vm",
 						},
 					},
 				},

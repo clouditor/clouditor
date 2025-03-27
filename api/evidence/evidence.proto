@@ -54,10 +54,7 @@ message Evidence {
 
   // Semantic representation of the Cloud resource according to our defined
   // ontology
-  clouditor.ontology.v1.Resource resource = 6 [
-    (tagger.tags) = "gorm:\"serializer:json\"",
-    (buf.validate.field).required = true
-  ];
+  clouditor.ontology.v1.Resource resource = 6 [(tagger.tags) = "gorm:\"serializer:json\""];
 
   // Very experimental property. Use at own risk. This property will be deleted again.
   //
