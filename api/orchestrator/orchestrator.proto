@@ -818,6 +818,8 @@ message AuditScope {
     (buf.validate.field).string.min_len = 1,
     (google.api.field_behavior) = REQUIRED
   ];
+  // TODO(lebogg): Add a field for the controls that a user got delegated for. Maybe a map of user_id -> control_ids (Alternatively one could add this to the user model, but I find it more fitting to have it here)
+
   // an assurance level is not offered by every catalog, therefore it is
   // optional
   optional string assurance_level = 3;

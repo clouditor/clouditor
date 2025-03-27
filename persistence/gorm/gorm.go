@@ -26,6 +26,7 @@
 package gorm
 
 import (
+	"clouditor.io/clouditor/v2/api/user"
 	"errors"
 	"fmt"
 	"strings"
@@ -78,6 +79,7 @@ var DefaultTypes = []any{
 	&orchestrator.Control{},
 	&orchestrator.AuditScope{},
 	&evaluation.EvaluationResult{},
+	&user.User{},
 }
 
 // StorageOption is a functional option type to configure the GORM storage. E.g. WithInMemory or WithPostgres
@@ -129,7 +131,7 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	g := &storage{
 		// We ignore Deepsource issue GO-W1004 (SkipDefaultTransaction of config is "false"): skipcq: GO-W1004
 		config: gorm.Config{
-			Logger: logger.Default.LogMode(logger.Silent),
+			Logger: logger.Default.LogMode(logger.Info),
 		},
 		types: DefaultTypes,
 	}
