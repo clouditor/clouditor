@@ -133,7 +133,7 @@ func TestPaginateStorage(t *testing.T) {
 		{
 			name: "first page",
 			args: args{
-				req: &orchestrator.ListTargetOfEvaluationsRequest{
+				req: &orchestrator.ListTargetsOfEvaluationRequest{
 					PageSize:  2,
 					PageToken: "",
 				},
@@ -161,7 +161,7 @@ func TestPaginateStorage(t *testing.T) {
 		{
 			name: "next page",
 			args: args{
-				req: &orchestrator.ListTargetOfEvaluationsRequest{
+				req: &orchestrator.ListTargetsOfEvaluationRequest{
 					PageSize:  2,
 					PageToken: "CAIQAg==",
 				},
@@ -189,7 +189,7 @@ func TestPaginateStorage(t *testing.T) {
 		{
 			name: "last page",
 			args: args{
-				req: &orchestrator.ListTargetOfEvaluationsRequest{
+				req: &orchestrator.ListTargetsOfEvaluationRequest{
 					PageSize:  2,
 					PageToken: "CAQQAg==",
 				},

@@ -88,9 +88,9 @@ func TestCreateTargetOfEvaluationCommand(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestListTargetOfEvaluationsCommand(t *testing.T) {
+func TestListTargetsOfEvaluationCommand(t *testing.T) {
 	var (
-		response orchestrator.ListTargetOfEvaluationsResponse
+		response orchestrator.ListTargetsOfEvaluationResponse
 		svc      *service_orchestrator.Service
 
 		err error
@@ -104,7 +104,7 @@ func TestListTargetOfEvaluationsCommand(t *testing.T) {
 
 		cli.Output = &b
 
-		cmd := NewListTargetOfEvaluationsCommand()
+		cmd := NewListTargetsOfEvaluationCommand()
 		err = cmd.RunE(nil, []string{})
 
 		assert.NoError(t, err)

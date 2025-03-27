@@ -126,7 +126,7 @@ service Orchestrator {
     option (google.api.http) = {delete: "/v1/orchestrator/metrics/{metric_id}"};
   }
 
-  // Registers a new target target of evaluation
+  // Registers a new target of evaluation
   rpc CreateTargetOfEvaluation(CreateTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {
       post: "/v1/orchestrator/targets_of_evaluation"
@@ -134,7 +134,7 @@ service Orchestrator {
     };
   }
 
-  // Registers a new target target of evaluation
+  // Registers a new target of evaluation
   rpc UpdateTargetOfEvaluation(UpdateTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {
       put: "/v1/orchestrator/targets_of_evaluation/{target_of_evaluation.id}"
@@ -142,22 +142,22 @@ service Orchestrator {
     };
   }
 
-  // Retrieves a target target of evaluation
+  // Retrieves a target of evaluation
   rpc GetTargetOfEvaluation(GetTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {get: "/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}"};
   }
 
-  // Lists all target target of evaluations
-  rpc ListTargetOfEvaluations(ListTargetOfEvaluationsRequest) returns (ListTargetOfEvaluationsResponse) {
+  // Lists all targets of evaluations
+  rpc ListTargetsOfEvaluation(ListTargetsOfEvaluationRequest) returns (ListTargetsOfEvaluationResponse) {
     option (google.api.http) = {get: "/v1/orchestrator/targets_of_evaluation"};
   }
 
-  // Removes a target target of evaluation
+  // Removes a target of evaluation
   rpc RemoveTargetOfEvaluation(RemoveTargetOfEvaluationRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {delete: "/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}"};
   }
 
-  // Retrieves target target of evaluation statistics
+  // Retrieves target of evaluation statistics
   rpc GetTargetOfEvaluationStatistics(GetTargetOfEvaluationStatisticsRequest) returns (GetTargetOfEvaluationStatisticsResponse) {
     option (google.api.http) = {get: "/v1/orchestrator/targets_of_evaluation/statistics"};
   }
@@ -484,14 +484,14 @@ message RemoveTargetOfEvaluationRequest {
   ];
 }
 
-message ListTargetOfEvaluationsRequest {
+message ListTargetsOfEvaluationRequest {
   int32 page_size = 10;
   string page_token = 11;
   string order_by = 12;
   bool asc = 13;
 }
 
-message ListTargetOfEvaluationsResponse {
+message ListTargetsOfEvaluationResponse {
   repeated TargetOfEvaluation targets = 1 [
     (google.api.field_behavior) = REQUIRED,
     (google.api.field_behavior) = REQUIRED

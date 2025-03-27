@@ -1175,8 +1175,8 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Lists all target target of evaluations
-            operationId: Orchestrator_ListTargetOfEvaluations
+            description: Lists all targets of evaluations
+            operationId: Orchestrator_ListTargetsOfEvaluation
             parameters:
                 - name: pageSize
                   in: query
@@ -1201,7 +1201,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ListTargetOfEvaluationsResponse'
+                                $ref: '#/components/schemas/ListTargetsOfEvaluationResponse'
                 default:
                     description: Default error response
                     content:
@@ -1211,7 +1211,7 @@ paths:
         post:
             tags:
                 - Orchestrator
-            description: Registers a new target target of evaluation
+            description: Registers a new target of evaluation
             operationId: Orchestrator_CreateTargetOfEvaluation
             requestBody:
                 content:
@@ -1236,7 +1236,7 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Retrieves target target of evaluation statistics
+            description: Retrieves target of evaluation statistics
             operationId: Orchestrator_GetTargetOfEvaluationStatistics
             parameters:
                 - name: targetOfEvaluationId
@@ -1296,7 +1296,7 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Retrieves a target target of evaluation
+            description: Retrieves a target of evaluation
             operationId: Orchestrator_GetTargetOfEvaluation
             parameters:
                 - name: targetOfEvaluationId
@@ -1320,7 +1320,7 @@ paths:
         delete:
             tags:
                 - Orchestrator
-            description: Removes a target target of evaluation
+            description: Removes a target of evaluation
             operationId: Orchestrator_RemoveTargetOfEvaluation
             parameters:
                 - name: targetOfEvaluationId
@@ -1438,7 +1438,7 @@ paths:
         put:
             tags:
                 - Orchestrator
-            description: Registers a new target target of evaluation
+            description: Registers a new target of evaluation
             operationId: Orchestrator_UpdateTargetOfEvaluation
             parameters:
                 - name: target_of_evaluation.id
@@ -1867,7 +1867,7 @@ components:
                         $ref: '#/components/schemas/Certificate'
                 nextPageToken:
                     type: string
-        ListTargetOfEvaluationsResponse:
+        ListTargetsOfEvaluationResponse:
             required:
                 - targets
                 - targets

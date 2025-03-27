@@ -436,7 +436,7 @@ func getTargetOfEvaluations(_ string) []string {
 		err     error
 		session *Session
 		client  orchestrator.OrchestratorClient
-		res     *orchestrator.ListTargetOfEvaluationsResponse
+		res     *orchestrator.ListTargetsOfEvaluationResponse
 	)
 
 	if session, err = ContinueSession(); err != nil {
@@ -446,7 +446,7 @@ func getTargetOfEvaluations(_ string) []string {
 
 	client = orchestrator.NewOrchestratorClient(session)
 
-	if res, err = client.ListTargetOfEvaluations(context.Background(), &orchestrator.ListTargetOfEvaluationsRequest{}); err != nil {
+	if res, err = client.ListTargetsOfEvaluation(context.Background(), &orchestrator.ListTargetsOfEvaluationRequest{}); err != nil {
 		return []string{}
 	}
 

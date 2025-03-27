@@ -64,7 +64,7 @@ const (
 	Orchestrator_CreateTargetOfEvaluation_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/CreateTargetOfEvaluation"
 	Orchestrator_UpdateTargetOfEvaluation_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/UpdateTargetOfEvaluation"
 	Orchestrator_GetTargetOfEvaluation_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluation"
-	Orchestrator_ListTargetOfEvaluations_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/ListTargetOfEvaluations"
+	Orchestrator_ListTargetsOfEvaluation_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/ListTargetsOfEvaluation"
 	Orchestrator_RemoveTargetOfEvaluation_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/RemoveTargetOfEvaluation"
 	Orchestrator_GetTargetOfEvaluationStatistics_FullMethodName = "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluationStatistics"
 	Orchestrator_UpdateMetricConfiguration_FullMethodName       = "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricConfiguration"
@@ -132,17 +132,17 @@ type OrchestratorClient interface {
 	ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error)
 	// Removes a new metric
 	RemoveMetric(ctx context.Context, in *RemoveMetricRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Registers a new target target of evaluation
+	// Registers a new target of evaluation
 	CreateTargetOfEvaluation(ctx context.Context, in *CreateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
-	// Registers a new target target of evaluation
+	// Registers a new target of evaluation
 	UpdateTargetOfEvaluation(ctx context.Context, in *UpdateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
-	// Retrieves a target target of evaluation
+	// Retrieves a target of evaluation
 	GetTargetOfEvaluation(ctx context.Context, in *GetTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
-	// Lists all target target of evaluations
-	ListTargetOfEvaluations(ctx context.Context, in *ListTargetOfEvaluationsRequest, opts ...grpc.CallOption) (*ListTargetOfEvaluationsResponse, error)
-	// Removes a target target of evaluation
+	// Lists all targets of evaluations
+	ListTargetsOfEvaluation(ctx context.Context, in *ListTargetsOfEvaluationRequest, opts ...grpc.CallOption) (*ListTargetsOfEvaluationResponse, error)
+	// Removes a target of evaluation
 	RemoveTargetOfEvaluation(ctx context.Context, in *RemoveTargetOfEvaluationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Retrieves target target of evaluation statistics
+	// Retrieves target of evaluation statistics
 	GetTargetOfEvaluationStatistics(ctx context.Context, in *GetTargetOfEvaluationStatisticsRequest, opts ...grpc.CallOption) (*GetTargetOfEvaluationStatisticsResponse, error)
 	// Updates a metric configuration (target value and operator) for a specific
 	// target of evaluation and metric ID
@@ -390,10 +390,10 @@ func (c *orchestratorClient) GetTargetOfEvaluation(ctx context.Context, in *GetT
 	return out, nil
 }
 
-func (c *orchestratorClient) ListTargetOfEvaluations(ctx context.Context, in *ListTargetOfEvaluationsRequest, opts ...grpc.CallOption) (*ListTargetOfEvaluationsResponse, error) {
+func (c *orchestratorClient) ListTargetsOfEvaluation(ctx context.Context, in *ListTargetsOfEvaluationRequest, opts ...grpc.CallOption) (*ListTargetsOfEvaluationResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListTargetOfEvaluationsResponse)
-	err := c.cc.Invoke(ctx, Orchestrator_ListTargetOfEvaluations_FullMethodName, in, out, cOpts...)
+	out := new(ListTargetsOfEvaluationResponse)
+	err := c.cc.Invoke(ctx, Orchestrator_ListTargetsOfEvaluation_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -726,17 +726,17 @@ type OrchestratorServer interface {
 	ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error)
 	// Removes a new metric
 	RemoveMetric(context.Context, *RemoveMetricRequest) (*emptypb.Empty, error)
-	// Registers a new target target of evaluation
+	// Registers a new target of evaluation
 	CreateTargetOfEvaluation(context.Context, *CreateTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
-	// Registers a new target target of evaluation
+	// Registers a new target of evaluation
 	UpdateTargetOfEvaluation(context.Context, *UpdateTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
-	// Retrieves a target target of evaluation
+	// Retrieves a target of evaluation
 	GetTargetOfEvaluation(context.Context, *GetTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
-	// Lists all target target of evaluations
-	ListTargetOfEvaluations(context.Context, *ListTargetOfEvaluationsRequest) (*ListTargetOfEvaluationsResponse, error)
-	// Removes a target target of evaluation
+	// Lists all targets of evaluations
+	ListTargetsOfEvaluation(context.Context, *ListTargetsOfEvaluationRequest) (*ListTargetsOfEvaluationResponse, error)
+	// Removes a target of evaluation
 	RemoveTargetOfEvaluation(context.Context, *RemoveTargetOfEvaluationRequest) (*emptypb.Empty, error)
-	// Retrieves target target of evaluation statistics
+	// Retrieves target of evaluation statistics
 	GetTargetOfEvaluationStatistics(context.Context, *GetTargetOfEvaluationStatisticsRequest) (*GetTargetOfEvaluationStatisticsResponse, error)
 	// Updates a metric configuration (target value and operator) for a specific
 	// target of evaluation and metric ID
@@ -862,8 +862,8 @@ func (UnimplementedOrchestratorServer) UpdateTargetOfEvaluation(context.Context,
 func (UnimplementedOrchestratorServer) GetTargetOfEvaluation(context.Context, *GetTargetOfEvaluationRequest) (*TargetOfEvaluation, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTargetOfEvaluation not implemented")
 }
-func (UnimplementedOrchestratorServer) ListTargetOfEvaluations(context.Context, *ListTargetOfEvaluationsRequest) (*ListTargetOfEvaluationsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListTargetOfEvaluations not implemented")
+func (UnimplementedOrchestratorServer) ListTargetsOfEvaluation(context.Context, *ListTargetsOfEvaluationRequest) (*ListTargetsOfEvaluationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListTargetsOfEvaluation not implemented")
 }
 func (UnimplementedOrchestratorServer) RemoveTargetOfEvaluation(context.Context, *RemoveTargetOfEvaluationRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveTargetOfEvaluation not implemented")
@@ -1265,20 +1265,20 @@ func _Orchestrator_GetTargetOfEvaluation_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_ListTargetOfEvaluations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListTargetOfEvaluationsRequest)
+func _Orchestrator_ListTargetsOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListTargetsOfEvaluationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).ListTargetOfEvaluations(ctx, in)
+		return srv.(OrchestratorServer).ListTargetsOfEvaluation(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_ListTargetOfEvaluations_FullMethodName,
+		FullMethod: Orchestrator_ListTargetsOfEvaluation_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).ListTargetOfEvaluations(ctx, req.(*ListTargetOfEvaluationsRequest))
+		return srv.(OrchestratorServer).ListTargetsOfEvaluation(ctx, req.(*ListTargetsOfEvaluationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1852,8 +1852,8 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Orchestrator_GetTargetOfEvaluation_Handler,
 		},
 		{
-			MethodName: "ListTargetOfEvaluations",
-			Handler:    _Orchestrator_ListTargetOfEvaluations_Handler,
+			MethodName: "ListTargetsOfEvaluation",
+			Handler:    _Orchestrator_ListTargetsOfEvaluation_Handler,
 		},
 		{
 			MethodName: "RemoveTargetOfEvaluation",

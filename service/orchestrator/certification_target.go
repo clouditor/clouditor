@@ -93,9 +93,9 @@ func (s *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestrato
 	return
 }
 
-// ListTargetOfEvaluations implements method for OrchestratorServer interface for listing all target of evaluations
-func (svc *Service) ListTargetOfEvaluations(ctx context.Context, req *orchestrator.ListTargetOfEvaluationsRequest) (
-	res *orchestrator.ListTargetOfEvaluationsResponse, err error) {
+// ListTargetsOfEvaluation implements method for OrchestratorServer interface for listing all target of evaluations
+func (svc *Service) ListTargetsOfEvaluation(ctx context.Context, req *orchestrator.ListTargetsOfEvaluationRequest) (
+	res *orchestrator.ListTargetsOfEvaluationResponse, err error) {
 	var conds []any
 	var allowed []string
 	var all bool
@@ -106,7 +106,7 @@ func (svc *Service) ListTargetOfEvaluations(ctx context.Context, req *orchestrat
 		return nil, err
 	}
 
-	res = new(orchestrator.ListTargetOfEvaluationsResponse)
+	res = new(orchestrator.ListTargetsOfEvaluationResponse)
 
 	// Retrieve list of allowed target of evaluation according to our authorization strategy. No need to specify any conditions
 	// to our storage request, if we are allowed to see all target of evaluations.

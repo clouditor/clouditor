@@ -211,7 +211,7 @@ func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 	var (
 		TargetOfEvaluationResponse      *orchestrator.TargetOfEvaluation
 		err                             error
-		listTargetOfEvaluationsResponse *orchestrator.ListTargetOfEvaluationsResponse
+		listTargetsOfEvaluationResponse *orchestrator.ListTargetsOfEvaluationResponse
 	)
 	orchestratorService := NewService()
 
@@ -231,20 +231,20 @@ func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 	assert.NotNil(t, TargetOfEvaluationResponse)
 
 	// There is a record for target of evaluations in the DB (default one)
-	listTargetOfEvaluationsResponse, err = orchestratorService.ListTargetOfEvaluations(context.Background(), &orchestrator.ListTargetOfEvaluationsRequest{})
+	listTargetsOfEvaluationResponse, err = orchestratorService.ListTargetsOfEvaluation(context.Background(), &orchestrator.ListTargetsOfEvaluationRequest{})
 	assert.NoError(t, err)
-	assert.NotNil(t, listTargetOfEvaluationsResponse.Targets)
-	assert.NotEmpty(t, listTargetOfEvaluationsResponse.Targets)
+	assert.NotNil(t, listTargetsOfEvaluationResponse.Targets)
+	assert.NotEmpty(t, listTargetsOfEvaluationResponse.Targets)
 
 	// Remove record
 	_, err = orchestratorService.RemoveTargetOfEvaluation(context.Background(), &orchestrator.RemoveTargetOfEvaluationRequest{TargetOfEvaluationId: DefaultTargetOfEvaluationId})
 	assert.NoError(t, err)
 
 	// There is a record for target of evaluations in the DB (default one)
-	listTargetOfEvaluationsResponse, err = orchestratorService.ListTargetOfEvaluations(context.Background(), &orchestrator.ListTargetOfEvaluationsRequest{})
+	listTargetsOfEvaluationResponse, err = orchestratorService.ListTargetsOfEvaluation(context.Background(), &orchestrator.ListTargetsOfEvaluationRequest{})
 	assert.NoError(t, err)
-	assert.NotNil(t, listTargetOfEvaluationsResponse.Targets)
-	assert.Empty(t, listTargetOfEvaluationsResponse.Targets)
+	assert.NotNil(t, listTargetsOfEvaluationResponse.Targets)
+	assert.Empty(t, listTargetsOfEvaluationResponse.Targets)
 }
 
 func TestService_CreateDefaultTargetOfEvaluation(t *testing.T) {
@@ -279,7 +279,7 @@ func TestService_CreateDefaultTargetOfEvaluation(t *testing.T) {
 	assert.Nil(t, TargetOfEvaluationResponse)
 }
 
-func TestService_ListTargetOfEvaluations(t *testing.T) {
+func TestService_ListTargetsOfEvaluation(t *testing.T) {
 	type fields struct {
 		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
@@ -292,28 +292,28 @@ func TestService_ListTargetOfEvaluations(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		req *orchestrator.ListTargetOfEvaluationsRequest
+		req *orchestrator.ListTargetsOfEvaluationRequest
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantRes *orchestrator.ListTargetOfEvaluationsResponse
+		wantRes *orchestrator.ListTargetsOfEvaluationResponse
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "retrieve empty list",
-			args: args{req: &orchestrator.ListTargetOfEvaluationsRequest{}},
+			args: args{req: &orchestrator.ListTargetsOfEvaluationRequest{}},
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
-			wantRes: &orchestrator.ListTargetOfEvaluationsResponse{},
+			wantRes: &orchestrator.ListTargetsOfEvaluationResponse{},
 			wantErr: assert.NoError,
 		},
 		{
 			name: "list with one item",
-			args: args{req: &orchestrator.ListTargetOfEvaluationsRequest{}},
+			args: args{req: &orchestrator.ListTargetsOfEvaluationRequest{}},
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					target := &orchestrator.TargetOfEvaluation{
@@ -326,7 +326,7 @@ func TestService_ListTargetOfEvaluations(t *testing.T) {
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),
 			},
-			wantRes: &orchestrator.ListTargetOfEvaluationsResponse{
+			wantRes: &orchestrator.ListTargetsOfEvaluationResponse{
 				Targets: []*orchestrator.TargetOfEvaluation{
 					{
 						Id:          DefaultTargetOfEvaluationId,
@@ -355,9 +355,9 @@ func TestService_ListTargetOfEvaluations(t *testing.T) {
 			},
 			args: args{
 				ctx: context.TODO(),
-				req: &orchestrator.ListTargetOfEvaluationsRequest{},
+				req: &orchestrator.ListTargetsOfEvaluationRequest{},
 			},
-			wantRes: &orchestrator.ListTargetOfEvaluationsResponse{
+			wantRes: &orchestrator.ListTargetsOfEvaluationResponse{
 				Targets: []*orchestrator.TargetOfEvaluation{
 					{
 						Id:   testdata.MockTargetOfEvaluationID1,
@@ -385,9 +385,9 @@ func TestService_ListTargetOfEvaluations(t *testing.T) {
 			},
 			args: args{
 				ctx: context.TODO(),
-				req: &orchestrator.ListTargetOfEvaluationsRequest{},
+				req: &orchestrator.ListTargetsOfEvaluationRequest{},
 			},
-			wantRes: &orchestrator.ListTargetOfEvaluationsResponse{
+			wantRes: &orchestrator.ListTargetsOfEvaluationResponse{
 				Targets: []*orchestrator.TargetOfEvaluation{
 					{
 						Id:   testdata.MockTargetOfEvaluationID1,
@@ -412,7 +412,7 @@ func TestService_ListTargetOfEvaluations(t *testing.T) {
 				authz:                 tt.fields.authz,
 			}
 
-			gotRes, err := svc.ListTargetOfEvaluations(tt.args.ctx, tt.args.req)
+			gotRes, err := svc.ListTargetsOfEvaluation(tt.args.ctx, tt.args.req)
 			assert.NoError(t, api.Validate(gotRes))
 
 			tt.wantErr(t, err, tt.args)

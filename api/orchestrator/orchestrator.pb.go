@@ -1135,7 +1135,7 @@ func (x *RemoveTargetOfEvaluationRequest) GetTargetOfEvaluationId() string {
 	return ""
 }
 
-type ListTargetOfEvaluationsRequest struct {
+type ListTargetsOfEvaluationRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	PageSize      int32                  `protobuf:"varint,10,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	PageToken     string                 `protobuf:"bytes,11,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
@@ -1145,20 +1145,20 @@ type ListTargetOfEvaluationsRequest struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ListTargetOfEvaluationsRequest) Reset() {
-	*x = ListTargetOfEvaluationsRequest{}
+func (x *ListTargetsOfEvaluationRequest) Reset() {
+	*x = ListTargetsOfEvaluationRequest{}
 	mi := &file_api_orchestrator_orchestrator_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListTargetOfEvaluationsRequest) String() string {
+func (x *ListTargetsOfEvaluationRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListTargetOfEvaluationsRequest) ProtoMessage() {}
+func (*ListTargetsOfEvaluationRequest) ProtoMessage() {}
 
-func (x *ListTargetOfEvaluationsRequest) ProtoReflect() protoreflect.Message {
+func (x *ListTargetsOfEvaluationRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_api_orchestrator_orchestrator_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1170,40 +1170,40 @@ func (x *ListTargetOfEvaluationsRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListTargetOfEvaluationsRequest.ProtoReflect.Descriptor instead.
-func (*ListTargetOfEvaluationsRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use ListTargetsOfEvaluationRequest.ProtoReflect.Descriptor instead.
+func (*ListTargetsOfEvaluationRequest) Descriptor() ([]byte, []int) {
 	return file_api_orchestrator_orchestrator_proto_rawDescGZIP(), []int{19}
 }
 
-func (x *ListTargetOfEvaluationsRequest) GetPageSize() int32 {
+func (x *ListTargetsOfEvaluationRequest) GetPageSize() int32 {
 	if x != nil {
 		return x.PageSize
 	}
 	return 0
 }
 
-func (x *ListTargetOfEvaluationsRequest) GetPageToken() string {
+func (x *ListTargetsOfEvaluationRequest) GetPageToken() string {
 	if x != nil {
 		return x.PageToken
 	}
 	return ""
 }
 
-func (x *ListTargetOfEvaluationsRequest) GetOrderBy() string {
+func (x *ListTargetsOfEvaluationRequest) GetOrderBy() string {
 	if x != nil {
 		return x.OrderBy
 	}
 	return ""
 }
 
-func (x *ListTargetOfEvaluationsRequest) GetAsc() bool {
+func (x *ListTargetsOfEvaluationRequest) GetAsc() bool {
 	if x != nil {
 		return x.Asc
 	}
 	return false
 }
 
-type ListTargetOfEvaluationsResponse struct {
+type ListTargetsOfEvaluationResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Targets       []*TargetOfEvaluation  `protobuf:"bytes,1,rep,name=targets,proto3" json:"targets,omitempty"`
 	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
@@ -1211,20 +1211,20 @@ type ListTargetOfEvaluationsResponse struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ListTargetOfEvaluationsResponse) Reset() {
-	*x = ListTargetOfEvaluationsResponse{}
+func (x *ListTargetsOfEvaluationResponse) Reset() {
+	*x = ListTargetsOfEvaluationResponse{}
 	mi := &file_api_orchestrator_orchestrator_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListTargetOfEvaluationsResponse) String() string {
+func (x *ListTargetsOfEvaluationResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListTargetOfEvaluationsResponse) ProtoMessage() {}
+func (*ListTargetsOfEvaluationResponse) ProtoMessage() {}
 
-func (x *ListTargetOfEvaluationsResponse) ProtoReflect() protoreflect.Message {
+func (x *ListTargetsOfEvaluationResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_api_orchestrator_orchestrator_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1236,19 +1236,19 @@ func (x *ListTargetOfEvaluationsResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListTargetOfEvaluationsResponse.ProtoReflect.Descriptor instead.
-func (*ListTargetOfEvaluationsResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use ListTargetsOfEvaluationResponse.ProtoReflect.Descriptor instead.
+func (*ListTargetsOfEvaluationResponse) Descriptor() ([]byte, []int) {
 	return file_api_orchestrator_orchestrator_proto_rawDescGZIP(), []int{20}
 }
 
-func (x *ListTargetOfEvaluationsResponse) GetTargets() []*TargetOfEvaluation {
+func (x *ListTargetsOfEvaluationResponse) GetTargets() []*TargetOfEvaluation {
 	if x != nil {
 		return x.Targets
 	}
 	return nil
 }
 
-func (x *ListTargetOfEvaluationsResponse) GetNextPageToken() string {
+func (x *ListTargetsOfEvaluationResponse) GetNextPageToken() string {
 	if x != nil {
 		return x.NextPageToken
 	}
@@ -4476,14 +4476,14 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x14target_of_evaluation\x18\x01 \x01(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x12targetOfEvaluation\"e\n" +
 	"\x1fRemoveTargetOfEvaluationRequest\x12B\n" +
 	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"\x89\x01\n" +
-	"\x1eListTargetOfEvaluationsRequest\x12\x1b\n" +
+	"\x1eListTargetsOfEvaluationRequest\x12\x1b\n" +
 	"\tpage_size\x18\n" +
 	" \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
 	"page_token\x18\v \x01(\tR\tpageToken\x12\x19\n" +
 	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
 	"\x03asc\x18\r \x01(\bR\x03asc\"\x9a\x01\n" +
-	"\x1fListTargetOfEvaluationsResponse\x12O\n" +
+	"\x1fListTargetsOfEvaluationResponse\x12O\n" +
 	"\atargets\x18\x01 \x03(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB\x06\xe0A\x02\xe0A\x02R\atargets\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"l\n" +
 	"&GetTargetOfEvaluationStatisticsRequest\x12B\n" +
@@ -4807,7 +4807,7 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x18CreateTargetOfEvaluation\x12:.clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest\x1a-.clouditor.orchestrator.v1.TargetOfEvaluation\"D\x82\xd3\xe4\x93\x02>:\x14target_of_evaluation\"&/v1/orchestrator/targets_of_evaluation\x12\xe5\x01\n" +
 	"\x18UpdateTargetOfEvaluation\x12:.clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest\x1a-.clouditor.orchestrator.v1.TargetOfEvaluation\"^\x82\xd3\xe4\x93\x02X:\x14target_of_evaluation\x1a@/v1/orchestrator/targets_of_evaluation/{target_of_evaluation.id}\x12\xc9\x01\n" +
 	"\x15GetTargetOfEvaluation\x127.clouditor.orchestrator.v1.GetTargetOfEvaluationRequest\x1a-.clouditor.orchestrator.v1.TargetOfEvaluation\"H\x82\xd3\xe4\x93\x02B\x12@/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}\x12\xc0\x01\n" +
-	"\x17ListTargetOfEvaluations\x129.clouditor.orchestrator.v1.ListTargetOfEvaluationsRequest\x1a:.clouditor.orchestrator.v1.ListTargetOfEvaluationsResponse\".\x82\xd3\xe4\x93\x02(\x12&/v1/orchestrator/targets_of_evaluation\x12\xb8\x01\n" +
+	"\x17ListTargetsOfEvaluation\x129.clouditor.orchestrator.v1.ListTargetsOfEvaluationRequest\x1a:.clouditor.orchestrator.v1.ListTargetsOfEvaluationResponse\".\x82\xd3\xe4\x93\x02(\x12&/v1/orchestrator/targets_of_evaluation\x12\xb8\x01\n" +
 	"\x18RemoveTargetOfEvaluation\x12:.clouditor.orchestrator.v1.RemoveTargetOfEvaluationRequest\x1a\x16.google.protobuf.Empty\"H\x82\xd3\xe4\x93\x02B*@/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}\x12\xe3\x01\n" +
 	"\x1fGetTargetOfEvaluationStatistics\x12A.clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsRequest\x1aB.clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsResponse\"9\x82\xd3\xe4\x93\x023\x121/v1/orchestrator/targets_of_evaluation/statistics\x12\x81\x02\n" +
 	"\x19UpdateMetricConfiguration\x12;.clouditor.orchestrator.v1.UpdateMetricConfigurationRequest\x1a,.clouditor.assessment.v1.MetricConfiguration\"y\x82\xd3\xe4\x93\x02s:\rconfiguration\x1ab/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}/metric_configurations/{metric_id}\x12\xec\x01\n" +
@@ -4876,8 +4876,8 @@ var file_api_orchestrator_orchestrator_proto_goTypes = []any{
 	(*CreateTargetOfEvaluationRequest)(nil),         // 19: clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest
 	(*UpdateTargetOfEvaluationRequest)(nil),         // 20: clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest
 	(*RemoveTargetOfEvaluationRequest)(nil),         // 21: clouditor.orchestrator.v1.RemoveTargetOfEvaluationRequest
-	(*ListTargetOfEvaluationsRequest)(nil),          // 22: clouditor.orchestrator.v1.ListTargetOfEvaluationsRequest
-	(*ListTargetOfEvaluationsResponse)(nil),         // 23: clouditor.orchestrator.v1.ListTargetOfEvaluationsResponse
+	(*ListTargetsOfEvaluationRequest)(nil),          // 22: clouditor.orchestrator.v1.ListTargetsOfEvaluationRequest
+	(*ListTargetsOfEvaluationResponse)(nil),         // 23: clouditor.orchestrator.v1.ListTargetsOfEvaluationResponse
 	(*GetTargetOfEvaluationStatisticsRequest)(nil),  // 24: clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsRequest
 	(*GetTargetOfEvaluationStatisticsResponse)(nil), // 25: clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsResponse
 	(*UpdateMetricConfigurationRequest)(nil),        // 26: clouditor.orchestrator.v1.UpdateMetricConfigurationRequest
@@ -4954,7 +4954,7 @@ var file_api_orchestrator_orchestrator_proto_depIdxs = []int32{
 	80, // 8: clouditor.orchestrator.v1.ListMetricsResponse.metrics:type_name -> clouditor.assessment.v1.Metric
 	35, // 9: clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest.target_of_evaluation:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
 	35, // 10: clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest.target_of_evaluation:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
-	35, // 11: clouditor.orchestrator.v1.ListTargetOfEvaluationsResponse.targets:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
+	35, // 11: clouditor.orchestrator.v1.ListTargetsOfEvaluationResponse.targets:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
 	81, // 12: clouditor.orchestrator.v1.UpdateMetricConfigurationRequest.configuration:type_name -> clouditor.assessment.v1.MetricConfiguration
 	72, // 13: clouditor.orchestrator.v1.ListMetricConfigurationResponse.configurations:type_name -> clouditor.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntry
 	82, // 14: clouditor.orchestrator.v1.UpdateMetricImplementationRequest.implementation:type_name -> clouditor.assessment.v1.MetricImplementation
@@ -5006,7 +5006,7 @@ var file_api_orchestrator_orchestrator_proto_depIdxs = []int32{
 	19, // 60: clouditor.orchestrator.v1.Orchestrator.CreateTargetOfEvaluation:input_type -> clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest
 	20, // 61: clouditor.orchestrator.v1.Orchestrator.UpdateTargetOfEvaluation:input_type -> clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest
 	18, // 62: clouditor.orchestrator.v1.Orchestrator.GetTargetOfEvaluation:input_type -> clouditor.orchestrator.v1.GetTargetOfEvaluationRequest
-	22, // 63: clouditor.orchestrator.v1.Orchestrator.ListTargetOfEvaluations:input_type -> clouditor.orchestrator.v1.ListTargetOfEvaluationsRequest
+	22, // 63: clouditor.orchestrator.v1.Orchestrator.ListTargetsOfEvaluation:input_type -> clouditor.orchestrator.v1.ListTargetsOfEvaluationRequest
 	21, // 64: clouditor.orchestrator.v1.Orchestrator.RemoveTargetOfEvaluation:input_type -> clouditor.orchestrator.v1.RemoveTargetOfEvaluationRequest
 	24, // 65: clouditor.orchestrator.v1.Orchestrator.GetTargetOfEvaluationStatistics:input_type -> clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsRequest
 	26, // 66: clouditor.orchestrator.v1.Orchestrator.UpdateMetricConfiguration:input_type -> clouditor.orchestrator.v1.UpdateMetricConfigurationRequest
@@ -5052,7 +5052,7 @@ var file_api_orchestrator_orchestrator_proto_depIdxs = []int32{
 	35, // 106: clouditor.orchestrator.v1.Orchestrator.CreateTargetOfEvaluation:output_type -> clouditor.orchestrator.v1.TargetOfEvaluation
 	35, // 107: clouditor.orchestrator.v1.Orchestrator.UpdateTargetOfEvaluation:output_type -> clouditor.orchestrator.v1.TargetOfEvaluation
 	35, // 108: clouditor.orchestrator.v1.Orchestrator.GetTargetOfEvaluation:output_type -> clouditor.orchestrator.v1.TargetOfEvaluation
-	23, // 109: clouditor.orchestrator.v1.Orchestrator.ListTargetOfEvaluations:output_type -> clouditor.orchestrator.v1.ListTargetOfEvaluationsResponse
+	23, // 109: clouditor.orchestrator.v1.Orchestrator.ListTargetsOfEvaluation:output_type -> clouditor.orchestrator.v1.ListTargetsOfEvaluationResponse
 	85, // 110: clouditor.orchestrator.v1.Orchestrator.RemoveTargetOfEvaluation:output_type -> google.protobuf.Empty
 	25, // 111: clouditor.orchestrator.v1.Orchestrator.GetTargetOfEvaluationStatistics:output_type -> clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsResponse
 	81, // 112: clouditor.orchestrator.v1.Orchestrator.UpdateMetricConfiguration:output_type -> clouditor.assessment.v1.MetricConfiguration

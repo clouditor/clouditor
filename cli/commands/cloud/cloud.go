@@ -77,8 +77,8 @@ func NewCreateTargetOfEvaluationCommand() *cobra.Command {
 	return cmd
 }
 
-// NewListTargetOfEvaluationsCommand returns a cobra command for the `list` subcommand
-func NewListTargetOfEvaluationsCommand() *cobra.Command {
+// NewListTargetsOfEvaluationCommand returns a cobra command for the `list` subcommand
+func NewListTargetsOfEvaluationCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "Lists all target target of evaluations",
@@ -87,7 +87,7 @@ func NewListTargetOfEvaluationsCommand() *cobra.Command {
 				err     error
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
-				res     *orchestrator.ListTargetOfEvaluationsResponse
+				res     *orchestrator.ListTargetsOfEvaluationResponse
 				target  []*orchestrator.TargetOfEvaluation
 			)
 
@@ -98,12 +98,12 @@ func NewListTargetOfEvaluationsCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			target, err = api.ListAllPaginated(&orchestrator.ListTargetOfEvaluationsRequest{}, client.ListTargetOfEvaluations, func(res *orchestrator.ListTargetOfEvaluationsResponse) []*orchestrator.TargetOfEvaluation {
+			target, err = api.ListAllPaginated(&orchestrator.ListTargetsOfEvaluationRequest{}, client.ListTargetsOfEvaluation, func(res *orchestrator.ListTargetsOfEvaluationResponse) []*orchestrator.TargetOfEvaluation {
 				return res.Targets
 			})
 
 			// Build a response with all target of evaluations
-			res = &orchestrator.ListTargetOfEvaluationsResponse{
+			res = &orchestrator.ListTargetsOfEvaluationResponse{
 				Targets: target,
 			}
 
@@ -287,7 +287,7 @@ func NewCloudCommand() *cobra.Command {
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewCreateTargetOfEvaluationCommand(),
-		NewListTargetOfEvaluationsCommand(),
+		NewListTargetsOfEvaluationCommand(),
 		NewGetTargetOfEvaluationCommand(),
 		NewUpdateTargetOfEvaluationCommand(),
 		NewRemoveTargetOfEvaluationComand(),

@@ -82,7 +82,7 @@ func TestSession(t *testing.T) {
 
 	// Do a simple authenticated call
 	oc := orchestrator.NewOrchestratorClient(session)
-	_, err = oc.ListTargetOfEvaluations(context.Background(), &orchestrator.ListTargetOfEvaluationsRequest{})
+	_, err = oc.ListTargetsOfEvaluation(context.Background(), &orchestrator.ListTargetsOfEvaluationRequest{})
 	assert.NoError(t, err)
 }
 
