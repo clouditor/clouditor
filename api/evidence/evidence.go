@@ -46,6 +46,10 @@ func (ev *Evidence) GetOntologyResource() ontology.IsResource {
 		ok       bool
 	)
 
+	if ev.Resource == nil || ev.Resource.Type == nil {
+		return nil
+	}
+
 	// A little bit of dark Go magic
 	typ := reflect.ValueOf(ev.Resource.Type).Elem()
 	resource, ok = typ.Field(0).Interface().(ontology.IsResource)
