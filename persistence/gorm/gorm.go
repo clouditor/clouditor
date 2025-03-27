@@ -131,7 +131,7 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	g := &storage{
 		// We ignore Deepsource issue GO-W1004 (SkipDefaultTransaction of config is "false"): skipcq: GO-W1004
 		config: gorm.Config{
-			Logger: logger.Default.LogMode(logger.Info),
+			Logger: logger.Default.LogMode(logger.Silent),
 		},
 		types: DefaultTypes,
 	}
