@@ -227,7 +227,7 @@ func NewUpdateTargetOfEvaluationCommand() *cobra.Command {
 	_ = viper.BindPFlag("description", cmd.PersistentFlags().Lookup("description"))
 	_ = viper.BindPFlag("control-ids", cmd.PersistentFlags().Lookup("control-ids"))
 
-	_ = cmd.RegisterFlagCompletionFunc("id", cli.ValidArgsGetTargetOfEvaluations)
+	_ = cmd.RegisterFlagCompletionFunc("id", cli.ValidArgsGetTargetOfEvaluation)
 	_ = cmd.RegisterFlagCompletionFunc("name", cli.DefaultArgsShellComp)
 	_ = cmd.RegisterFlagCompletionFunc("description", cli.DefaultArgsShellComp)
 

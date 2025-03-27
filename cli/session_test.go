@@ -326,7 +326,7 @@ func TestValidArgsGetControls(t *testing.T) {
 	}
 }
 
-func TestValidArgsGetTargetOfEvaluations(t *testing.T) {
+func TestValidArgsGetTargetOfEvaluation(t *testing.T) {
 	type args struct {
 		in0        *cobra.Command
 		args       []string
@@ -350,7 +350,7 @@ func TestValidArgsGetTargetOfEvaluations(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := cli.ValidArgsGetTargetOfEvaluations(tt.args.in0, tt.args.args, tt.args.toComplete)
+			got, got1 := cli.ValidArgsGetTargetOfEvaluation(tt.args.in0, tt.args.args, tt.args.toComplete)
 			tt.want(t, got)
 			assert.Equal(t, tt.want1, got1)
 		})

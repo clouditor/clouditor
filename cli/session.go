@@ -290,8 +290,8 @@ func ValidArgsGetControls(_ *cobra.Command, args []string, toComplete string) ([
 	}
 }
 
-func ValidArgsGetTargetOfEvaluations(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	return getTargetOfEvaluations(toComplete), cobra.ShellCompDirectiveNoFileComp
+func ValidArgsGetTargetOfEvaluation(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return getTargetOfEvaluation(toComplete), cobra.ShellCompDirectiveNoFileComp
 }
 
 func getTools(_ string) []string {
@@ -431,7 +431,7 @@ func getControls(catalogID string, categoryName string, _ string) []string {
 	return output
 }
 
-func getTargetOfEvaluations(_ string) []string {
+func getTargetOfEvaluation(_ string) []string {
 	var (
 		err     error
 		session *Session
