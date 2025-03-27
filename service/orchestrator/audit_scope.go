@@ -59,7 +59,7 @@ func (svc *Service) CreateAuditScope(ctx context.Context, req *orchestrator.Crea
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -96,8 +96,8 @@ func (svc *Service) GetAuditScope(ctx context.Context, req *orchestrator.GetAudi
 	}
 
 	// Check if client is allowed to access the audit scope
-	all, allowed := svc.authz.AllowedCertificationTargets(ctx)
-	if !all && !slices.Contains(allowed, res.CertificationTargetId) {
+	all, allowed := svc.authz.AllowedTargetOfEvaluations(ctx)
+	if !all && !slices.Contains(allowed, res.TargetOfEvaluationId) {
 		// Important to nil the response since it is set already
 		return nil, status.Error(codes.PermissionDenied, service.ErrPermissionDenied.Error())
 	}
@@ -116,14 +116,14 @@ func (svc *Service) ListAuditScopes(ctx context.Context, req *orchestrator.ListA
 		return nil, err
 	}
 
-	// Retrieve a list of allowed certification targets according to our
+	// Retrieve a list of allowed target of evaluations according to our
 	// authorization strategy. No need to specify any conditions to our storage
-	// request, if we are allowed to see all certification targets.
-	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
+	// request, if we are allowed to see all target of evaluations.
+	all, allowed = svc.authz.AllowedTargetOfEvaluations(ctx)
 
-	// The content of the filtered certification target ID must be in the list of allowed certification target IDs,
-	// unless one can access *all* the certification targets.
-	if !all && req.Filter != nil && req.Filter.CertificationTargetId != nil && !slices.Contains(allowed, req.Filter.GetCertificationTargetId()) {
+	// The content of the filtered target of evaluation ID must be in the list of allowed target of evaluation IDs,
+	// unless one can access *all* the target of evaluations.
+	if !all && req.Filter != nil && req.Filter.TargetOfEvaluationId != nil && !slices.Contains(allowed, req.Filter.GetTargetOfEvaluationId()) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -131,13 +131,13 @@ func (svc *Service) ListAuditScopes(ctx context.Context, req *orchestrator.ListA
 	var args []any
 
 	// Filtering the audit scopes by
-	// * certification target ID
+	// * target of evaluation ID
 	// * catalog ID
 	if req.Filter != nil {
-		if req.Filter.CertificationTargetId != nil {
-			query = append(query, "certification_target_id = ?")
-			args = append(args, req.Filter.GetCertificationTargetId())
-			// conds = append(conds, "certification_target_id = ?", req.CertificationTargetId)
+		if req.Filter.TargetOfEvaluationId != nil {
+			query = append(query, "target_of_evaluation_id = ?")
+			args = append(args, req.Filter.GetTargetOfEvaluationId())
+			// conds = append(conds, "target_of_evaluation_id = ?", req.TargetOfEvaluationId)
 		}
 		if req.Filter.CatalogId != nil {
 			query = append(query, "catalog_id = ?")
@@ -151,7 +151,7 @@ func (svc *Service) ListAuditScopes(ctx context.Context, req *orchestrator.ListA
 	// In any case, we need to make sure that we only select audit scopes that we
 	// have access to (if we do not have access to all)
 	if !all {
-		query = append(query, "certification_target_id IN ?")
+		query = append(query, "target_of_evaluation_id IN ?")
 		args = append(args, allowed)
 	}
 
@@ -174,7 +174,7 @@ func (svc *Service) UpdateAuditScope(ctx context.Context, req *orchestrator.Upda
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -215,7 +215,7 @@ func (svc *Service) RemoveAuditScope(ctx context.Context, req *orchestrator.Remo
 	}
 
 	// TODO(all): Currently we do not need that check as it is already done when getting the audit scope. But we will need it if we will check the request type as well.
-	// Check, if this request has access to the certification target according to our authorization strategy.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessDelete, auditScope) {
 		return nil, service.ErrPermissionDenied
 	}

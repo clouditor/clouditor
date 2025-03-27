@@ -64,7 +64,7 @@ func BindFlags(cmd *cobra.Command) {
 	if cmd.Flag(config.AssessmentURLFlag) == nil {
 		cmd.Flags().String(config.AssessmentURLFlag, fmt.Sprintf("localhost:%s", strconv.FormatUint(uint64(config.DefaultAPIgRPCPortAssessment), 10)), "Specifies the Assessment URL")
 	}
-	cmd.Flags().String(config.CertificationTargetIDFlag, config.DefaultCertificationTargetID, "Specifies the Certification Target ID")
+	cmd.Flags().String(config.TargetOfEvaluationIDFlag, config.DefaultTargetOfEvaluationID, "Specifies the Target of Evaluation ID")
 	cmd.Flags().Bool(config.DiscoveryAutoStartFlag, config.DefaultDiscoveryAutoStart, "Automatically start the discovery when engine starts")
 	cmd.Flags().StringSliceP(config.DiscoveryProviderFlag, "p", []string{}, "Providers to discover, separated by comma")
 	cmd.Flags().String(config.DiscoveryResourceGroupFlag, config.DefaultDiscoveryResourceGroup, "Limit the scope of the discovery to a resource group (currently only used in the Azure discoverer")
@@ -77,7 +77,7 @@ func BindFlags(cmd *cobra.Command) {
 	}
 
 	_ = viper.BindPFlag(config.AssessmentURLFlag, cmd.Flags().Lookup(config.AssessmentURLFlag))
-	_ = viper.BindPFlag(config.CertificationTargetIDFlag, cmd.Flags().Lookup(config.CertificationTargetIDFlag))
+	_ = viper.BindPFlag(config.TargetOfEvaluationIDFlag, cmd.Flags().Lookup(config.TargetOfEvaluationIDFlag))
 	_ = viper.BindPFlag(config.DiscoveryAutoStartFlag, cmd.Flags().Lookup(config.DiscoveryAutoStartFlag))
 	_ = viper.BindPFlag(config.DiscoveryProviderFlag, cmd.Flags().Lookup(config.DiscoveryProviderFlag))
 	_ = viper.BindPFlag(config.DiscoveryResourceGroupFlag, cmd.Flags().Lookup(config.DiscoveryResourceGroupFlag))

@@ -47,52 +47,52 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Orchestrator_RegisterAssessmentTool_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/RegisterAssessmentTool"
-	Orchestrator_ListAssessmentTools_FullMethodName              = "/clouditor.orchestrator.v1.Orchestrator/ListAssessmentTools"
-	Orchestrator_GetAssessmentTool_FullMethodName                = "/clouditor.orchestrator.v1.Orchestrator/GetAssessmentTool"
-	Orchestrator_UpdateAssessmentTool_FullMethodName             = "/clouditor.orchestrator.v1.Orchestrator/UpdateAssessmentTool"
-	Orchestrator_DeregisterAssessmentTool_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/DeregisterAssessmentTool"
-	Orchestrator_StoreAssessmentResult_FullMethodName            = "/clouditor.orchestrator.v1.Orchestrator/StoreAssessmentResult"
-	Orchestrator_StoreAssessmentResults_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/StoreAssessmentResults"
-	Orchestrator_GetAssessmentResult_FullMethodName              = "/clouditor.orchestrator.v1.Orchestrator/GetAssessmentResult"
-	Orchestrator_ListAssessmentResults_FullMethodName            = "/clouditor.orchestrator.v1.Orchestrator/ListAssessmentResults"
-	Orchestrator_CreateMetric_FullMethodName                     = "/clouditor.orchestrator.v1.Orchestrator/CreateMetric"
-	Orchestrator_UpdateMetric_FullMethodName                     = "/clouditor.orchestrator.v1.Orchestrator/UpdateMetric"
-	Orchestrator_GetMetric_FullMethodName                        = "/clouditor.orchestrator.v1.Orchestrator/GetMetric"
-	Orchestrator_ListMetrics_FullMethodName                      = "/clouditor.orchestrator.v1.Orchestrator/ListMetrics"
-	Orchestrator_RemoveMetric_FullMethodName                     = "/clouditor.orchestrator.v1.Orchestrator/RemoveMetric"
-	Orchestrator_CreateCertificationTarget_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/CreateCertificationTarget"
-	Orchestrator_UpdateCertificationTarget_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/UpdateCertificationTarget"
-	Orchestrator_GetCertificationTarget_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/GetCertificationTarget"
-	Orchestrator_ListCertificationTargets_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/ListCertificationTargets"
-	Orchestrator_RemoveCertificationTarget_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/RemoveCertificationTarget"
-	Orchestrator_GetCertificationTargetStatistics_FullMethodName = "/clouditor.orchestrator.v1.Orchestrator/GetCertificationTargetStatistics"
-	Orchestrator_UpdateMetricConfiguration_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricConfiguration"
-	Orchestrator_GetMetricConfiguration_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/GetMetricConfiguration"
-	Orchestrator_ListMetricConfigurations_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/ListMetricConfigurations"
-	Orchestrator_UpdateMetricImplementation_FullMethodName       = "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricImplementation"
-	Orchestrator_GetMetricImplementation_FullMethodName          = "/clouditor.orchestrator.v1.Orchestrator/GetMetricImplementation"
-	Orchestrator_SubscribeMetricChangeEvents_FullMethodName      = "/clouditor.orchestrator.v1.Orchestrator/SubscribeMetricChangeEvents"
-	Orchestrator_CreateCertificate_FullMethodName                = "/clouditor.orchestrator.v1.Orchestrator/CreateCertificate"
-	Orchestrator_GetCertificate_FullMethodName                   = "/clouditor.orchestrator.v1.Orchestrator/GetCertificate"
-	Orchestrator_ListCertificates_FullMethodName                 = "/clouditor.orchestrator.v1.Orchestrator/ListCertificates"
-	Orchestrator_ListPublicCertificates_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/ListPublicCertificates"
-	Orchestrator_UpdateCertificate_FullMethodName                = "/clouditor.orchestrator.v1.Orchestrator/UpdateCertificate"
-	Orchestrator_RemoveCertificate_FullMethodName                = "/clouditor.orchestrator.v1.Orchestrator/RemoveCertificate"
-	Orchestrator_CreateCatalog_FullMethodName                    = "/clouditor.orchestrator.v1.Orchestrator/CreateCatalog"
-	Orchestrator_ListCatalogs_FullMethodName                     = "/clouditor.orchestrator.v1.Orchestrator/ListCatalogs"
-	Orchestrator_GetCatalog_FullMethodName                       = "/clouditor.orchestrator.v1.Orchestrator/GetCatalog"
-	Orchestrator_RemoveCatalog_FullMethodName                    = "/clouditor.orchestrator.v1.Orchestrator/RemoveCatalog"
-	Orchestrator_UpdateCatalog_FullMethodName                    = "/clouditor.orchestrator.v1.Orchestrator/UpdateCatalog"
-	Orchestrator_GetCategory_FullMethodName                      = "/clouditor.orchestrator.v1.Orchestrator/GetCategory"
-	Orchestrator_ListControls_FullMethodName                     = "/clouditor.orchestrator.v1.Orchestrator/ListControls"
-	Orchestrator_GetControl_FullMethodName                       = "/clouditor.orchestrator.v1.Orchestrator/GetControl"
-	Orchestrator_CreateAuditScope_FullMethodName                 = "/clouditor.orchestrator.v1.Orchestrator/CreateAuditScope"
-	Orchestrator_GetAuditScope_FullMethodName                    = "/clouditor.orchestrator.v1.Orchestrator/GetAuditScope"
-	Orchestrator_ListAuditScopes_FullMethodName                  = "/clouditor.orchestrator.v1.Orchestrator/ListAuditScopes"
-	Orchestrator_UpdateAuditScope_FullMethodName                 = "/clouditor.orchestrator.v1.Orchestrator/UpdateAuditScope"
-	Orchestrator_RemoveAuditScope_FullMethodName                 = "/clouditor.orchestrator.v1.Orchestrator/RemoveAuditScope"
-	Orchestrator_GetRuntimeInfo_FullMethodName                   = "/clouditor.orchestrator.v1.Orchestrator/GetRuntimeInfo"
+	Orchestrator_RegisterAssessmentTool_FullMethodName          = "/clouditor.orchestrator.v1.Orchestrator/RegisterAssessmentTool"
+	Orchestrator_ListAssessmentTools_FullMethodName             = "/clouditor.orchestrator.v1.Orchestrator/ListAssessmentTools"
+	Orchestrator_GetAssessmentTool_FullMethodName               = "/clouditor.orchestrator.v1.Orchestrator/GetAssessmentTool"
+	Orchestrator_UpdateAssessmentTool_FullMethodName            = "/clouditor.orchestrator.v1.Orchestrator/UpdateAssessmentTool"
+	Orchestrator_DeregisterAssessmentTool_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/DeregisterAssessmentTool"
+	Orchestrator_StoreAssessmentResult_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/StoreAssessmentResult"
+	Orchestrator_StoreAssessmentResults_FullMethodName          = "/clouditor.orchestrator.v1.Orchestrator/StoreAssessmentResults"
+	Orchestrator_GetAssessmentResult_FullMethodName             = "/clouditor.orchestrator.v1.Orchestrator/GetAssessmentResult"
+	Orchestrator_ListAssessmentResults_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/ListAssessmentResults"
+	Orchestrator_CreateMetric_FullMethodName                    = "/clouditor.orchestrator.v1.Orchestrator/CreateMetric"
+	Orchestrator_UpdateMetric_FullMethodName                    = "/clouditor.orchestrator.v1.Orchestrator/UpdateMetric"
+	Orchestrator_GetMetric_FullMethodName                       = "/clouditor.orchestrator.v1.Orchestrator/GetMetric"
+	Orchestrator_ListMetrics_FullMethodName                     = "/clouditor.orchestrator.v1.Orchestrator/ListMetrics"
+	Orchestrator_RemoveMetric_FullMethodName                    = "/clouditor.orchestrator.v1.Orchestrator/RemoveMetric"
+	Orchestrator_CreateTargetOfEvaluation_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/CreateTargetOfEvaluation"
+	Orchestrator_UpdateTargetOfEvaluation_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/UpdateTargetOfEvaluation"
+	Orchestrator_GetTargetOfEvaluation_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluation"
+	Orchestrator_ListTargetsOfEvaluation_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/ListTargetsOfEvaluation"
+	Orchestrator_RemoveTargetOfEvaluation_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/RemoveTargetOfEvaluation"
+	Orchestrator_GetTargetOfEvaluationStatistics_FullMethodName = "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluationStatistics"
+	Orchestrator_UpdateMetricConfiguration_FullMethodName       = "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricConfiguration"
+	Orchestrator_GetMetricConfiguration_FullMethodName          = "/clouditor.orchestrator.v1.Orchestrator/GetMetricConfiguration"
+	Orchestrator_ListMetricConfigurations_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/ListMetricConfigurations"
+	Orchestrator_UpdateMetricImplementation_FullMethodName      = "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricImplementation"
+	Orchestrator_GetMetricImplementation_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/GetMetricImplementation"
+	Orchestrator_SubscribeMetricChangeEvents_FullMethodName     = "/clouditor.orchestrator.v1.Orchestrator/SubscribeMetricChangeEvents"
+	Orchestrator_CreateCertificate_FullMethodName               = "/clouditor.orchestrator.v1.Orchestrator/CreateCertificate"
+	Orchestrator_GetCertificate_FullMethodName                  = "/clouditor.orchestrator.v1.Orchestrator/GetCertificate"
+	Orchestrator_ListCertificates_FullMethodName                = "/clouditor.orchestrator.v1.Orchestrator/ListCertificates"
+	Orchestrator_ListPublicCertificates_FullMethodName          = "/clouditor.orchestrator.v1.Orchestrator/ListPublicCertificates"
+	Orchestrator_UpdateCertificate_FullMethodName               = "/clouditor.orchestrator.v1.Orchestrator/UpdateCertificate"
+	Orchestrator_RemoveCertificate_FullMethodName               = "/clouditor.orchestrator.v1.Orchestrator/RemoveCertificate"
+	Orchestrator_CreateCatalog_FullMethodName                   = "/clouditor.orchestrator.v1.Orchestrator/CreateCatalog"
+	Orchestrator_ListCatalogs_FullMethodName                    = "/clouditor.orchestrator.v1.Orchestrator/ListCatalogs"
+	Orchestrator_GetCatalog_FullMethodName                      = "/clouditor.orchestrator.v1.Orchestrator/GetCatalog"
+	Orchestrator_RemoveCatalog_FullMethodName                   = "/clouditor.orchestrator.v1.Orchestrator/RemoveCatalog"
+	Orchestrator_UpdateCatalog_FullMethodName                   = "/clouditor.orchestrator.v1.Orchestrator/UpdateCatalog"
+	Orchestrator_GetCategory_FullMethodName                     = "/clouditor.orchestrator.v1.Orchestrator/GetCategory"
+	Orchestrator_ListControls_FullMethodName                    = "/clouditor.orchestrator.v1.Orchestrator/ListControls"
+	Orchestrator_GetControl_FullMethodName                      = "/clouditor.orchestrator.v1.Orchestrator/GetControl"
+	Orchestrator_CreateAuditScope_FullMethodName                = "/clouditor.orchestrator.v1.Orchestrator/CreateAuditScope"
+	Orchestrator_GetAuditScope_FullMethodName                   = "/clouditor.orchestrator.v1.Orchestrator/GetAuditScope"
+	Orchestrator_ListAuditScopes_FullMethodName                 = "/clouditor.orchestrator.v1.Orchestrator/ListAuditScopes"
+	Orchestrator_UpdateAuditScope_FullMethodName                = "/clouditor.orchestrator.v1.Orchestrator/UpdateAuditScope"
+	Orchestrator_RemoveAuditScope_FullMethodName                = "/clouditor.orchestrator.v1.Orchestrator/RemoveAuditScope"
+	Orchestrator_GetRuntimeInfo_FullMethodName                  = "/clouditor.orchestrator.v1.Orchestrator/GetRuntimeInfo"
 )
 
 // OrchestratorClient is the client API for Orchestrator service.
@@ -132,26 +132,26 @@ type OrchestratorClient interface {
 	ListMetrics(ctx context.Context, in *ListMetricsRequest, opts ...grpc.CallOption) (*ListMetricsResponse, error)
 	// Removes a new metric
 	RemoveMetric(ctx context.Context, in *RemoveMetricRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Registers a new target certification target
-	CreateCertificationTarget(ctx context.Context, in *CreateCertificationTargetRequest, opts ...grpc.CallOption) (*CertificationTarget, error)
-	// Registers a new target certification target
-	UpdateCertificationTarget(ctx context.Context, in *UpdateCertificationTargetRequest, opts ...grpc.CallOption) (*CertificationTarget, error)
-	// Retrieves a target certification target
-	GetCertificationTarget(ctx context.Context, in *GetCertificationTargetRequest, opts ...grpc.CallOption) (*CertificationTarget, error)
-	// Lists all target certification targets
-	ListCertificationTargets(ctx context.Context, in *ListCertificationTargetsRequest, opts ...grpc.CallOption) (*ListCertificationTargetsResponse, error)
-	// Removes a target certification target
-	RemoveCertificationTarget(ctx context.Context, in *RemoveCertificationTargetRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Retrieves target certification target statistics
-	GetCertificationTargetStatistics(ctx context.Context, in *GetCertificationTargetStatisticsRequest, opts ...grpc.CallOption) (*GetCertificationTargetStatisticsResponse, error)
+	// Registers a new target of evaluation
+	CreateTargetOfEvaluation(ctx context.Context, in *CreateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
+	// Registers a new target of evaluation
+	UpdateTargetOfEvaluation(ctx context.Context, in *UpdateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
+	// Retrieves a target of evaluation
+	GetTargetOfEvaluation(ctx context.Context, in *GetTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
+	// Lists all targets of evaluations
+	ListTargetsOfEvaluation(ctx context.Context, in *ListTargetsOfEvaluationRequest, opts ...grpc.CallOption) (*ListTargetsOfEvaluationResponse, error)
+	// Removes a target of evaluation
+	RemoveTargetOfEvaluation(ctx context.Context, in *RemoveTargetOfEvaluationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Retrieves target of evaluation statistics
+	GetTargetOfEvaluationStatistics(ctx context.Context, in *GetTargetOfEvaluationStatisticsRequest, opts ...grpc.CallOption) (*GetTargetOfEvaluationStatisticsResponse, error)
 	// Updates a metric configuration (target value and operator) for a specific
-	// certification target and metric ID
+	// target of evaluation and metric ID
 	UpdateMetricConfiguration(ctx context.Context, in *UpdateMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error)
 	// Retrieves a metric configuration (target value and operator) for a specific
-	// certification target and metric ID.
+	// target of evaluation and metric ID.
 	GetMetricConfiguration(ctx context.Context, in *GetMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error)
 	// Lists all metric configurations (target value and operator) for a
-	// specific certification target ID
+	// specific target of evaluation ID
 	ListMetricConfigurations(ctx context.Context, in *ListMetricConfigurationRequest, opts ...grpc.CallOption) (*ListMetricConfigurationResponse, error)
 	// Updates an existing metric implementation
 	UpdateMetricImplementation(ctx context.Context, in *UpdateMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error)
@@ -360,60 +360,60 @@ func (c *orchestratorClient) RemoveMetric(ctx context.Context, in *RemoveMetricR
 	return out, nil
 }
 
-func (c *orchestratorClient) CreateCertificationTarget(ctx context.Context, in *CreateCertificationTargetRequest, opts ...grpc.CallOption) (*CertificationTarget, error) {
+func (c *orchestratorClient) CreateTargetOfEvaluation(ctx context.Context, in *CreateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CertificationTarget)
-	err := c.cc.Invoke(ctx, Orchestrator_CreateCertificationTarget_FullMethodName, in, out, cOpts...)
+	out := new(TargetOfEvaluation)
+	err := c.cc.Invoke(ctx, Orchestrator_CreateTargetOfEvaluation_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *orchestratorClient) UpdateCertificationTarget(ctx context.Context, in *UpdateCertificationTargetRequest, opts ...grpc.CallOption) (*CertificationTarget, error) {
+func (c *orchestratorClient) UpdateTargetOfEvaluation(ctx context.Context, in *UpdateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CertificationTarget)
-	err := c.cc.Invoke(ctx, Orchestrator_UpdateCertificationTarget_FullMethodName, in, out, cOpts...)
+	out := new(TargetOfEvaluation)
+	err := c.cc.Invoke(ctx, Orchestrator_UpdateTargetOfEvaluation_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *orchestratorClient) GetCertificationTarget(ctx context.Context, in *GetCertificationTargetRequest, opts ...grpc.CallOption) (*CertificationTarget, error) {
+func (c *orchestratorClient) GetTargetOfEvaluation(ctx context.Context, in *GetTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CertificationTarget)
-	err := c.cc.Invoke(ctx, Orchestrator_GetCertificationTarget_FullMethodName, in, out, cOpts...)
+	out := new(TargetOfEvaluation)
+	err := c.cc.Invoke(ctx, Orchestrator_GetTargetOfEvaluation_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *orchestratorClient) ListCertificationTargets(ctx context.Context, in *ListCertificationTargetsRequest, opts ...grpc.CallOption) (*ListCertificationTargetsResponse, error) {
+func (c *orchestratorClient) ListTargetsOfEvaluation(ctx context.Context, in *ListTargetsOfEvaluationRequest, opts ...grpc.CallOption) (*ListTargetsOfEvaluationResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListCertificationTargetsResponse)
-	err := c.cc.Invoke(ctx, Orchestrator_ListCertificationTargets_FullMethodName, in, out, cOpts...)
+	out := new(ListTargetsOfEvaluationResponse)
+	err := c.cc.Invoke(ctx, Orchestrator_ListTargetsOfEvaluation_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *orchestratorClient) RemoveCertificationTarget(ctx context.Context, in *RemoveCertificationTargetRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *orchestratorClient) RemoveTargetOfEvaluation(ctx context.Context, in *RemoveTargetOfEvaluationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Orchestrator_RemoveCertificationTarget_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Orchestrator_RemoveTargetOfEvaluation_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *orchestratorClient) GetCertificationTargetStatistics(ctx context.Context, in *GetCertificationTargetStatisticsRequest, opts ...grpc.CallOption) (*GetCertificationTargetStatisticsResponse, error) {
+func (c *orchestratorClient) GetTargetOfEvaluationStatistics(ctx context.Context, in *GetTargetOfEvaluationStatisticsRequest, opts ...grpc.CallOption) (*GetTargetOfEvaluationStatisticsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetCertificationTargetStatisticsResponse)
-	err := c.cc.Invoke(ctx, Orchestrator_GetCertificationTargetStatistics_FullMethodName, in, out, cOpts...)
+	out := new(GetTargetOfEvaluationStatisticsResponse)
+	err := c.cc.Invoke(ctx, Orchestrator_GetTargetOfEvaluationStatistics_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -726,26 +726,26 @@ type OrchestratorServer interface {
 	ListMetrics(context.Context, *ListMetricsRequest) (*ListMetricsResponse, error)
 	// Removes a new metric
 	RemoveMetric(context.Context, *RemoveMetricRequest) (*emptypb.Empty, error)
-	// Registers a new target certification target
-	CreateCertificationTarget(context.Context, *CreateCertificationTargetRequest) (*CertificationTarget, error)
-	// Registers a new target certification target
-	UpdateCertificationTarget(context.Context, *UpdateCertificationTargetRequest) (*CertificationTarget, error)
-	// Retrieves a target certification target
-	GetCertificationTarget(context.Context, *GetCertificationTargetRequest) (*CertificationTarget, error)
-	// Lists all target certification targets
-	ListCertificationTargets(context.Context, *ListCertificationTargetsRequest) (*ListCertificationTargetsResponse, error)
-	// Removes a target certification target
-	RemoveCertificationTarget(context.Context, *RemoveCertificationTargetRequest) (*emptypb.Empty, error)
-	// Retrieves target certification target statistics
-	GetCertificationTargetStatistics(context.Context, *GetCertificationTargetStatisticsRequest) (*GetCertificationTargetStatisticsResponse, error)
+	// Registers a new target of evaluation
+	CreateTargetOfEvaluation(context.Context, *CreateTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
+	// Registers a new target of evaluation
+	UpdateTargetOfEvaluation(context.Context, *UpdateTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
+	// Retrieves a target of evaluation
+	GetTargetOfEvaluation(context.Context, *GetTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
+	// Lists all targets of evaluations
+	ListTargetsOfEvaluation(context.Context, *ListTargetsOfEvaluationRequest) (*ListTargetsOfEvaluationResponse, error)
+	// Removes a target of evaluation
+	RemoveTargetOfEvaluation(context.Context, *RemoveTargetOfEvaluationRequest) (*emptypb.Empty, error)
+	// Retrieves target of evaluation statistics
+	GetTargetOfEvaluationStatistics(context.Context, *GetTargetOfEvaluationStatisticsRequest) (*GetTargetOfEvaluationStatisticsResponse, error)
 	// Updates a metric configuration (target value and operator) for a specific
-	// certification target and metric ID
+	// target of evaluation and metric ID
 	UpdateMetricConfiguration(context.Context, *UpdateMetricConfigurationRequest) (*assessment.MetricConfiguration, error)
 	// Retrieves a metric configuration (target value and operator) for a specific
-	// certification target and metric ID.
+	// target of evaluation and metric ID.
 	GetMetricConfiguration(context.Context, *GetMetricConfigurationRequest) (*assessment.MetricConfiguration, error)
 	// Lists all metric configurations (target value and operator) for a
-	// specific certification target ID
+	// specific target of evaluation ID
 	ListMetricConfigurations(context.Context, *ListMetricConfigurationRequest) (*ListMetricConfigurationResponse, error)
 	// Updates an existing metric implementation
 	UpdateMetricImplementation(context.Context, *UpdateMetricImplementationRequest) (*assessment.MetricImplementation, error)
@@ -853,23 +853,23 @@ func (UnimplementedOrchestratorServer) ListMetrics(context.Context, *ListMetrics
 func (UnimplementedOrchestratorServer) RemoveMetric(context.Context, *RemoveMetricRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveMetric not implemented")
 }
-func (UnimplementedOrchestratorServer) CreateCertificationTarget(context.Context, *CreateCertificationTargetRequest) (*CertificationTarget, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateCertificationTarget not implemented")
+func (UnimplementedOrchestratorServer) CreateTargetOfEvaluation(context.Context, *CreateTargetOfEvaluationRequest) (*TargetOfEvaluation, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateTargetOfEvaluation not implemented")
 }
-func (UnimplementedOrchestratorServer) UpdateCertificationTarget(context.Context, *UpdateCertificationTargetRequest) (*CertificationTarget, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateCertificationTarget not implemented")
+func (UnimplementedOrchestratorServer) UpdateTargetOfEvaluation(context.Context, *UpdateTargetOfEvaluationRequest) (*TargetOfEvaluation, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateTargetOfEvaluation not implemented")
 }
-func (UnimplementedOrchestratorServer) GetCertificationTarget(context.Context, *GetCertificationTargetRequest) (*CertificationTarget, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetCertificationTarget not implemented")
+func (UnimplementedOrchestratorServer) GetTargetOfEvaluation(context.Context, *GetTargetOfEvaluationRequest) (*TargetOfEvaluation, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTargetOfEvaluation not implemented")
 }
-func (UnimplementedOrchestratorServer) ListCertificationTargets(context.Context, *ListCertificationTargetsRequest) (*ListCertificationTargetsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListCertificationTargets not implemented")
+func (UnimplementedOrchestratorServer) ListTargetsOfEvaluation(context.Context, *ListTargetsOfEvaluationRequest) (*ListTargetsOfEvaluationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListTargetsOfEvaluation not implemented")
 }
-func (UnimplementedOrchestratorServer) RemoveCertificationTarget(context.Context, *RemoveCertificationTargetRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemoveCertificationTarget not implemented")
+func (UnimplementedOrchestratorServer) RemoveTargetOfEvaluation(context.Context, *RemoveTargetOfEvaluationRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveTargetOfEvaluation not implemented")
 }
-func (UnimplementedOrchestratorServer) GetCertificationTargetStatistics(context.Context, *GetCertificationTargetStatisticsRequest) (*GetCertificationTargetStatisticsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetCertificationTargetStatistics not implemented")
+func (UnimplementedOrchestratorServer) GetTargetOfEvaluationStatistics(context.Context, *GetTargetOfEvaluationStatisticsRequest) (*GetTargetOfEvaluationStatisticsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTargetOfEvaluationStatistics not implemented")
 }
 func (UnimplementedOrchestratorServer) UpdateMetricConfiguration(context.Context, *UpdateMetricConfigurationRequest) (*assessment.MetricConfiguration, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateMetricConfiguration not implemented")
@@ -1211,110 +1211,110 @@ func _Orchestrator_RemoveMetric_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_CreateCertificationTarget_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateCertificationTargetRequest)
+func _Orchestrator_CreateTargetOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateTargetOfEvaluationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).CreateCertificationTarget(ctx, in)
+		return srv.(OrchestratorServer).CreateTargetOfEvaluation(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_CreateCertificationTarget_FullMethodName,
+		FullMethod: Orchestrator_CreateTargetOfEvaluation_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).CreateCertificationTarget(ctx, req.(*CreateCertificationTargetRequest))
+		return srv.(OrchestratorServer).CreateTargetOfEvaluation(ctx, req.(*CreateTargetOfEvaluationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_UpdateCertificationTarget_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateCertificationTargetRequest)
+func _Orchestrator_UpdateTargetOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateTargetOfEvaluationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).UpdateCertificationTarget(ctx, in)
+		return srv.(OrchestratorServer).UpdateTargetOfEvaluation(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_UpdateCertificationTarget_FullMethodName,
+		FullMethod: Orchestrator_UpdateTargetOfEvaluation_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).UpdateCertificationTarget(ctx, req.(*UpdateCertificationTargetRequest))
+		return srv.(OrchestratorServer).UpdateTargetOfEvaluation(ctx, req.(*UpdateTargetOfEvaluationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_GetCertificationTarget_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetCertificationTargetRequest)
+func _Orchestrator_GetTargetOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTargetOfEvaluationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).GetCertificationTarget(ctx, in)
+		return srv.(OrchestratorServer).GetTargetOfEvaluation(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_GetCertificationTarget_FullMethodName,
+		FullMethod: Orchestrator_GetTargetOfEvaluation_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).GetCertificationTarget(ctx, req.(*GetCertificationTargetRequest))
+		return srv.(OrchestratorServer).GetTargetOfEvaluation(ctx, req.(*GetTargetOfEvaluationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_ListCertificationTargets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListCertificationTargetsRequest)
+func _Orchestrator_ListTargetsOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListTargetsOfEvaluationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).ListCertificationTargets(ctx, in)
+		return srv.(OrchestratorServer).ListTargetsOfEvaluation(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_ListCertificationTargets_FullMethodName,
+		FullMethod: Orchestrator_ListTargetsOfEvaluation_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).ListCertificationTargets(ctx, req.(*ListCertificationTargetsRequest))
+		return srv.(OrchestratorServer).ListTargetsOfEvaluation(ctx, req.(*ListTargetsOfEvaluationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_RemoveCertificationTarget_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RemoveCertificationTargetRequest)
+func _Orchestrator_RemoveTargetOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveTargetOfEvaluationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).RemoveCertificationTarget(ctx, in)
+		return srv.(OrchestratorServer).RemoveTargetOfEvaluation(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_RemoveCertificationTarget_FullMethodName,
+		FullMethod: Orchestrator_RemoveTargetOfEvaluation_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).RemoveCertificationTarget(ctx, req.(*RemoveCertificationTargetRequest))
+		return srv.(OrchestratorServer).RemoveTargetOfEvaluation(ctx, req.(*RemoveTargetOfEvaluationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_GetCertificationTargetStatistics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetCertificationTargetStatisticsRequest)
+func _Orchestrator_GetTargetOfEvaluationStatistics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTargetOfEvaluationStatisticsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).GetCertificationTargetStatistics(ctx, in)
+		return srv.(OrchestratorServer).GetTargetOfEvaluationStatistics(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_GetCertificationTargetStatistics_FullMethodName,
+		FullMethod: Orchestrator_GetTargetOfEvaluationStatistics_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).GetCertificationTargetStatistics(ctx, req.(*GetCertificationTargetStatisticsRequest))
+		return srv.(OrchestratorServer).GetTargetOfEvaluationStatistics(ctx, req.(*GetTargetOfEvaluationStatisticsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1840,28 +1840,28 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Orchestrator_RemoveMetric_Handler,
 		},
 		{
-			MethodName: "CreateCertificationTarget",
-			Handler:    _Orchestrator_CreateCertificationTarget_Handler,
+			MethodName: "CreateTargetOfEvaluation",
+			Handler:    _Orchestrator_CreateTargetOfEvaluation_Handler,
 		},
 		{
-			MethodName: "UpdateCertificationTarget",
-			Handler:    _Orchestrator_UpdateCertificationTarget_Handler,
+			MethodName: "UpdateTargetOfEvaluation",
+			Handler:    _Orchestrator_UpdateTargetOfEvaluation_Handler,
 		},
 		{
-			MethodName: "GetCertificationTarget",
-			Handler:    _Orchestrator_GetCertificationTarget_Handler,
+			MethodName: "GetTargetOfEvaluation",
+			Handler:    _Orchestrator_GetTargetOfEvaluation_Handler,
 		},
 		{
-			MethodName: "ListCertificationTargets",
-			Handler:    _Orchestrator_ListCertificationTargets_Handler,
+			MethodName: "ListTargetsOfEvaluation",
+			Handler:    _Orchestrator_ListTargetsOfEvaluation_Handler,
 		},
 		{
-			MethodName: "RemoveCertificationTarget",
-			Handler:    _Orchestrator_RemoveCertificationTarget_Handler,
+			MethodName: "RemoveTargetOfEvaluation",
+			Handler:    _Orchestrator_RemoveTargetOfEvaluation_Handler,
 		},
 		{
-			MethodName: "GetCertificationTargetStatistics",
-			Handler:    _Orchestrator_GetCertificationTargetStatistics_Handler,
+			MethodName: "GetTargetOfEvaluationStatistics",
+			Handler:    _Orchestrator_GetTargetOfEvaluationStatistics_Handler,
 		},
 		{
 			MethodName: "UpdateMetricConfiguration",

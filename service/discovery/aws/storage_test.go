@@ -511,7 +511,7 @@ func TestAwsS3Discovery_List(t *testing.T) {
 	assert.True(t, ontology.HasType(resources[1], "ObjectStorageService"))
 }
 
-func Test_awsS3Discovery_CertificationTargetID(t *testing.T) {
+func Test_awsS3Discovery_TargetOfEvaluationID(t *testing.T) {
 	type fields struct {
 		storageAPI    S3API
 		isDiscovering bool
@@ -526,9 +526,9 @@ func Test_awsS3Discovery_CertificationTargetID(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				ctID: testdata.MockCertificationTargetID1,
+				ctID: testdata.MockTargetOfEvaluationID1,
 			},
-			want: testdata.MockCertificationTargetID1,
+			want: testdata.MockTargetOfEvaluationID1,
 		},
 	}
 	for _, tt := range tests {
@@ -539,8 +539,8 @@ func Test_awsS3Discovery_CertificationTargetID(t *testing.T) {
 				awsConfig:     tt.fields.awsConfig,
 				ctID:          tt.fields.ctID,
 			}
-			if got := d.CertificationTargetID(); got != tt.want {
-				t.Errorf("awsS3Discovery.CertificationTargetID() = %v, want %v", got, tt.want)
+			if got := d.TargetOfEvaluationID(); got != tt.want {
+				t.Errorf("awsS3Discovery.TargetOfEvaluationID() = %v, want %v", got, tt.want)
 			}
 		})
 	}

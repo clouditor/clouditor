@@ -55,7 +55,7 @@ func WithProviderDomain(domain string) DiscoveryOption {
 	}
 }
 
-func WithCertificationTargetID(ctID string) DiscoveryOption {
+func WithTargetOfEvaluationID(ctID string) DiscoveryOption {
 	return func(a *csafDiscovery) {
 		a.ctID = ctID
 	}
@@ -63,7 +63,7 @@ func WithCertificationTargetID(ctID string) DiscoveryOption {
 
 func NewTrustedProviderDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &csafDiscovery{
-		ctID:   config.DefaultCertificationTargetID,
+		ctID:   config.DefaultTargetOfEvaluationID,
 		domain: "clouditor.io",
 		client: http.DefaultClient,
 	}
@@ -84,7 +84,7 @@ func (*csafDiscovery) Description() string {
 	return "Discovery CSAF documents from a CSAF trusted provider"
 }
 
-func (d *csafDiscovery) CertificationTargetID() string {
+func (d *csafDiscovery) TargetOfEvaluationID() string {
 	return d.ctID
 }
 

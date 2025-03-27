@@ -74,7 +74,7 @@ type CombinedResult struct {
 }
 
 // MetricsSource is used to retrieve a list of metrics and to retrieve a metric
-// configuration as well as implementation for a particular metric (and certification target)
+// configuration as well as implementation for a particular metric (and target of evaluation)
 type MetricsSource interface {
 	Metrics() ([]*assessment.Metric, error)
 	MetricConfiguration(targetID string, metric *assessment.Metric) (*assessment.MetricConfiguration, error)

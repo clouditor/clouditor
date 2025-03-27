@@ -126,28 +126,28 @@ func TestPaginateStorage(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     args
-		wantPage assert.Want[[]orchestrator.CertificationTarget]
+		wantPage assert.Want[[]orchestrator.TargetOfEvaluation]
 		wantNbt  assert.Want[string]
 		wantErr  assert.WantErr
 	}{
 		{
 			name: "first page",
 			args: args{
-				req: &orchestrator.ListCertificationTargetsRequest{
+				req: &orchestrator.ListTargetsOfEvaluationRequest{
 					PageSize:  2,
 					PageToken: "",
 				},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "1"}))
-					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "2"}))
-					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "3"}))
-					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "4"}))
-					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "5"}))
+					assert.NoError(t, s.Save(&orchestrator.TargetOfEvaluation{Id: "1"}))
+					assert.NoError(t, s.Save(&orchestrator.TargetOfEvaluation{Id: "2"}))
+					assert.NoError(t, s.Save(&orchestrator.TargetOfEvaluation{Id: "3"}))
+					assert.NoError(t, s.Save(&orchestrator.TargetOfEvaluation{Id: "4"}))
+					assert.NoError(t, s.Save(&orchestrator.TargetOfEvaluation{Id: "5"}))
 				}),
 				opts: PaginationOpts{10, 10},
 			},
-			wantPage: func(t *testing.T, got []orchestrator.CertificationTarget) bool {
-				want := []orchestrator.CertificationTarget{
+			wantPage: func(t *testing.T, got []orchestrator.TargetOfEvaluation) bool {
+				want := []orchestrator.TargetOfEvaluation{
 					{Id: "1", ConfiguredMetrics: []*assessment.Metric{}},
 					{Id: "2", ConfiguredMetrics: []*assessment.Metric{}},
 				}
@@ -161,21 +161,21 @@ func TestPaginateStorage(t *testing.T) {
 		{
 			name: "next page",
 			args: args{
-				req: &orchestrator.ListCertificationTargetsRequest{
+				req: &orchestrator.ListTargetsOfEvaluationRequest{
 					PageSize:  2,
 					PageToken: "CAIQAg==",
 				},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "1"}))
-					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "2"}))
-					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "3"}))
-					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "4"}))
-					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "5"}))
+					assert.NoError(t, s.Save(&orchestrator.TargetOfEvaluation{Id: "1"}))
+					assert.NoError(t, s.Save(&orchestrator.TargetOfEvaluation{Id: "2"}))
+					assert.NoError(t, s.Save(&orchestrator.TargetOfEvaluation{Id: "3"}))
+					assert.NoError(t, s.Save(&orchestrator.TargetOfEvaluation{Id: "4"}))
+					assert.NoError(t, s.Save(&orchestrator.TargetOfEvaluation{Id: "5"}))
 				}),
 				opts: PaginationOpts{10, 10},
 			},
-			wantPage: func(t *testing.T, got []orchestrator.CertificationTarget) bool {
-				want := []orchestrator.CertificationTarget{
+			wantPage: func(t *testing.T, got []orchestrator.TargetOfEvaluation) bool {
+				want := []orchestrator.TargetOfEvaluation{
 					{Id: "3", ConfiguredMetrics: []*assessment.Metric{}},
 					{Id: "4", ConfiguredMetrics: []*assessment.Metric{}},
 				}
@@ -189,21 +189,21 @@ func TestPaginateStorage(t *testing.T) {
 		{
 			name: "last page",
 			args: args{
-				req: &orchestrator.ListCertificationTargetsRequest{
+				req: &orchestrator.ListTargetsOfEvaluationRequest{
 					PageSize:  2,
 					PageToken: "CAQQAg==",
 				},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "1"}))
-					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "2"}))
-					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "3"}))
-					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "4"}))
-					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "5"}))
+					assert.NoError(t, s.Save(&orchestrator.TargetOfEvaluation{Id: "1"}))
+					assert.NoError(t, s.Save(&orchestrator.TargetOfEvaluation{Id: "2"}))
+					assert.NoError(t, s.Save(&orchestrator.TargetOfEvaluation{Id: "3"}))
+					assert.NoError(t, s.Save(&orchestrator.TargetOfEvaluation{Id: "4"}))
+					assert.NoError(t, s.Save(&orchestrator.TargetOfEvaluation{Id: "5"}))
 				}),
 				opts: PaginationOpts{10, 10},
 			},
-			wantPage: func(t *testing.T, got []orchestrator.CertificationTarget) bool {
-				want := []orchestrator.CertificationTarget{{Id: "5", ConfiguredMetrics: []*assessment.Metric{}}}
+			wantPage: func(t *testing.T, got []orchestrator.TargetOfEvaluation) bool {
+				want := []orchestrator.TargetOfEvaluation{{Id: "5", ConfiguredMetrics: []*assessment.Metric{}}}
 
 				return assert.Equal(t, want, got)
 			},
@@ -216,7 +216,7 @@ func TestPaginateStorage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotPage, gotNbt, err := PaginateStorage[orchestrator.CertificationTarget](tt.args.req, tt.args.storage,
+			gotPage, gotNbt, err := PaginateStorage[orchestrator.TargetOfEvaluation](tt.args.req, tt.args.storage,
 				tt.args.opts, tt.args.conds...)
 
 			tt.wantErr(t, err)
