@@ -54,7 +54,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -405,14 +404,8 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, related map[string]ontology.IsResource) (results []*assessment.AssessmentResult, err error) {
 	var (
 		types    []string
-		m        proto.Message
 		resource ontology.IsResource
 	)
-
-	err = api.Validate(m)
-	if err != nil {
-		return nil, err
-	}
 
 	resource = ev.GetOntologyResource()
 	if resource == nil {

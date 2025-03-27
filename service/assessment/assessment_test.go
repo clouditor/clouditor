@@ -258,7 +258,10 @@ func TestService_AssessEvidence(t *testing.T) {
 					Id:                   testdata.MockEvidenceID1,
 					ToolId:               testdata.MockEvidenceToolID1,
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-					Resource:             prototest.NewProtobufResource(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+					Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
+						Id:   testdata.MockResourceID1,
+						Name: testdata.MockResourceName1,
+					}),
 				},
 			},
 			wantResp: nil,
@@ -267,7 +270,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			},
 		},
 		{
-			name: "Assess resource",
+			name: "Assess resource happy",
 			fields: fields{
 				evidenceStore:       api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
 				orchestrator:        api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
