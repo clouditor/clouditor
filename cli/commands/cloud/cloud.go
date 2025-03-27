@@ -42,7 +42,7 @@ import (
 func NewCreateTargetOfEvaluationCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "register [name]",
-		Short: "Registers a new target target of evaluation",
+		Short: "Registers a new target of evaluation",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
@@ -81,7 +81,7 @@ func NewCreateTargetOfEvaluationCommand() *cobra.Command {
 func NewListTargetsOfEvaluationCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "Lists all target target of evaluations",
+		Short: "Lists all target of evaluations",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
@@ -121,7 +121,7 @@ func NewListTargetsOfEvaluationCommand() *cobra.Command {
 func NewGetTargetOfEvaluationCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get [id]",
-		Short: "Retrieves a target target of evaluation by its ID",
+		Short: "Retrieves a target of evaluation by its ID",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
@@ -154,7 +154,7 @@ func NewGetTargetOfEvaluationCommand() *cobra.Command {
 func NewRemoveTargetOfEvaluationComand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "remove [id]",
-		Short: "Removes a target target of evaluation by its ID",
+		Short: "Removes a target of evaluation by its ID",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
@@ -187,7 +187,7 @@ func NewRemoveTargetOfEvaluationComand() *cobra.Command {
 func NewUpdateTargetOfEvaluationCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update",
-		Short: "Updates a target target of evaluation",
+		Short: "Updates a target of evaluation",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
