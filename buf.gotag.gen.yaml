@@ -7,3 +7,4 @@ plugins:
       - Mapi/orchestrator/orchestrator.proto=clouditor.io/api/orchestrator
       - Mapi/assessment/metric.proto=clouditor.io/api/assessment
       - Mapi/assessment/assessment.proto=clouditor.io/api/assessment
+      - Mapi/user/user.proto=clouditor.io/api/user
