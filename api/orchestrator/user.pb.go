@@ -37,6 +37,7 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -48,6 +49,51 @@ const (
 	// Verify that runtime/protoimpl is sufficiently up-to-date.
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
+
+type CreateUserRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The user to create
+	User          *User `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateUserRequest) Reset() {
+	*x = CreateUserRequest{}
+	mi := &file_api_orchestrator_user_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateUserRequest) ProtoMessage() {}
+
+func (x *CreateUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_orchestrator_user_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateUserRequest.ProtoReflect.Descriptor instead.
+func (*CreateUserRequest) Descriptor() ([]byte, []int) {
+	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *CreateUserRequest) GetUser() *User {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
 
 // A user resource
 // TODO(lebogg): Think about adding more fields to the user resource (creation time, expiration time, etc.)
@@ -65,7 +111,7 @@ type User struct {
 
 func (x *User) Reset() {
 	*x = User{}
-	mi := &file_api_orchestrator_user_proto_msgTypes[0]
+	mi := &file_api_orchestrator_user_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -77,7 +123,7 @@ func (x *User) String() string {
 func (*User) ProtoMessage() {}
 
 func (x *User) ProtoReflect() protoreflect.Message {
-	mi := &file_api_orchestrator_user_proto_msgTypes[0]
+	mi := &file_api_orchestrator_user_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -90,7 +136,7 @@ func (x *User) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use User.ProtoReflect.Descriptor instead.
 func (*User) Descriptor() ([]byte, []int) {
-	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{0}
+	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *User) GetId() string {
@@ -128,11 +174,266 @@ func (x *User) GetTargetOfEvaluationIds() []*TargetOfEvaluation {
 	return nil
 }
 
+type DeleteUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteUserRequest) Reset() {
+	*x = DeleteUserRequest{}
+	mi := &file_api_orchestrator_user_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteUserRequest) ProtoMessage() {}
+
+func (x *DeleteUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_orchestrator_user_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteUserRequest.ProtoReflect.Descriptor instead.
+func (*DeleteUserRequest) Descriptor() ([]byte, []int) {
+	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *DeleteUserRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type UpdateUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateUserRequest) Reset() {
+	*x = UpdateUserRequest{}
+	mi := &file_api_orchestrator_user_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateUserRequest) ProtoMessage() {}
+
+func (x *UpdateUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_orchestrator_user_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateUserRequest.ProtoReflect.Descriptor instead.
+func (*UpdateUserRequest) Descriptor() ([]byte, []int) {
+	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *UpdateUserRequest) GetUser() *User {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
+type GetUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUserRequest) Reset() {
+	*x = GetUserRequest{}
+	mi := &file_api_orchestrator_user_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserRequest) ProtoMessage() {}
+
+func (x *GetUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_orchestrator_user_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserRequest.ProtoReflect.Descriptor instead.
+func (*GetUserRequest) Descriptor() ([]byte, []int) {
+	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetUserRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type ListUsersRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PageSize      int32                  `protobuf:"varint,10,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken     string                 `protobuf:"bytes,11,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	OrderBy       string                 `protobuf:"bytes,12,opt,name=order_by,json=orderBy,proto3" json:"order_by,omitempty"`
+	Asc           bool                   `protobuf:"varint,13,opt,name=asc,proto3" json:"asc,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListUsersRequest) Reset() {
+	*x = ListUsersRequest{}
+	mi := &file_api_orchestrator_user_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListUsersRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUsersRequest) ProtoMessage() {}
+
+func (x *ListUsersRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_orchestrator_user_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUsersRequest.ProtoReflect.Descriptor instead.
+func (*ListUsersRequest) Descriptor() ([]byte, []int) {
+	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ListUsersRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListUsersRequest) GetPageToken() string {
+	if x != nil {
+		return x.PageToken
+	}
+	return ""
+}
+
+func (x *ListUsersRequest) GetOrderBy() string {
+	if x != nil {
+		return x.OrderBy
+	}
+	return ""
+}
+
+func (x *ListUsersRequest) GetAsc() bool {
+	if x != nil {
+		return x.Asc
+	}
+	return false
+}
+
+type ListUsersResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Users []*User                `protobuf:"bytes,1,rep,name=users,proto3" json:"users,omitempty"`
+	// The next page token to use for pagination. If not specified, the default is the last page.
+	NextPageToken string `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListUsersResponse) Reset() {
+	*x = ListUsersResponse{}
+	mi := &file_api_orchestrator_user_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListUsersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUsersResponse) ProtoMessage() {}
+
+func (x *ListUsersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_orchestrator_user_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUsersResponse.ProtoReflect.Descriptor instead.
+func (*ListUsersResponse) Descriptor() ([]byte, []int) {
+	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ListUsersResponse) GetUsers() []*User {
+	if x != nil {
+		return x.Users
+	}
+	return nil
+}
+
+func (x *ListUsersResponse) GetNextPageToken() string {
+	if x != nil {
+		return x.NextPageToken
+	}
+	return ""
+}
+
 var File_api_orchestrator_user_proto protoreflect.FileDescriptor
 
 const file_api_orchestrator_user_proto_rawDesc = "" +
 	"\n" +
-	"\x1bapi/orchestrator/user.proto\x12\x19clouditor.orchestrator.v1\x1a#api/orchestrator/orchestrator.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x13tagger/tagger.proto\"\x8f\x02\n" +
+	"\x1bapi/orchestrator/user.proto\x12\x19clouditor.orchestrator.v1\x1a#api/orchestrator/orchestrator.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x13tagger/tagger.proto\"S\n" +
+	"\x11CreateUserRequest\x12>\n" +
+	"\x04user\x18\x01 \x01(\v2\x1f.clouditor.orchestrator.v1.UserB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x04user\"\x8f\x02\n" +
 	"\x04User\x12\x1a\n" +
 	"\x02id\x18\x01 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\x12\x1d\n" +
@@ -140,7 +441,34 @@ const file_api_orchestrator_user_proto_rawDesc = "" +
 	"first_name\x18\x02 \x01(\tR\tfirstName\x12\x1b\n" +
 	"\tlast_name\x18\x03 \x01(\tR\blastName\x12\x14\n" +
 	"\x05email\x18\x04 \x01(\tR\x05email\x12\x98\x01\n" +
-	"\x18target_of_evaluation_ids\x18\x05 \x03(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB0\x9a\x84\x9e\x03+gorm:\"many2many:user_certification_target;\"R\x15targetOfEvaluationIdsB,Z*clouditor.io/clouditor/v2/api/orchestratorb\x06proto3"
+	"\x18target_of_evaluation_ids\x18\x05 \x03(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB0\x9a\x84\x9e\x03+gorm:\"many2many:user_certification_target;\"R\x15targetOfEvaluationIds\"/\n" +
+	"\x11DeleteUserRequest\x12\x1a\n" +
+	"\x02id\x18\x01 \x01(\tB\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\"S\n" +
+	"\x11UpdateUserRequest\x12>\n" +
+	"\x04user\x18\x01 \x01(\v2\x1f.clouditor.orchestrator.v1.UserB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x04user\",\n" +
+	"\x0eGetUserRequest\x12\x1a\n" +
+	"\x02id\x18\x01 \x01(\tB\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\"{\n" +
+	"\x10ListUsersRequest\x12\x1b\n" +
+	"\tpage_size\x18\n" +
+	" \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\n" +
+	"page_token\x18\v \x01(\tR\tpageToken\x12\x19\n" +
+	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
+	"\x03asc\x18\r \x01(\bR\x03asc\"|\n" +
+	"\x11ListUsersResponse\x12?\n" +
+	"\x05users\x18\x01 \x03(\v2\x1f.clouditor.orchestrator.v1.UserB\b\xbaH\x05\x92\x01\x02\b\x00R\x05users\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken2\x98\x05\n" +
+	"\vUserService\x12\x80\x01\n" +
+	"\n" +
+	"CreateUser\x12,.clouditor.orchestrator.v1.CreateUserRequest\x1a\x1f.clouditor.orchestrator.v1.User\"#\x82\xd3\xe4\x93\x02\x1d:\x04user\"\x15/v1/orchestrator/user\x12v\n" +
+	"\n" +
+	"DeleteUser\x12,.clouditor.orchestrator.v1.DeleteUserRequest\x1a\x16.google.protobuf.Empty\"\"\x82\xd3\xe4\x93\x02\x1c*\x1a/v1/orchestrator/user/{id}\x12\x8a\x01\n" +
+	"\n" +
+	"UpdateUser\x12,.clouditor.orchestrator.v1.UpdateUserRequest\x1a\x1f.clouditor.orchestrator.v1.User\"-\x82\xd3\xe4\x93\x02':\x04user2\x1f/v1/orchestrator/user/{user.id}\x12y\n" +
+	"\agetUser\x12).clouditor.orchestrator.v1.GetUserRequest\x1a\x1f.clouditor.orchestrator.v1.User\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/orchestrator/user/{id}\x12\x85\x01\n" +
+	"\tlistUsers\x12+.clouditor.orchestrator.v1.ListUsersRequest\x1a,.clouditor.orchestrator.v1.ListUsersResponse\"\x1d\x82\xd3\xe4\x93\x02\x17\x12\x15/v1/orchestrator/userB,Z*clouditor.io/clouditor/v2/api/orchestratorb\x06proto3"
 
 var (
 	file_api_orchestrator_user_proto_rawDescOnce sync.Once
@@ -154,18 +482,38 @@ func file_api_orchestrator_user_proto_rawDescGZIP() []byte {
 	return file_api_orchestrator_user_proto_rawDescData
 }
 
-var file_api_orchestrator_user_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_api_orchestrator_user_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_api_orchestrator_user_proto_goTypes = []any{
-	(*User)(nil),               // 0: clouditor.orchestrator.v1.User
-	(*TargetOfEvaluation)(nil), // 1: clouditor.orchestrator.v1.TargetOfEvaluation
+	(*CreateUserRequest)(nil),  // 0: clouditor.orchestrator.v1.CreateUserRequest
+	(*User)(nil),               // 1: clouditor.orchestrator.v1.User
+	(*DeleteUserRequest)(nil),  // 2: clouditor.orchestrator.v1.DeleteUserRequest
+	(*UpdateUserRequest)(nil),  // 3: clouditor.orchestrator.v1.UpdateUserRequest
+	(*GetUserRequest)(nil),     // 4: clouditor.orchestrator.v1.GetUserRequest
+	(*ListUsersRequest)(nil),   // 5: clouditor.orchestrator.v1.ListUsersRequest
+	(*ListUsersResponse)(nil),  // 6: clouditor.orchestrator.v1.ListUsersResponse
+	(*TargetOfEvaluation)(nil), // 7: clouditor.orchestrator.v1.TargetOfEvaluation
+	(*emptypb.Empty)(nil),      // 8: google.protobuf.Empty
 }
 var file_api_orchestrator_user_proto_depIdxs = []int32{
-	1, // 0: clouditor.orchestrator.v1.User.target_of_evaluation_ids:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
-	1, // [1:1] is the sub-list for method output_type
-	1, // [1:1] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	1, // 0: clouditor.orchestrator.v1.CreateUserRequest.user:type_name -> clouditor.orchestrator.v1.User
+	7, // 1: clouditor.orchestrator.v1.User.target_of_evaluation_ids:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
+	1, // 2: clouditor.orchestrator.v1.UpdateUserRequest.user:type_name -> clouditor.orchestrator.v1.User
+	1, // 3: clouditor.orchestrator.v1.ListUsersResponse.users:type_name -> clouditor.orchestrator.v1.User
+	0, // 4: clouditor.orchestrator.v1.UserService.CreateUser:input_type -> clouditor.orchestrator.v1.CreateUserRequest
+	2, // 5: clouditor.orchestrator.v1.UserService.DeleteUser:input_type -> clouditor.orchestrator.v1.DeleteUserRequest
+	3, // 6: clouditor.orchestrator.v1.UserService.UpdateUser:input_type -> clouditor.orchestrator.v1.UpdateUserRequest
+	4, // 7: clouditor.orchestrator.v1.UserService.getUser:input_type -> clouditor.orchestrator.v1.GetUserRequest
+	5, // 8: clouditor.orchestrator.v1.UserService.listUsers:input_type -> clouditor.orchestrator.v1.ListUsersRequest
+	1, // 9: clouditor.orchestrator.v1.UserService.CreateUser:output_type -> clouditor.orchestrator.v1.User
+	8, // 10: clouditor.orchestrator.v1.UserService.DeleteUser:output_type -> google.protobuf.Empty
+	1, // 11: clouditor.orchestrator.v1.UserService.UpdateUser:output_type -> clouditor.orchestrator.v1.User
+	1, // 12: clouditor.orchestrator.v1.UserService.getUser:output_type -> clouditor.orchestrator.v1.User
+	6, // 13: clouditor.orchestrator.v1.UserService.listUsers:output_type -> clouditor.orchestrator.v1.ListUsersResponse
+	9, // [9:14] is the sub-list for method output_type
+	4, // [4:9] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_api_orchestrator_user_proto_init() }
@@ -180,9 +528,9 @@ func file_api_orchestrator_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_orchestrator_user_proto_rawDesc), len(file_api_orchestrator_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   7,
 			NumExtensions: 0,
-			NumServices:   0,
+			NumServices:   1,
 		},
 		GoTypes:           file_api_orchestrator_user_proto_goTypes,
 		DependencyIndexes: file_api_orchestrator_user_proto_depIdxs,
