@@ -85,11 +85,11 @@ func (r RequestType) String() string {
 //
 // or
 //
-//	"*orchestrator.Certificate created with ID 'Cert1234' for Certification Target '00000000-0000-0000-0000-000000000000'."
+//	"*orchestrator.Certificate created with ID 'Cert1234' for Target of Evaluation '00000000-0000-0000-0000-000000000000'."
 //
 // or
 //
-//	"*orchestrator.AuditScope created with ID 'AuditScope1234' for Certification Target '00000000-0000-0000-0000-000000000000' and Catalog 'EUCS'."
+//	"*orchestrator.AuditScope created with ID 'AuditScope1234' for Target of Evaluation '00000000-0000-0000-0000-000000000000' and Catalog 'EUCS'."
 func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req api.PayloadRequest, params ...string) {
 	var (
 		buffer bytes.Buffer
@@ -120,12 +120,12 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 		buffer.WriteString(fmt.Sprintf("%s %s", name, reqType.String()))
 	}
 
-	// Check, if it is a certification target request. In this case we can append the
-	// information about the target certification target. However, we only want to do
-	// that, if the payload type is not a certification target itself.
-	ctreq, ok := req.(api.CertificationTargetRequest)
-	if name != "CertificationTarget" && ok {
-		buffer.WriteString(fmt.Sprintf(" for Certification Target '%s'", ctreq.GetCertificationTargetId()))
+	// Check, if it is a target of evaluation request. In this case we can append the
+	// information about the target target of evaluation. However, we only want to do
+	// that, if the payload type is not a target of evaluation itself.
+	ctreq, ok := req.(api.TargetOfEvaluationRequest)
+	if name != "TargetOfEvaluation" && ok {
+		buffer.WriteString(fmt.Sprintf(" for Target of Evaluation '%s'", ctreq.GetTargetOfEvaluationId()))
 	}
 
 	// If params is not empty, the elements are joined and added to the message

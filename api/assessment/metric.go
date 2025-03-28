@@ -39,10 +39,10 @@ import (
 )
 
 var (
-	ErrMetricNameMissing              = errors.New("metric name is missing")
-	ErrMetricEmpty                    = errors.New("metric is missing or empty")
-	ErrCertificationTargetIDIsMissing = errors.New("certification target id is missing")
-	ErrCertificationTargetIDIsInvalid = errors.New("certification target id is invalid")
+	ErrMetricNameMissing             = errors.New("metric name is missing")
+	ErrMetricEmpty                   = errors.New("metric is missing or empty")
+	ErrTargetOfEvaluationIDIsMissing = errors.New("target of evaluation id is missing")
+	ErrTargetOfEvaluationIDIsInvalid = errors.New("target of evaluation id is invalid")
 )
 
 func (r *Range) UnmarshalJSON(b []byte) (err error) {

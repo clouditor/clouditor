@@ -53,6 +53,6 @@ func (m *TestDiscoverer) List() ([]ontology.IsResource, error) {
 	}
 }
 
-func (TestDiscoverer) CertificationTargetID() string {
-	return testdata.MockCertificationTargetID1
+func (TestDiscoverer) TargetOfEvaluationID() string {
+	return testdata.MockTargetOfEvaluationID1
 }

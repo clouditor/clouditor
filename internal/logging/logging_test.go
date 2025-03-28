@@ -122,27 +122,27 @@ func TestLogRequest(t *testing.T) {
 			want: "",
 		},
 		{
-			name: "create certification target",
+			name: "create target of evaluation",
 			args: args{
 				level:   logrus.DebugLevel,
 				reqType: Register,
-				req: &orchestrator.CreateCertificationTargetRequest{
-					CertificationTarget: &orchestrator.CertificationTarget{},
+				req: &orchestrator.CreateTargetOfEvaluationRequest{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{},
 				},
 			},
-			want: "level=debug msg=CertificationTarget registered.\n",
+			want: "level=debug msg=TargetOfEvaluation registered.\n",
 		},
 
 		{
-			name: "create certification target",
+			name: "create target of evaluation",
 			args: args{
 				level:   logrus.DebugLevel,
 				reqType: Register,
-				req: &orchestrator.CreateCertificationTargetRequest{
-					CertificationTarget: &orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1},
+				req: &orchestrator.CreateTargetOfEvaluationRequest{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{Id: testdata.MockTargetOfEvaluationID1},
 				},
 			},
-			want: "level=debug msg=CertificationTarget with ID '11111111-1111-1111-1111-111111111111' registered.\n",
+			want: "level=debug msg=TargetOfEvaluation with ID '11111111-1111-1111-1111-111111111111' registered.\n",
 		},
 		{
 			name: "Update AuditScope",
@@ -151,12 +151,12 @@ func TestLogRequest(t *testing.T) {
 				reqType: Update,
 				req: &orchestrator.UpdateAuditScopeRequest{
 					AuditScope: &orchestrator.AuditScope{
-						CertificationTargetId: testdata.MockCertificationTargetID1,
-						CatalogId:             testdata.MockCatalogID1,
+						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+						CatalogId:            testdata.MockCatalogID1,
 					},
 				},
 			},
-			want: "level=debug msg=AuditScope updated for Certification Target '11111111-1111-1111-1111-111111111111'.\n",
+			want: "level=debug msg=AuditScope updated for Target of Evaluation '11111111-1111-1111-1111-111111111111'.\n",
 		},
 		{
 			name: "Update AuditScope with params",
@@ -165,13 +165,13 @@ func TestLogRequest(t *testing.T) {
 				reqType: Update,
 				req: &orchestrator.UpdateAuditScopeRequest{
 					AuditScope: &orchestrator.AuditScope{
-						CertificationTargetId: testdata.MockCertificationTargetID1,
-						CatalogId:             testdata.MockCatalogID1,
+						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+						CatalogId:            testdata.MockCatalogID1,
 					},
 				},
 				params: []string{fmt.Sprintf("and Catalog '%s'", testdata.MockCatalogID1)},
 			},
-			want: "level=debug msg=AuditScope updated for Certification Target '11111111-1111-1111-1111-111111111111' and Catalog 'Catalog 1'.\n",
+			want: "level=debug msg=AuditScope updated for Target of Evaluation '11111111-1111-1111-1111-111111111111' and Catalog 'Catalog 1'.\n",
 		},
 		{
 			name: "Send Evidence to queue",
@@ -180,13 +180,13 @@ func TestLogRequest(t *testing.T) {
 				reqType: Store,
 				req: &assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:                    testdata.MockEvidenceID1,
-						CertificationTargetId: testdata.MockCertificationTargetID1,
+						Id:                   testdata.MockEvidenceID1,
+						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 					},
 				},
 				params: []string{fmt.Sprintf("back into queue for %s (%s)", "orchestrator", "localhost")},
 			},
-			want: "level=debug msg=Evidence with ID '11111111-1111-1111-1111-111111111111' stored for Certification Target '11111111-1111-1111-1111-111111111111' back into queue for orchestrator (localhost).\n",
+			want: "level=debug msg=Evidence with ID '11111111-1111-1111-1111-111111111111' stored for Target of Evaluation '11111111-1111-1111-1111-111111111111' back into queue for orchestrator (localhost).\n",
 		},
 	}
 	for _, tt := range tests {

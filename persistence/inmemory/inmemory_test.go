@@ -15,14 +15,14 @@ func TestNewStorage(t *testing.T) {
 	s, err := NewStorage()
 	assert.NoError(t, err)
 
-	// Test to create new certification target
-	userInput := orchestratortest.NewCertificationTarget()
+	// Test to create new target of evaluation
+	userInput := orchestratortest.NewTargetOfEvaluation()
 	err = s.Create(userInput)
 	assert.NoError(t, err)
 
 	// Test if we get same user via its name
-	userOutput := &orchestrator.CertificationTarget{}
-	err = s.Get(userOutput, "name = ?", testdata.MockCertificationTargetName1)
+	userOutput := &orchestrator.TargetOfEvaluation{}
+	err = s.Get(userOutput, "name = ?", testdata.MockTargetOfEvaluationName1)
 	assert.NoError(t, err)
 	assert.NoError(t, api.Validate(userOutput))
 	assert.Equal(t, userInput, userOutput)

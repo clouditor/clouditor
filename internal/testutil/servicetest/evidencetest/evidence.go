@@ -10,31 +10,31 @@ import (
 var (
 	MockListEvidenceRequest1 = &evidence.ListEvidencesRequest{
 		Filter: &evidence.Filter{
-			CertificationTargetId: util.Ref(testdata.MockCertificationTargetID1),
-			ToolId:                util.Ref(testdata.MockEvidenceToolID1),
+			TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
+			ToolId:               util.Ref(testdata.MockEvidenceToolID1),
 		},
 	}
 	MockListEvidenceRequest2 = &evidence.ListEvidencesRequest{
 		Filter: &evidence.Filter{
-			CertificationTargetId: util.Ref(testdata.MockCertificationTargetID2),
-			ToolId:                util.Ref(testdata.MockEvidenceToolID2),
+			TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID2),
+			ToolId:               util.Ref(testdata.MockEvidenceToolID2),
 		},
 	}
 )
 
 var (
 	MockEvidence1 = &evidence.Evidence{
-		Id:                    testdata.MockEvidenceID1,
-		Timestamp:             timestamppb.Now(),
-		CertificationTargetId: testdata.MockCertificationTargetID1,
-		ToolId:                testdata.MockEvidenceToolID1,
-		Resource:              nil,
+		Id:                   testdata.MockEvidenceID1,
+		Timestamp:            timestamppb.Now(),
+		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+		ToolId:               testdata.MockEvidenceToolID1,
+		Resource:             nil,
 	}
 	MockEvidence2 = &evidence.Evidence{
-		Id:                    testdata.MockEvidenceID2,
-		Timestamp:             timestamppb.Now(),
-		CertificationTargetId: testdata.MockCertificationTargetID2,
-		ToolId:                testdata.MockEvidenceToolID2,
-		Resource:              nil,
+		Id:                   testdata.MockEvidenceID2,
+		Timestamp:            timestamppb.Now(),
+		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
+		ToolId:               testdata.MockEvidenceToolID2,
+		Resource:             nil,
 	}
 )

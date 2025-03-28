@@ -63,9 +63,9 @@ func TestNewCloudCommand(t *testing.T) {
 	assert.True(t, cmd.HasSubCommands())
 }
 
-func TestCreateCertificationTargetCommand(t *testing.T) {
+func TestCreateTargetOfEvaluationCommand(t *testing.T) {
 	var (
-		response orchestrator.CertificationTarget
+		response orchestrator.TargetOfEvaluation
 		svc      *service_orchestrator.Service
 		err      error
 		b        bytes.Buffer
@@ -75,7 +75,7 @@ func TestCreateCertificationTargetCommand(t *testing.T) {
 	_, err = clitest.RunCLITestFunc(func() bool {
 		cli.Output = &b
 
-		cmd := NewCreateCertificationTargetCommand()
+		cmd := NewCreateTargetOfEvaluationCommand()
 		err = cmd.RunE(nil, []string{"not_default"})
 
 		assert.NoError(t, err)
@@ -88,9 +88,9 @@ func TestCreateCertificationTargetCommand(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestListCertificationTargetsCommand(t *testing.T) {
+func TestListTargetsOfEvaluationCommand(t *testing.T) {
 	var (
-		response orchestrator.ListCertificationTargetsResponse
+		response orchestrator.ListTargetsOfEvaluationResponse
 		svc      *service_orchestrator.Service
 
 		err error
@@ -99,12 +99,12 @@ func TestListCertificationTargetsCommand(t *testing.T) {
 
 	svc = service_orchestrator.NewService()
 	_, err = clitest.RunCLITestFunc(func() bool {
-		_, err = svc.CreateDefaultCertificationTarget()
+		_, err = svc.CreateDefaultTargetOfEvaluation()
 		assert.NoError(t, err)
 
 		cli.Output = &b
 
-		cmd := NewListCertificationTargetsCommand()
+		cmd := NewListTargetsOfEvaluationCommand()
 		err = cmd.RunE(nil, []string{})
 
 		assert.NoError(t, err)
@@ -117,10 +117,10 @@ func TestListCertificationTargetsCommand(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestGetCertificationTargetCommand(t *testing.T) {
+func TestGetTargetOfEvaluationCommand(t *testing.T) {
 	var (
-		response orchestrator.CertificationTarget
-		target   *orchestrator.CertificationTarget
+		response orchestrator.TargetOfEvaluation
+		target   *orchestrator.TargetOfEvaluation
 		svc      *service_orchestrator.Service
 
 		err error
@@ -129,7 +129,7 @@ func TestGetCertificationTargetCommand(t *testing.T) {
 
 	svc = service_orchestrator.NewService()
 	_, err = clitest.RunCLITestFunc(func() bool {
-		target, err = svc.CreateDefaultCertificationTarget()
+		target, err = svc.CreateDefaultTargetOfEvaluation()
 
 		fmt.Println("target:", target)
 		// target should be non-nil since it has been newly created
@@ -138,7 +138,7 @@ func TestGetCertificationTargetCommand(t *testing.T) {
 
 		cli.Output = &b
 
-		cmd := NewGetCertificationTargetCommand()
+		cmd := NewGetTargetOfEvaluationCommand()
 		err = cmd.RunE(nil, []string{target.Id})
 
 		assert.NoError(t, err)
@@ -151,10 +151,10 @@ func TestGetCertificationTargetCommand(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestRemoveCertificationTargetsCommand(t *testing.T) {
+func TestRemoveTargetOfEvaluationsCommand(t *testing.T) {
 	var (
 		response emptypb.Empty
-		target   *orchestrator.CertificationTarget
+		target   *orchestrator.TargetOfEvaluation
 		svc      *service_orchestrator.Service
 
 		err error
@@ -163,12 +163,12 @@ func TestRemoveCertificationTargetsCommand(t *testing.T) {
 
 	svc = service_orchestrator.NewService()
 	_, err = clitest.RunCLITestFunc(func() bool {
-		target, err = svc.CreateDefaultCertificationTarget()
+		target, err = svc.CreateDefaultTargetOfEvaluation()
 		assert.NoError(t, err)
 
 		cli.Output = &b
 
-		cmd := NewRemoveCertificationTargetComand()
+		cmd := NewRemoveTargetOfEvaluationComand()
 		err = cmd.RunE(nil, []string{target.Id})
 
 		assert.NoError(t, err)
@@ -178,17 +178,17 @@ func TestRemoveCertificationTargetsCommand(t *testing.T) {
 		assert.NoError(t, err)
 
 		// Re-create default service
-		_, err = svc.CreateDefaultCertificationTarget()
+		_, err = svc.CreateDefaultTargetOfEvaluation()
 
 		return assert.NoError(t, err)
 	}, server.WithServices(svc))
 	assert.NoError(t, err)
 }
 
-func TestUpdateCertificationTargetCommand(t *testing.T) {
+func TestUpdateTargetOfEvaluationCommand(t *testing.T) {
 	var (
-		response orchestrator.CertificationTarget
-		target   *orchestrator.CertificationTarget
+		response orchestrator.TargetOfEvaluation
+		target   *orchestrator.TargetOfEvaluation
 		svc      *service_orchestrator.Service
 
 		err error
@@ -201,7 +201,7 @@ func TestUpdateCertificationTargetCommand(t *testing.T) {
 
 	svc = service_orchestrator.NewService()
 	_, err = clitest.RunCLITestFunc(func() bool {
-		target, err = svc.CreateDefaultCertificationTarget()
+		target, err = svc.CreateDefaultTargetOfEvaluation()
 		assert.NoError(t, err)
 
 		cli.Output = &b
@@ -209,7 +209,7 @@ func TestUpdateCertificationTargetCommand(t *testing.T) {
 		viper.Set("id", target.Id)
 		viper.Set("name", notDefault)
 
-		cmd := NewUpdateCertificationTargetCommand()
+		cmd := NewUpdateTargetOfEvaluationCommand()
 		err = cmd.RunE(nil, []string{})
 
 		assert.NoError(t, err)
@@ -225,7 +225,7 @@ func TestUpdateCertificationTargetCommand(t *testing.T) {
 
 func TestGetMetricConfiguration(t *testing.T) {
 	var (
-		target *orchestrator.CertificationTarget
+		target *orchestrator.TargetOfEvaluation
 		svc    *service_orchestrator.Service
 
 		err error
@@ -234,15 +234,15 @@ func TestGetMetricConfiguration(t *testing.T) {
 
 	svc = service_orchestrator.NewService()
 	_, err = clitest.RunCLITestFunc(func() bool {
-		target, err = svc.CreateDefaultCertificationTarget()
+		target, err = svc.CreateDefaultTargetOfEvaluation()
 		assert.NoError(t, err)
-		// target should be not nil since there are no stored certification targets yet
+		// target should be not nil since there are no stored target of evaluations yet
 		assert.NotNil(t, target)
 
 		cli.Output = &b
 
 		// create a new target service
-		target, err = svc.CreateCertificationTarget(context.TODO(), &orchestrator.CreateCertificationTargetRequest{CertificationTarget: &orchestrator.CertificationTarget{Name: "myTarget"}})
+		target, err = svc.CreateTargetOfEvaluation(context.TODO(), &orchestrator.CreateTargetOfEvaluationRequest{TargetOfEvaluation: &orchestrator.TargetOfEvaluation{Name: "myTarget"}})
 
 		assert.NotNil(t, target)
 		assert.NoError(t, err)

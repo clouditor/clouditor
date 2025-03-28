@@ -37,7 +37,7 @@ option go_package = "clouditor.io/clouditor/v2/api/evaluation";
 
 // Manages the evaluation of Clouditor's assessment results
 service Evaluation {
-  // Evaluates periodically all assessment results of a certification target id based
+  // Evaluates periodically all assessment results of a target of evaluation id based
   // on the given catalog id. Part of the public API, also exposed as REST.
   rpc StartEvaluation(StartEvaluationRequest) returns (StartEvaluationResponse) {
     option (google.api.http) = {post: "/v1/evaluation/evaluate/{audit_scope_id}/start"};
@@ -95,8 +95,8 @@ message StopEvaluationResponse {}
 
 message ListEvaluationResultsRequest {
   message Filter {
-    // Optional. Lists only evaluation results for a specific certification target.
-    optional string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
+    // Optional. Lists only evaluation results for a specific target of evaluation.
+    optional string target_of_evaluation_id = 1 [(buf.validate.field).string.uuid = true];
 
     // Optional. Lists only evaluation results for a specific catalog.
     optional string catalog_id = 2 [(buf.validate.field).string.min_len = 1];
@@ -133,7 +133,7 @@ message ListEvaluationResultsResponse {
 }
 
 // A evaluation result resource, representing the result after evaluating the
-// certification target with a specific control certification_target_id, category_name and
+// target of evaluation with a specific control target_of_evaluation_id, category_name and
 // catalog_id are necessary to get the corresponding AuditScope
 message EvaluationResult {
   // Evaluation result id
@@ -142,8 +142,8 @@ message EvaluationResult {
     (google.api.field_behavior) = REQUIRED
   ];
 
-  // The Certification Target ID the evaluation belongs to
-  string certification_target_id = 2 [(buf.validate.field).string = {uuid: true}];
+  // The Target of Evaluation ID the evaluation belongs to
+  string target_of_evaluation_id = 2 [(buf.validate.field).string = {uuid: true}];
 
   // The Audit Scope ID the evaluation belongs to
   string audit_scope_id = 3 [(buf.validate.field).string = {uuid: true}];

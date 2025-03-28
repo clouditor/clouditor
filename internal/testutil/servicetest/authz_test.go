@@ -12,13 +12,13 @@ import (
 
 func TestAuthorizationStrategyMock_CheckAccess(t *testing.T) {
 	type fields struct {
-		all                    bool
-		CertificationTargetIDs []string
+		all                   bool
+		TargetOfEvaluationIDs []string
 	}
 	type args struct {
 		ctx context.Context
 		in1 service.RequestType
-		req api.CertificationTargetRequest
+		req api.TargetOfEvaluationRequest
 	}
 	tests := []struct {
 		name   string
@@ -36,22 +36,22 @@ func TestAuthorizationStrategyMock_CheckAccess(t *testing.T) {
 		{
 			name: "only service 1 - denied",
 			fields: fields{
-				all:                    false,
-				CertificationTargetIDs: []string{testdata.MockCertificationTargetID1},
+				all:                   false,
+				TargetOfEvaluationIDs: []string{testdata.MockTargetOfEvaluationID1},
 			},
 			args: args{
-				req: &orchestrator.GetCertificationTargetRequest{CertificationTargetId: testdata.MockCertificationTargetID2},
+				req: &orchestrator.GetTargetOfEvaluationRequest{TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2},
 			},
 			want: false,
 		},
 		{
 			name: "only service 1 - allowed",
 			fields: fields{
-				all:                    false,
-				CertificationTargetIDs: []string{testdata.MockCertificationTargetID1},
+				all:                   false,
+				TargetOfEvaluationIDs: []string{testdata.MockTargetOfEvaluationID1},
 			},
 			args: args{
-				req: &orchestrator.GetCertificationTargetRequest{CertificationTargetId: testdata.MockCertificationTargetID1},
+				req: &orchestrator.GetTargetOfEvaluationRequest{TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1},
 			},
 			want: true,
 		},
@@ -60,8 +60,8 @@ func TestAuthorizationStrategyMock_CheckAccess(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &AuthorizationStrategyMock{
-				all:                    tt.fields.all,
-				CertificationTargetIDs: tt.fields.CertificationTargetIDs,
+				all:                   tt.fields.all,
+				TargetOfEvaluationIDs: tt.fields.TargetOfEvaluationIDs,
 			}
 			if got := a.CheckAccess(tt.args.ctx, tt.args.in1, tt.args.req); got != tt.want {
 				t.Errorf("AuthorizationStrategyMock.CheckAccess() = %v, want %v", got, tt.want)

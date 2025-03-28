@@ -155,8 +155,8 @@ message AssessmentResult {
   // ComplianceDetails contains machine-readable details about which comparisons lead to a (non)-compliance.
   repeated ComparisonResult compliance_details = 10 [(tagger.tags) = "gorm:\"serializer:json\""];
 
-  // The certification target which this assessment result belongs to
-  string certification_target_id = 20 [
+  // The target of evaluation which this assessment result belongs to
+  string target_of_evaluation_id = 20 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -218,7 +218,7 @@ message ComparisonResult {
 
      string control_id = 4;
 
-     string certification_target_id = 5;
+     string target_of_evaluation_id = 5;
 
      repeated AssessmentResult results = 6;
    }*/

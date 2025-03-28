@@ -68,9 +68,9 @@ func TestValidate(t *testing.T) {
 			args: args{
 				req: &orchestrator.CreateAuditScopeRequest{
 					AuditScope: &orchestrator.AuditScope{
-						Id:                    uuid.NewString(),
-						CertificationTargetId: "11111111-1111-1111-1111-111111111111",
-						CatalogId:             "0000",
+						Id:                   uuid.NewString(),
+						TargetOfEvaluationId: "11111111-1111-1111-1111-111111111111",
+						CatalogId:            "0000",
 					},
 				},
 			},

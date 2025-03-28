@@ -32,7 +32,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func Test_k8sDiscovery_CertificationTargetID(t *testing.T) {
+func Test_k8sDiscovery_TargetOfEvaluationID(t *testing.T) {
 	type fields struct {
 		intf kubernetes.Interface
 		ctID string
@@ -45,9 +45,9 @@ func Test_k8sDiscovery_CertificationTargetID(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				ctID: testdata.MockCertificationTargetID1,
+				ctID: testdata.MockTargetOfEvaluationID1,
 			},
-			want: testdata.MockCertificationTargetID1,
+			want: testdata.MockTargetOfEvaluationID1,
 		},
 	}
 	for _, tt := range tests {
@@ -56,8 +56,8 @@ func Test_k8sDiscovery_CertificationTargetID(t *testing.T) {
 				intf: tt.fields.intf,
 				ctID: tt.fields.ctID,
 			}
-			if got := d.CertificationTargetID(); got != tt.want {
-				t.Errorf("k8sDiscovery.CertificationTargetID() = %v, want %v", got, tt.want)
+			if got := d.TargetOfEvaluationID(); got != tt.want {
+				t.Errorf("k8sDiscovery.TargetOfEvaluationID() = %v, want %v", got, tt.want)
 			}
 		})
 	}

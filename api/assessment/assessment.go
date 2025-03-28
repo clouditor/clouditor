@@ -52,8 +52,8 @@ func (req *AssessEvidenceRequest) GetPayload() proto.Message {
 	return req.Evidence
 }
 
-// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns the certification target ID of the inner
+// GetTargetOfEvaluationId is a shortcut to implement TargetOfEvaluationRequest. It returns the target of evaluation ID of the inner
 // object.
-func (req *AssessEvidenceRequest) GetCertificationTargetId() string {
-	return req.GetEvidence().GetCertificationTargetId()
+func (req *AssessEvidenceRequest) GetTargetOfEvaluationId() string {
+	return req.GetEvidence().GetTargetOfEvaluationId()
 }

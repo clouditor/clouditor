@@ -103,7 +103,7 @@ func WithAuthorizer(authorizer azcore.TokenCredential) DiscoveryOption {
 	}
 }
 
-func WithCertificationTargetID(ctID string) DiscoveryOption {
+func WithTargetOfEvaluationID(ctID string) DiscoveryOption {
 	return func(a *azureDiscovery) {
 		a.ctID = ctID
 	}
@@ -192,7 +192,7 @@ type clients struct {
 
 func NewAzureDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureDiscovery{
-		ctID:               config.DefaultCertificationTargetID,
+		ctID:               config.DefaultTargetOfEvaluationID,
 		backupMap:          make(map[string]*backup),
 		defenderProperties: make(map[string]*defenderProperties),
 	}
@@ -323,7 +323,7 @@ func (d *azureDiscovery) List() (list []ontology.IsResource, err error) {
 	return list, nil
 }
 
-func (d *azureDiscovery) CertificationTargetID() string {
+func (d *azureDiscovery) TargetOfEvaluationID() string {
 	return d.ctID
 }
 

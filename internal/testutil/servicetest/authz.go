@@ -9,35 +9,35 @@ import (
 )
 
 // NewAuthorizationStrategy contains a mock for a
-// [service.AuthorizationStrategy] that either allows all certification targets or the
+// [service.AuthorizationStrategy] that either allows all target of evaluations or the
 // ones that are specified in the ID list.
-func NewAuthorizationStrategy(all bool, CertificationTargetIDs ...string) service.AuthorizationStrategy {
+func NewAuthorizationStrategy(all bool, TargetOfEvaluationIDs ...string) service.AuthorizationStrategy {
 	return &AuthorizationStrategyMock{
-		all:                    all,
-		CertificationTargetIDs: CertificationTargetIDs,
+		all:                   all,
+		TargetOfEvaluationIDs: TargetOfEvaluationIDs,
 	}
 }
 
 type AuthorizationStrategyMock struct {
-	all                    bool
-	CertificationTargetIDs []string
+	all                   bool
+	TargetOfEvaluationIDs []string
 }
 
-func (a *AuthorizationStrategyMock) CheckAccess(ctx context.Context, _ service.RequestType, req api.CertificationTargetRequest) bool {
+func (a *AuthorizationStrategyMock) CheckAccess(ctx context.Context, _ service.RequestType, req api.TargetOfEvaluationRequest) bool {
 	var (
 		list []string
 		all  bool
 	)
 
-	all, list = a.AllowedCertificationTargets(ctx)
+	all, list = a.AllowedTargetOfEvaluations(ctx)
 
 	if all {
 		return true
 	}
 
-	return slices.Contains(list, req.GetCertificationTargetId())
+	return slices.Contains(list, req.GetTargetOfEvaluationId())
 }
 
-func (a *AuthorizationStrategyMock) AllowedCertificationTargets(_ context.Context) (all bool, IDs []string) {
-	return a.all, a.CertificationTargetIDs
+func (a *AuthorizationStrategyMock) AllowedTargetOfEvaluations(_ context.Context) (all bool, IDs []string) {
+	return a.all, a.TargetOfEvaluationIDs
 }
