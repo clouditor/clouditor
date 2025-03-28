@@ -167,10 +167,14 @@ func ProtoResource(resource IsResource) *Resource {
 	return &r
 }
 
+// MarshalJSON is a custom JSON marshaller for the [Resource] type that delegates JSON marshalling to the [protojson]
+// package.
 func (x *Resource) MarshalJSON() (b []byte, err error) {
 	return protojson.Marshal(x)
 }
 
+// UnmarshalJSON is a custom JSON unmarshaller for the [Resource] type that delegates JSON unmarshalling to the
+// [protojson] package.
 func (x *Resource) UnmarshalJSON(b []byte) (err error) {
 	return protojson.Unmarshal(b, x)
 }
