@@ -72,7 +72,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 			if viper.GetBool(config.CreateDefaultTargetOfEvaluationFlag) {
 				_, err := svc.CreateDefaultTargetOfEvaluation()
 				if err != nil {
-					return nil, fmt.Errorf("could not register default target target of evaluation: %v", err)
+					return nil, fmt.Errorf("could not register default target of evaluation: %v", err)
 				}
 			}
 

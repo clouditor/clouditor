@@ -57,10 +57,10 @@ func NewOrchestratorCommand() *cobra.Command {
 }
 
 func BindFlags(cmd *cobra.Command) {
-	cmd.Flags().Bool(config.CreateDefaultTargetOfEvaluationFlag, config.DefaultCreateDefaultTarget, "Creates a default target target of evaluation if it does not exist")
-	cmd.Flags().String(config.DefaultTargetOfEvaluationNameFlag, config.DefaultTargetOfEvaluationName, "Name of the default target target of evaluation")
-	cmd.Flags().String(config.DefaultTargetOfEvaluationDescriptionFlag, config.DefaultTargetOfEvaluationDescription, "Description of the default target target of evaluation")
-	cmd.Flags().Int32(config.DefaultTargetOfEvaluationTypeFlag, int32(config.DefaultTargetOfEvaluationType), "Type of the default target target of evaluation; (1=cloud, 2=product, 3=organisation)")
+	cmd.Flags().Bool(config.CreateDefaultTargetOfEvaluationFlag, config.DefaultCreateDefaultTarget, "Creates a default target of evaluation if it does not exist")
+	cmd.Flags().String(config.DefaultTargetOfEvaluationNameFlag, config.DefaultTargetOfEvaluationName, "Name of the default target of evaluation")
+	cmd.Flags().String(config.DefaultTargetOfEvaluationDescriptionFlag, config.DefaultTargetOfEvaluationDescription, "Description of the default target of evaluation")
+	cmd.Flags().Int32(config.DefaultTargetOfEvaluationTypeFlag, int32(config.DefaultTargetOfEvaluationType), "Type of the default target of evaluation; (1=cloud, 2=product, 3=organisation)")
 	if cmd.Flag(config.APIgRPCPortFlag) == nil {
 		cmd.Flags().Uint16(config.APIgRPCPortFlag, config.DefaultAPIgRPCPortOrchestrator, "Specifies the port used for the Clouditor gRPC API")
 	}
