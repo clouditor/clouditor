@@ -60,11 +60,16 @@ func (ev *Evidence) GetOntologyResource() ontology.IsResource {
 	return resource
 }
 
+// GetResourceId returns the ID of the resource of the evidence. Returns an empty string if the resource is nil or empty
 func (ev *Evidence) GetResourceId() string {
 	var (
 		resource ontology.IsResource
 		ok       bool
 	)
+
+	if ev.Resource == nil || ev.Resource.Type == nil {
+		return ""
+	}
 
 	typ := reflect.ValueOf(ev.Resource.Type).Elem()
 	resource, ok = typ.Field(0).Interface().(ontology.IsResource)

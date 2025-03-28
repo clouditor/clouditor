@@ -62,6 +62,20 @@ func TestEvidence_GetOntologyResource(t *testing.T) {
 				Id: "vm-1",
 			},
 		},
+		{
+			name: "resource is nil",
+			fields: fields{
+				Resource: nil,
+			},
+			want: nil,
+		},
+		{
+			name: "resource is empty",
+			fields: fields{
+				Resource: &ontology.Resource{},
+			},
+			want: nil,
+		},
 	}
 
 	for _, tt := range tests {
@@ -106,6 +120,20 @@ func TestEvidence_GetResourceId(t *testing.T) {
 				},
 			},
 			want: "vm-1",
+		},
+		{
+			name: "resource is nil",
+			fields: fields{
+				Resource: nil,
+			},
+			want: "",
+		},
+		{
+			name: "resource is empty",
+			fields: fields{
+				Resource: &ontology.Resource{},
+			},
+			want: "",
 		},
 	}
 
