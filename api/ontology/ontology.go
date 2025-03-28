@@ -37,7 +37,7 @@ func Related(r IsResource) []Relationship {
 	desc := r.ProtoReflect().Descriptor()
 	fields := desc.Fields()
 
-	for i := 0; i < fields.Len(); i++ {
+	for i := range fields.Len() {
 		field := fields.Get(i)
 
 		// We are only interested in string fields

@@ -247,7 +247,7 @@ func (svc *Service) Init() {}
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
 func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
 	var (
-		resourceId string
+		resource ontology.IsResource
 	)
 
 	// Validate request
@@ -263,8 +263,13 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 		return nil, service.ErrPermissionDenied
 	}
 
-	// TODO: This is really bad, because we will also unmarshal the resource as part of handleEvidence
-	resourceId = req.Evidence.GetResourceId()
+	// Retrieve the ontology resource
+	resource = req.Evidence.GetOntologyResource()
+	if resource == nil {
+		err = discovery.ErrNotOntologyResource
+		log.Error(err)
+		return nil, err
+	}
 
 	// Check, if we can immediately handle this evidence; we assume so at first
 	var (
@@ -292,11 +297,11 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 	}
 
 	// Update our resourceID to evidence cache
-	svc.evidenceResourceMap[resourceId] = req.Evidence
+	svc.evidenceResourceMap[resource.GetId()] = req.Evidence
 	svc.em.Unlock()
 
 	// Inform any other left over evidences that might be waiting
-	go svc.informWaitingRequests(resourceId)
+	go svc.informWaitingRequests(resource.GetId())
 
 	if canHandle {
 		// Assess evidence. This also validates the embedded resource and returns a gRPC error if validation fails.
@@ -318,7 +323,7 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 		l := waitingRequest{
 			started:      time.Now(),
 			waitingFor:   waitingFor,
-			resourceId:   resourceId,
+			resourceId:   resource.GetId(),
 			Evidence:     req.Evidence,
 			s:            svc,
 			newResources: make(chan string, 1000),
@@ -401,7 +406,11 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences. This will
 // also validate the resource embedded into the evidence and return an error if validation fails. In order to
 // distinguish between internal errors and validation errors, this function already returns a gRPC error.
-func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, related map[string]ontology.IsResource) (results []*assessment.AssessmentResult, err error) {
+func (svc *Service) handleEvidence(
+	ctx context.Context,
+	ev *evidence.Evidence,
+	related map[string]ontology.IsResource,
+) (results []*assessment.AssessmentResult, err error) {
 	var (
 		types    []string
 		resource ontology.IsResource
