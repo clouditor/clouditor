@@ -213,6 +213,13 @@ func TestProtoResource(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "nil input",
+			args: args{
+				resource: nil,
+			},
+			want: nil,
+		},
 	}
 
 	for _, tt := range tests {

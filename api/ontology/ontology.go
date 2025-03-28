@@ -5,6 +5,8 @@ import (
 	"slices"
 	"strings"
 
+	"clouditor.io/clouditor/v2/internal/util"
+
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -150,6 +152,10 @@ func ProtoResource(resource IsResource) *Resource {
 		m  protoreflect.Message
 		od protoreflect.OneofDescriptor
 	)
+
+	if util.IsNil(resource) {
+		return nil
+	}
 
 	// Set up descriptors for proto reflection
 	m = r.ProtoReflect()
