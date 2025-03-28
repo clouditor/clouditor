@@ -27,13 +27,12 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        (unknown)
-// source: api/user/user.proto
+// source: api/orchestrator/user.proto
 
-package user
+package orchestrator
 
 import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
-	orchestrator "clouditor.io/clouditor/v2/api/orchestrator"
 	_ "github.com/srikrsna/protoc-gen-gotag/tagger"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -59,14 +58,14 @@ type User struct {
 	LastName  string                 `protobuf:"bytes,3,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
 	Email     string                 `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
 	// target_of_certification_ids defines the scope of the user
-	CertificationTargetIds []*orchestrator.CertificationTarget `protobuf:"bytes,5,rep,name=certification_target_ids,json=certificationTargetIds,proto3" json:"certification_target_ids,omitempty" gorm:"many2many:user_certification_target;"`
+	CertificationTargetIds []*CertificationTarget `protobuf:"bytes,5,rep,name=certification_target_ids,json=certificationTargetIds,proto3" json:"certification_target_ids,omitempty" gorm:"many2many:user_certification_target;"`
 	unknownFields          protoimpl.UnknownFields
 	sizeCache              protoimpl.SizeCache
 }
 
 func (x *User) Reset() {
 	*x = User{}
-	mi := &file_api_user_user_proto_msgTypes[0]
+	mi := &file_api_orchestrator_user_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -78,7 +77,7 @@ func (x *User) String() string {
 func (*User) ProtoMessage() {}
 
 func (x *User) ProtoReflect() protoreflect.Message {
-	mi := &file_api_user_user_proto_msgTypes[0]
+	mi := &file_api_orchestrator_user_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -91,7 +90,7 @@ func (x *User) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use User.ProtoReflect.Descriptor instead.
 func (*User) Descriptor() ([]byte, []int) {
-	return file_api_user_user_proto_rawDescGZIP(), []int{0}
+	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *User) GetId() string {
@@ -122,18 +121,18 @@ func (x *User) GetEmail() string {
 	return ""
 }
 
-func (x *User) GetCertificationTargetIds() []*orchestrator.CertificationTarget {
+func (x *User) GetCertificationTargetIds() []*CertificationTarget {
 	if x != nil {
 		return x.CertificationTargetIds
 	}
 	return nil
 }
 
-var File_api_user_user_proto protoreflect.FileDescriptor
+var File_api_orchestrator_user_proto protoreflect.FileDescriptor
 
-const file_api_user_user_proto_rawDesc = "" +
+const file_api_orchestrator_user_proto_rawDesc = "" +
 	"\n" +
-	"\x13api/user/user.proto\x12\x11clouditor.user.v1\x1a#api/orchestrator/orchestrator.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x13tagger/tagger.proto\"\x91\x02\n" +
+	"\x1bapi/orchestrator/user.proto\x12\x19clouditor.orchestrator.v1\x1a#api/orchestrator/orchestrator.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x13tagger/tagger.proto\"\x91\x02\n" +
 	"\x04User\x12\x1a\n" +
 	"\x02id\x18\x01 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\x12\x1d\n" +
@@ -141,27 +140,27 @@ const file_api_user_user_proto_rawDesc = "" +
 	"first_name\x18\x02 \x01(\tR\tfirstName\x12\x1b\n" +
 	"\tlast_name\x18\x03 \x01(\tR\blastName\x12\x14\n" +
 	"\x05email\x18\x04 \x01(\tR\x05email\x12\x9a\x01\n" +
-	"\x18certification_target_ids\x18\x05 \x03(\v2..clouditor.orchestrator.v1.CertificationTargetB0\x9a\x84\x9e\x03+gorm:\"many2many:user_certification_target;\"R\x16certificationTargetIdsB$Z\"clouditor.io/clouditor/v2/api/userb\x06proto3"
+	"\x18certification_target_ids\x18\x05 \x03(\v2..clouditor.orchestrator.v1.CertificationTargetB0\x9a\x84\x9e\x03+gorm:\"many2many:user_certification_target;\"R\x16certificationTargetIdsB,Z*clouditor.io/clouditor/v2/api/orchestratorb\x06proto3"
 
 var (
-	file_api_user_user_proto_rawDescOnce sync.Once
-	file_api_user_user_proto_rawDescData []byte
+	file_api_orchestrator_user_proto_rawDescOnce sync.Once
+	file_api_orchestrator_user_proto_rawDescData []byte
 )
 
-func file_api_user_user_proto_rawDescGZIP() []byte {
-	file_api_user_user_proto_rawDescOnce.Do(func() {
-		file_api_user_user_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_user_user_proto_rawDesc), len(file_api_user_user_proto_rawDesc)))
+func file_api_orchestrator_user_proto_rawDescGZIP() []byte {
+	file_api_orchestrator_user_proto_rawDescOnce.Do(func() {
+		file_api_orchestrator_user_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_orchestrator_user_proto_rawDesc), len(file_api_orchestrator_user_proto_rawDesc)))
 	})
-	return file_api_user_user_proto_rawDescData
+	return file_api_orchestrator_user_proto_rawDescData
 }
 
-var file_api_user_user_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
-var file_api_user_user_proto_goTypes = []any{
-	(*User)(nil),                             // 0: clouditor.user.v1.User
-	(*orchestrator.CertificationTarget)(nil), // 1: clouditor.orchestrator.v1.CertificationTarget
+var file_api_orchestrator_user_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_api_orchestrator_user_proto_goTypes = []any{
+	(*User)(nil),                // 0: clouditor.orchestrator.v1.User
+	(*CertificationTarget)(nil), // 1: clouditor.orchestrator.v1.CertificationTarget
 }
-var file_api_user_user_proto_depIdxs = []int32{
-	1, // 0: clouditor.user.v1.User.certification_target_ids:type_name -> clouditor.orchestrator.v1.CertificationTarget
+var file_api_orchestrator_user_proto_depIdxs = []int32{
+	1, // 0: clouditor.orchestrator.v1.User.certification_target_ids:type_name -> clouditor.orchestrator.v1.CertificationTarget
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -169,26 +168,27 @@ var file_api_user_user_proto_depIdxs = []int32{
 	0, // [0:1] is the sub-list for field type_name
 }
 
-func init() { file_api_user_user_proto_init() }
-func file_api_user_user_proto_init() {
-	if File_api_user_user_proto != nil {
+func init() { file_api_orchestrator_user_proto_init() }
+func file_api_orchestrator_user_proto_init() {
+	if File_api_orchestrator_user_proto != nil {
 		return
 	}
+	file_api_orchestrator_orchestrator_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_user_user_proto_rawDesc), len(file_api_user_user_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_orchestrator_user_proto_rawDesc), len(file_api_orchestrator_user_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_api_user_user_proto_goTypes,
-		DependencyIndexes: file_api_user_user_proto_depIdxs,
-		MessageInfos:      file_api_user_user_proto_msgTypes,
+		GoTypes:           file_api_orchestrator_user_proto_goTypes,
+		DependencyIndexes: file_api_orchestrator_user_proto_depIdxs,
+		MessageInfos:      file_api_orchestrator_user_proto_msgTypes,
 	}.Build()
-	File_api_user_user_proto = out.File
-	file_api_user_user_proto_goTypes = nil
-	file_api_user_user_proto_depIdxs = nil
+	File_api_orchestrator_user_proto = out.File
+	file_api_orchestrator_user_proto_goTypes = nil
+	file_api_orchestrator_user_proto_depIdxs = nil
 }

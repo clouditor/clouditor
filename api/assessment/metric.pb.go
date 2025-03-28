@@ -723,7 +723,11 @@ const file_api_assessment_metric_proto_rawDesc = "" +
 	"\rAllowedValues\x12.\n" +
 	"\x06values\x18\x01 \x03(\v2\x16.google.protobuf.ValueR\x06values\"7\n" +
 	"\x05Order\x12.\n" +
+<<<<<<< HEAD
 	"\x06values\x18\x01 \x03(\v2\x16.google.protobuf.ValueR\x06values\"\xe4\x03\n" +
+=======
+	"\x06values\x18\x01 \x03(\v2\x16.google.protobuf.ValueR\x06values\"\xe5\x03\n" +
+>>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x13MetricConfiguration\x12A\n" +
 	"\boperator\x18\x01 \x01(\tB%\xe0A\x02\xbaH\x1fr\x1d2\x1b^(<|>|<=|>=|==|isIn|allIn)$R\boperator\x12_\n" +
 	"\ftarget_value\x18\x02 \x01(\v2\x16.google.protobuf.ValueB$\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\vtargetValue\x12\"\n" +
@@ -731,8 +735,13 @@ const file_api_assessment_metric_proto_rawDesc = "" +
 	"is_default\x18\x03 \x01(\bB\x03\xe0A\x02R\tisDefault\x12l\n" +
 	"\n" +
 	"updated_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampB1\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\tupdatedAt\x12=\n" +
+<<<<<<< HEAD
 	"\tmetric_id\x18\x05 \x01(\tB \xe0A\x02\xbaH\x04r\x02\x10\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\bmetricId\x12X\n" +
 	"\x17target_of_evaluation_id\x18\x06 \x01(\tB!\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\x14targetOfEvaluationId\"\xf2\x02\n" +
+=======
+	"\tmetric_id\x18\x05 \x01(\tB \xe0A\x02\xbaH\x04r\x02\x10\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\bmetricId\x12Y\n" +
+	"\x17certification_target_id\x18\x06 \x01(\tB!\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\x15certificationTargetId\"\xf2\x02\n" +
+>>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x14MetricImplementation\x12=\n" +
 	"\tmetric_id\x18\x01 \x01(\tB \xe0A\x02\xbaH\x04r\x02\x10\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\bmetricId\x12T\n" +
 	"\x04lang\x18\x02 \x01(\x0e26.clouditor.assessment.v1.MetricImplementation.LanguageB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04lang\x12\x1e\n" +

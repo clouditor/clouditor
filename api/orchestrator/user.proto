@@ -25,7 +25,7 @@
 
 syntax = "proto3";
 
-package clouditor.user.v1;
+package clouditor.orchestrator.v1;
 
 import "api/orchestrator/orchestrator.proto";
 import "buf/validate/validate.proto";
@@ -33,7 +33,7 @@ import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "tagger/tagger.proto";
 
-option go_package = "clouditor.io/clouditor/v2/api/user";
+option go_package = "clouditor.io/clouditor/v2/api/orchestrator";
 
 // A user resource
 // TODO(lebogg): Think about adding more fields to the user resource (creation time, expiration time, etc.)

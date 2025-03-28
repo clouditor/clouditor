@@ -42,4 +42,3 @@ package clouditor
 //go:generate buf generate --template buf.openapi.gen.yaml --path api/evidence -o openapi/evidence
 //go:generate buf generate --template buf.openapi.gen.yaml --path api/orchestrator -o openapi/orchestrator
 //go:generate buf generate --template buf.openapi.gen.yaml --path api/ontology -o openapi/ontology
-//go:generate buf generate --template buf.openapi.gen.yaml --path api/user -o openapi/user

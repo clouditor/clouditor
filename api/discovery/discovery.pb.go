@@ -436,7 +436,11 @@ const file_api_discovery_discovery_proto_rawDesc = "" +
 	"\x16StartDiscoveryResponse\x12\x1e\n" +
 	"\n" +
 	"successful\x18\x01 \x01(\bR\n" +
+<<<<<<< HEAD
 	"successful\"\x8b\x03\n" +
+=======
+	"successful\"\x8c\x03\n" +
+>>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x14ListResourcesRequest\x12P\n" +
 	"\x06filter\x18\x01 \x01(\v23.clouditor.discovery.v1.ListResourcesRequest.FilterH\x00R\x06filter\x88\x01\x01\x12\x1b\n" +
 	"\tpage_size\x18\n" +
@@ -444,6 +448,7 @@ const file_api_discovery_discovery_proto_rawDesc = "" +
 	"\n" +
 	"page_token\x18\v \x01(\tR\tpageToken\x12\x19\n" +
 	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
+<<<<<<< HEAD
 	"\x03asc\x18\r \x01(\bR\x03asc\x1a\xac\x01\n" +
 	"\x06Filter\x12\x17\n" +
 	"\x04type\x18\x01 \x01(\tH\x00R\x04type\x88\x01\x01\x12:\n" +
@@ -451,16 +456,33 @@ const file_api_discovery_discovery_proto_rawDesc = "" +
 	"\atool_id\x18\x03 \x01(\tH\x02R\x06toolId\x88\x01\x01B\a\n" +
 	"\x05_typeB\x1a\n" +
 	"\x18_target_of_evaluation_idB\n" +
+=======
+	"\x03asc\x18\r \x01(\bR\x03asc\x1a\xad\x01\n" +
+	"\x06Filter\x12\x17\n" +
+	"\x04type\x18\x01 \x01(\tH\x00R\x04type\x88\x01\x01\x12;\n" +
+	"\x17certification_target_id\x18\x02 \x01(\tH\x01R\x15certificationTargetId\x88\x01\x01\x12\x1c\n" +
+	"\atool_id\x18\x03 \x01(\tH\x02R\x06toolId\x88\x01\x01B\a\n" +
+	"\x05_typeB\x1a\n" +
+	"\x18_certification_target_idB\n" +
+>>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\n" +
 	"\b_tool_idB\t\n" +
 	"\a_filter\"\x80\x01\n" +
 	"\x15ListResourcesResponse\x12?\n" +
 	"\aresults\x18\x01 \x03(\v2 .clouditor.discovery.v1.ResourceB\x03\xe0A\x02R\aresults\x12&\n" +
+<<<<<<< HEAD
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xa7\x02\n" +
 	"\bResource\x12\x1a\n" +
 	"\x02id\x18\x01 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\x12B\n" +
 	"\x17target_of_evaluation_id\x18\x02 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12/\n" +
+=======
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xa8\x02\n" +
+	"\bResource\x12\x1a\n" +
+	"\x02id\x18\x01 \x01(\tB\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\x12C\n" +
+	"\x17certification_target_id\x18\x02 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\x12/\n" +
+>>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\rresource_type\x18\x03 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\fresourceType\x12#\n" +
 	"\atool_id\x18\x04 \x01(\tB\n" +
