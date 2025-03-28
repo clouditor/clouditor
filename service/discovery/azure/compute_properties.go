@@ -263,15 +263,31 @@ func isBootDiagnosticEnabled(vm *armcompute.VirtualMachine) bool {
 	}
 }
 
-func bootLogOutput(vm *armcompute.VirtualMachine) string {
+func (d *azureDiscovery) bootLogOutput(vm *armcompute.VirtualMachine) string {
 	if isBootDiagnosticEnabled(vm) {
 		// If storageUri is not specified while enabling boot diagnostics, managed storage will be used.
-		// TODO(oxisto): The issue here, is that this is an URL but not an ID of the object storage!
-		// if vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI != nil {
-		// 	return util.Deref(vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI)
-		// }
+		if vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI != nil {
+			return d.getResourceId(util.Deref(vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI), resourceGroupName(util.Deref(vm.ID)))
+		}
 
 		return ""
 	}
 	return ""
+}
+
+// getResourceId returns the resource ID of a given URI
+func (d *azureDiscovery) getResourceId(uri string, rg string) string {
+	// Check if needed values are available
+	if uri == "" || rg == "" || d.sub == nil || util.Deref(d.sub.SubscriptionID) == "" {
+		return ""
+	}
+
+	// Get storage account name from URI
+	// Example of the given URI: "https://YYYY.blob.core.windows.net/"
+	tmp := strings.Split(uri, ".")
+	accountName := strings.Split(tmp[0], "/")[2]
+
+	// return the resource ID
+	// Example resource ID:/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/XXXX/providers/Microsoft.Storage/storageAccounts/YYYY
+	return "/subscriptions/" + util.Deref(d.sub.SubscriptionID) + "/resourceGroups/" + rg + "/providers/Microsoft.Storage/storageAccounts/" + accountName
 }
