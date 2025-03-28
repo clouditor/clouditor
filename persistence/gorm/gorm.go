@@ -26,7 +26,6 @@
 package gorm
 
 import (
-	"clouditor.io/clouditor/v2/api/user"
 	"errors"
 	"fmt"
 	"strings"
@@ -79,7 +78,7 @@ var DefaultTypes = []any{
 	&orchestrator.Control{},
 	&orchestrator.AuditScope{},
 	&evaluation.EvaluationResult{},
-	&user.User{},
+	&orchestrator.User{},
 }
 
 // StorageOption is a functional option type to configure the GORM storage. E.g. WithInMemory or WithPostgres
