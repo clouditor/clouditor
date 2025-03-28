@@ -3,8 +3,7 @@
 
 openapi: 3.0.3
 info:
-    title: Orchestrator API
-    description: Manages the orchestration of components within the Clouditor architecture
+    title: ""
     version: 0.0.1
 paths:
     /v1/orchestrator/assessment_results:
@@ -1465,6 +1464,144 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/orchestrator/user:
+        get:
+            tags:
+                - UserService
+            description: Lists all users
+            operationId: UserService_ListUsers
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListUsersResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - UserService
+            description: Creates a new user
+            operationId: UserService_CreateUser
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/User'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/User'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/user/{id}:
+        get:
+            tags:
+                - UserService
+            description: Retrieves a user by ID
+            operationId: UserService_GetUser
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/User'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - UserService
+            description: Deletes a user
+            operationId: UserService_DeleteUser
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/user/{user.id}:
+        patch:
+            tags:
+                - UserService
+            description: Updates a user, e.g. changes access rights
+            operationId: UserService_UpdateUser
+            parameters:
+                - name: user.id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/User'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/User'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
         ActivityLogging:
@@ -1960,6 +2097,16 @@ components:
                         $ref: '#/components/schemas/TargetOfEvaluation'
                 nextPageToken:
                     type: string
+        ListUsersResponse:
+            type: object
+            properties:
+                users:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/User'
+                nextPageToken:
+                    type: string
+                    description: The next page token to use for pagination. If not specified, the default is the last page.
         LocalRedundancy:
             type: object
             properties:
@@ -2270,6 +2417,27 @@ components:
                     type: integer
                     format: int32
             description: UsageStatistics is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        User:
+            required:
+                - id
+            type: object
+            properties:
+                id:
+                    type: string
+                firstName:
+                    type: string
+                lastName:
+                    type: string
+                email:
+                    type: string
+                targetOfEvaluationIds:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/TargetOfEvaluation'
+                    description: target_of_certification_ids defines the scope of the user
+            description: |-
+                A user resource
+                 TODO(lebogg): Think about adding more fields to the user resource (creation time, expiration time, etc.)
         ZoneRedundancy:
             type: object
             properties:
@@ -2280,3 +2448,6 @@ components:
             description: ZoneRedundancy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 tags:
     - name: Orchestrator
+      description: Manages the orchestration of components within the Clouditor architecture
+    - name: UserService
+      description: Manages users in the orchestrator

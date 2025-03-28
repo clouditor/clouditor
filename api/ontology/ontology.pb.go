@@ -19211,7 +19211,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x0egeo_redundancy\x18\x84\x13 \x01(\v2$.clouditor.ontology.v1.GeoRedundancyH\x00R\rgeoRedundancy\x12T\n" +
 	"\x10local_redundancy\x18\xe9\x13 \x01(\v2&.clouditor.ontology.v1.LocalRedundancyH\x00R\x0flocalRedundancy\x12Q\n" +
 	"\x0fzone_redundancy\x18\x89W \x01(\v2%.clouditor.ontology.v1.ZoneRedundancyH\x00R\x0ezoneRedundancyB\x06\n" +
-<<<<<<< HEAD
 	"\x04type\"\xc4\x04\n" +
 	"\x11AwarenessTraining\x127\n" +
 	"\x17annual_update_completed\x18\x92| \x01(\bR\x15annualUpdateCompleted\x12@\n" +
@@ -19228,9 +19227,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:?\x82\xa6\x1d\x11AwarenessTraining\x82\xa6\x1d\bTraining\x82\xa6\x1d\x0eHumanResources\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_id\"\xe5\x02\n" +
-=======
-	"\x04type\"\xe5\x02\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x06Backup\x12\x19\n" +
 	"\aenabled\x18\xff\x15 \x01(\bR\aenabled\x126\n" +
 	"\binterval\x18\x928 \x01(\v2\x19.google.protobuf.DurationR\binterval\x12E\n" +
@@ -19238,64 +19234,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\n" +
 	"storage_id\x18\x957 \x01(\tH\x00R\tstorageId\x88\x01\x01\x12^\n" +
 	"\x14transport_encryption\x18\x81\x0f \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption:-\x82\xa6\x1d\x06Backup\x82\xa6\x1d\fAvailability\x82\xa6\x1d\x0fSecurityFeatureB\r\n" +
-<<<<<<< HEAD
 	"\v_storage_id\"\x96\t\n" +
-=======
-	"\v_storage_id\"\x83!\n" +
-	"\bResource\x12;\n" +
-	"\aaccount\x18\xc0Y \x01(\v2\x1e.clouditor.ontology.v1.AccountH\x00R\aaccount\x12/\n" +
-	"\x03job\x18\x9f\x1f \x01(\v2\x1a.clouditor.ontology.v1.JobH\x00R\x03job\x12>\n" +
-	"\bworkflow\x18\xaaD \x01(\v2\x1f.clouditor.ontology.v1.WorkflowH\x00R\bworkflow\x12Q\n" +
-	"\x0fcode_repository\x18\xe7\x1a \x01(\v2%.clouditor.ontology.v1.CodeRepositoryH\x00R\x0ecodeRepository\x12A\n" +
-	"\tcontainer\x18\xfb\f \x01(\v2 .clouditor.ontology.v1.ContainerH\x00R\tcontainer\x12>\n" +
-	"\bfunction\x18\xdft \x01(\v2\x1f.clouditor.ontology.v1.FunctionH\x00R\bfunction\x12R\n" +
-	"\x0fvirtual_machine\x18\xb8\x8f\x01 \x01(\v2%.clouditor.ontology.v1.VirtualMachineH\x00R\x0evirtualMachine\x12i\n" +
-	"\x17container_orchestration\x18\x8b\x19 \x01(\v2-.clouditor.ontology.v1.ContainerOrchestrationH\x00R\x16containerOrchestration\x12Z\n" +
-	"\x12container_registry\x18\x86A \x01(\v2(.clouditor.ontology.v1.ContainerRegistryH\x00R\x11containerRegistry\x12G\n" +
-	"\vcertificate\x18\xdeB \x01(\v2\".clouditor.ontology.v1.CertificateH\x00R\vcertificate\x12/\n" +
-	"\x03key\x18\x82( \x01(\v2\x1a.clouditor.ontology.v1.KeyH\x00R\x03key\x128\n" +
-	"\x06secret\x18\xff} \x01(\v2\x1d.clouditor.ontology.v1.SecretH\x00R\x06secret\x12>\n" +
-	"\bidentity\x18\xe5r \x01(\v2\x1f.clouditor.ontology.v1.IdentityH\x00R\bidentity\x12Q\n" +
-	"\x0frole_assignment\x18\xb9\x12 \x01(\v2%.clouditor.ontology.v1.RoleAssignmentH\x00R\x0eroleAssignment\x12R\n" +
-	"\x0fcontainer_image\x18ȋ\x01 \x01(\v2%.clouditor.ontology.v1.ContainerImageH\x00R\x0econtainerImage\x12=\n" +
-	"\bvm_image\x18\xa1\x80\x01 \x01(\v2\x1e.clouditor.ontology.v1.VMImageH\x00R\avmImage\x12s\n" +
-	"\x1bdevice_provisioning_service\x18\xe4q \x01(\v20.clouditor.ontology.v1.DeviceProvisioningServiceH\x00R\x19deviceProvisioningService\x12K\n" +
-	"\rmessaging_hub\x18\x93d \x01(\v2#.clouditor.ontology.v1.MessagingHubH\x00R\fmessagingHub\x12@\n" +
-	"\tkey_vault\x18Ñ\x01 \x01(\v2\x1f.clouditor.ontology.v1.KeyVaultH\x00R\bkeyVault\x12W\n" +
-	"\x11network_interface\x18\x83M \x01(\v2'.clouditor.ontology.v1.NetworkInterfaceH\x00R\x10networkInterface\x12d\n" +
-	"\x16network_security_group\x18\xe7b \x01(\v2+.clouditor.ontology.v1.NetworkSecurityGroupH\x00R\x14networkSecurityGroup\x12T\n" +
-	"\x10function_service\x18\xc1& \x01(\v2&.clouditor.ontology.v1.FunctionServiceH\x00R\x0ffunctionService\x12g\n" +
-	"\x17generic_network_service\x18\xe6\n" +
-	" \x01(\v2,.clouditor.ontology.v1.GenericNetworkServiceH\x00R\x15genericNetworkService\x12K\n" +
-	"\rload_balancer\x18\xe9  \x01(\v2#.clouditor.ontology.v1.LoadBalancerH\x00R\floadBalancer\x12Q\n" +
-	"\x0flogging_service\x18\xb3n \x01(\v2%.clouditor.ontology.v1.LoggingServiceH\x00R\x0eloggingService\x12k\n" +
-	"\x18machine_learning_service\x18Ƅ\x01 \x01(\v2-.clouditor.ontology.v1.MachineLearningServiceH\x00R\x16machineLearningService\x12m\n" +
-	"\x19security_advisory_service\x18\xad\x01 \x01(\v2..clouditor.ontology.v1.SecurityAdvisoryServiceH\x00R\x17securityAdvisoryService\x12n\n" +
-	"\x19document_database_service\x18\x9e\x8c\x01 \x01(\v2..clouditor.ontology.v1.DocumentDatabaseServiceH\x00R\x17documentDatabaseService\x12n\n" +
-	"\x1akey_value_database_service\x18\xec\a \x01(\v2..clouditor.ontology.v1.KeyValueDatabaseServiceH\x00R\x17keyValueDatabaseService\x12t\n" +
-	"\x1cmulti_modal_database_service\x18\xe1\x14 \x01(\v20.clouditor.ontology.v1.MultiModalDatabaseServiceH\x00R\x19multiModalDatabaseService\x12s\n" +
-	"\x1brelational_database_service\x18\xc5a \x01(\v20.clouditor.ontology.v1.RelationalDatabaseServiceH\x00R\x19relationalDatabaseService\x12_\n" +
-	"\x14file_storage_service\x18\xae\x83\x01 \x01(\v2).clouditor.ontology.v1.FileStorageServiceH\x00R\x12fileStorageService\x12d\n" +
-	"\x16object_storage_service\x18\xbb2 \x01(\v2+.clouditor.ontology.v1.ObjectStorageServiceH\x00R\x14objectStorageService\x12Q\n" +
-	"\x0fvirtual_network\x18\xff\x13 \x01(\v2%.clouditor.ontology.v1.VirtualNetworkH\x00R\x0evirtualNetwork\x12[\n" +
-	"\x13virtual_sub_network\x18\xb2X \x01(\v2(.clouditor.ontology.v1.VirtualSubNetworkH\x00R\x11virtualSubNetwork\x12Q\n" +
-	"\x0fpassword_policy\x18\xca\a \x01(\v2%.clouditor.ontology.v1.PasswordPolicyH\x00R\x0epasswordPolicy\x12N\n" +
-	"\x0eresource_group\x18\xee\x03 \x01(\v2$.clouditor.ontology.v1.ResourceGroupH\x00R\rresourceGroup\x12K\n" +
-	"\rblock_storage\x18\x8dP \x01(\v2#.clouditor.ontology.v1.BlockStorageH\x00R\fblockStorage\x12T\n" +
-	"\x10database_storage\x18\x8b` \x01(\v2&.clouditor.ontology.v1.DatabaseStorageH\x00R\x0fdatabaseStorage\x12H\n" +
-	"\ffile_storage\x18\xb0\x15 \x01(\v2\".clouditor.ontology.v1.FileStorageH\x00R\vfileStorage\x12N\n" +
-	"\x0eobject_storage\x18\xf6T \x01(\v2$.clouditor.ontology.v1.ObjectStorageH\x00R\robjectStorage\x12H\n" +
-	"\vapplication\x18\xfa\x90\x01 \x01(\v2\".clouditor.ontology.v1.ApplicationH\x00R\vapplication\x12;\n" +
-	"\alibrary\x18\xb9o \x01(\v2\x1e.clouditor.ontology.v1.LibraryH\x00R\alibrary\x12E\n" +
-	"\vcode_module\x18\x8aU \x01(\v2!.clouditor.ontology.v1.CodeModuleH\x00R\n" +
-	"codeModule\x12T\n" +
-	"\x10generic_document\x18\x80' \x01(\v2&.clouditor.ontology.v1.GenericDocumentH\x00R\x0fgenericDocument\x12p\n" +
-	"\x1asecurity_advisory_document\x18\xfdr \x01(\v2/.clouditor.ontology.v1.SecurityAdvisoryDocumentH\x00R\x18securityAdvisoryDocument\x12m\n" +
-	"\x19service_metadata_document\x18\x90\x02 \x01(\v2..clouditor.ontology.v1.ServiceMetadataDocumentH\x00R\x17serviceMetadataDocument\x12j\n" +
-	"\x18machine_learning_dataset\x18\xdbs \x01(\v2-.clouditor.ontology.v1.MachineLearningDatasetH\x00R\x16machineLearningDataset\x12e\n" +
-	"\x16machine_learning_model\x18Α\x01 \x01(\v2+.clouditor.ontology.v1.MachineLearningModelH\x00R\x14machineLearningModelB\x06\n" +
-	"\x04type\"\x96\t\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\fBlockStorage\x12@\n" +
 	"\rcreation_time\x18\x9fW \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
 	"\vdescription\x18\xf3\x10 \x01(\tR\vdescription\x12\x17\n" +
@@ -19358,12 +19297,8 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"_parent_id\"\xb1\x01\n" +
 	"\x1eCertificateBasedAuthentication\x12-\n" +
 	"\x12context_is_checked\x18\xeet \x01(\bR\x10contextIsChecked\x12\x19\n" +
-<<<<<<< HEAD
 	"\aenabled\x18\xcf] \x01(\bR\aenabled:E\x82\xa6\x1d\x1eCertificateBasedAuthentication\x82\xa6\x1d\fAuthenticity\x82\xa6\x1d\x0fSecurityFeature\"6\n" +
 	"\x13CertificationTarget:\x1f\x82\xa6\x1d\x13CertificationTarget\x82\xa6\x1d\x04Core\"\xf0\x01\n" +
-=======
-	"\aenabled\x18\xcf] \x01(\bR\aenabled:E\x82\xa6\x1d\x1eCertificateBasedAuthentication\x82\xa6\x1d\fAuthenticity\x82\xa6\x1d\x0fSecurityFeature\"\xf0\x01\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\vCipherSuite\x12:\n" +
 	"\x18authentication_mechanism\x18\xd3\x1c \x01(\tR\x17authenticationMechanism\x125\n" +
 	"\x16key_exchange_algorithm\x18\xc8t \x01(\tR\x14keyExchangeAlgorithm\x12$\n" +
@@ -19412,19 +19347,8 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x10database_storage\x18\x8b` \x01(\v2&.clouditor.ontology.v1.DatabaseStorageH\x00R\x0fdatabaseStorage\x12H\n" +
 	"\ffile_storage\x18\xb0\x15 \x01(\v2\".clouditor.ontology.v1.FileStorageH\x00R\vfileStorage\x12N\n" +
 	"\x0eobject_storage\x18\xf6T \x01(\v2$.clouditor.ontology.v1.ObjectStorageH\x00R\robjectStorageB\x06\n" +
-<<<<<<< HEAD
 	"\x04type\"-\n" +
 	"\bCloudSDK:!\x82\xa6\x1d\bCloudSDK\x82\xa6\x1d\tFramework\x82\xa6\x1d\x04Core\"\xd8\x01\n" +
-=======
-	"\x04type\"%\n" +
-	"\bCloudSDK:\x19\x82\xa6\x1d\bCloudSDK\x82\xa6\x1d\tFramework\"\xdc\x01\n" +
-	"\x04Code\x12H\n" +
-	"\vapplication\x18\xfa\x90\x01 \x01(\v2\".clouditor.ontology.v1.ApplicationH\x00R\vapplication\x12;\n" +
-	"\alibrary\x18\xb9o \x01(\v2\x1e.clouditor.ontology.v1.LibraryH\x00R\alibrary\x12E\n" +
-	"\vcode_module\x18\x8aU \x01(\v2!.clouditor.ontology.v1.CodeModuleH\x00R\n" +
-	"codeModuleB\x06\n" +
-	"\x04type\"\xd8\x01\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\n" +
 	"CodeRegion\x12\x13\n" +
 	"\x04code\x18\x87X \x01(\tR\x04code\x12\x1f\n" +
@@ -19552,7 +19476,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:3\x82\xa6\x1d\x11ContainerRegistry\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-<<<<<<< HEAD
 	"_parent_id\"\x90\x04\n" +
 	"\x04Core\x12`\n" +
 	"\x14certification_target\x18\xedW \x01(\v2*.clouditor.ontology.v1.CertificationTargetH\x00R\x13certificationTarget\x12?\n" +
@@ -19564,9 +19487,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\rresource_type\x18\xbd+ \x01(\v2#.clouditor.ontology.v1.ResourceTypeH\x00R\fresourceType\x122\n" +
 	"\x04tool\x18\xb0S \x01(\v2\x1b.clouditor.ontology.v1.ToolH\x00R\x04toolB\x06\n" +
 	"\x04type\"\xc8\x01\n" +
-=======
-	"_parent_id\"\xc8\x01\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\n" +
 	"Credential\x12G\n" +
 	"\vcertificate\x18\xdeB \x01(\v2\".clouditor.ontology.v1.CertificateH\x00R\vcertificate\x12/\n" +
@@ -19589,7 +19509,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\talgorithm\x18\xa4t \x01(\tR\talgorithm\x12\x19\n" +
 	"\aenabled\x18\xcfc \x01(\bR\aenabled\x12\x18\n" +
 	"\akey_url\x18\x8d2 \x01(\tR\x06keyUrl:S\x82\xa6\x1d\x15CustomerKeyEncryption\x82\xa6\x1d\x10AtRestEncryption\x82\xa6\x1d\x0fConfidentiality\x82\xa6\x1d\x0fSecurityFeature\"G\n" +
-<<<<<<< HEAD
 	"\x0eDDoSProtection:5\x82\xa6\x1d\x0eDDoSProtection\x82\xa6\x1d\fAvailability\x82\xa6\x1d\x0fSecurityFeature\"\xea\x04\n" +
 	"\x04Data\x12T\n" +
 	"\x10generic_document\x18\x80' \x01(\v2&.clouditor.ontology.v1.GenericDocumentH\x00R\x0fgenericDocument\x12Q\n" +
@@ -19602,15 +19521,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\fDataLocation\x12[\n" +
 	"\x13local_data_location\x18\x99` \x01(\v2(.clouditor.ontology.v1.LocalDataLocationH\x00R\x11localDataLocation\x12^\n" +
 	"\x14remote_data_location\x18\xe5i \x01(\v2).clouditor.ontology.v1.RemoteDataLocationH\x00R\x12remoteDataLocationB\x06\n" +
-=======
-	"\x0eDDoSProtection:5\x82\xa6\x1d\x0eDDoSProtection\x82\xa6\x1d\fAvailability\x82\xa6\x1d\x0fSecurityFeature\"\x98\x04\n" +
-	"\x04Data\x12T\n" +
-	"\x10generic_document\x18\x80' \x01(\v2&.clouditor.ontology.v1.GenericDocumentH\x00R\x0fgenericDocument\x12p\n" +
-	"\x1asecurity_advisory_document\x18\xfdr \x01(\v2/.clouditor.ontology.v1.SecurityAdvisoryDocumentH\x00R\x18securityAdvisoryDocument\x12m\n" +
-	"\x19service_metadata_document\x18\x90\x02 \x01(\v2..clouditor.ontology.v1.ServiceMetadataDocumentH\x00R\x17serviceMetadataDocument\x12j\n" +
-	"\x18machine_learning_dataset\x18\xdbs \x01(\v2-.clouditor.ontology.v1.MachineLearningDatasetH\x00R\x16machineLearningDataset\x12e\n" +
-	"\x16machine_learning_model\x18Α\x01 \x01(\v2+.clouditor.ontology.v1.MachineLearningModelH\x00R\x14machineLearningModelB\x06\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x04type\"\xb6\x02\n" +
 	"\x0fDatabaseConnect\x12\x15\n" +
 	"\x05calls\x18\xfad \x03(\tR\x05calls\x12C\n" +
@@ -19683,16 +19593,10 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:B\x82\xa6\x1d\x19DeviceProvisioningService\x82\xa6\x1d\x03IoT\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-<<<<<<< HEAD
 	"_parent_id\"\x9c\x03\n" +
 	"\bDocument\x12T\n" +
 	"\x10generic_document\x18\x80' \x01(\v2&.clouditor.ontology.v1.GenericDocumentH\x00R\x0fgenericDocument\x12Q\n" +
 	"\x0fpolicy_document\x18\xe9t \x01(\v2%.clouditor.ontology.v1.PolicyDocumentH\x00R\x0epolicyDocument\x12p\n" +
-=======
-	"_parent_id\"\xc9\x02\n" +
-	"\bDocument\x12T\n" +
-	"\x10generic_document\x18\x80' \x01(\v2&.clouditor.ontology.v1.GenericDocumentH\x00R\x0fgenericDocument\x12p\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x1asecurity_advisory_document\x18\xfdr \x01(\v2/.clouditor.ontology.v1.SecurityAdvisoryDocumentH\x00R\x18securityAdvisoryDocument\x12m\n" +
 	"\x19service_metadata_document\x18\x90\x02 \x01(\v2..clouditor.ontology.v1.ServiceMetadataDocumentH\x00R\x17serviceMetadataDocumentB\x06\n" +
 	"\x04type\"\xbe\f\n" +
@@ -19728,15 +19632,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_idB\x1f\n" +
-<<<<<<< HEAD
 	"\x1d_service_metadata_document_id\"g\n" +
-=======
-	"\x1d_service_metadata_document_id\"\xd3\x01\n" +
-	"\fDataLocation\x12[\n" +
-	"\x13local_data_location\x18\x99` \x01(\v2(.clouditor.ontology.v1.LocalDataLocationH\x00R\x11localDataLocation\x12^\n" +
-	"\x14remote_data_location\x18\xe5i \x01(\v2).clouditor.ontology.v1.RemoteDataLocationH\x00R\x12remoteDataLocationB\x06\n" +
-	"\x04type\"g\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x0fEncryptionInUse\x12\x19\n" +
 	"\aenabled\x18\xdeB \x01(\bR\aenabled:9\x82\xa6\x1d\x0fEncryptionInUse\x82\xa6\x1d\x0fConfidentiality\x82\xa6\x1d\x0fSecurityFeature\"\xb8\x01\n" +
 	"\n" +
@@ -19746,12 +19642,8 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"codeRegion:F\x82\xa6\x1d\n" +
 	"Encryption\x82\xa6\x1d\x16CryptographicOperation\x82\xa6\x1d\tOperation\x82\xa6\x1d\rFunctionality\">\n" +
 	"\x05Error\x12\x19\n" +
-<<<<<<< HEAD
 	"\amessage\x18\xa9\x1b \x01(\tR\amessage:\x1a\x82\xa6\x1d\x05Error\x82\xa6\x1d\rFunctionality\"N\n" +
 	"\x12ExplainableResults:8\x82\xa6\x1d\x12ExplainableResults\x82\xa6\x1d\vReliability\x82\xa6\x1d\x0fSecurityFeature\"\xbb\t\n" +
-=======
-	"\amessage\x18\xa9\x1b \x01(\tR\amessage:\x1a\x82\xa6\x1d\x05Error\x82\xa6\x1d\rFunctionality\"\xbb\t\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\vFileStorage\x12@\n" +
 	"\rcreation_time\x18\xca\x1d \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
 	"\vdescription\x18\x8a0 \x01(\tR\vdescription\x12\x17\n" +
@@ -19812,7 +19704,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\vl3_firewall\x18\xa5G \x01(\v2!.clouditor.ontology.v1.L3FirewallH\x00R\n" +
 	"l3Firewall\x12j\n" +
 	"\x18web_application_firewall\x18\x9d- \x01(\v2-.clouditor.ontology.v1.WebApplicationFirewallH\x00R\x16webApplicationFirewallB\x06\n" +
-<<<<<<< HEAD
 	"\x04type\"\xb2\x02\n" +
 	"\tFramework\x12?\n" +
 	"\tcloud_sdk\x18\xa0s \x01(\v2\x1f.clouditor.ontology.v1.CloudSDKH\x00R\bcloudSdk\x12[\n" +
@@ -19820,15 +19711,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\vhttp_server\x18\x898 \x01(\v2!.clouditor.ontology.v1.HttpServerH\x00R\n" +
 	"httpServer\x128\n" +
 	"\x06logger\x18\x8d: \x01(\v2\x1d.clouditor.ontology.v1.LoggerH\x00R\x06loggerB\x06\n" +
-=======
-	"\x04type\"\xb3\x02\n" +
-	"\tFramework\x12?\n" +
-	"\tcloud_sdk\x18\x88\x06 \x01(\v2\x1f.clouditor.ontology.v1.CloudSDKH\x00R\bcloudSdk\x12[\n" +
-	"\x13http_client_library\x18\xb3` \x01(\v2(.clouditor.ontology.v1.HttpClientLibraryH\x00R\x11httpClientLibrary\x12E\n" +
-	"\vhttp_server\x18\x8ae \x01(\v2!.clouditor.ontology.v1.HttpServerH\x00R\n" +
-	"httpServer\x129\n" +
-	"\x06logger\x18ʇ\x01 \x01(\v2\x1d.clouditor.ontology.v1.LoggerH\x00R\x06loggerB\x06\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x04type\"\x96\t\n" +
 	"\bFunction\x12@\n" +
 	"\rcreation_time\x18\xe2\x1f \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12\"\n" +
@@ -19881,11 +19763,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_idB\x1f\n" +
-<<<<<<< HEAD
 	"\x1d_service_metadata_document_id\"\xe3\v\n" +
-=======
-	"\x1d_service_metadata_document_id\"\xb9\f\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\rFunctionality\x12H\n" +
 	"\fcipher_suite\x18\xfcV \x01(\v2\".clouditor.ontology.v1.CipherSuiteH\x00R\vcipherSuite\x12E\n" +
 	"\vcode_region\x18\xe0G \x01(\v2!.clouditor.ontology.v1.CodeRegionH\x00R\n" +
@@ -19894,12 +19772,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x14remote_data_location\x18\xe5i \x01(\v2).clouditor.ontology.v1.RemoteDataLocationH\x00R\x12remoteDataLocation\x125\n" +
 	"\x05error\x18\x903 \x01(\v2\x1c.clouditor.ontology.v1.ErrorH\x00R\x05error\x12K\n" +
 	"\rhttp_endpoint\x18\xaa! \x01(\v2#.clouditor.ontology.v1.HttpEndpointH\x00R\fhttpEndpoint\x12^\n" +
-<<<<<<< HEAD
 	"\x14http_request_handler\x18\xeb9 \x01(\v2).clouditor.ontology.v1.HttpRequestHandlerH\x00R\x12httpRequestHandler\x12D\n" +
-=======
-	"\x14http_request_handler\x18\xeb9 \x01(\v2).clouditor.ontology.v1.HttpRequestHandlerH\x00R\x12httpRequestHandler\x12T\n" +
-	"\x10machine_learning\x18\x90l \x01(\v2&.clouditor.ontology.v1.MachineLearningH\x00R\x0fmachineLearning\x12D\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\n" +
 	"decryption\x18\x8eX \x01(\v2!.clouditor.ontology.v1.DecryptionH\x00R\n" +
 	"decryption\x12D\n" +
@@ -19971,13 +19844,8 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\talgorithm\x18\x9fM \x01(\tR\talgorithm\x12\x1c\n" +
 	"\tuses_salt\x18\xdaB \x01(\bR\busesSalt\x12C\n" +
 	"\vcode_region\x18\xb62 \x01(\v2!.clouditor.ontology.v1.CodeRegionR\n" +
-<<<<<<< HEAD
 	"codeRegion:M\x82\xa6\x1d\x11CryptographicHash\x82\xa6\x1d\x16CryptographicOperation\x82\xa6\x1d\tOperation\x82\xa6\x1d\rFunctionality\"?\n" +
 	"\x11HttpClientLibrary:*\x82\xa6\x1d\x11HttpClientLibrary\x82\xa6\x1d\tFramework\x82\xa6\x1d\x04Core\"\xb8\x02\n" +
-=======
-	"codeRegion:M\x82\xa6\x1d\x11CryptographicHash\x82\xa6\x1d\x16CryptographicOperation\x82\xa6\x1d\tOperation\x82\xa6\x1d\rFunctionality\"7\n" +
-	"\x11HttpClientLibrary:\"\x82\xa6\x1d\x11HttpClientLibrary\x82\xa6\x1d\tFramework\"\xb8\x02\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\fHttpEndpoint\x12\x19\n" +
 	"\ahandler\x18\xa2M \x01(\tR\ahandler\x12\x16\n" +
 	"\x06method\x18} \x01(\tR\x06method\x12\x14\n" +
@@ -19995,7 +19863,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x04path\x18\xeb\x19 \x01(\tR\x04path\x12+\n" +
 	"\x0eapplication_id\x18\xbeM \x01(\tH\x00R\rapplicationId\x88\x01\x01\x12K\n" +
 	"\x0ehttp_endpoints\x18\xeaE \x03(\v2#.clouditor.ontology.v1.HttpEndpointR\rhttpEndpoints:'\x82\xa6\x1d\x12HttpRequestHandler\x82\xa6\x1d\rFunctionalityB\x11\n" +
-<<<<<<< HEAD
 	"\x0f_application_id\"\x8f\x01\n" +
 	"\n" +
 	"HttpServer\x12\\\n" +
@@ -20005,13 +19872,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x12awareness_training\x18\xe3i \x01(\v2(.clouditor.ontology.v1.AwarenessTrainingH\x00R\x11awarenessTraining\x12W\n" +
 	"\x11security_training\x18\xbd' \x01(\v2'.clouditor.ontology.v1.SecurityTrainingH\x00R\x10securityTrainingB\x06\n" +
 	"\x04type\"\xa9\x01\n" +
-=======
-	"\x0f_application_id\"\x88\x01\n" +
-	"\n" +
-	"HttpServer\x12]\n" +
-	"\x14http_request_handler\x18\xfb\x92\x01 \x01(\v2).clouditor.ontology.v1.HttpRequestHandlerR\x12httpRequestHandler:\x1b\x82\xa6\x1d\n" +
-	"HttpServer\x82\xa6\x1d\tFramework\"\xa9\x01\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\fIdentifiable\x12>\n" +
 	"\bidentity\x18\xe5r \x01(\v2\x1f.clouditor.ontology.v1.IdentityH\x00R\bidentity\x12Q\n" +
 	"\x0frole_assignment\x18\xb9\x12 \x01(\v2%.clouditor.ontology.v1.RoleAssignmentH\x00R\x0eroleAssignmentB\x06\n" +
@@ -20169,11 +20029,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"L3Firewall\x12\x19\n" +
 	"\aenabled\x18\x84J \x01(\bR\aenabled\x12\x19\n" +
 	"\ainbound\x18\xe8\a \x01(\bR\ainbound\x12*\n" +
-<<<<<<< HEAD
 	"\x10restricted_ports\x18\xad9 \x01(\tR\x0frestrictedPorts:S\x82\xa6\x1d\n" +
-=======
-	"\x10restricted_ports\x18\xad9 \x03(\tR\x0frestrictedPorts:S\x82\xa6\x1d\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"L3Firewall\x82\xa6\x1d\bFirewall\x82\xa6\x1d\x11AccessRestriction\x82\xa6\x1d\rAuthorization\x82\xa6\x1d\x0fSecurityFeature\"\xcf\x05\n" +
 	"\aLibrary\x12@\n" +
 	"\rcreation_time\x18\xd3] \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
@@ -20243,13 +20099,8 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x05value\x18\xfd: \x01(\tR\x05value\x12C\n" +
 	"\vcode_region\x18\x90[ \x01(\v2!.clouditor.ontology.v1.CodeRegionR\n" +
 	"codeRegion\x129\n" +
-<<<<<<< HEAD
 	"\alogging\x18\xe9` \x01(\v2\x1e.clouditor.ontology.v1.LoggingR\alogging:.\x82\xa6\x1d\fLogOperation\x82\xa6\x1d\tOperation\x82\xa6\x1d\rFunctionality\")\n" +
 	"\x06Logger:\x1f\x82\xa6\x1d\x06Logger\x82\xa6\x1d\tFramework\x82\xa6\x1d\x04Core\"\xac\x03\n" +
-=======
-	"\alogging\x18\xe9` \x01(\v2\x1e.clouditor.ontology.v1.LoggingR\alogging:.\x82\xa6\x1d\fLogOperation\x82\xa6\x1d\tOperation\x82\xa6\x1d\rFunctionality\"!\n" +
-	"\x06Logger:\x17\x82\xa6\x1d\x06Logger\x82\xa6\x1d\tFramework\"\xac\x03\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\aLogging\x12T\n" +
 	"\x10activity_logging\x18\x8c\x17 \x01(\v2&.clouditor.ontology.v1.ActivityLoggingH\x00R\x0factivityLogging\x12]\n" +
 	"\x13application_logging\x18\xf7c \x01(\v2).clouditor.ontology.v1.ApplicationLoggingH\x00R\x12applicationLogging\x12I\n" +
@@ -20286,7 +20137,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_idB\x1f\n" +
-<<<<<<< HEAD
 	"\x1d_service_metadata_document_id\"\xeb\x01\n" +
 	"\x0fMachineLearning\x12j\n" +
 	"\x18machine_learning_dataset\x18\xf8\x0f \x01(\v2-.clouditor.ontology.v1.MachineLearningDatasetH\x00R\x16machineLearningDataset\x12d\n" +
@@ -20331,46 +20181,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:?\x82\xa6\x1d\x14MachineLearningModel\x82\xa6\x1d\x0fMachineLearning\x82\xa6\x1d\x04Data\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_id\"\xfb\t\n" +
-=======
-	"\x1d_service_metadata_document_id\"\xfb\x01\n" +
-	"\x0fMachineLearning\x12C\n" +
-	"\x1bmachine_learning_dataset_id\x18\xe0& \x01(\tH\x00R\x18machineLearningDatasetId\x88\x01\x01\x12?\n" +
-	"\x19machine_learning_model_id\x18\xe0~ \x01(\tH\x01R\x16machineLearningModelId\x88\x01\x01:$\x82\xa6\x1d\x0fMachineLearning\x82\xa6\x1d\rFunctionalityB\x1e\n" +
-	"\x1c_machine_learning_dataset_idB\x1c\n" +
-	"\x1a_machine_learning_model_id\"\xb6\x03\n" +
-	"\x16MachineLearningDataset\x12@\n" +
-	"\rcreation_time\x18\xda\x1a \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
-	"\vdescription\x18\x9c8 \x01(\tR\vdescription\x12\x17\n" +
-	"\x02id\x18\x9f_ \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12R\n" +
-	"\x06labels\x18\x95l \x03(\v29.clouditor.ontology.v1.MachineLearningDataset.LabelsEntryR\x06labels\x12\x1b\n" +
-	"\x04name\x18\xcd\x11 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\x11\n" +
-	"\x03raw\x18\xe2! \x01(\tR\x03raw\x12!\n" +
-	"\tparent_id\x18\xa5c \x01(\tH\x00R\bparentId\x88\x01\x01\x1a9\n" +
-	"\vLabelsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:.\x82\xa6\x1d\x16MachineLearningDataset\x82\xa6\x1d\x04Data\x82\xa6\x1d\bResourceB\f\n" +
-	"\n" +
-	"_parent_id\"\xa0\x04\n" +
-	"\x14MachineLearningModel\x12A\n" +
-	"\rcreation_time\x18\xbc\x92\x01 \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
-	"\vdescription\x18\xde\\ \x01(\tR\vdescription\x12%\n" +
-	"\rexpendability\x18\xf0\r \x01(\tR\rexpendability\x12\x17\n" +
-	"\x02id\x18\x85w \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12P\n" +
-	"\x06labels\x18\xaaG \x03(\v27.clouditor.ontology.v1.MachineLearningModel.LabelsEntryR\x06labels\x12\x1b\n" +
-	"\x04name\x18\xa3D \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12%\n" +
-	"\rprivacy_label\x18\xef\x81\x01 \x01(\x02R\fprivacyLabel\x12\x11\n" +
-	"\x03raw\x18\x9b2 \x01(\tR\x03raw\x12\x1f\n" +
-	"\n" +
-	"robustness\x18\xed7 \x01(\x02R\n" +
-	"robustness\x12!\n" +
-	"\tparent_id\x18\xd8\a \x01(\tH\x00R\bparentId\x88\x01\x01\x1a9\n" +
-	"\vLabelsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:,\x82\xa6\x1d\x14MachineLearningModel\x82\xa6\x1d\x04Data\x82\xa6\x1d\bResourceB\f\n" +
-	"\n" +
-	"_parent_id\"\x9e\n" +
-	"\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x16MachineLearningService\x12A\n" +
 	"\rcreation_time\x18ӎ\x01 \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
 	"\vdescription\x18\xa0\x10 \x01(\tR\vdescription\x12\x17\n" +
@@ -20385,13 +20195,8 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\vcompute_ids\x18\xcfT \x03(\tR\n" +
 	"computeIds\x12F\n" +
 	"\fgeo_location\x18\xec\x19 \x01(\v2\".clouditor.ontology.v1.GeoLocationR\vgeoLocation\x12;\n" +
-<<<<<<< HEAD
 	"\bloggings\x18\xab/ \x03(\v2\x1e.clouditor.ontology.v1.LoggingR\bloggings\x121\n" +
 	"\x14machine_learning_ids\x18\xf55 \x03(\tR\x12machineLearningIds\x12G\n" +
-=======
-	"\bloggings\x18\xab/ \x03(\v2\x1e.clouditor.ontology.v1.LoggingR\bloggings\x12T\n" +
-	"\x11machine_learnings\x18\xf55 \x03(\v2&.clouditor.ontology.v1.MachineLearningR\x10machineLearnings\x12G\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\fredundancies\x18ւ\x01 \x03(\v2!.clouditor.ontology.v1.RedundancyR\fredundancies\x12!\n" +
 	"\tparent_id\x18\xaf\x11 \x01(\tH\x00R\bparentId\x88\x01\x01\x12E\n" +
 	"\x1cservice_metadata_document_id\x18\xd5S \x01(\tH\x01R\x19serviceMetadataDocumentId\x88\x01\x01\x12 \n" +
@@ -20432,35 +20237,11 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:5\x82\xa6\x1d\fMessagingHub\x82\xa6\x1d\x03IoT\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-<<<<<<< HEAD
 	"_parent_id\"h\n" +
 	"\n" +
 	"CodeModule\x12R\n" +
 	"\x10source_code_file\x18\xf4\x15 \x01(\v2%.clouditor.ontology.v1.SourceCodeFileH\x00R\x0esourceCodeFileB\x06\n" +
 	"\x04type\"\xd9\x01\n" +
-=======
-	"_parent_id\"\xdb\x04\n" +
-	"\n" +
-	"CodeModule\x12@\n" +
-	"\rcreation_time\x18\xb4$ \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
-	"\vdescription\x18\xb3\n" +
-	" \x01(\tR\vdescription\x12\x17\n" +
-	"\x02id\x18\x99\x19 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12F\n" +
-	"\x06labels\x18\x80\x15 \x03(\v2-.clouditor.ontology.v1.CodeModule.LabelsEntryR\x06labels\x12\x1c\n" +
-	"\x04name\x18\xc1\x80\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\x12\n" +
-	"\x03raw\x18Ǎ\x01 \x01(\tR\x03raw\x12(\n" +
-	"\x0fcode_module_ids\x18\x9b\x87\x01 \x03(\tR\rcodeModuleIds\x122\n" +
-	"\x12code_repository_id\x18\x80^ \x01(\tH\x00R\x10codeRepositoryId\x88\x01\x01\x12O\n" +
-	"\x0ffunctionalities\x18\xd8. \x03(\v2$.clouditor.ontology.v1.FunctionalityR\x0ffunctionalities\x12\"\n" +
-	"\tparent_id\x18\x9f\x92\x01 \x01(\tH\x01R\bparentId\x88\x01\x01\x1a9\n" +
-	"\vLabelsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:\"\x82\xa6\x1d\n" +
-	"CodeModule\x82\xa6\x1d\x04Code\x82\xa6\x1d\bResourceB\x15\n" +
-	"\x13_code_repository_idB\f\n" +
-	"\n" +
-	"_parent_id\"\xd9\x01\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x18MultiFactorAuthentiation\x12.\n" +
 	"\x12context_is_checked\x18\xb7\x87\x01 \x01(\bR\x10contextIsChecked\x12L\n" +
 	"\x0eauthenticities\x18\xc3t \x03(\v2#.clouditor.ontology.v1.AuthenticityR\x0eauthenticities:?\x82\xa6\x1d\x18MultiFactorAuthentiation\x82\xa6\x1d\fAuthenticity\x82\xa6\x1d\x0fSecurityFeature\"\xc6\f\n" +
@@ -20681,7 +20462,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:0\x82\xa6\x1d\x0ePasswordPolicy\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-<<<<<<< HEAD
 	"_parent_id\"\xf5\x06\n" +
 	"\x0ePolicyDocument\x12@\n" +
 	"\rcreation_time\x18\xe1B \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
@@ -20701,8 +20481,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:2\x82\xa6\x1d\x0ePolicyDocument\x82\xa6\x1d\bDocument\x82\xa6\x1d\x04Data\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-=======
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"_parent_id\"\x86\x01\n" +
 	"\x04RBAC\x12,\n" +
 	"\x11broad_assignments\x18\xae, \x01(\x02R\x10broadAssignments\x12\"\n" +
@@ -20745,15 +20523,11 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_idB\x1f\n" +
-<<<<<<< HEAD
 	"\x1d_service_metadata_document_id\"\xca\x01\n" +
 	"\vReliability\x12]\n" +
 	"\x13explainable_results\x18\xc90 \x01(\v2).clouditor.ontology.v1.ExplainableResultsH\x00R\x12explainableResults\x12T\n" +
 	"\x10robustness_score\x18\xbce \x01(\v2&.clouditor.ontology.v1.RobustnessScoreH\x00R\x0frobustnessScoreB\x06\n" +
 	"\x04type\"\xcf\x01\n" +
-=======
-	"\x1d_service_metadata_document_id\"\xcf\x01\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x11RemoteAttestation\x12@\n" +
 	"\rcreation_time\x18\xcd: \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12\x19\n" +
 	"\aenabled\x18\xd6\t \x01(\bR\aenabled\x12\x17\n" +
@@ -20764,7 +20538,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\n" +
 	"storage_id\x18\xc1v \x01(\tH\x00R\tstorageId\x88\x01\x01\x12^\n" +
 	"\x14transport_encryption\x18\xe1\x1b \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption:7\x82\xa6\x1d\x12RemoteDataLocation\x82\xa6\x1d\fDataLocation\x82\xa6\x1d\rFunctionalityB\r\n" +
-<<<<<<< HEAD
 	"\v_storage_id\"\x97#\n" +
 	"\bResource\x12;\n" +
 	"\aaccount\x18\xc0Y \x01(\v2\x1e.clouditor.ontology.v1.AccountH\x00R\aaccount\x12/\n" +
@@ -20821,9 +20594,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\alibrary\x18\xb9o \x01(\v2\x1e.clouditor.ontology.v1.LibraryH\x00R\alibrary\x12R\n" +
 	"\x10source_code_file\x18\xf4\x15 \x01(\v2%.clouditor.ontology.v1.SourceCodeFileH\x00R\x0esourceCodeFileB\x06\n" +
 	"\x04type\"\x8d\x06\n" +
-=======
-	"\v_storage_id\"\x8d\x06\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\rResourceGroup\x12A\n" +
 	"\rcreation_time\x18ԃ\x01 \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
 	"\vdescription\x18\xcb^ \x01(\tR\vdescription\x12\x17\n" +
@@ -20847,13 +20617,9 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x1bmonitoring_log_data_enabled\x18\x945 \x01(\bR\x18monitoringLogDataEnabled\x12E\n" +
 	"\x10retention_period\x18\xf84 \x01(\v2\x19.google.protobuf.DurationR\x0fretentionPeriod\x127\n" +
 	"\x17security_alerts_enabled\x18\xd3/ \x01(\bR\x15securityAlertsEnabled\x12/\n" +
-<<<<<<< HEAD
 	"\x13logging_service_ids\x18\xcew \x03(\tR\x11loggingServiceIds:=\x82\xa6\x1d\x0fResourceLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"(\n" +
 	"\fResourceType:\x18\x82\xa6\x1d\fResourceType\x82\xa6\x1d\x04Core\"H\n" +
 	"\x0fRobustnessScore:5\x82\xa6\x1d\x0fRobustnessScore\x82\xa6\x1d\vReliability\x82\xa6\x1d\x0fSecurityFeature\"\xd5\a\n" +
-=======
-	"\x13logging_service_ids\x18\xcew \x03(\tR\x11loggingServiceIds:=\x82\xa6\x1d\x0fResourceLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xd5\a\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x0eRoleAssignment\x12\x1d\n" +
 	"\tactivated\x18\xf0W \x01(\bR\tactivated\x12@\n" +
 	"\rcreation_time\x18\x99m \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
@@ -20957,11 +20723,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_idB\x1f\n" +
-<<<<<<< HEAD
 	"\x1d_service_metadata_document_id\"\xf5\x19\n" +
-=======
-	"\x1d_service_metadata_document_id\"\xc0\x18\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x0fSecurityFeature\x12W\n" +
 	"\x11anomaly_detection\x18\xf8$ \x01(\v2'.clouditor.ontology.v1.AnomalyDetectionH\x00R\x10anomalyDetection\x12T\n" +
 	"\x10activity_logging\x18\x8c\x17 \x01(\v2&.clouditor.ontology.v1.ActivityLoggingH\x00R\x0factivityLogging\x12]\n" +
@@ -20999,7 +20761,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x11automatic_updates\x18\x86N \x01(\v2'.clouditor.ontology.v1.AutomaticUpdatesH\x00R\x10automaticUpdates\x12W\n" +
 	"\x11document_checksum\x18\xe3} \x01(\v2'.clouditor.ontology.v1.DocumentChecksumH\x00R\x10documentChecksum\x12J\n" +
 	"\fimmutability\x18\xd8\x0f \x01(\v2#.clouditor.ontology.v1.ImmutabilityH\x00R\fimmutability\x12Z\n" +
-<<<<<<< HEAD
 	"\x12document_signature\x18\x87> \x01(\v2(.clouditor.ontology.v1.DocumentSignatureH\x00R\x11documentSignature\x12]\n" +
 	"\x13explainable_results\x18\xc90 \x01(\v2).clouditor.ontology.v1.ExplainableResultsH\x00R\x12explainableResults\x12T\n" +
 	"\x10robustness_score\x18\xbce \x01(\v2&.clouditor.ontology.v1.RobustnessScoreH\x00R\x0frobustnessScoreB\x06\n" +
@@ -21019,10 +20780,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:>\x82\xa6\x1d\x10SecurityTraining\x82\xa6\x1d\bTraining\x82\xa6\x1d\x0eHumanResources\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_id\"\x90\a\n" +
-=======
-	"\x12document_signature\x18\x87> \x01(\v2(.clouditor.ontology.v1.DocumentSignatureH\x00R\x11documentSignatureB\x06\n" +
-	"\x04type\"\x90\a\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x17ServiceMetadataDocument\x12@\n" +
 	"\rcreation_time\x18\xa5- \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
 	"\vdescription\x18\xb5\x1d \x01(\tR\vdescription\x12\x1b\n" +
@@ -21047,7 +20804,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x06errors\x18\xb8d \x03(\v2\x1c.clouditor.ontology.v1.ErrorR\x06errors:5\x82\xa6\x1d\x11DocumentSignature\x82\xa6\x1d\tIntegrity\x82\xa6\x1d\x0fSecurityFeature\"\x8d\x01\n" +
 	"\fSingleSignOn\x12-\n" +
 	"\x12context_is_checked\x18\x98q \x01(\bR\x10contextIsChecked\x12\x19\n" +
-<<<<<<< HEAD
 	"\aenabled\x18\xc9R \x01(\bR\aenabled:3\x82\xa6\x1d\fSingleSignOn\x82\xa6\x1d\fAuthenticity\x82\xa6\x1d\x0fSecurityFeature\"\xe9\x01\n" +
 	"\x04Code\x12H\n" +
 	"\vapplication\x18\xfa\x90\x01 \x01(\v2\".clouditor.ontology.v1.ApplicationH\x00R\vapplication\x12;\n" +
@@ -21072,9 +20828,6 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x13_code_repository_idB\f\n" +
 	"\n" +
 	"_parent_id\"\xce\x02\n" +
-=======
-	"\aenabled\x18\xc9R \x01(\bR\aenabled:3\x82\xa6\x1d\fSingleSignOn\x82\xa6\x1d\fAuthenticity\x82\xa6\x1d\x0fSecurityFeature\"\xce\x02\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\aStorage\x12K\n" +
 	"\rblock_storage\x18\x8dP \x01(\v2#.clouditor.ontology.v1.BlockStorageH\x00R\fblockStorage\x12T\n" +
 	"\x10database_storage\x18\x8b` \x01(\v2&.clouditor.ontology.v1.DatabaseStorageH\x00R\x0fdatabaseStorage\x12H\n" +
@@ -21088,14 +20841,11 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x1brelational_database_service\x18\xc5a \x01(\v20.clouditor.ontology.v1.RelationalDatabaseServiceH\x00R\x19relationalDatabaseService\x12_\n" +
 	"\x14file_storage_service\x18\xae\x83\x01 \x01(\v2).clouditor.ontology.v1.FileStorageServiceH\x00R\x12fileStorageService\x12d\n" +
 	"\x16object_storage_service\x18\xbb2 \x01(\v2+.clouditor.ontology.v1.ObjectStorageServiceH\x00R\x14objectStorageServiceB\x06\n" +
-<<<<<<< HEAD
 	"\x04type\"\x18\n" +
 	"\x04Tool:\x10\x82\xa6\x1d\x04Tool\x82\xa6\x1d\x04Core\"\xc7\x01\n" +
 	"\bTraining\x12Z\n" +
 	"\x12awareness_training\x18\xe3i \x01(\v2(.clouditor.ontology.v1.AwarenessTrainingH\x00R\x11awarenessTraining\x12W\n" +
 	"\x11security_training\x18\xbd' \x01(\v2'.clouditor.ontology.v1.SecurityTrainingH\x00R\x10securityTrainingB\x06\n" +
-=======
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x04type\"\xa0\x02\n" +
 	"\x13TransportEncryption\x12\x19\n" +
 	"\aenabled\x18\xd8\x14 \x01(\bR\aenabled\x12\x1b\n" +

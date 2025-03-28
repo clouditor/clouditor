@@ -2258,19 +2258,9 @@ func (x *Control) GetAssuranceLevel() string {
 type AuditScope struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Audit Scope ID
-<<<<<<< HEAD
 	Id                   string `protobuf:"bytes,4,opt,name=id,proto3" json:"id,omitempty" gorm:"primaryKey"`
 	TargetOfEvaluationId string `protobuf:"bytes,1,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
-<<<<<<< HEAD
-	CatalogId            string `protobuf:"bytes,2,opt,name=catalog_id,json=catalogId,proto3" json:"catalog_id,omitempty"`
-=======
-	Id                    string `protobuf:"bytes,4,opt,name=id,proto3" json:"id,omitempty" gorm:"primaryKey"`
-	CertificationTargetId string `protobuf:"bytes,1,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
-	CatalogId             string `protobuf:"bytes,2,opt,name=catalog_id,json=catalogId,proto3" json:"catalog_id,omitempty"` // TODO(lebogg): Add a field for the controls that a user got delegated for. Maybe a map of user_id -> control_ids (Alternatively one could add this to the user model, but I find it more fitting to have it here)
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
-=======
 	CatalogId            string `protobuf:"bytes,2,opt,name=catalog_id,json=catalogId,proto3" json:"catalog_id,omitempty"` // TODO(lebogg): Add a field for the controls that a user got delegated for. Maybe a map of user_id -> control_ids (Alternatively one could add this to the user model, but I find it more fitting to have it here)
->>>>>>> 21a6c6e9 (Buf: Generate again)
 	// an assurance level is not offered by every catalog, therefore it is
 	// optional
 	AssuranceLevel *string `protobuf:"bytes,3,opt,name=assurance_level,json=assuranceLevel,proto3,oneof" json:"assurance_level,omitempty"`
@@ -4477,7 +4467,6 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\"}\n" +
 	"\x13ListMetricsResponse\x12>\n" +
 	"\ametrics\x18\x01 \x03(\v2\x1f.clouditor.assessment.v1.MetricB\x03\xe0A\x02R\ametrics\x12&\n" +
-<<<<<<< HEAD
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"b\n" +
 	"\x1cGetTargetOfEvaluationRequest\x12B\n" +
 	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"\x8d\x01\n" +
@@ -4488,24 +4477,11 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x1fRemoveTargetOfEvaluationRequest\x12B\n" +
 	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"\x89\x01\n" +
 	"\x1eListTargetsOfEvaluationRequest\x12\x1b\n" +
-=======
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"d\n" +
-	"\x1dGetCertificationTargetRequest\x12C\n" +
-	"\x17certification_target_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\"\x90\x01\n" +
-	" CreateCertificationTargetRequest\x12l\n" +
-	"\x14certification_target\x18\x01 \x01(\v2..clouditor.orchestrator.v1.CertificationTargetB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x13certificationTarget\"\x90\x01\n" +
-	" UpdateCertificationTargetRequest\x12l\n" +
-	"\x14certification_target\x18\x01 \x01(\v2..clouditor.orchestrator.v1.CertificationTargetB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x13certificationTarget\"g\n" +
-	" RemoveCertificationTargetRequest\x12C\n" +
-	"\x17certification_target_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\"\x8a\x01\n" +
-	"\x1fListCertificationTargetsRequest\x12\x1b\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\tpage_size\x18\n" +
 	" \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
 	"page_token\x18\v \x01(\tR\tpageToken\x12\x19\n" +
 	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
-<<<<<<< HEAD
 	"\x03asc\x18\r \x01(\bR\x03asc\"\x97\x01\n" +
 	"\x1fListTargetsOfEvaluationResponse\x12L\n" +
 	"\atargets\x18\x01 \x03(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB\x03\xe0A\x02R\atargets\x12&\n" +
@@ -4529,31 +4505,6 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x1eListMetricConfigurationRequest\x12B\n" +
 	"\x17target_of_evaluation_id\x18\n" +
 	" \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"\x8a\x02\n" +
-=======
-	"\x03asc\x18\r \x01(\bR\x03asc\"\x9c\x01\n" +
-	" ListCertificationTargetsResponse\x12P\n" +
-	"\atargets\x18\x01 \x03(\v2..clouditor.orchestrator.v1.CertificationTargetB\x06\xe0A\x02\xe0A\x02R\atargets\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"n\n" +
-	"'GetCertificationTargetStatisticsRequest\x12C\n" +
-	"\x17certification_target_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\"\x9f\x02\n" +
-	"(GetCertificationTargetStatisticsResponse\x12C\n" +
-	"\x1enumber_of_discovered_resources\x18\x01 \x01(\x03R\x1bnumberOfDiscoveredResources\x12?\n" +
-	"\x1cnumber_of_assessment_results\x18\x02 \x01(\x03R\x19numberOfAssessmentResults\x12.\n" +
-	"\x13number_of_evidences\x18\x03 \x01(\x03R\x11numberOfEvidences\x12=\n" +
-	"\x1bnumber_of_selected_catalogs\x18\x04 \x01(\x03R\x18numberOfSelectedCatalogs\"\xef\x01\n" +
-	" UpdateMetricConfigurationRequest\x12C\n" +
-	"\x17certification_target_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\x12'\n" +
-	"\tmetric_id\x18\x02 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\x12]\n" +
-	"\rconfiguration\x18\x03 \x01(\v2,.clouditor.assessment.v1.MetricConfigurationB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\rconfiguration\"\x8d\x01\n" +
-	"\x1dGetMetricConfigurationRequest\x12C\n" +
-	"\x17certification_target_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\x12'\n" +
-	"\tmetric_id\x18\x02 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\"e\n" +
-	"\x1eListMetricConfigurationRequest\x12C\n" +
-	"\x17certification_target_id\x18\n" +
-	" \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\"\x8a\x02\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x1fListMetricConfigurationResponse\x12v\n" +
 	"\x0econfigurations\x18\x01 \x03(\v2N.clouditor.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntryR\x0econfigurations\x1ao\n" +
 	"\x13ConfigurationsEntry\x12\x10\n" +
@@ -4564,21 +4515,12 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x1eGetMetricImplementationRequest\x12'\n" +
 	"\tmetric_id\x18\x01 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\"#\n" +
-<<<<<<< HEAD
 	"!SubscribeMetricChangeEventRequest\"\xc7\x02\n" +
 	"\x11MetricChangeEvent\x12R\n" +
 	"\x04type\x18\x01 \x01(\x0e21.clouditor.orchestrator.v1.MetricChangeEvent.TypeB\v\xe0A\x02\xbaH\x05\x82\x01\x02\x10\x01R\x04type\x12'\n" +
 	"\tmetric_id\x18\x02 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\x12B\n" +
 	"\x17target_of_evaluation_id\x18\x03 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"q\n" +
-=======
-	"!SubscribeMetricChangeEventRequest\"\xc8\x02\n" +
-	"\x11MetricChangeEvent\x12R\n" +
-	"\x04type\x18\x01 \x01(\x0e21.clouditor.orchestrator.v1.MetricChangeEvent.TypeB\v\xe0A\x02\xbaH\x05\x82\x01\x02\x10\x01R\x04type\x12'\n" +
-	"\tmetric_id\x18\x02 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\x12C\n" +
-	"\x17certification_target_id\x18\x03 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\"q\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x04Type\x12\x14\n" +
 	"\x10TYPE_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13TYPE_CONFIG_CHANGED\x10\x01\x12\x1f\n" +
@@ -4589,13 +4531,8 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x04name\x18\x02 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x04name\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12<\n" +
-<<<<<<< HEAD
 	"\x11available_metrics\x18\x04 \x03(\tB\x0f\xe0A\x02\xbaH\t\x92\x01\x06\"\x04r\x02\x10\x01R\x10availableMetrics\"\xad\b\n" +
 	"\x12TargetOfEvaluation\x12\x1b\n" +
-=======
-	"\x11available_metrics\x18\x04 \x03(\tB\x0f\xe0A\x02\xbaH\t\x92\x01\x06\"\x04r\x02\x10\x01R\x10availableMetrics\"\xb1\b\n" +
-	"\x13CertificationTarget\x12\x1b\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x02id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x1e\n" +
 	"\x04name\x18\x02 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x04name\x12 \n" +
@@ -4604,7 +4541,6 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampB1\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"H\x00R\tcreatedAt\x88\x01\x01\x12q\n" +
 	"\n" +
-<<<<<<< HEAD
 	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampB1\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"H\x01R\tupdatedAt\x88\x01\x01\x12t\n" +
 	"\bmetadata\x18\n" +
 	" \x01(\v26.clouditor.orchestrator.v1.TargetOfEvaluation.MetadataB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"H\x02R\bmetadata\x88\x01\x01\x12f\n" +
@@ -4612,15 +4548,6 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"targetType\x1a\xc3\x01\n" +
 	"\bMetadata\x12Z\n" +
 	"\x06labels\x18\x01 \x03(\v2B.clouditor.orchestrator.v1.TargetOfEvaluation.Metadata.LabelsEntryR\x06labels\x12\x17\n" +
-=======
-	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampB1\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"H\x01R\tupdatedAt\x88\x01\x01\x12u\n" +
-	"\bmetadata\x18\n" +
-	" \x01(\v27.clouditor.orchestrator.v1.CertificationTarget.MetadataB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"H\x02R\bmetadata\x88\x01\x01\x12g\n" +
-	"\vtarget_type\x18\v \x01(\x0e29.clouditor.orchestrator.v1.CertificationTarget.TargetTypeB\v\xe0A\x02\xbaH\x05\x82\x01\x02\x10\x01R\n" +
-	"targetType\x1a\xc4\x01\n" +
-	"\bMetadata\x12[\n" +
-	"\x06labels\x18\x01 \x03(\v2C.clouditor.orchestrator.v1.CertificationTarget.Metadata.LabelsEntryR\x06labels\x12\x17\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x04icon\x18\x02 \x01(\tH\x00R\x04icon\x88\x01\x01\x1a9\n" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
@@ -4677,30 +4604,18 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x12_parent_control_idB\x1f\n" +
 	"\x1d_parent_control_category_nameB%\n" +
 	"#_parent_control_category_catalog_idB\x12\n" +
-<<<<<<< HEAD
 	"\x10_assurance_level\"\xf0\x01\n" +
 	"\n" +
 	"AuditScope\x121\n" +
 	"\x02id\x18\x04 \x01(\tB!\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\x02id\x12B\n" +
 	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12)\n" +
-=======
-	"\x10_assurance_level\"\xf1\x01\n" +
-	"\n" +
-	"AuditScope\x121\n" +
-	"\x02id\x18\x04 \x01(\tB!\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\x02id\x12C\n" +
-	"\x17certification_target_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\x12)\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\n" +
 	"catalog_id\x18\x02 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\tcatalogId\x12,\n" +
 	"\x0fassurance_level\x18\x03 \x01(\tH\x00R\x0eassuranceLevel\x88\x01\x01B\x12\n" +
 	"\x10_assurance_level\"6\n" +
 	"\x1aGetAssessmentResultRequest\x12\x18\n" +
-<<<<<<< HEAD
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"\xba\x05\n" +
-=======
-	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"\xbb\x05\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x1cListAssessmentResultsRequest\x12[\n" +
 	"\x06filter\x18\x01 \x01(\v2>.clouditor.orchestrator.v1.ListAssessmentResultsRequest.FilterH\x00R\x06filter\x88\x01\x01\x126\n" +
 	"\x15latest_by_resource_id\x18\x02 \x01(\bH\x01R\x12latestByResourceId\x88\x01\x01\x12\x1b\n" +
@@ -4709,26 +4624,16 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\n" +
 	"page_token\x18\v \x01(\tR\tpageToken\x12\x19\n" +
 	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
-<<<<<<< HEAD
 	"\x03asc\x18\r \x01(\bR\x03asc\x1a\xf6\x02\n" +
 	"\x06Filter\x12D\n" +
 	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x00R\x14targetOfEvaluationId\x88\x01\x01\x12!\n" +
-=======
-	"\x03asc\x18\r \x01(\bR\x03asc\x1a\xf7\x02\n" +
-	"\x06Filter\x12E\n" +
-	"\x17certification_target_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x00R\x15certificationTargetId\x88\x01\x01\x12!\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\tcompliant\x18\x02 \x01(\bH\x01R\tcompliant\x88\x01\x01\x12+\n" +
 	"\n" +
 	"metric_ids\x18\x03 \x03(\tB\f\xbaH\t\x92\x01\x06\"\x04r\x02\x10\x01R\tmetricIds\x12)\n" +
 	"\tmetric_id\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x02R\bmetricId\x88\x01\x01\x12%\n" +
 	"\atool_id\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x03R\x06toolId\x88\x01\x01\x12@\n" +
 	"\x15assessment_result_ids\x18\x06 \x03(\tB\f\xbaH\t\x92\x01\x06\"\x04r\x02\x10\x01R\x13assessmentResultIdsB\x1a\n" +
-<<<<<<< HEAD
 	"\x18_target_of_evaluation_idB\f\n" +
-=======
-	"\x18_certification_target_idB\f\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\n" +
 	"_compliantB\f\n" +
 	"\n" +
@@ -4747,11 +4652,7 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x0eaudit_scope_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\fauditScopeId\x12:\n" +
 	"\x19remove_evaluation_results\x18\x02 \x01(\bR\x17removeEvaluationResults\"I\n" +
 	"\x14GetAuditScopeRequest\x121\n" +
-<<<<<<< HEAD
 	"\x0eaudit_scope_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\fauditScopeId\"\xf9\x02\n" +
-=======
-	"\x0eaudit_scope_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\fauditScopeId\"\xfa\x02\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x16ListAuditScopesRequest\x12U\n" +
 	"\x06filter\x18\x01 \x01(\v28.clouditor.orchestrator.v1.ListAuditScopesRequest.FilterH\x00R\x06filter\x88\x01\x01\x12\x1b\n" +
 	"\tpage_size\x18\n" +
@@ -4759,21 +4660,12 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\n" +
 	"page_token\x18\v \x01(\tR\tpageToken\x12\x19\n" +
 	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
-<<<<<<< HEAD
 	"\x03asc\x18\r \x01(\bR\x03asc\x1a\x93\x01\n" +
 	"\x06Filter\x12:\n" +
 	"\x17target_of_evaluation_id\x18\x01 \x01(\tH\x00R\x14targetOfEvaluationId\x88\x01\x01\x12\"\n" +
 	"\n" +
 	"catalog_id\x18\x02 \x01(\tH\x01R\tcatalogId\x88\x01\x01B\x1a\n" +
 	"\x18_target_of_evaluation_idB\r\n" +
-=======
-	"\x03asc\x18\r \x01(\bR\x03asc\x1a\x94\x01\n" +
-	"\x06Filter\x12;\n" +
-	"\x17certification_target_id\x18\x01 \x01(\tH\x00R\x15certificationTargetId\x88\x01\x01\x12\"\n" +
-	"\n" +
-	"catalog_id\x18\x02 \x01(\tH\x01R\tcatalogId\x88\x01\x01B\x1a\n" +
-	"\x18_certification_target_idB\r\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\v_catalog_idB\t\n" +
 	"\a_filter\"\x8b\x01\n" +
 	"\x17ListAuditScopesResponse\x12H\n" +
@@ -4865,22 +4757,13 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\vcertificate\x18\x01 \x01(\v2&.clouditor.orchestrator.v1.CertificateB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\vcertificate\"M\n" +
 	"\x18RemoveCertificateRequest\x121\n" +
 	"\x0ecertificate_id\x18\x01 \x01(\tB\n" +
-<<<<<<< HEAD
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\rcertificateId\"\xb1\x03\n" +
-=======
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\rcertificateId\"\xb2\x03\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\vCertificate\x12\x1a\n" +
 	"\x02id\x18\x01 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\x12\x1e\n" +
 	"\x04name\x18\x02 \x01(\tB\n" +
-<<<<<<< HEAD
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x04name\x12B\n" +
 	"\x17target_of_evaluation_id\x18\x03 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12\x1d\n" +
-=======
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x04name\x12C\n" +
-	"\x17certification_target_id\x18\x03 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\x12\x1d\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\n" +
 	"issue_date\x18\x04 \x01(\tR\tissueDate\x12'\n" +
 	"\x0fexpiration_date\x18\x05 \x01(\tR\x0eexpirationDate\x12\x1a\n" +
@@ -4905,11 +4788,7 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x18TYPE_AUDIT_SCOPE_CREATED\x10\x01\x12\x1c\n" +
 	"\x18TYPE_AUDIT_SCOPE_UPDATED\x10\x02\x12\x1c\n" +
 	"\x18TYPE_AUDIT_SCOPE_REMOVED\x10\x03B\x0e\n" +
-<<<<<<< HEAD
 	"\f_audit_scope2\xf1@\n" +
-=======
-	"\f_audit_scope2\x82A\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\fOrchestrator\x12\xae\x01\n" +
 	"\x16RegisterAssessmentTool\x128.clouditor.orchestrator.v1.RegisterAssessmentToolRequest\x1a).clouditor.orchestrator.v1.AssessmentTool\"/\x82\xd3\xe4\x93\x02):\x04tool\"!/v1/orchestrator/assessment_tools\x12\xaf\x01\n" +
 	"\x13ListAssessmentTools\x125.clouditor.orchestrator.v1.ListAssessmentToolsRequest\x1a6.clouditor.orchestrator.v1.ListAssessmentToolsResponse\")\x82\xd3\xe4\x93\x02#\x12!/v1/orchestrator/assessment_tools\x12\xa8\x01\n" +
@@ -4924,7 +4803,6 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\fUpdateMetric\x12..clouditor.orchestrator.v1.UpdateMetricRequest\x1a\x1f.clouditor.assessment.v1.Metric\"4\x82\xd3\xe4\x93\x02.:\x06metric\x1a$/v1/orchestrator/metrics/{metric.id}\x12\x87\x01\n" +
 	"\tGetMetric\x12+.clouditor.orchestrator.v1.GetMetricRequest\x1a\x1f.clouditor.assessment.v1.Metric\",\x82\xd3\xe4\x93\x02&\x12$/v1/orchestrator/metrics/{metric_id}\x12\x8e\x01\n" +
 	"\vListMetrics\x12-.clouditor.orchestrator.v1.ListMetricsRequest\x1a..clouditor.orchestrator.v1.ListMetricsResponse\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/v1/orchestrator/metrics\x12\x84\x01\n" +
-<<<<<<< HEAD
 	"\fRemoveMetric\x12..clouditor.orchestrator.v1.RemoveMetricRequest\x1a\x16.google.protobuf.Empty\",\x82\xd3\xe4\x93\x02&*$/v1/orchestrator/metrics/{metric_id}\x12\xcb\x01\n" +
 	"\x18CreateTargetOfEvaluation\x12:.clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest\x1a-.clouditor.orchestrator.v1.TargetOfEvaluation\"D\x82\xd3\xe4\x93\x02>:\x14target_of_evaluation\"&/v1/orchestrator/targets_of_evaluation\x12\xe5\x01\n" +
 	"\x18UpdateTargetOfEvaluation\x12:.clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest\x1a-.clouditor.orchestrator.v1.TargetOfEvaluation\"^\x82\xd3\xe4\x93\x02X:\x14target_of_evaluation\x1a@/v1/orchestrator/targets_of_evaluation/{target_of_evaluation.id}\x12\xc9\x01\n" +
@@ -4935,18 +4813,6 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x19UpdateMetricConfiguration\x12;.clouditor.orchestrator.v1.UpdateMetricConfigurationRequest\x1a,.clouditor.assessment.v1.MetricConfiguration\"y\x82\xd3\xe4\x93\x02s:\rconfiguration\x1ab/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}/metric_configurations/{metric_id}\x12\xec\x01\n" +
 	"\x16GetMetricConfiguration\x128.clouditor.orchestrator.v1.GetMetricConfigurationRequest\x1a,.clouditor.assessment.v1.MetricConfiguration\"j\x82\xd3\xe4\x93\x02d\x12b/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}/metric_configurations/{metric_id}\x12\xf1\x01\n" +
 	"\x18ListMetricConfigurations\x129.clouditor.orchestrator.v1.ListMetricConfigurationRequest\x1a:.clouditor.orchestrator.v1.ListMetricConfigurationResponse\"^\x82\xd3\xe4\x93\x02X\x12V/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}/metric_configurations\x12\xe5\x01\n" +
-=======
-	"\fRemoveMetric\x12..clouditor.orchestrator.v1.RemoveMetricRequest\x1a\x16.google.protobuf.Empty\",\x82\xd3\xe4\x93\x02&*$/v1/orchestrator/metrics/{metric_id}\x12\xce\x01\n" +
-	"\x19CreateCertificationTarget\x12;.clouditor.orchestrator.v1.CreateCertificationTargetRequest\x1a..clouditor.orchestrator.v1.CertificationTarget\"D\x82\xd3\xe4\x93\x02>:\x14certification_target\"&/v1/orchestrator/certification_targets\x12\xe8\x01\n" +
-	"\x19UpdateCertificationTarget\x12;.clouditor.orchestrator.v1.UpdateCertificationTargetRequest\x1a..clouditor.orchestrator.v1.CertificationTarget\"^\x82\xd3\xe4\x93\x02X:\x14certification_target\x1a@/v1/orchestrator/certification_targets/{certification_target.id}\x12\xcc\x01\n" +
-	"\x16GetCertificationTarget\x128.clouditor.orchestrator.v1.GetCertificationTargetRequest\x1a..clouditor.orchestrator.v1.CertificationTarget\"H\x82\xd3\xe4\x93\x02B\x12@/v1/orchestrator/certification_targets/{certification_target_id}\x12\xc3\x01\n" +
-	"\x18ListCertificationTargets\x12:.clouditor.orchestrator.v1.ListCertificationTargetsRequest\x1a;.clouditor.orchestrator.v1.ListCertificationTargetsResponse\".\x82\xd3\xe4\x93\x02(\x12&/v1/orchestrator/certification_targets\x12\xba\x01\n" +
-	"\x19RemoveCertificationTarget\x12;.clouditor.orchestrator.v1.RemoveCertificationTargetRequest\x1a\x16.google.protobuf.Empty\"H\x82\xd3\xe4\x93\x02B*@/v1/orchestrator/certification_targets/{certification_target_id}\x12\xe6\x01\n" +
-	" GetCertificationTargetStatistics\x12B.clouditor.orchestrator.v1.GetCertificationTargetStatisticsRequest\x1aC.clouditor.orchestrator.v1.GetCertificationTargetStatisticsResponse\"9\x82\xd3\xe4\x93\x023\x121/v1/orchestrator/certification_targets/statistics\x12\x81\x02\n" +
-	"\x19UpdateMetricConfiguration\x12;.clouditor.orchestrator.v1.UpdateMetricConfigurationRequest\x1a,.clouditor.assessment.v1.MetricConfiguration\"y\x82\xd3\xe4\x93\x02s:\rconfiguration\x1ab/v1/orchestrator/certification_targets/{certification_target_id}/metric_configurations/{metric_id}\x12\xec\x01\n" +
-	"\x16GetMetricConfiguration\x128.clouditor.orchestrator.v1.GetMetricConfigurationRequest\x1a,.clouditor.assessment.v1.MetricConfiguration\"j\x82\xd3\xe4\x93\x02d\x12b/v1/orchestrator/certification_targets/{certification_target_id}/metric_configurations/{metric_id}\x12\xf1\x01\n" +
-	"\x18ListMetricConfigurations\x129.clouditor.orchestrator.v1.ListMetricConfigurationRequest\x1a:.clouditor.orchestrator.v1.ListMetricConfigurationResponse\"^\x82\xd3\xe4\x93\x02X\x12V/v1/orchestrator/certification_targets/{certification_target_id}/metric_configurations\x12\xe5\x01\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x1aUpdateMetricImplementation\x12<.clouditor.orchestrator.v1.UpdateMetricImplementationRequest\x1a-.clouditor.assessment.v1.MetricImplementation\"Z\x82\xd3\xe4\x93\x02T:\x0eimplementation\x1aB/v1/orchestrator/metrics/{implementation.metric_id}/implementation\x12\xc0\x01\n" +
 	"\x17GetMetricImplementation\x129.clouditor.orchestrator.v1.GetMetricImplementationRequest\x1a-.clouditor.assessment.v1.MetricImplementation\";\x82\xd3\xe4\x93\x025\x123/v1/orchestrator/metrics/{metric_id}/implementation\x12\x8d\x01\n" +
 	"\x1bSubscribeMetricChangeEvents\x12<.clouditor.orchestrator.v1.SubscribeMetricChangeEventRequest\x1a,.clouditor.orchestrator.v1.MetricChangeEvent\"\x000\x01\x12\xa4\x01\n" +
@@ -4969,11 +4835,7 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x10CreateAuditScope\x122.clouditor.orchestrator.v1.CreateAuditScopeRequest\x1a%.clouditor.orchestrator.v1.AuditScope\"2\x82\xd3\xe4\x93\x02,:\vaudit_scope\"\x1d/v1/orchestrator/audit_scopes\x12\x9f\x01\n" +
 	"\rGetAuditScope\x12/.clouditor.orchestrator.v1.GetAuditScopeRequest\x1a%.clouditor.orchestrator.v1.AuditScope\"6\x82\xd3\xe4\x93\x020\x12./v1/orchestrator/audit_scopes/{audit_scope_id}\x12\x9f\x01\n" +
 	"\x0fListAuditScopes\x121.clouditor.orchestrator.v1.ListAuditScopesRequest\x1a2.clouditor.orchestrator.v1.ListAuditScopesResponse\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/orchestrator/audit_scopes\x12\xf8\x01\n" +
-<<<<<<< HEAD
 	"\x10UpdateAuditScope\x122.clouditor.orchestrator.v1.UpdateAuditScopeRequest\x1a%.clouditor.orchestrator.v1.AuditScope\"\x88\x01\x82\xd3\xe4\x93\x02\x81\x01:\vaudit_scope\x1ar/v1/orchestrator/targets_of_evaluation/{audit_scope.target_of_evaluation_id}/audit_scopes/{audit_scope.catalog_id}\x12\x96\x01\n" +
-=======
-	"\x10UpdateAuditScope\x122.clouditor.orchestrator.v1.UpdateAuditScopeRequest\x1a%.clouditor.orchestrator.v1.AuditScope\"\x88\x01\x82\xd3\xe4\x93\x02\x81\x01:\vaudit_scope\x1ar/v1/orchestrator/certification_targets/{audit_scope.certification_target_id}/audit_scopes/{audit_scope.catalog_id}\x12\x96\x01\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x10RemoveAuditScope\x122.clouditor.orchestrator.v1.RemoveAuditScopeRequest\x1a\x16.google.protobuf.Empty\"6\x82\xd3\xe4\x93\x020*./v1/orchestrator/audit_scopes/{audit_scope_id}\x12\x83\x01\n" +
 	"\x0eGetRuntimeInfo\x12+.clouditor.runtime.v1.GetRuntimeInfoRequest\x1a\x1d.clouditor.runtime.v1.Runtime\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/orchestrator/runtime_infoB,Z*clouditor.io/clouditor/v2/api/orchestratorb\x06proto3"
 

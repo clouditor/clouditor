@@ -31,9 +31,54 @@ import "api/orchestrator/orchestrator.proto";
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
+import "google/protobuf/empty.proto";
 import "tagger/tagger.proto";
 
 option go_package = "clouditor.io/clouditor/v2/api/orchestrator";
+
+// Manages users in the orchestrator
+service UserService {
+  // Creates a new user
+  rpc CreateUser(CreateUserRequest) returns (User) {
+    option (google.api.http) = {
+      post: "/v1/orchestrator/user"
+      body: "user"
+    };
+  }
+
+  // Deletes a user
+  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/v1/orchestrator/user/{id}"};
+  }
+
+  // Updates a user, e.g. changes access rights
+  rpc UpdateUser(UpdateUserRequest) returns (User) {
+    option (google.api.http) = {
+      patch: "/v1/orchestrator/user/{user.id}"
+      body: "user"
+    };
+  }
+
+  // Retrieves a user by ID
+  rpc getUser(GetUserRequest) returns (User) {
+    option (google.api.http) = {get: "/v1/orchestrator/user/{id}"};
+  }
+
+  // Lists all users
+  rpc listUsers(ListUsersRequest) returns (ListUsersResponse) {
+    option (google.api.http) = {get: "/v1/orchestrator/user"};
+  }
+
+  // TODO(lebogg): Iteration 2 will extend this principle to groups
+}
+
+message CreateUserRequest {
+  // The user to create
+  User user = 1 [
+    (buf.validate.field).required = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
 
 // A user resource
 // TODO(lebogg): Think about adding more fields to the user resource (creation time, expiration time, etc.)
@@ -49,14 +94,36 @@ message User {
   repeated clouditor.orchestrator.v1.TargetOfEvaluation target_of_evaluation_ids = 5 [(tagger.tags) = "gorm:\"many2many:user_certification_target;\""];
 }
 
-// TODO(lebogg): Add API endpoint for adding a user
+message DeleteUserRequest {
+  string id = 1 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
 
-// TODO(lebogg): Add API endpoint for deleting a user
+message UpdateUserRequest {
+  User user = 1 [
+    (buf.validate.field).required = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
 
-// TODO(lebogg): Add API endpoint for updating a user
+message GetUserRequest {
+  string id = 1 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
 
-// TODO(lebogg): Add API endpoint for getting a user
+message ListUsersRequest {
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
+}
 
-// TODO(lebogg): Add API endpoint for listing all users
-
-// TODO(lebogg): Iteration 2 will extend this principle to groups
+message ListUsersResponse {
+  repeated User users = 1 [(buf.validate.field).repeated.min_items = 0];
+  // The next page token to use for pagination. If not specified, the default is the last page.
+  string next_page_token = 2;
+}

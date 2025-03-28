@@ -612,11 +612,7 @@ const file_api_assessment_assessment_proto_rawDesc = "" +
 	"\x06status\x18\x01 \x01(\x0e2).clouditor.assessment.v1.AssessmentStatusR\x06status\"\x83\x01\n" +
 	"\x17AssessEvidencesResponse\x12A\n" +
 	"\x06status\x18\x01 \x01(\x0e2).clouditor.assessment.v1.AssessmentStatusR\x06status\x12%\n" +
-<<<<<<< HEAD
 	"\x0estatus_message\x18\x02 \x01(\tR\rstatusMessage\"\xca\x06\n" +
-=======
-	"\x0estatus_message\x18\x02 \x01(\tR\rstatusMessage\"\xcb\x06\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\x10AssessmentResult\x12\x1b\n" +
 	"\x02id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12t\n" +
 	"\ttimestamp\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB:\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\ttimestamp\x12'\n" +
@@ -633,13 +629,8 @@ const file_api_assessment_assessment_proto_rawDesc = "" +
 	"\x12compliance_comment\x18\t \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x11complianceComment\x12u\n" +
 	"\x12compliance_details\x18\n" +
-<<<<<<< HEAD
 	" \x03(\v2).clouditor.assessment.v1.ComparisonResultB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\x11complianceDetails\x12B\n" +
 	"\x17target_of_evaluation_id\x18\x14 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12(\n" +
-=======
-	" \x03(\v2).clouditor.assessment.v1.ComparisonResultB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\x11complianceDetails\x12C\n" +
-	"\x17certification_target_id\x18\x14 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x15certificationTargetId\x12(\n" +
->>>>>>> b9e0eb0f (Add `User` message to Orchestrator folder)
 	"\atool_id\x18\x15 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01H\x00R\x06toolId\x88\x01\x01B\n" +
 	"\n" +
