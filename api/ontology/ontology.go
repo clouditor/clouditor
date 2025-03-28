@@ -5,10 +5,9 @@ import (
 	"slices"
 	"strings"
 
-	"google.golang.org/protobuf/reflect/protoreflect"
-
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -144,14 +143,19 @@ func ResourceIDs(r []IsResource) []string {
 	return a
 }
 
-// ProtoResource converrts a [IsResource] to a [Resource]
+// ProtoResource converts a [IsResource] to a [Resource]
 func ProtoResource(resource IsResource) *Resource {
 	var (
 		r  Resource
-		m  protoreflect.Message         = r.ProtoReflect()
-		od protoreflect.OneofDescriptor = m.Descriptor().Oneofs().ByName("type")
+		m  protoreflect.Message
+		od protoreflect.OneofDescriptor
 	)
 
+	// Set up descriptors for proto reflection
+	m = r.ProtoReflect()
+	od = m.Descriptor().Oneofs().ByName("type")
+
+	// Loop through the fields to find one that matches the resource's protobuf message type
 	for i := range od.Fields().Len() {
 		field := od.Fields().Get(i)
 		if field.Message() == resource.ProtoReflect().Descriptor() {
