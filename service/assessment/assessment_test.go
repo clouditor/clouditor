@@ -945,6 +945,20 @@ func TestService_handleEvidence(t *testing.T) {
 						},
 					}),
 				},
+				resource: &ontology.Application{
+					Id:   "Application",
+					Name: "Application",
+					Functionalities: []*ontology.Functionality{
+						{
+							Type: &ontology.Functionality_CryptographicHash{
+								CryptographicHash: &ontology.CryptographicHash{
+									Algorithm: "md5",
+									UsesSalt:  false,
+								},
+							},
+						},
+					},
+				},
 			},
 			want: func(t *testing.T, got []*assessment.AssessmentResult) bool {
 				for _, result := range got {
@@ -1033,6 +1047,14 @@ func TestService_handleEvidence(t *testing.T) {
 							LoggingServiceIds: nil,
 							Enabled:           true,
 						}}),
+				},
+				resource: &ontology.VirtualMachine{
+					Id:   testdata.MockResourceID1,
+					Name: testdata.MockResourceName1,
+					BootLogging: &ontology.BootLogging{
+						LoggingServiceIds: nil,
+						Enabled:           true,
+					},
 				},
 			},
 			want: assert.Nil[[]*assessment.AssessmentResult],
