@@ -305,7 +305,7 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 
 	if canHandle {
 		// Assess evidence. This also validates the embedded resource and returns a gRPC error if validation fails.
-		_, err = svc.handleEvidence(ctx, req.Evidence, related)
+		_, err = svc.handleEvidence(ctx, req.Evidence, resource, related)
 		if err != nil {
 			log.Error(err)
 			return nil, err
@@ -409,17 +409,12 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 func (svc *Service) handleEvidence(
 	ctx context.Context,
 	ev *evidence.Evidence,
+	resource ontology.IsResource,
 	related map[string]ontology.IsResource,
 ) (results []*assessment.AssessmentResult, err error) {
 	var (
-		types    []string
-		resource ontology.IsResource
+		types []string
 	)
-
-	resource = ev.GetOntologyResource()
-	if resource == nil {
-		return nil, status.Errorf(codes.Internal, "invalid embedded resource: %v", discovery.ErrNotOntologyResource)
-	}
 
 	log.Debugf("Evaluating evidence %s (%s) collected by %s at %s", ev.Id, resource.GetId(), ev.ToolId, ev.Timestamp.AsTime())
 	log.Tracef("Evidence: %+v", ev)

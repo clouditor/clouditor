@@ -908,6 +908,7 @@ func TestService_handleEvidence(t *testing.T) {
 	}
 	type args struct {
 		evidence *evidence.Evidence
+		resource ontology.IsResource
 		related  map[string]ontology.IsResource
 	}
 	tests := []struct {
@@ -974,6 +975,14 @@ func TestService_handleEvidence(t *testing.T) {
 							Enabled:           true,
 						},
 					}),
+				},
+				resource: &ontology.VirtualMachine{
+					Id:   testdata.MockResourceID1,
+					Name: testdata.MockResourceName1,
+					BootLogging: &ontology.BootLogging{
+						LoggingServiceIds: nil,
+						Enabled:           true,
+					},
 				},
 			},
 			want: func(t *testing.T, got []*assessment.AssessmentResult) bool {
@@ -1048,7 +1057,7 @@ func TestService_handleEvidence(t *testing.T) {
 				authz:                tt.fields.authz,
 			}
 
-			results, err := s.handleEvidence(context.Background(), tt.args.evidence, tt.args.related)
+			results, err := s.handleEvidence(context.Background(), tt.args.evidence, tt.args.resource, tt.args.related)
 
 			tt.wantErr(t, err)
 			tt.want(t, results)

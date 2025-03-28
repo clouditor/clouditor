@@ -88,7 +88,7 @@ func (l *waitingRequest) WaitAndHandle() {
 			}
 
 			// Let's go
-			_, _ = l.s.handleEvidence(l.ctx, l.Evidence, additional)
+			_, _ = l.s.handleEvidence(l.ctx, l.Evidence, l.Evidence.GetOntologyResource(), additional)
 
 			duration := time.Since(l.started)
 
