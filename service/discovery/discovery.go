@@ -59,7 +59,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -452,19 +451,12 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			log.Errorf("Could not save resource with ID '%s' to storage: %v", r.Id, err)
 		}
 
-		// Convert ontology resource into an Any proto message
-		a, err := anypb.New(resource)
-		if err != nil {
-			log.Errorf("Could not wrap resource message into Any protobuf object: %v", err)
-			continue
-		}
-
 		e := &evidence.Evidence{
 			Id:                   uuid.New().String(),
 			TargetOfEvaluationId: svc.GetTargetOfEvaluationId(),
 			Timestamp:            timestamppb.Now(),
 			ToolId:               svc.collectorID,
-			Resource:             a,
+			Resource:             ontology.ProtoResource(resource),
 		}
 
 		// Only enabled related evidences for some specific resources for now

@@ -3,6 +3,7 @@ package prototest
 import (
 	"testing"
 
+	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 
 	"google.golang.org/protobuf/proto"
@@ -25,4 +26,11 @@ func NewAnyWithPanic(m proto.Message) *anypb.Any {
 	}
 
 	return a
+}
+
+func NewProtobufResource(t *testing.T, or ontology.IsResource) *ontology.Resource {
+	r := ontology.ProtoResource(or)
+	assert.NotNil(t, r)
+
+	return r
 }

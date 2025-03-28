@@ -41,7 +41,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"clouditor.io/clouditor/v2/internal/testutil/prototest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/evidencetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
@@ -121,9 +120,14 @@ func TestService_StoreEvidence(t *testing.T) {
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 						ToolId:               testdata.MockEvidenceToolID1,
 						Timestamp:            timestamppb.Now(),
-						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
-							Id: "mock-id",
-						}),
+						Resource: &ontology.Resource{
+							Type: &ontology.Resource_VirtualMachine{
+								VirtualMachine: &ontology.VirtualMachine{
+									Id:   "mock-id",
+									Name: "my-vm",
+								},
+							},
+						},
 					}},
 			},
 			wantRes: func(t *testing.T, got *evidence.StoreEvidenceResponse) bool {
@@ -146,9 +150,14 @@ func TestService_StoreEvidence(t *testing.T) {
 						Id:                   testdata.MockEvidenceID1,
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 						Timestamp:            timestamppb.Now(),
-						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
-							Id: "mock-id-1",
-						}),
+						Resource: &ontology.Resource{
+							Type: &ontology.Resource_VirtualMachine{
+								VirtualMachine: &ontology.VirtualMachine{
+									Id:   "mock-id",
+									Name: "mock-name",
+								},
+							},
+						},
 					},
 				},
 			},
@@ -219,9 +228,14 @@ func TestService_StoreEvidences(t *testing.T) {
 							Id:                   uuid.NewString(),
 							TargetOfEvaluationId: "MockTargetOfEvaluationId",
 							Timestamp:            timestamppb.Now(),
-							Resource: prototest.NewAny(t, &ontology.VirtualMachine{
-								Id: "mock-id-1",
-							}),
+							Resource: &ontology.Resource{
+								Type: &ontology.Resource_VirtualMachine{
+									VirtualMachine: &ontology.VirtualMachine{
+										Id:   "mock-id-1",
+										Name: "mock-name-1",
+									},
+								},
+							},
 						},
 					},
 				})},
@@ -568,9 +582,14 @@ func TestService_EvidenceHook(t *testing.T) {
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 					Timestamp:            timestamppb.Now(),
 					ToolId:               "mockToolId-1",
-					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
-						Id: "mock-id-1",
-					}),
+					Resource: &ontology.Resource{
+						Type: &ontology.Resource_VirtualMachine{
+							VirtualMachine: &ontology.VirtualMachine{
+								Id:   "mock-id-1",
+								Name: "mock-name-1",
+							},
+						},
+					},
 				},
 				},
 			},
@@ -612,9 +631,14 @@ func createStoreEvidenceRequestMocks(t *testing.T, count int) []*evidence.StoreE
 				ToolId:               fmt.Sprintf("MockToolId-%d", i),
 				TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 				Timestamp:            timestamppb.Now(),
-				Resource: prototest.NewAny(t, &ontology.VirtualMachine{
-					Id: "mock-id-1",
-				}),
+				Resource: &ontology.Resource{
+					Type: &ontology.Resource_VirtualMachine{
+						VirtualMachine: &ontology.VirtualMachine{
+							Id:   "mock-id-1",
+							Name: "my-vm",
+						},
+					},
+				},
 			},
 		}
 		mockRequests = append(mockRequests, evidenceRequest)

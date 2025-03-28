@@ -33,10 +33,11 @@ package evidence
 
 import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
+	ontology "clouditor.io/clouditor/v2/api/ontology"
 	_ "github.com/srikrsna/protoc-gen-gotag/tagger"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	anypb "google.golang.org/protobuf/types/known/anypb"
+	_ "google.golang.org/protobuf/types/known/anypb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
@@ -63,7 +64,7 @@ type Evidence struct {
 	ToolId string `protobuf:"bytes,4,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`
 	// Semantic representation of the Cloud resource according to our defined
 	// ontology
-	Resource *anypb.Any `protobuf:"bytes,6,opt,name=resource,proto3" json:"resource,omitempty" gorm:"serializer:anypb;type:json"`
+	Resource *ontology.Resource `protobuf:"bytes,6,opt,name=resource,proto3" json:"resource,omitempty" gorm:"serializer:json"`
 	// Very experimental property. Use at own risk. This property will be deleted again.
 	//
 	// Related resource IDs. The assessment will wait until all evidences for related resource have arrived in the
@@ -132,7 +133,7 @@ func (x *Evidence) GetToolId() string {
 	return ""
 }
 
-func (x *Evidence) GetResource() *anypb.Any {
+func (x *Evidence) GetResource() *ontology.Resource {
 	if x != nil {
 		return x.Resource
 	}
@@ -150,13 +151,13 @@ var File_api_evidence_evidence_proto protoreflect.FileDescriptor
 
 const file_api_evidence_evidence_proto_rawDesc = "" +
 	"\n" +
-	"\x1bapi/evidence/evidence.proto\x12\x15clouditor.evidence.v1\x1a\x1bbuf/validate/validate.proto\x1a\x19google/protobuf/any.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\xc3\x03\n" +
+	"\x1bapi/evidence/evidence.proto\x12\x15clouditor.evidence.v1\x1a\x1bapi/ontology/ontology.proto\x1a\x1bbuf/validate/validate.proto\x1a\x19google/protobuf/any.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\xbd\x03\n" +
 	"\bEvidence\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12q\n" +
 	"\ttimestamp\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB7\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\ttimestamp\x12?\n" +
 	"\x17target_of_evaluation_id\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12 \n" +
-	"\atool_id\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06toolId\x12^\n" +
-	"\bresource\x18\x06 \x01(\v2\x14.google.protobuf.AnyB,\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03!gorm:\"serializer:anypb;type:json\"R\bresource\x12g\n" +
+	"\atool_id\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06toolId\x12X\n" +
+	"\bresource\x18\x06 \x01(\v2\x1f.clouditor.ontology.v1.ResourceB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\bresource\x12g\n" +
 	"!experimental_related_resource_ids\x18\xe7\a \x03(\tB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\x1eexperimentalRelatedResourceIdsB(Z&clouditor.io/clouditor/v2/api/evidenceb\x06proto3"
 
 var (
@@ -175,11 +176,11 @@ var file_api_evidence_evidence_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_api_evidence_evidence_proto_goTypes = []any{
 	(*Evidence)(nil),              // 0: clouditor.evidence.v1.Evidence
 	(*timestamppb.Timestamp)(nil), // 1: google.protobuf.Timestamp
-	(*anypb.Any)(nil),             // 2: google.protobuf.Any
+	(*ontology.Resource)(nil),     // 2: clouditor.ontology.v1.Resource
 }
 var file_api_evidence_evidence_proto_depIdxs = []int32{
 	1, // 0: clouditor.evidence.v1.Evidence.timestamp:type_name -> google.protobuf.Timestamp
-	2, // 1: clouditor.evidence.v1.Evidence.resource:type_name -> google.protobuf.Any
+	2, // 1: clouditor.evidence.v1.Evidence.resource:type_name -> clouditor.ontology.v1.Resource
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

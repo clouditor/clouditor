@@ -24,3 +24,72 @@
 // This file is part of Clouditor Community Edition.
 
 package evidence
+
+import (
+	"testing"
+
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	"google.golang.org/protobuf/types/known/timestamppb"
+)
+
+func TestEvidence_GetOntologyResource(t *testing.T) {
+	type fields struct {
+		Id                             string
+		Timestamp                      *timestamppb.Timestamp
+		TargetOfEvaluationId           string
+		ToolId                         string
+		Resource                       *ontology.Resource
+		ExperimentalRelatedResourceIds []string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   ontology.IsResource
+	}{
+		{
+			name: "happy path",
+			fields: fields{
+				Resource: &ontology.Resource{
+					Type: &ontology.Resource_VirtualMachine{
+						VirtualMachine: &ontology.VirtualMachine{
+							Id: "vm-1",
+						},
+					},
+				},
+			},
+			want: &ontology.VirtualMachine{
+				Id: "vm-1",
+			},
+		},
+		{
+			name: "resource is nil",
+			fields: fields{
+				Resource: nil,
+			},
+			want: nil,
+		},
+		{
+			name: "resource is empty",
+			fields: fields{
+				Resource: &ontology.Resource{},
+			},
+			want: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ev := &Evidence{
+				Id:                             tt.fields.Id,
+				Timestamp:                      tt.fields.Timestamp,
+				TargetOfEvaluationId:           tt.fields.TargetOfEvaluationId,
+				ToolId:                         tt.fields.ToolId,
+				Resource:                       tt.fields.Resource,
+				ExperimentalRelatedResourceIds: tt.fields.ExperimentalRelatedResourceIds,
+			}
+
+			assert.Equal(t, tt.want, ev.GetOntologyResource())
+		})
+	}
+}

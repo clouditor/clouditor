@@ -59,9 +59,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -221,7 +219,7 @@ func TestService_AssessEvidence(t *testing.T) {
 				evidence: &evidence.Evidence{
 					ToolId:    testdata.MockEvidenceToolID1,
 					Timestamp: timestamppb.Now(),
-					Resource:  prototest.NewAny(t, &ontology.VirtualMachine{}),
+					Resource:  prototest.NewProtobufResource(t, &ontology.VirtualMachine{}),
 				},
 			},
 			wantResp: nil,
@@ -241,7 +239,7 @@ func TestService_AssessEvidence(t *testing.T) {
 					Id:                   testdata.MockEvidenceID1,
 					Timestamp:            timestamppb.Now(),
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-					Resource:             prototest.NewAny(t, &ontology.VirtualMachine{}),
+					Resource:             prototest.NewProtobufResource(t, &ontology.VirtualMachine{}),
 				},
 			},
 			wantResp: nil,
@@ -261,7 +259,10 @@ func TestService_AssessEvidence(t *testing.T) {
 					Id:                   testdata.MockEvidenceID1,
 					ToolId:               testdata.MockEvidenceToolID1,
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-					Resource:             prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+					Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
+						Id:   testdata.MockResourceID1,
+						Name: testdata.MockResourceName1,
+					}),
 				},
 			},
 			wantResp: nil,
@@ -270,7 +271,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			},
 		},
 		{
-			name: "Assess resource",
+			name: "Assess resource happy",
 			fields: fields{
 				evidenceStore:       api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
 				orchestrator:        api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
@@ -283,7 +284,7 @@ func TestService_AssessEvidence(t *testing.T) {
 					Id:        testdata.MockEvidenceID1,
 					ToolId:    testdata.MockEvidenceToolID1,
 					Timestamp: timestamppb.Now(),
-					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+					Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
 					}),
@@ -305,7 +306,7 @@ func TestService_AssessEvidence(t *testing.T) {
 					Id:        testdata.MockEvidenceID1,
 					ToolId:    testdata.MockEvidenceToolID1,
 					Timestamp: timestamppb.Now(),
-					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+					Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
 					}),
@@ -330,7 +331,7 @@ func TestService_AssessEvidence(t *testing.T) {
 					Id:                   testdata.MockEvidenceID1,
 					ToolId:               testdata.MockEvidenceToolID1,
 					Timestamp:            timestamppb.Now(),
-					Resource:             prototest.NewAny(t, &ontology.VirtualMachine{}),
+					Resource:             prototest.NewProtobufResource(t, &ontology.VirtualMachine{}),
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 				},
 			},
@@ -354,7 +355,7 @@ func TestService_AssessEvidence(t *testing.T) {
 					ToolId:               testdata.MockEvidenceToolID1,
 					Timestamp:            timestamppb.Now(),
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+					Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
 					}),
@@ -374,7 +375,7 @@ func TestService_AssessEvidence(t *testing.T) {
 				evidenceResourceMap: map[string]*evidence.Evidence{
 					"my-other-resource-id": {
 						Id: testdata.MockEvidenceID2,
-						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+						Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
 							Id: testdata.MockResourceID2,
 						}),
 					},
@@ -387,7 +388,7 @@ func TestService_AssessEvidence(t *testing.T) {
 					ToolId:               testdata.MockEvidenceToolID1,
 					Timestamp:            timestamppb.Now(),
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+					Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
 					}),
@@ -414,7 +415,7 @@ func TestService_AssessEvidence(t *testing.T) {
 					ToolId:               testdata.MockEvidenceToolID1,
 					Timestamp:            timestamppb.Now(),
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+					Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
 					}),
@@ -475,7 +476,7 @@ func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached
 	// First assess evidence with a valid VM resource s.t. the cache is created for the combination of resource type and
 	// tool id (="VirtualMachine-{testdata.MockEvidenceToolID}")
 	e := evidencetest.MockEvidence1
-	e.Resource = prototest.NewAny(t, &ontology.VirtualMachine{
+	e.Resource = prototest.NewProtobufResource(t, &ontology.VirtualMachine{
 		Id:   testdata.MockResourceID1,
 		Name: testdata.MockResourceName1,
 	})
@@ -484,7 +485,7 @@ func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached
 
 	// Now assess a new evidence which has not a valid format other than the resource type and tool id is set correctly
 	// Prepare resource. Make sure both evidences have the same type (for caching key)
-	a := prototest.NewAny(t, &ontology.VirtualMachine{
+	a := prototest.NewProtobufResource(t, &ontology.VirtualMachine{
 		Id:   uuid.NewString(),
 		Name: "Some other name",
 	})
@@ -528,7 +529,7 @@ func TestService_AssessEvidences(t *testing.T) {
 						Id:                   testdata.MockEvidenceID1,
 						Timestamp:            timestamppb.Now(),
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-						Resource:             prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+						Resource:             prototest.NewProtobufResource(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
 					},
 				}),
 			},
@@ -546,7 +547,7 @@ func TestService_AssessEvidences(t *testing.T) {
 						Timestamp:            timestamppb.Now(),
 						ToolId:               testdata.MockEvidenceToolID1,
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-						Resource:             prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+						Resource:             prototest.NewProtobufResource(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
 					},
 				}),
 			},
@@ -570,7 +571,7 @@ func TestService_AssessEvidences(t *testing.T) {
 						Timestamp:            timestamppb.Now(),
 						ToolId:               testdata.MockEvidenceToolID1,
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+						Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
 							Id:   testdata.MockResourceID1,
 							Name: testdata.MockResourceName1,
 						}),
@@ -594,7 +595,7 @@ func TestService_AssessEvidences(t *testing.T) {
 						Timestamp:            timestamppb.Now(),
 						ToolId:               testdata.MockEvidenceToolID1,
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-						Resource:             prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+						Resource:             prototest.NewProtobufResource(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
 					},
 				}),
 			},
@@ -614,7 +615,7 @@ func TestService_AssessEvidences(t *testing.T) {
 						Timestamp:            timestamppb.Now(),
 						ToolId:               testdata.MockEvidenceToolID1,
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-						Resource:             prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+						Resource:             prototest.NewProtobufResource(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
 					},
 				}),
 			},
@@ -699,7 +700,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 						ToolId:               testdata.MockEvidenceToolID1,
 						Timestamp:            timestamppb.Now(),
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+						Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
 							Id:   testdata.MockResourceID1,
 							Name: testdata.MockResourceName1,
 							BootLogging: &ontology.BootLogging{
@@ -907,6 +908,7 @@ func TestService_handleEvidence(t *testing.T) {
 	}
 	type args struct {
 		evidence *evidence.Evidence
+		resource ontology.IsResource
 		related  map[string]ontology.IsResource
 	}
 	tests := []struct {
@@ -928,7 +930,7 @@ func TestService_handleEvidence(t *testing.T) {
 					ToolId:               testdata.MockEvidenceToolID1,
 					Timestamp:            timestamppb.Now(),
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-					Resource: prototest.NewAny(t, &ontology.Application{
+					Resource: prototest.NewProtobufResource(t, &ontology.Application{
 						Id:   "Application",
 						Name: "Application",
 						Functionalities: []*ontology.Functionality{
@@ -942,6 +944,20 @@ func TestService_handleEvidence(t *testing.T) {
 							},
 						},
 					}),
+				},
+				resource: &ontology.Application{
+					Id:   "Application",
+					Name: "Application",
+					Functionalities: []*ontology.Functionality{
+						{
+							Type: &ontology.Functionality_CryptographicHash{
+								CryptographicHash: &ontology.CryptographicHash{
+									Algorithm: "md5",
+									UsesSalt:  false,
+								},
+							},
+						},
+					},
 				},
 			},
 			want: func(t *testing.T, got []*assessment.AssessmentResult) bool {
@@ -965,7 +981,7 @@ func TestService_handleEvidence(t *testing.T) {
 					ToolId:               testdata.MockEvidenceToolID1,
 					Timestamp:            timestamppb.Now(),
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+					Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
 						BootLogging: &ontology.BootLogging{
@@ -973,6 +989,14 @@ func TestService_handleEvidence(t *testing.T) {
 							Enabled:           true,
 						},
 					}),
+				},
+				resource: &ontology.VirtualMachine{
+					Id:   testdata.MockResourceID1,
+					Name: testdata.MockResourceName1,
+					BootLogging: &ontology.BootLogging{
+						LoggingServiceIds: nil,
+						Enabled:           true,
+					},
 				},
 			},
 			want: func(t *testing.T, got []*assessment.AssessmentResult) bool {
@@ -996,27 +1020,7 @@ func TestService_handleEvidence(t *testing.T) {
 					ToolId:               testdata.MockEvidenceToolID1,
 					Timestamp:            timestamppb.Now(),
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-					Resource:             &anypb.Any{TypeUrl: "does-not-exist"},
-				},
-			},
-			want: assert.Nil[[]*assessment.AssessmentResult],
-			wantErr: func(t *testing.T, err error) bool {
-				return assert.Contains(t, err.Error(), "could not unmarshal resource proto message")
-			},
-		},
-		{
-			name: "not an ontology resource",
-			fields: fields{
-				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
-			},
-			args: args{
-				evidence: &evidence.Evidence{
-					Id:                   testdata.MockEvidenceID1,
-					ToolId:               testdata.MockEvidenceToolID1,
-					Timestamp:            timestamppb.Now(),
-					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-					Resource:             prototest.NewAny(t, &emptypb.Empty{}),
+					Resource:             &ontology.Resource{},
 				},
 			},
 			want: assert.Nil[[]*assessment.AssessmentResult],
@@ -1036,13 +1040,21 @@ func TestService_handleEvidence(t *testing.T) {
 					ToolId:               testdata.MockEvidenceToolID1,
 					Timestamp:            timestamppb.Now(),
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+					Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
 						BootLogging: &ontology.BootLogging{
 							LoggingServiceIds: nil,
 							Enabled:           true,
 						}}),
+				},
+				resource: &ontology.VirtualMachine{
+					Id:   testdata.MockResourceID1,
+					Name: testdata.MockResourceName1,
+					BootLogging: &ontology.BootLogging{
+						LoggingServiceIds: nil,
+						Enabled:           true,
+					},
 				},
 			},
 			want: assert.Nil[[]*assessment.AssessmentResult],
@@ -1067,7 +1079,7 @@ func TestService_handleEvidence(t *testing.T) {
 				authz:                tt.fields.authz,
 			}
 
-			results, err := s.handleEvidence(context.Background(), tt.args.evidence, tt.args.related)
+			results, err := s.handleEvidence(context.Background(), tt.args.evidence, tt.args.resource, tt.args.related)
 
 			tt.wantErr(t, err)
 			tt.want(t, results)

@@ -1467,6 +1467,23 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
+        ActivityLogging:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+                monitoringLogDataEnabled:
+                    type: boolean
+                retentionPeriod:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                securityAlertsEnabled:
+                    type: boolean
+                loggingServiceIds:
+                    type: array
+                    items:
+                        type: string
+            description: ActivityLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         AllowedValues:
             type: object
             properties:
@@ -1475,6 +1492,23 @@ components:
                     items:
                         $ref: '#/components/schemas/GoogleProtobufValue'
             description: Defines a range
+        ApplicationLogging:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+                monitoringLogDataEnabled:
+                    type: boolean
+                retentionPeriod:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                securityAlertsEnabled:
+                    type: boolean
+                loggingServiceIds:
+                    type: array
+                    items:
+                        type: string
+            description: ApplicationLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         AssessmentResult:
             required:
                 - id
@@ -1576,6 +1610,23 @@ components:
             description: |-
                 A Audit Scope binds a target of evaluation to a catalog, so the target of evaluation is
                  evaluated regarding this catalog's controls
+        BootLogging:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+                monitoringLogDataEnabled:
+                    type: boolean
+                retentionPeriod:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                securityAlertsEnabled:
+                    type: boolean
+                loggingServiceIds:
+                    type: array
+                    items:
+                        type: string
+            description: BootLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Catalog:
             required:
                 - id
@@ -1639,36 +1690,53 @@ components:
                     items:
                         $ref: '#/components/schemas/Control'
         Certificate:
-            required:
-                - id
-                - name
-                - targetOfEvaluationId
             type: object
             properties:
-                id:
+                creationTime:
                     type: string
-                name:
-                    type: string
-                targetOfEvaluationId:
-                    type: string
-                issueDate:
-                    type: string
-                expirationDate:
-                    type: string
-                standard:
-                    type: string
-                assuranceLevel:
-                    type: string
-                cab:
-                    type: string
+                    format: date-time
                 description:
                     type: string
-                states:
+                enabled:
+                    type: boolean
+                expirationDate:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                internetAccessibleEndpoint:
+                    type: boolean
+                isManaged:
+                    type: boolean
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                notBeforeDate:
+                    type: string
+                    format: date-time
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                infrastructureId:
+                    type: string
+                loggings:
                     type: array
                     items:
-                        $ref: '#/components/schemas/State'
-                    description: A list of states at specific times
-            description: An ISO17021-based certificate
+                        $ref: '#/components/schemas/Logging'
+                redundancies:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Redundancy'
+                parentId:
+                    type: string
+                usageStatistics:
+                    $ref: '#/components/schemas/UsageStatistics'
+            description: Certificate is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         ComparisonResult:
             required:
                 - property
@@ -1760,6 +1828,20 @@ components:
                     type: string
                 version:
                     type: string
+        GeoLocation:
+            type: object
+            properties:
+                region:
+                    type: string
+            description: GeoLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        GeoRedundancy:
+            type: object
+            properties:
+                geoLocations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GeoLocation'
+            description: GeoRedundancy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         GetTargetOfEvaluationStatisticsResponse:
             type: object
             properties:
@@ -1879,6 +1961,28 @@ components:
                         $ref: '#/components/schemas/TargetOfEvaluation'
                 nextPageToken:
                     type: string
+        LocalRedundancy:
+            type: object
+            properties:
+                geoLocations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GeoLocation'
+            description: LocalRedundancy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        Logging:
+            type: object
+            properties:
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
+                applicationLogging:
+                    $ref: '#/components/schemas/ApplicationLogging'
+                bootLogging:
+                    $ref: '#/components/schemas/BootLogging'
+                osLogging:
+                    $ref: '#/components/schemas/OSLogging'
+                resourceLogging:
+                    $ref: '#/components/schemas/ResourceLogging'
+            description: Logging is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
         Metric:
             required:
                 - id
@@ -1993,6 +2097,23 @@ components:
                     type: string
                     description: Required.
             description: Defines a range of values through a (inclusive) minimum and a maximum
+        OSLogging:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+                monitoringLogDataEnabled:
+                    type: boolean
+                retentionPeriod:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                securityAlertsEnabled:
+                    type: boolean
+                loggingServiceIds:
+                    type: array
+                    items:
+                        type: string
+            description: OSLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Order:
             type: object
             properties:
@@ -2019,6 +2140,33 @@ components:
                         - $ref: '#/components/schemas/MinMax'
                     description: used for metric scale
             description: A range resource representing the range of values
+        Redundancy:
+            type: object
+            properties:
+                geoRedundancy:
+                    $ref: '#/components/schemas/GeoRedundancy'
+                localRedundancy:
+                    $ref: '#/components/schemas/LocalRedundancy'
+                zoneRedundancy:
+                    $ref: '#/components/schemas/ZoneRedundancy'
+            description: Redundancy is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+        ResourceLogging:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+                monitoringLogDataEnabled:
+                    type: boolean
+                retentionPeriod:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                securityAlertsEnabled:
+                    type: boolean
+                loggingServiceIds:
+                    type: array
+                    items:
+                        type: string
+            description: ResourceLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Runtime:
             type: object
             properties:
@@ -2043,22 +2191,6 @@ components:
                     items:
                         $ref: '#/components/schemas/Dependency'
                     description: dependency is a list of used runtime dependencies
-        State:
-            type: object
-            properties:
-                id:
-                    type: string
-                state:
-                    type: string
-                    description: An EUCS-defined state, e.g. `new`, `suspended` or `withdrawn`
-                treeId:
-                    type: string
-                timestamp:
-                    type: string
-                certificateId:
-                    type: string
-                    description: Reference to the certificate
-            description: A state of a certificate at a given time
         Status:
             type: object
             properties:
@@ -2132,5 +2264,20 @@ components:
                 icon:
                     type: string
                     description: an icon for the target of evaluation used by the UI
+        UsageStatistics:
+            type: object
+            properties:
+                apiHitsPerMonth:
+                    type: integer
+                    format: int32
+            description: UsageStatistics is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        ZoneRedundancy:
+            type: object
+            properties:
+                geoLocations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GeoLocation'
+            description: ZoneRedundancy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 tags:
     - name: Orchestrator

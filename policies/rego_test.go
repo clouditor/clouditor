@@ -401,7 +401,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			}
 			results, err := pe.Eval(&evidence.Evidence{
 				Id:       tt.args.evidenceID,
-				Resource: prototest.NewAny(t, tt.args.resource),
+				Resource: prototest.NewProtobufResource(t, tt.args.resource),
 			}, tt.args.resource, tt.args.related, tt.args.src)
 
 			tt.wantErr(t, err)
