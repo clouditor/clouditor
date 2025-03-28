@@ -58,9 +58,9 @@ type User struct {
 	LastName  string                 `protobuf:"bytes,3,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
 	Email     string                 `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
 	// target_of_certification_ids defines the scope of the user
-	CertificationTargetIds []*CertificationTarget `protobuf:"bytes,5,rep,name=certification_target_ids,json=certificationTargetIds,proto3" json:"certification_target_ids,omitempty" gorm:"many2many:user_certification_target;"`
-	unknownFields          protoimpl.UnknownFields
-	sizeCache              protoimpl.SizeCache
+	TargetOfEvaluationIds []*TargetOfEvaluation `protobuf:"bytes,5,rep,name=target_of_evaluation_ids,json=targetOfEvaluationIds,proto3" json:"target_of_evaluation_ids,omitempty" gorm:"many2many:user_certification_target;"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
 }
 
 func (x *User) Reset() {
@@ -121,9 +121,9 @@ func (x *User) GetEmail() string {
 	return ""
 }
 
-func (x *User) GetCertificationTargetIds() []*CertificationTarget {
+func (x *User) GetTargetOfEvaluationIds() []*TargetOfEvaluation {
 	if x != nil {
-		return x.CertificationTargetIds
+		return x.TargetOfEvaluationIds
 	}
 	return nil
 }
@@ -132,15 +132,15 @@ var File_api_orchestrator_user_proto protoreflect.FileDescriptor
 
 const file_api_orchestrator_user_proto_rawDesc = "" +
 	"\n" +
-	"\x1bapi/orchestrator/user.proto\x12\x19clouditor.orchestrator.v1\x1a#api/orchestrator/orchestrator.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x13tagger/tagger.proto\"\x91\x02\n" +
+	"\x1bapi/orchestrator/user.proto\x12\x19clouditor.orchestrator.v1\x1a#api/orchestrator/orchestrator.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x13tagger/tagger.proto\"\x8f\x02\n" +
 	"\x04User\x12\x1a\n" +
 	"\x02id\x18\x01 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\x12\x1d\n" +
 	"\n" +
 	"first_name\x18\x02 \x01(\tR\tfirstName\x12\x1b\n" +
 	"\tlast_name\x18\x03 \x01(\tR\blastName\x12\x14\n" +
-	"\x05email\x18\x04 \x01(\tR\x05email\x12\x9a\x01\n" +
-	"\x18certification_target_ids\x18\x05 \x03(\v2..clouditor.orchestrator.v1.CertificationTargetB0\x9a\x84\x9e\x03+gorm:\"many2many:user_certification_target;\"R\x16certificationTargetIdsB,Z*clouditor.io/clouditor/v2/api/orchestratorb\x06proto3"
+	"\x05email\x18\x04 \x01(\tR\x05email\x12\x98\x01\n" +
+	"\x18target_of_evaluation_ids\x18\x05 \x03(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB0\x9a\x84\x9e\x03+gorm:\"many2many:user_certification_target;\"R\x15targetOfEvaluationIdsB,Z*clouditor.io/clouditor/v2/api/orchestratorb\x06proto3"
 
 var (
 	file_api_orchestrator_user_proto_rawDescOnce sync.Once
@@ -156,11 +156,11 @@ func file_api_orchestrator_user_proto_rawDescGZIP() []byte {
 
 var file_api_orchestrator_user_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_api_orchestrator_user_proto_goTypes = []any{
-	(*User)(nil),                // 0: clouditor.orchestrator.v1.User
-	(*CertificationTarget)(nil), // 1: clouditor.orchestrator.v1.CertificationTarget
+	(*User)(nil),               // 0: clouditor.orchestrator.v1.User
+	(*TargetOfEvaluation)(nil), // 1: clouditor.orchestrator.v1.TargetOfEvaluation
 }
 var file_api_orchestrator_user_proto_depIdxs = []int32{
-	1, // 0: clouditor.orchestrator.v1.User.certification_target_ids:type_name -> clouditor.orchestrator.v1.CertificationTarget
+	1, // 0: clouditor.orchestrator.v1.User.target_of_evaluation_ids:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
