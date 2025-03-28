@@ -46,7 +46,7 @@ message User {
   string last_name = 3;
   string email = 4;
   // target_of_certification_ids defines the scope of the user
-  repeated clouditor.orchestrator.v1.CertificationTarget certification_target_ids = 5 [(tagger.tags) = "gorm:\"many2many:user_certification_target;\""];
+  repeated clouditor.orchestrator.v1.TargetOfEvaluation target_of_evaluation_ids = 5 [(tagger.tags) = "gorm:\"many2many:user_certification_target;\""];
 }
 
 // TODO(lebogg): Add API endpoint for adding a user
