@@ -304,10 +304,10 @@ func (s *Service) CreateDefaultTargetOfEvaluation() (target *orchestrator.Target
 		if err != nil {
 			return nil, fmt.Errorf("storage error: %w", err)
 		} else {
-			log.Infof("Created new default target target of evaluation: %s", target.Id)
+			log.Infof("Created new default target of evaluation: %s", target.Id)
 		}
 	} else {
-		log.Infof("Default target target of evaluation already exist.")
+		log.Infof("Default target of evaluation already exist.")
 	}
 
 	return
