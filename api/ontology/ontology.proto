@@ -88,6 +88,7 @@ message ActivityLogging {
   bool monitoring_log_data_enabled = 13626;
   google.protobuf.Duration retention_period = 10788;
   bool security_alerts_enabled = 17680;
+  repeated string logging_service_ids = 589;
 }
 
 // AnomalyDetection is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -140,6 +141,7 @@ message ApplicationLogging {
   bool monitoring_log_data_enabled = 4205;
   google.protobuf.Duration retention_period = 6319;
   bool security_alerts_enabled = 17870;
+  repeated string logging_service_ids = 3793;
 }
 
 // AtRestEncryption is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -292,6 +294,7 @@ message BootLogging {
   bool monitoring_log_data_enabled = 9135;
   google.protobuf.Duration retention_period = 2338;
   bool security_alerts_enabled = 3133;
+  repeated string logging_service_ids = 15790;
 }
 
 // CICDService is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -1803,6 +1806,7 @@ message OSLogging {
   bool monitoring_log_data_enabled = 12434;
   google.protobuf.Duration retention_period = 11358;
   bool security_alerts_enabled = 7453;
+  repeated string logging_service_ids = 10850;
 }
 
 // OTPBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -2135,6 +2139,7 @@ message ResourceLogging {
   bool monitoring_log_data_enabled = 6804;
   google.protobuf.Duration retention_period = 6776;
   bool security_alerts_enabled = 6099;
+  repeated string logging_service_ids = 15310;
 }
 
 // ResourceType is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.

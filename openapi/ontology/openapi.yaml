@@ -92,6 +92,10 @@ components:
                     type: string
                 securityAlertsEnabled:
                     type: boolean
+                loggingServiceIds:
+                    type: array
+                    items:
+                        type: string
             description: ActivityLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         AnomalyDetection:
             type: object
@@ -166,6 +170,10 @@ components:
                     type: string
                 securityAlertsEnabled:
                     type: boolean
+                loggingServiceIds:
+                    type: array
+                    items:
+                        type: string
             description: ApplicationLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         AtRestEncryption:
             type: object
@@ -324,6 +332,10 @@ components:
                     type: string
                 securityAlertsEnabled:
                     type: boolean
+                loggingServiceIds:
+                    type: array
+                    items:
+                        type: string
             description: BootLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Certificate:
             type: object
@@ -2165,6 +2177,10 @@ components:
                     type: string
                 securityAlertsEnabled:
                     type: boolean
+                loggingServiceIds:
+                    type: array
+                    items:
+                        type: string
             description: OSLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         OTPBasedAuthentication:
             type: object
@@ -2651,6 +2667,10 @@ components:
                     type: string
                 securityAlertsEnabled:
                     type: boolean
+                loggingServiceIds:
+                    type: array
+                    items:
+                        type: string
             description: ResourceLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         RobustnessScore:
             type: object

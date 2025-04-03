@@ -2313,6 +2313,13 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="https://ontology.emerald-he.eu/classes/Logging"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/to"/>
+            <Class IRI="https://ontology.emerald-he.eu/classes/LoggingService"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/Logging"/>
         <DataSomeValuesFrom>
             <DataProperty IRI="https://ontology.emerald-he.eu/classes/monitoringEnabled"/>
             <Datatype abbreviatedIRI="xsd:boolean"/>

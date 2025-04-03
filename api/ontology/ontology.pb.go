@@ -314,6 +314,7 @@ type ActivityLogging struct {
 	MonitoringLogDataEnabled bool                   `protobuf:"varint,13626,opt,name=monitoring_log_data_enabled,json=monitoringLogDataEnabled,proto3" json:"monitoring_log_data_enabled,omitempty"`
 	RetentionPeriod          *durationpb.Duration   `protobuf:"bytes,10788,opt,name=retention_period,json=retentionPeriod,proto3" json:"retention_period,omitempty"`
 	SecurityAlertsEnabled    bool                   `protobuf:"varint,17680,opt,name=security_alerts_enabled,json=securityAlertsEnabled,proto3" json:"security_alerts_enabled,omitempty"`
+	LoggingServiceIds        []string               `protobuf:"bytes,589,rep,name=logging_service_ids,json=loggingServiceIds,proto3" json:"logging_service_ids,omitempty"`
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
@@ -374,6 +375,13 @@ func (x *ActivityLogging) GetSecurityAlertsEnabled() bool {
 		return x.SecurityAlertsEnabled
 	}
 	return false
+}
+
+func (x *ActivityLogging) GetLoggingServiceIds() []string {
+	if x != nil {
+		return x.LoggingServiceIds
+	}
+	return nil
 }
 
 // AnomalyDetection is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -605,6 +613,7 @@ type ApplicationLogging struct {
 	MonitoringLogDataEnabled bool                   `protobuf:"varint,4205,opt,name=monitoring_log_data_enabled,json=monitoringLogDataEnabled,proto3" json:"monitoring_log_data_enabled,omitempty"`
 	RetentionPeriod          *durationpb.Duration   `protobuf:"bytes,6319,opt,name=retention_period,json=retentionPeriod,proto3" json:"retention_period,omitempty"`
 	SecurityAlertsEnabled    bool                   `protobuf:"varint,17870,opt,name=security_alerts_enabled,json=securityAlertsEnabled,proto3" json:"security_alerts_enabled,omitempty"`
+	LoggingServiceIds        []string               `protobuf:"bytes,3793,rep,name=logging_service_ids,json=loggingServiceIds,proto3" json:"logging_service_ids,omitempty"`
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
@@ -665,6 +674,13 @@ func (x *ApplicationLogging) GetSecurityAlertsEnabled() bool {
 		return x.SecurityAlertsEnabled
 	}
 	return false
+}
+
+func (x *ApplicationLogging) GetLoggingServiceIds() []string {
+	if x != nil {
+		return x.LoggingServiceIds
+	}
+	return nil
 }
 
 // AtRestEncryption is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -1870,6 +1886,7 @@ type BootLogging struct {
 	MonitoringLogDataEnabled bool                   `protobuf:"varint,9135,opt,name=monitoring_log_data_enabled,json=monitoringLogDataEnabled,proto3" json:"monitoring_log_data_enabled,omitempty"`
 	RetentionPeriod          *durationpb.Duration   `protobuf:"bytes,2338,opt,name=retention_period,json=retentionPeriod,proto3" json:"retention_period,omitempty"`
 	SecurityAlertsEnabled    bool                   `protobuf:"varint,3133,opt,name=security_alerts_enabled,json=securityAlertsEnabled,proto3" json:"security_alerts_enabled,omitempty"`
+	LoggingServiceIds        []string               `protobuf:"bytes,15790,rep,name=logging_service_ids,json=loggingServiceIds,proto3" json:"logging_service_ids,omitempty"`
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
@@ -1930,6 +1947,13 @@ func (x *BootLogging) GetSecurityAlertsEnabled() bool {
 		return x.SecurityAlertsEnabled
 	}
 	return false
+}
+
+func (x *BootLogging) GetLoggingServiceIds() []string {
+	if x != nil {
+		return x.LoggingServiceIds
+	}
+	return nil
 }
 
 // CICDService is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -12820,6 +12844,7 @@ type OSLogging struct {
 	MonitoringLogDataEnabled bool                   `protobuf:"varint,12434,opt,name=monitoring_log_data_enabled,json=monitoringLogDataEnabled,proto3" json:"monitoring_log_data_enabled,omitempty"`
 	RetentionPeriod          *durationpb.Duration   `protobuf:"bytes,11358,opt,name=retention_period,json=retentionPeriod,proto3" json:"retention_period,omitempty"`
 	SecurityAlertsEnabled    bool                   `protobuf:"varint,7453,opt,name=security_alerts_enabled,json=securityAlertsEnabled,proto3" json:"security_alerts_enabled,omitempty"`
+	LoggingServiceIds        []string               `protobuf:"bytes,10850,rep,name=logging_service_ids,json=loggingServiceIds,proto3" json:"logging_service_ids,omitempty"`
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
@@ -12880,6 +12905,13 @@ func (x *OSLogging) GetSecurityAlertsEnabled() bool {
 		return x.SecurityAlertsEnabled
 	}
 	return false
+}
+
+func (x *OSLogging) GetLoggingServiceIds() []string {
+	if x != nil {
+		return x.LoggingServiceIds
+	}
+	return nil
 }
 
 // OTPBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -15506,6 +15538,7 @@ type ResourceLogging struct {
 	MonitoringLogDataEnabled bool                   `protobuf:"varint,6804,opt,name=monitoring_log_data_enabled,json=monitoringLogDataEnabled,proto3" json:"monitoring_log_data_enabled,omitempty"`
 	RetentionPeriod          *durationpb.Duration   `protobuf:"bytes,6776,opt,name=retention_period,json=retentionPeriod,proto3" json:"retention_period,omitempty"`
 	SecurityAlertsEnabled    bool                   `protobuf:"varint,6099,opt,name=security_alerts_enabled,json=securityAlertsEnabled,proto3" json:"security_alerts_enabled,omitempty"`
+	LoggingServiceIds        []string               `protobuf:"bytes,15310,rep,name=logging_service_ids,json=loggingServiceIds,proto3" json:"logging_service_ids,omitempty"`
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
@@ -15566,6 +15599,13 @@ func (x *ResourceLogging) GetSecurityAlertsEnabled() bool {
 		return x.SecurityAlertsEnabled
 	}
 	return false
+}
+
+func (x *ResourceLogging) GetLoggingServiceIds() []string {
+	if x != nil {
+		return x.LoggingServiceIds
+	}
+	return nil
 }
 
 // ResourceType is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -19127,12 +19167,13 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:)\x82\xa6\x1d\aAccount\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-	"_parent_id\"\xad\x02\n" +
+	"_parent_id\"\xde\x02\n" +
 	"\x0fActivityLogging\x12\x1a\n" +
 	"\aenabled\x18Ս\x01 \x01(\bR\aenabled\x12>\n" +
 	"\x1bmonitoring_log_data_enabled\x18\xbaj \x01(\bR\x18monitoringLogDataEnabled\x12E\n" +
 	"\x10retention_period\x18\xa4T \x01(\v2\x19.google.protobuf.DurationR\x0fretentionPeriod\x128\n" +
-	"\x17security_alerts_enabled\x18\x90\x8a\x01 \x01(\bR\x15securityAlertsEnabled:=\x82\xa6\x1d\x0fActivityLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xbf\x01\n" +
+	"\x17security_alerts_enabled\x18\x90\x8a\x01 \x01(\bR\x15securityAlertsEnabled\x12/\n" +
+	"\x13logging_service_ids\x18\xcd\x04 \x03(\tR\x11loggingServiceIds:=\x82\xa6\x1d\x0fActivityLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xbf\x01\n" +
 	"\x10AnomalyDetection\x12\x19\n" +
 	"\aenabled\x18\x94E \x01(\bR\aenabled\x12[\n" +
 	"\x13application_logging\x18\xfcV \x01(\v2).clouditor.ontology.v1.ApplicationLoggingR\x12applicationLogging:3\x82\xa6\x1d\x10AnomalyDetection\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xa9\a\n" +
@@ -19161,12 +19202,13 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x13_code_repository_idB\r\n" +
 	"\v_compute_idB\f\n" +
 	"\n" +
-	"_parent_id\"\xb2\x02\n" +
+	"_parent_id\"\xe3\x02\n" +
 	"\x12ApplicationLogging\x12\x19\n" +
 	"\aenabled\x18\x83j \x01(\bR\aenabled\x12>\n" +
 	"\x1bmonitoring_log_data_enabled\x18\xed  \x01(\bR\x18monitoringLogDataEnabled\x12E\n" +
 	"\x10retention_period\x18\xaf1 \x01(\v2\x19.google.protobuf.DurationR\x0fretentionPeriod\x128\n" +
-	"\x17security_alerts_enabled\x18\u038b\x01 \x01(\bR\x15securityAlertsEnabled:@\x82\xa6\x1d\x12ApplicationLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xe9\x01\n" +
+	"\x17security_alerts_enabled\x18\u038b\x01 \x01(\bR\x15securityAlertsEnabled\x12/\n" +
+	"\x13logging_service_ids\x18\xd1\x1d \x03(\tR\x11loggingServiceIds:@\x82\xa6\x1d\x12ApplicationLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xe9\x01\n" +
 	"\x10AtRestEncryption\x12g\n" +
 	"\x17customer_key_encryption\x18\xab+ \x01(\v2,.clouditor.ontology.v1.CustomerKeyEncryptionH\x00R\x15customerKeyEncryption\x12d\n" +
 	"\x16managed_key_encryption\x18\xedG \x01(\v2+.clouditor.ontology.v1.ManagedKeyEncryptionH\x00R\x14managedKeyEncryptionB\x06\n" +
@@ -19259,12 +19301,13 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:9\x82\xa6\x1d\fBlockStorage\x82\xa6\x1d\aStorage\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-	"_parent_id\"\xa4\x02\n" +
+	"_parent_id\"\xd5\x02\n" +
 	"\vBootLogging\x12\x1a\n" +
 	"\aenabled\x18\xa9\x87\x01 \x01(\bR\aenabled\x12>\n" +
 	"\x1bmonitoring_log_data_enabled\x18\xafG \x01(\bR\x18monitoringLogDataEnabled\x12E\n" +
 	"\x10retention_period\x18\xa2\x12 \x01(\v2\x19.google.protobuf.DurationR\x0fretentionPeriod\x127\n" +
-	"\x17security_alerts_enabled\x18\xbd\x18 \x01(\bR\x15securityAlertsEnabled:9\x82\xa6\x1d\vBootLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\x86\x01\n" +
+	"\x17security_alerts_enabled\x18\xbd\x18 \x01(\bR\x15securityAlertsEnabled\x12/\n" +
+	"\x13logging_service_ids\x18\xae{ \x03(\tR\x11loggingServiceIds:9\x82\xa6\x1d\vBootLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\x86\x01\n" +
 	"\vCICDService\x12/\n" +
 	"\x03job\x18\x9f\x1f \x01(\v2\x1a.clouditor.ontology.v1.JobH\x00R\x03job\x12>\n" +
 	"\bworkflow\x18\xaaD \x01(\v2\x1f.clouditor.ontology.v1.WorkflowH\x00R\bworkflowB\x06\n" +
@@ -20366,12 +20409,13 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x13virtual_sub_network\x18\xb2X \x01(\v2(.clouditor.ontology.v1.VirtualSubNetworkH\x00R\x11virtualSubNetworkB\x06\n" +
 	"\x04type\"z\n" +
 	"\x10NoAuthentication\x12-\n" +
-	"\x12context_is_checked\x18\xf7] \x01(\bR\x10contextIsChecked:7\x82\xa6\x1d\x10NoAuthentication\x82\xa6\x1d\fAuthenticity\x82\xa6\x1d\x0fSecurityFeature\"\x9f\x02\n" +
+	"\x12context_is_checked\x18\xf7] \x01(\bR\x10contextIsChecked:7\x82\xa6\x1d\x10NoAuthentication\x82\xa6\x1d\fAuthenticity\x82\xa6\x1d\x0fSecurityFeature\"\xd0\x02\n" +
 	"\tOSLogging\x12\x19\n" +
 	"\aenabled\x18\xcf\x01 \x01(\bR\aenabled\x12>\n" +
 	"\x1bmonitoring_log_data_enabled\x18\x92a \x01(\bR\x18monitoringLogDataEnabled\x12E\n" +
 	"\x10retention_period\x18\xdeX \x01(\v2\x19.google.protobuf.DurationR\x0fretentionPeriod\x127\n" +
-	"\x17security_alerts_enabled\x18\x9d: \x01(\bR\x15securityAlertsEnabled:7\x82\xa6\x1d\tOSLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xa6\x01\n" +
+	"\x17security_alerts_enabled\x18\x9d: \x01(\bR\x15securityAlertsEnabled\x12/\n" +
+	"\x13logging_service_ids\x18\xe2T \x03(\tR\x11loggingServiceIds:7\x82\xa6\x1d\tOSLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xa6\x01\n" +
 	"\x16OTPBasedAuthentication\x12\x1d\n" +
 	"\tactivated\x18\xa0: \x01(\bR\tactivated\x12.\n" +
 	"\x12context_is_checked\x18\xe1\x93\x01 \x01(\bR\x10contextIsChecked:=\x82\xa6\x1d\x16OTPBasedAuthentication\x82\xa6\x1d\fAuthenticity\x82\xa6\x1d\x0fSecurityFeature\"\xbf\t\n" +
@@ -20622,12 +20666,13 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:/\x82\xa6\x1d\rResourceGroup\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-	"_parent_id\"\xab\x02\n" +
+	"_parent_id\"\xdc\x02\n" +
 	"\x0fResourceLogging\x12\x19\n" +
 	"\aenabled\x18\xe5\v \x01(\bR\aenabled\x12>\n" +
 	"\x1bmonitoring_log_data_enabled\x18\x945 \x01(\bR\x18monitoringLogDataEnabled\x12E\n" +
 	"\x10retention_period\x18\xf84 \x01(\v2\x19.google.protobuf.DurationR\x0fretentionPeriod\x127\n" +
-	"\x17security_alerts_enabled\x18\xd3/ \x01(\bR\x15securityAlertsEnabled:=\x82\xa6\x1d\x0fResourceLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"(\n" +
+	"\x17security_alerts_enabled\x18\xd3/ \x01(\bR\x15securityAlertsEnabled\x12/\n" +
+	"\x13logging_service_ids\x18\xcew \x03(\tR\x11loggingServiceIds:=\x82\xa6\x1d\x0fResourceLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"(\n" +
 	"\fResourceType:\x18\x82\xa6\x1d\fResourceType\x82\xa6\x1d\x04Core\"H\n" +
 	"\x0fRobustnessScore:5\x82\xa6\x1d\x0fRobustnessScore\x82\xa6\x1d\vReliability\x82\xa6\x1d\x0fSecurityFeature\"\xd5\a\n" +
 	"\x0eRoleAssignment\x12\x1d\n" +
