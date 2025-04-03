@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <Ontology xmlns="http://www.w3.org/2002/07/owl#"
-     xml:base="http://www.semanticweb.org/ang95681/ontologies/2025/3/untitled-ontology-23"
+     xml:base="http://www.semanticweb.org/ang95681/ontologies/2025/3/untitled-ontology-28"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:xml="http://www.w3.org/XML/1998/namespace"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-     ontologyIRI="http://www.semanticweb.org/ang95681/ontologies/2025/3/untitled-ontology-23">
+     ontologyIRI="http://www.semanticweb.org/ang95681/ontologies/2025/3/untitled-ontology-28">
     <Prefix name="owl" IRI="http://www.w3.org/2002/07/owl#"/>
     <Prefix name="rdf" IRI="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
     <Prefix name="xml" IRI="http://www.w3.org/XML/1998/namespace"/>
@@ -132,6 +132,12 @@
         <Class IRI="https://ontology.emerald-he.eu/classes/DDosProtection"/>
     </Declaration>
     <Declaration>
+        <Class IRI="https://ontology.emerald-he.eu/classes/Data"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="https://ontology.emerald-he.eu/classes/DataLocation"/>
+    </Declaration>
+    <Declaration>
         <Class IRI="https://ontology.emerald-he.eu/classes/DatabaseConnect"/>
     </Declaration>
     <Declaration>
@@ -157,9 +163,6 @@
     </Declaration>
     <Declaration>
         <Class IRI="https://ontology.emerald-he.eu/classes/DocumentDatabaseService"/>
-    </Declaration>
-    <Declaration>
-        <Class IRI="https://ontology.emerald-he.eu/classes/DocumentLocation"/>
     </Declaration>
     <Declaration>
         <Class IRI="https://ontology.emerald-he.eu/classes/EncryptionInUse"/>
@@ -276,7 +279,7 @@
         <Class IRI="https://ontology.emerald-he.eu/classes/LocalAttestation"/>
     </Declaration>
     <Declaration>
-        <Class IRI="https://ontology.emerald-he.eu/classes/LocalDocumentLocation"/>
+        <Class IRI="https://ontology.emerald-he.eu/classes/LocalDataLocation"/>
     </Declaration>
     <Declaration>
         <Class IRI="https://ontology.emerald-he.eu/classes/LocalRedundancy"/>
@@ -292,6 +295,18 @@
     </Declaration>
     <Declaration>
         <Class IRI="https://ontology.emerald-he.eu/classes/LoggingService"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearning"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearningDataset"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearningModel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearningService"/>
     </Declaration>
     <Declaration>
         <Class IRI="https://ontology.emerald-he.eu/classes/MalwareProtection"/>
@@ -369,7 +384,7 @@
         <Class IRI="https://ontology.emerald-he.eu/classes/RemoteAttestation"/>
     </Declaration>
     <Declaration>
-        <Class IRI="https://ontology.emerald-he.eu/classes/RemoteDocumentLocation"/>
+        <Class IRI="https://ontology.emerald-he.eu/classes/RemoteDataLocation"/>
     </Declaration>
     <Declaration>
         <Class IRI="https://ontology.emerald-he.eu/classes/Resource"/>
@@ -1038,16 +1053,31 @@
         <AnnotationProperty IRI="http://purl.org/dc/elements/1.1/description"/>
     </Declaration>
     <Declaration>
-        <AnnotationProperty IRI="http://purl.org/dc/elements/1.1/type"/>
-    </Declaration>
-    <Declaration>
         <Datatype abbreviatedIRI="xsd:de.fraunhofer.aisec.cpg.graph.Node"/>
     </Declaration>
     <Declaration>
         <Datatype abbreviatedIRI="xsd:listString"/>
     </Declaration>
     <Declaration>
+        <DataProperty IRI="https://ontology.emerald-he.eu/classes/privacyLabel"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="https://ontology.emerald-he.eu/classes/robustness"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="https://ontology.emerald-he.eu/classes/type"/>
+    </Declaration>
+    <Declaration>
         <DataProperty IRI="https://ontology.emerald-he.eu/classes/successfullyCompletedPercentage"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="https://ontology.emerald-he.eu/classes/size"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="https://ontology.emerald-he.eu/classes/privacyLevel"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="https://ontology.emerald-he.eu/classes/poisonLevel"/>
     </Declaration>
     <Declaration>
         <DataProperty IRI="https://ontology.emerald-he.eu/classes/annualUpdateCompleted"/>
@@ -1587,6 +1617,35 @@
         <Class IRI="https://ontology.emerald-he.eu/classes/Availability"/>
     </SubClassOf>
     <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/Data"/>
+        <Class IRI="https://ontology.emerald-he.eu/classes/Resource"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/Data"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/has"/>
+            <Class IRI="https://ontology.emerald-he.eu/classes/DataLocation"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/DataLocation"/>
+        <Class IRI="https://ontology.emerald-he.eu/classes/Functionality"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/DataLocation"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="https://ontology.emerald-he.eu/properties/has"/>
+            <Datatype IRI="https://ontology.emerald-he.eu/classes/Storage"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/DataLocation"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="https://ontology.emerald-he.eu/properties/path"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
         <Class IRI="https://ontology.emerald-he.eu/classes/DatabaseConnect"/>
         <Class IRI="https://ontology.emerald-he.eu/classes/DatabaseOperation"/>
     </SubClassOf>
@@ -1672,20 +1731,13 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="https://ontology.emerald-he.eu/classes/Document"/>
-        <Class IRI="https://ontology.emerald-he.eu/classes/Resource"/>
+        <Class IRI="https://ontology.emerald-he.eu/classes/Data"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="https://ontology.emerald-he.eu/classes/Document"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="https://ontology.emerald-he.eu/classes/validatedBy"/>
             <Class IRI="https://ontology.emerald-he.eu/classes/SchemaValidation"/>
-        </ObjectSomeValuesFrom>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="https://ontology.emerald-he.eu/classes/Document"/>
-        <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/has"/>
-            <Class IRI="https://ontology.emerald-he.eu/classes/DocumentLocation"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
@@ -1719,17 +1771,6 @@
     <SubClassOf>
         <Class IRI="https://ontology.emerald-he.eu/classes/DocumentDatabaseService"/>
         <Class IRI="https://ontology.emerald-he.eu/classes/DatabaseService"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="https://ontology.emerald-he.eu/classes/DocumentLocation"/>
-        <Class IRI="https://ontology.emerald-he.eu/classes/Functionality"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="https://ontology.emerald-he.eu/classes/DocumentLocation"/>
-        <DataSomeValuesFrom>
-            <DataProperty IRI="https://ontology.emerald-he.eu/properties/path"/>
-            <Datatype abbreviatedIRI="xsd:string"/>
-        </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="https://ontology.emerald-he.eu/classes/EncryptionInUse"/>
@@ -2220,11 +2261,11 @@
         <Class IRI="https://ontology.emerald-he.eu/classes/Attestation"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="https://ontology.emerald-he.eu/classes/LocalDocumentLocation"/>
-        <Class IRI="https://ontology.emerald-he.eu/classes/DocumentLocation"/>
+        <Class IRI="https://ontology.emerald-he.eu/classes/LocalDataLocation"/>
+        <Class IRI="https://ontology.emerald-he.eu/classes/DataLocation"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="https://ontology.emerald-he.eu/classes/LocalDocumentLocation"/>
+        <Class IRI="https://ontology.emerald-he.eu/classes/LocalDataLocation"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/offers"/>
             <Class IRI="https://ontology.emerald-he.eu/classes/AtRestEncryption"/>
@@ -2269,13 +2310,6 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="https://ontology.emerald-he.eu/classes/Logging"/>
-        <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/to"/>
-            <Class IRI="https://ontology.emerald-he.eu/classes/LoggingService"/>
-        </ObjectSomeValuesFrom>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="https://ontology.emerald-he.eu/classes/Logging"/>
         <DataSomeValuesFrom>
             <DataProperty IRI="https://ontology.emerald-he.eu/classes/monitoringEnabled"/>
             <Datatype abbreviatedIRI="xsd:boolean"/>
@@ -2308,6 +2342,92 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="https://ontology.emerald-he.eu/classes/LoggingService"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/hasMultiple"/>
+            <Class IRI="https://ontology.emerald-he.eu/classes/Storage"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearning"/>
+        <Class IRI="https://ontology.emerald-he.eu/classes/Data"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearningDataset"/>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearning"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearningDataset"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="https://ontology.emerald-he.eu/classes/size"/>
+            <Datatype abbreviatedIRI="xsd:int"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearningDataset"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="https://ontology.emerald-he.eu/classes/type"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearningModel"/>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearning"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearningModel"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="https://ontology.emerald-he.eu/classes/adv_robustness"/>
+            <Datatype abbreviatedIRI="xsd:float"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearningModel"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="https://ontology.emerald-he.eu/classes/explainability"/>
+            <Datatype abbreviatedIRI="xsd:float"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearningModel"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="https://ontology.emerald-he.eu/classes/poisonLevel"/>
+            <Datatype abbreviatedIRI="xsd:float"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearningModel"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="https://ontology.emerald-he.eu/classes/privacyLabel"/>
+            <Datatype abbreviatedIRI="xsd:float"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearningModel"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="https://ontology.emerald-he.eu/classes/privacyLevel"/>
+            <Datatype abbreviatedIRI="xsd:float"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearningModel"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="https://ontology.emerald-he.eu/classes/robustness"/>
+            <Datatype abbreviatedIRI="xsd:float"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearningService"/>
+        <Class IRI="https://ontology.emerald-he.eu/classes/NetworkService"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearningService"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/hasMultiple"/>
+            <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearning"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearningService"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/hasMultiple"/>
             <Class IRI="https://ontology.emerald-he.eu/classes/Storage"/>
@@ -2589,18 +2709,18 @@
         </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="https://ontology.emerald-he.eu/classes/RemoteDocumentLocation"/>
-        <Class IRI="https://ontology.emerald-he.eu/classes/DocumentLocation"/>
+        <Class IRI="https://ontology.emerald-he.eu/classes/RemoteDataLocation"/>
+        <Class IRI="https://ontology.emerald-he.eu/classes/DataLocation"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="https://ontology.emerald-he.eu/classes/RemoteDocumentLocation"/>
+        <Class IRI="https://ontology.emerald-he.eu/classes/RemoteDataLocation"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/offers"/>
             <Class IRI="https://ontology.emerald-he.eu/classes/Authenticity"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="https://ontology.emerald-he.eu/classes/RemoteDocumentLocation"/>
+        <Class IRI="https://ontology.emerald-he.eu/classes/RemoteDataLocation"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/offers"/>
             <Class IRI="https://ontology.emerald-he.eu/classes/TransportEncryption"/>
@@ -3479,11 +3599,6 @@ name = metadata.name</Literal>
         <Datatype abbreviatedIRI="xsd:boolean"/>
     </DataPropertyRange>
     <AnnotationAssertion>
-        <AnnotationProperty IRI="http://purl.org/dc/elements/1.1/type"/>
-        <IRI>cl:scope</IRI>
-        <Literal>string</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>xsd:de.fraunhofer.aisec.cpg.graph.Node</AbbreviatedIRI>
         <Literal xml:lang="english">xsd:de.fraunhofer.aisec.cpg.graph.Node</Literal>
@@ -3724,6 +3839,16 @@ name = metadata.name</Literal>
         <Literal xml:lang="en">DDoSProtection</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>https://ontology.emerald-he.eu/classes/DataLocation</IRI>
+        <Literal>path: Describes either local path or path in URL format</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>https://ontology.emerald-he.eu/classes/DataLocation</IRI>
+        <Literal>DataLocation</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>https://ontology.emerald-he.eu/classes/DatabaseConnect</IRI>
         <Literal>DatabaseConnect</Literal>
@@ -3771,7 +3896,7 @@ name = metadata.name</Literal>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
         <IRI>https://ontology.emerald-he.eu/classes/Document</IRI>
-        <Literal>path: Describes either local path or path in URL format</Literal>
+        <Literal>DataLocation: Describes the location as local or remote location</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -3782,11 +3907,6 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>https://ontology.emerald-he.eu/classes/DocumentDatabaseService</IRI>
         <Literal>DocumentDatabaseService</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
-        <IRI>https://ontology.emerald-he.eu/classes/DocumentLocation</IRI>
-        <Literal>DocumentLocation</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -3990,8 +4110,8 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
-        <IRI>https://ontology.emerald-he.eu/classes/LocalDocumentLocation</IRI>
-        <Literal>LocalDocumentLocation</Literal>
+        <IRI>https://ontology.emerald-he.eu/classes/LocalDataLocation</IRI>
+        <Literal>LocalDataLocation</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -4175,8 +4295,8 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
-        <IRI>https://ontology.emerald-he.eu/classes/RemoteDocumentLocation</IRI>
-        <Literal>RemoteDocumentLocation</Literal>
+        <IRI>https://ontology.emerald-he.eu/classes/RemoteDataLocation</IRI>
+        <Literal>RemoteDataLocation</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -4657,11 +4777,6 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>https://ontology.emerald-he.eu/classes/resourceId</IRI>
         <Literal>resourceId</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:seeAlso"/>
-        <IRI>https://ontology.emerald-he.eu/classes/resourceId</IRI>
-        <Literal>string</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
@@ -5283,4 +5398,3 @@ name = metadata.name</Literal>
 
 
 <!-- Generated by the OWL API (version 4.5.29.2024-05-13T12:11:03Z) https://github.com/owlcs/owlapi -->
-

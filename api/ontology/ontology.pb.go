@@ -314,7 +314,6 @@ type ActivityLogging struct {
 	MonitoringLogDataEnabled bool                   `protobuf:"varint,13626,opt,name=monitoring_log_data_enabled,json=monitoringLogDataEnabled,proto3" json:"monitoring_log_data_enabled,omitempty"`
 	RetentionPeriod          *durationpb.Duration   `protobuf:"bytes,10788,opt,name=retention_period,json=retentionPeriod,proto3" json:"retention_period,omitempty"`
 	SecurityAlertsEnabled    bool                   `protobuf:"varint,17680,opt,name=security_alerts_enabled,json=securityAlertsEnabled,proto3" json:"security_alerts_enabled,omitempty"`
-	LoggingServiceIds        []string               `protobuf:"bytes,589,rep,name=logging_service_ids,json=loggingServiceIds,proto3" json:"logging_service_ids,omitempty"`
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
@@ -377,20 +376,12 @@ func (x *ActivityLogging) GetSecurityAlertsEnabled() bool {
 	return false
 }
 
-func (x *ActivityLogging) GetLoggingServiceIds() []string {
-	if x != nil {
-		return x.LoggingServiceIds
-	}
-	return nil
-}
-
 // AnomalyDetection is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 // Analyzes the activity of a NetworkService (which includes DatabaseServices).
 // Scope contains the resource ID of the protected resource.
 type AnomalyDetection struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	Enabled            bool                   `protobuf:"varint,8852,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	Scope              string                 `protobuf:"bytes,8482,opt,name=scope,proto3" json:"scope,omitempty"`
 	ApplicationLogging *ApplicationLogging    `protobuf:"bytes,11132,opt,name=application_logging,json=applicationLogging,proto3" json:"application_logging,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
@@ -431,13 +422,6 @@ func (x *AnomalyDetection) GetEnabled() bool {
 		return x.Enabled
 	}
 	return false
-}
-
-func (x *AnomalyDetection) GetScope() string {
-	if x != nil {
-		return x.Scope
-	}
-	return ""
 }
 
 func (x *AnomalyDetection) GetApplicationLogging() *ApplicationLogging {
@@ -621,7 +605,6 @@ type ApplicationLogging struct {
 	MonitoringLogDataEnabled bool                   `protobuf:"varint,4205,opt,name=monitoring_log_data_enabled,json=monitoringLogDataEnabled,proto3" json:"monitoring_log_data_enabled,omitempty"`
 	RetentionPeriod          *durationpb.Duration   `protobuf:"bytes,6319,opt,name=retention_period,json=retentionPeriod,proto3" json:"retention_period,omitempty"`
 	SecurityAlertsEnabled    bool                   `protobuf:"varint,17870,opt,name=security_alerts_enabled,json=securityAlertsEnabled,proto3" json:"security_alerts_enabled,omitempty"`
-	LoggingServiceIds        []string               `protobuf:"bytes,3793,rep,name=logging_service_ids,json=loggingServiceIds,proto3" json:"logging_service_ids,omitempty"`
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
@@ -682,13 +665,6 @@ func (x *ApplicationLogging) GetSecurityAlertsEnabled() bool {
 		return x.SecurityAlertsEnabled
 	}
 	return false
-}
-
-func (x *ApplicationLogging) GetLoggingServiceIds() []string {
-	if x != nil {
-		return x.LoggingServiceIds
-	}
-	return nil
 }
 
 // AtRestEncryption is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -1894,7 +1870,6 @@ type BootLogging struct {
 	MonitoringLogDataEnabled bool                   `protobuf:"varint,9135,opt,name=monitoring_log_data_enabled,json=monitoringLogDataEnabled,proto3" json:"monitoring_log_data_enabled,omitempty"`
 	RetentionPeriod          *durationpb.Duration   `protobuf:"bytes,2338,opt,name=retention_period,json=retentionPeriod,proto3" json:"retention_period,omitempty"`
 	SecurityAlertsEnabled    bool                   `protobuf:"varint,3133,opt,name=security_alerts_enabled,json=securityAlertsEnabled,proto3" json:"security_alerts_enabled,omitempty"`
-	LoggingServiceIds        []string               `protobuf:"bytes,15790,rep,name=logging_service_ids,json=loggingServiceIds,proto3" json:"logging_service_ids,omitempty"`
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
@@ -1955,13 +1930,6 @@ func (x *BootLogging) GetSecurityAlertsEnabled() bool {
 		return x.SecurityAlertsEnabled
 	}
 	return false
-}
-
-func (x *BootLogging) GetLoggingServiceIds() []string {
-	if x != nil {
-		return x.LoggingServiceIds
-	}
-	return nil
 }
 
 // CICDService is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -2413,6 +2381,7 @@ type Infrastructure struct {
 	//	*Infrastructure_GenericNetworkService
 	//	*Infrastructure_LoadBalancer
 	//	*Infrastructure_LoggingService
+	//	*Infrastructure_MachineLearningService
 	//	*Infrastructure_SecurityAdvisoryService
 	//	*Infrastructure_DocumentDatabaseService
 	//	*Infrastructure_KeyValueDatabaseService
@@ -2695,6 +2664,15 @@ func (x *Infrastructure) GetLoggingService() *LoggingService {
 	return nil
 }
 
+func (x *Infrastructure) GetMachineLearningService() *MachineLearningService {
+	if x != nil {
+		if x, ok := x.Type.(*Infrastructure_MachineLearningService); ok {
+			return x.MachineLearningService
+		}
+	}
+	return nil
+}
+
 func (x *Infrastructure) GetSecurityAdvisoryService() *SecurityAdvisoryService {
 	if x != nil {
 		if x, ok := x.Type.(*Infrastructure_SecurityAdvisoryService); ok {
@@ -2934,6 +2912,10 @@ type Infrastructure_LoggingService struct {
 	LoggingService *LoggingService `protobuf:"bytes,14131,opt,name=logging_service,json=loggingService,proto3,oneof"`
 }
 
+type Infrastructure_MachineLearningService struct {
+	MachineLearningService *MachineLearningService `protobuf:"bytes,16966,opt,name=machine_learning_service,json=machineLearningService,proto3,oneof"`
+}
+
 type Infrastructure_SecurityAdvisoryService struct {
 	SecurityAdvisoryService *SecurityAdvisoryService `protobuf:"bytes,173,opt,name=security_advisory_service,json=securityAdvisoryService,proto3,oneof"`
 }
@@ -3043,6 +3025,8 @@ func (*Infrastructure_GenericNetworkService) isInfrastructure_Type() {}
 func (*Infrastructure_LoadBalancer) isInfrastructure_Type() {}
 
 func (*Infrastructure_LoggingService) isInfrastructure_Type() {}
+
+func (*Infrastructure_MachineLearningService) isInfrastructure_Type() {}
 
 func (*Infrastructure_SecurityAdvisoryService) isInfrastructure_Type() {}
 
@@ -4763,6 +4747,237 @@ func (*DDoSProtection) Descriptor() ([]byte, []int) {
 	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{39}
 }
 
+// Data is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+type Data struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Type:
+	//
+	//	*Data_GenericDocument
+	//	*Data_PolicyDocument
+	//	*Data_SecurityAdvisoryDocument
+	//	*Data_ServiceMetadataDocument
+	//	*Data_MachineLearningDataset
+	//	*Data_MachineLearningModel
+	Type          isData_Type `protobuf_oneof:"type"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Data) Reset() {
+	*x = Data{}
+	mi := &file_api_ontology_ontology_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Data) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Data) ProtoMessage() {}
+
+func (x *Data) ProtoReflect() protoreflect.Message {
+	mi := &file_api_ontology_ontology_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Data.ProtoReflect.Descriptor instead.
+func (*Data) Descriptor() ([]byte, []int) {
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *Data) GetType() isData_Type {
+	if x != nil {
+		return x.Type
+	}
+	return nil
+}
+
+func (x *Data) GetGenericDocument() *GenericDocument {
+	if x != nil {
+		if x, ok := x.Type.(*Data_GenericDocument); ok {
+			return x.GenericDocument
+		}
+	}
+	return nil
+}
+
+func (x *Data) GetPolicyDocument() *PolicyDocument {
+	if x != nil {
+		if x, ok := x.Type.(*Data_PolicyDocument); ok {
+			return x.PolicyDocument
+		}
+	}
+	return nil
+}
+
+func (x *Data) GetSecurityAdvisoryDocument() *SecurityAdvisoryDocument {
+	if x != nil {
+		if x, ok := x.Type.(*Data_SecurityAdvisoryDocument); ok {
+			return x.SecurityAdvisoryDocument
+		}
+	}
+	return nil
+}
+
+func (x *Data) GetServiceMetadataDocument() *ServiceMetadataDocument {
+	if x != nil {
+		if x, ok := x.Type.(*Data_ServiceMetadataDocument); ok {
+			return x.ServiceMetadataDocument
+		}
+	}
+	return nil
+}
+
+func (x *Data) GetMachineLearningDataset() *MachineLearningDataset {
+	if x != nil {
+		if x, ok := x.Type.(*Data_MachineLearningDataset); ok {
+			return x.MachineLearningDataset
+		}
+	}
+	return nil
+}
+
+func (x *Data) GetMachineLearningModel() *MachineLearningModel {
+	if x != nil {
+		if x, ok := x.Type.(*Data_MachineLearningModel); ok {
+			return x.MachineLearningModel
+		}
+	}
+	return nil
+}
+
+type isData_Type interface {
+	isData_Type()
+}
+
+type Data_GenericDocument struct {
+	GenericDocument *GenericDocument `protobuf:"bytes,4992,opt,name=generic_document,json=genericDocument,proto3,oneof"`
+}
+
+type Data_PolicyDocument struct {
+	PolicyDocument *PolicyDocument `protobuf:"bytes,14953,opt,name=policy_document,json=policyDocument,proto3,oneof"`
+}
+
+type Data_SecurityAdvisoryDocument struct {
+	SecurityAdvisoryDocument *SecurityAdvisoryDocument `protobuf:"bytes,14717,opt,name=security_advisory_document,json=securityAdvisoryDocument,proto3,oneof"`
+}
+
+type Data_ServiceMetadataDocument struct {
+	ServiceMetadataDocument *ServiceMetadataDocument `protobuf:"bytes,272,opt,name=service_metadata_document,json=serviceMetadataDocument,proto3,oneof"`
+}
+
+type Data_MachineLearningDataset struct {
+	MachineLearningDataset *MachineLearningDataset `protobuf:"bytes,2040,opt,name=machine_learning_dataset,json=machineLearningDataset,proto3,oneof"`
+}
+
+type Data_MachineLearningModel struct {
+	MachineLearningModel *MachineLearningModel `protobuf:"bytes,15393,opt,name=machine_learning_model,json=machineLearningModel,proto3,oneof"`
+}
+
+func (*Data_GenericDocument) isData_Type() {}
+
+func (*Data_PolicyDocument) isData_Type() {}
+
+func (*Data_SecurityAdvisoryDocument) isData_Type() {}
+
+func (*Data_ServiceMetadataDocument) isData_Type() {}
+
+func (*Data_MachineLearningDataset) isData_Type() {}
+
+func (*Data_MachineLearningModel) isData_Type() {}
+
+// DataLocation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+// path: Describes either local path or path in URL format
+type DataLocation struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Type:
+	//
+	//	*DataLocation_LocalDataLocation
+	//	*DataLocation_RemoteDataLocation
+	Type          isDataLocation_Type `protobuf_oneof:"type"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DataLocation) Reset() {
+	*x = DataLocation{}
+	mi := &file_api_ontology_ontology_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DataLocation) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DataLocation) ProtoMessage() {}
+
+func (x *DataLocation) ProtoReflect() protoreflect.Message {
+	mi := &file_api_ontology_ontology_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DataLocation.ProtoReflect.Descriptor instead.
+func (*DataLocation) Descriptor() ([]byte, []int) {
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{41}
+}
+
+func (x *DataLocation) GetType() isDataLocation_Type {
+	if x != nil {
+		return x.Type
+	}
+	return nil
+}
+
+func (x *DataLocation) GetLocalDataLocation() *LocalDataLocation {
+	if x != nil {
+		if x, ok := x.Type.(*DataLocation_LocalDataLocation); ok {
+			return x.LocalDataLocation
+		}
+	}
+	return nil
+}
+
+func (x *DataLocation) GetRemoteDataLocation() *RemoteDataLocation {
+	if x != nil {
+		if x, ok := x.Type.(*DataLocation_RemoteDataLocation); ok {
+			return x.RemoteDataLocation
+		}
+	}
+	return nil
+}
+
+type isDataLocation_Type interface {
+	isDataLocation_Type()
+}
+
+type DataLocation_LocalDataLocation struct {
+	LocalDataLocation *LocalDataLocation `protobuf:"bytes,12313,opt,name=local_data_location,json=localDataLocation,proto3,oneof"`
+}
+
+type DataLocation_RemoteDataLocation struct {
+	RemoteDataLocation *RemoteDataLocation `protobuf:"bytes,13541,opt,name=remote_data_location,json=remoteDataLocation,proto3,oneof"`
+}
+
+func (*DataLocation_LocalDataLocation) isDataLocation_Type() {}
+
+func (*DataLocation_RemoteDataLocation) isDataLocation_Type() {}
+
 // DatabaseConnect is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 type DatabaseConnect struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
@@ -4776,7 +4991,7 @@ type DatabaseConnect struct {
 
 func (x *DatabaseConnect) Reset() {
 	*x = DatabaseConnect{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[40]
+	mi := &file_api_ontology_ontology_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4788,7 +5003,7 @@ func (x *DatabaseConnect) String() string {
 func (*DatabaseConnect) ProtoMessage() {}
 
 func (x *DatabaseConnect) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[40]
+	mi := &file_api_ontology_ontology_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4801,7 +5016,7 @@ func (x *DatabaseConnect) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DatabaseConnect.ProtoReflect.Descriptor instead.
 func (*DatabaseConnect) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{40}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *DatabaseConnect) GetCalls() []string {
@@ -4846,7 +5061,7 @@ type DatabaseOperation struct {
 
 func (x *DatabaseOperation) Reset() {
 	*x = DatabaseOperation{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[41]
+	mi := &file_api_ontology_ontology_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4858,7 +5073,7 @@ func (x *DatabaseOperation) String() string {
 func (*DatabaseOperation) ProtoMessage() {}
 
 func (x *DatabaseOperation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[41]
+	mi := &file_api_ontology_ontology_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4871,7 +5086,7 @@ func (x *DatabaseOperation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DatabaseOperation.ProtoReflect.Descriptor instead.
 func (*DatabaseOperation) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{41}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *DatabaseOperation) GetType() isDatabaseOperation_Type {
@@ -4929,7 +5144,7 @@ type DatabaseQuery struct {
 
 func (x *DatabaseQuery) Reset() {
 	*x = DatabaseQuery{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[42]
+	mi := &file_api_ontology_ontology_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4941,7 +5156,7 @@ func (x *DatabaseQuery) String() string {
 func (*DatabaseQuery) ProtoMessage() {}
 
 func (x *DatabaseQuery) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[42]
+	mi := &file_api_ontology_ontology_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4954,7 +5169,7 @@ func (x *DatabaseQuery) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DatabaseQuery.ProtoReflect.Descriptor instead.
 func (*DatabaseQuery) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{42}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *DatabaseQuery) GetCalls() []string {
@@ -5009,7 +5224,7 @@ type DatabaseService struct {
 
 func (x *DatabaseService) Reset() {
 	*x = DatabaseService{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[43]
+	mi := &file_api_ontology_ontology_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5021,7 +5236,7 @@ func (x *DatabaseService) String() string {
 func (*DatabaseService) ProtoMessage() {}
 
 func (x *DatabaseService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[43]
+	mi := &file_api_ontology_ontology_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5034,7 +5249,7 @@ func (x *DatabaseService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DatabaseService.ProtoReflect.Descriptor instead.
 func (*DatabaseService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{43}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *DatabaseService) GetType() isDatabaseService_Type {
@@ -5136,7 +5351,7 @@ type DatabaseStorage struct {
 
 func (x *DatabaseStorage) Reset() {
 	*x = DatabaseStorage{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[44]
+	mi := &file_api_ontology_ontology_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5148,7 +5363,7 @@ func (x *DatabaseStorage) String() string {
 func (*DatabaseStorage) ProtoMessage() {}
 
 func (x *DatabaseStorage) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[44]
+	mi := &file_api_ontology_ontology_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5161,7 +5376,7 @@ func (x *DatabaseStorage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DatabaseStorage.ProtoReflect.Descriptor instead.
 func (*DatabaseStorage) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{44}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *DatabaseStorage) GetCreationTime() *timestamppb.Timestamp {
@@ -5294,7 +5509,7 @@ type Decryption struct {
 
 func (x *Decryption) Reset() {
 	*x = Decryption{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[45]
+	mi := &file_api_ontology_ontology_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5306,7 +5521,7 @@ func (x *Decryption) String() string {
 func (*Decryption) ProtoMessage() {}
 
 func (x *Decryption) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[45]
+	mi := &file_api_ontology_ontology_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5319,7 +5534,7 @@ func (x *Decryption) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Decryption.ProtoReflect.Descriptor instead.
 func (*Decryption) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{45}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *Decryption) GetAlgorithm() string {
@@ -5358,7 +5573,7 @@ type DeviceProvisioningService struct {
 
 func (x *DeviceProvisioningService) Reset() {
 	*x = DeviceProvisioningService{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[46]
+	mi := &file_api_ontology_ontology_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5370,7 +5585,7 @@ func (x *DeviceProvisioningService) String() string {
 func (*DeviceProvisioningService) ProtoMessage() {}
 
 func (x *DeviceProvisioningService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[46]
+	mi := &file_api_ontology_ontology_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5383,7 +5598,7 @@ func (x *DeviceProvisioningService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeviceProvisioningService.ProtoReflect.Descriptor instead.
 func (*DeviceProvisioningService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{46}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *DeviceProvisioningService) GetCreationTime() *timestamppb.Timestamp {
@@ -5471,7 +5686,7 @@ func (x *DeviceProvisioningService) GetUsageStatistics() *UsageStatistics {
 }
 
 // Document is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
-// path: Describes either local path or path in URL format
+// DataLocation: Describes the location as local or remote location
 type Document struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Type:
@@ -5487,7 +5702,7 @@ type Document struct {
 
 func (x *Document) Reset() {
 	*x = Document{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[47]
+	mi := &file_api_ontology_ontology_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5499,7 +5714,7 @@ func (x *Document) String() string {
 func (*Document) ProtoMessage() {}
 
 func (x *Document) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[47]
+	mi := &file_api_ontology_ontology_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5512,7 +5727,7 @@ func (x *Document) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Document.ProtoReflect.Descriptor instead.
 func (*Document) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{47}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *Document) GetType() isDocument_Type {
@@ -5563,19 +5778,19 @@ type isDocument_Type interface {
 }
 
 type Document_GenericDocument struct {
-	GenericDocument *GenericDocument `protobuf:"bytes,5702,opt,name=generic_document,json=genericDocument,proto3,oneof"`
+	GenericDocument *GenericDocument `protobuf:"bytes,4992,opt,name=generic_document,json=genericDocument,proto3,oneof"`
 }
 
 type Document_PolicyDocument struct {
-	PolicyDocument *PolicyDocument `protobuf:"bytes,3687,opt,name=policy_document,json=policyDocument,proto3,oneof"`
+	PolicyDocument *PolicyDocument `protobuf:"bytes,14953,opt,name=policy_document,json=policyDocument,proto3,oneof"`
 }
 
 type Document_SecurityAdvisoryDocument struct {
-	SecurityAdvisoryDocument *SecurityAdvisoryDocument `protobuf:"bytes,8513,opt,name=security_advisory_document,json=securityAdvisoryDocument,proto3,oneof"`
+	SecurityAdvisoryDocument *SecurityAdvisoryDocument `protobuf:"bytes,14717,opt,name=security_advisory_document,json=securityAdvisoryDocument,proto3,oneof"`
 }
 
 type Document_ServiceMetadataDocument struct {
-	ServiceMetadataDocument *ServiceMetadataDocument `protobuf:"bytes,13959,opt,name=service_metadata_document,json=serviceMetadataDocument,proto3,oneof"`
+	ServiceMetadataDocument *ServiceMetadataDocument `protobuf:"bytes,272,opt,name=service_metadata_document,json=serviceMetadataDocument,proto3,oneof"`
 }
 
 func (*Document_GenericDocument) isDocument_Type() {}
@@ -5619,7 +5834,7 @@ type DocumentDatabaseService struct {
 
 func (x *DocumentDatabaseService) Reset() {
 	*x = DocumentDatabaseService{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[48]
+	mi := &file_api_ontology_ontology_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5631,7 +5846,7 @@ func (x *DocumentDatabaseService) String() string {
 func (*DocumentDatabaseService) ProtoMessage() {}
 
 func (x *DocumentDatabaseService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[48]
+	mi := &file_api_ontology_ontology_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5644,7 +5859,7 @@ func (x *DocumentDatabaseService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DocumentDatabaseService.ProtoReflect.Descriptor instead.
 func (*DocumentDatabaseService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{48}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *DocumentDatabaseService) GetCreationTime() *timestamppb.Timestamp {
@@ -5808,89 +6023,6 @@ func (x *DocumentDatabaseService) GetUsageStatistics() *UsageStatistics {
 	return nil
 }
 
-// DocumentLocation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
-type DocumentLocation struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Types that are valid to be assigned to Type:
-	//
-	//	*DocumentLocation_LocalDocumentLocation
-	//	*DocumentLocation_RemoteDocumentLocation
-	Type          isDocumentLocation_Type `protobuf_oneof:"type"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DocumentLocation) Reset() {
-	*x = DocumentLocation{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[49]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DocumentLocation) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DocumentLocation) ProtoMessage() {}
-
-func (x *DocumentLocation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[49]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DocumentLocation.ProtoReflect.Descriptor instead.
-func (*DocumentLocation) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{49}
-}
-
-func (x *DocumentLocation) GetType() isDocumentLocation_Type {
-	if x != nil {
-		return x.Type
-	}
-	return nil
-}
-
-func (x *DocumentLocation) GetLocalDocumentLocation() *LocalDocumentLocation {
-	if x != nil {
-		if x, ok := x.Type.(*DocumentLocation_LocalDocumentLocation); ok {
-			return x.LocalDocumentLocation
-		}
-	}
-	return nil
-}
-
-func (x *DocumentLocation) GetRemoteDocumentLocation() *RemoteDocumentLocation {
-	if x != nil {
-		if x, ok := x.Type.(*DocumentLocation_RemoteDocumentLocation); ok {
-			return x.RemoteDocumentLocation
-		}
-	}
-	return nil
-}
-
-type isDocumentLocation_Type interface {
-	isDocumentLocation_Type()
-}
-
-type DocumentLocation_LocalDocumentLocation struct {
-	LocalDocumentLocation *LocalDocumentLocation `protobuf:"bytes,10096,opt,name=local_document_location,json=localDocumentLocation,proto3,oneof"`
-}
-
-type DocumentLocation_RemoteDocumentLocation struct {
-	RemoteDocumentLocation *RemoteDocumentLocation `protobuf:"bytes,9297,opt,name=remote_document_location,json=remoteDocumentLocation,proto3,oneof"`
-}
-
-func (*DocumentLocation_LocalDocumentLocation) isDocumentLocation_Type() {}
-
-func (*DocumentLocation_RemoteDocumentLocation) isDocumentLocation_Type() {}
-
 // EncryptionInUse is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 type EncryptionInUse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -5901,7 +6033,7 @@ type EncryptionInUse struct {
 
 func (x *EncryptionInUse) Reset() {
 	*x = EncryptionInUse{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[50]
+	mi := &file_api_ontology_ontology_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5913,7 +6045,7 @@ func (x *EncryptionInUse) String() string {
 func (*EncryptionInUse) ProtoMessage() {}
 
 func (x *EncryptionInUse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[50]
+	mi := &file_api_ontology_ontology_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5926,7 +6058,7 @@ func (x *EncryptionInUse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EncryptionInUse.ProtoReflect.Descriptor instead.
 func (*EncryptionInUse) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{50}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *EncryptionInUse) GetEnabled() bool {
@@ -5947,7 +6079,7 @@ type Encryption struct {
 
 func (x *Encryption) Reset() {
 	*x = Encryption{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[51]
+	mi := &file_api_ontology_ontology_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5959,7 +6091,7 @@ func (x *Encryption) String() string {
 func (*Encryption) ProtoMessage() {}
 
 func (x *Encryption) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[51]
+	mi := &file_api_ontology_ontology_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5972,7 +6104,7 @@ func (x *Encryption) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Encryption.ProtoReflect.Descriptor instead.
 func (*Encryption) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{51}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *Encryption) GetAlgorithm() string {
@@ -5999,7 +6131,7 @@ type Error struct {
 
 func (x *Error) Reset() {
 	*x = Error{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[52]
+	mi := &file_api_ontology_ontology_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6011,7 +6143,7 @@ func (x *Error) String() string {
 func (*Error) ProtoMessage() {}
 
 func (x *Error) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[52]
+	mi := &file_api_ontology_ontology_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6024,7 +6156,7 @@ func (x *Error) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Error.ProtoReflect.Descriptor instead.
 func (*Error) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{52}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *Error) GetMessage() string {
@@ -6043,7 +6175,7 @@ type Evidence struct {
 
 func (x *Evidence) Reset() {
 	*x = Evidence{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[53]
+	mi := &file_api_ontology_ontology_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6055,7 +6187,7 @@ func (x *Evidence) String() string {
 func (*Evidence) ProtoMessage() {}
 
 func (x *Evidence) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[53]
+	mi := &file_api_ontology_ontology_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6068,7 +6200,7 @@ func (x *Evidence) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Evidence.ProtoReflect.Descriptor instead.
 func (*Evidence) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{53}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{54}
 }
 
 // ExplainableResults is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -6080,7 +6212,7 @@ type ExplainableResults struct {
 
 func (x *ExplainableResults) Reset() {
 	*x = ExplainableResults{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[54]
+	mi := &file_api_ontology_ontology_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6092,7 +6224,7 @@ func (x *ExplainableResults) String() string {
 func (*ExplainableResults) ProtoMessage() {}
 
 func (x *ExplainableResults) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[54]
+	mi := &file_api_ontology_ontology_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6105,7 +6237,7 @@ func (x *ExplainableResults) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExplainableResults.ProtoReflect.Descriptor instead.
 func (*ExplainableResults) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{54}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{55}
 }
 
 // FileStorage is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -6136,7 +6268,7 @@ type FileStorage struct {
 
 func (x *FileStorage) Reset() {
 	*x = FileStorage{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[55]
+	mi := &file_api_ontology_ontology_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6148,7 +6280,7 @@ func (x *FileStorage) String() string {
 func (*FileStorage) ProtoMessage() {}
 
 func (x *FileStorage) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[55]
+	mi := &file_api_ontology_ontology_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6161,7 +6293,7 @@ func (x *FileStorage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileStorage.ProtoReflect.Descriptor instead.
 func (*FileStorage) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{55}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *FileStorage) GetCreationTime() *timestamppb.Timestamp {
@@ -6322,7 +6454,7 @@ type FileStorageService struct {
 
 func (x *FileStorageService) Reset() {
 	*x = FileStorageService{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[56]
+	mi := &file_api_ontology_ontology_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6334,7 +6466,7 @@ func (x *FileStorageService) String() string {
 func (*FileStorageService) ProtoMessage() {}
 
 func (x *FileStorageService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[56]
+	mi := &file_api_ontology_ontology_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6347,7 +6479,7 @@ func (x *FileStorageService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileStorageService.ProtoReflect.Descriptor instead.
 func (*FileStorageService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{56}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{57}
 }
 
 func (x *FileStorageService) GetCreationTime() *timestamppb.Timestamp {
@@ -6511,7 +6643,7 @@ type Firewall struct {
 
 func (x *Firewall) Reset() {
 	*x = Firewall{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[57]
+	mi := &file_api_ontology_ontology_proto_msgTypes[58]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6523,7 +6655,7 @@ func (x *Firewall) String() string {
 func (*Firewall) ProtoMessage() {}
 
 func (x *Firewall) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[57]
+	mi := &file_api_ontology_ontology_proto_msgTypes[58]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6536,7 +6668,7 @@ func (x *Firewall) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Firewall.ProtoReflect.Descriptor instead.
 func (*Firewall) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{57}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *Firewall) GetType() isFirewall_Type {
@@ -6596,7 +6728,7 @@ type Framework struct {
 
 func (x *Framework) Reset() {
 	*x = Framework{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[58]
+	mi := &file_api_ontology_ontology_proto_msgTypes[59]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6608,7 +6740,7 @@ func (x *Framework) String() string {
 func (*Framework) ProtoMessage() {}
 
 func (x *Framework) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[58]
+	mi := &file_api_ontology_ontology_proto_msgTypes[59]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6621,7 +6753,7 @@ func (x *Framework) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Framework.ProtoReflect.Descriptor instead.
 func (*Framework) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{58}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{59}
 }
 
 func (x *Framework) GetType() isFramework_Type {
@@ -6723,7 +6855,7 @@ type Function struct {
 
 func (x *Function) Reset() {
 	*x = Function{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[59]
+	mi := &file_api_ontology_ontology_proto_msgTypes[60]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6735,7 +6867,7 @@ func (x *Function) String() string {
 func (*Function) ProtoMessage() {}
 
 func (x *Function) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[59]
+	mi := &file_api_ontology_ontology_proto_msgTypes[60]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6748,7 +6880,7 @@ func (x *Function) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Function.ProtoReflect.Descriptor instead.
 func (*Function) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{59}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{60}
 }
 
 func (x *Function) GetCreationTime() *timestamppb.Timestamp {
@@ -6906,7 +7038,7 @@ type FunctionService struct {
 
 func (x *FunctionService) Reset() {
 	*x = FunctionService{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[60]
+	mi := &file_api_ontology_ontology_proto_msgTypes[61]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6918,7 +7050,7 @@ func (x *FunctionService) String() string {
 func (*FunctionService) ProtoMessage() {}
 
 func (x *FunctionService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[60]
+	mi := &file_api_ontology_ontology_proto_msgTypes[61]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6931,7 +7063,7 @@ func (x *FunctionService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FunctionService.ProtoReflect.Descriptor instead.
 func (*FunctionService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{60}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{61}
 }
 
 func (x *FunctionService) GetCreationTime() *timestamppb.Timestamp {
@@ -7074,8 +7206,8 @@ type Functionality struct {
 	//
 	//	*Functionality_CipherSuite
 	//	*Functionality_CodeRegion
-	//	*Functionality_LocalDocumentLocation
-	//	*Functionality_RemoteDocumentLocation
+	//	*Functionality_LocalDataLocation
+	//	*Functionality_RemoteDataLocation
 	//	*Functionality_Error
 	//	*Functionality_HttpEndpoint
 	//	*Functionality_HttpRequestHandler
@@ -7097,7 +7229,7 @@ type Functionality struct {
 
 func (x *Functionality) Reset() {
 	*x = Functionality{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[61]
+	mi := &file_api_ontology_ontology_proto_msgTypes[62]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7109,7 +7241,7 @@ func (x *Functionality) String() string {
 func (*Functionality) ProtoMessage() {}
 
 func (x *Functionality) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[61]
+	mi := &file_api_ontology_ontology_proto_msgTypes[62]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7122,7 +7254,7 @@ func (x *Functionality) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Functionality.ProtoReflect.Descriptor instead.
 func (*Functionality) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{61}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{62}
 }
 
 func (x *Functionality) GetType() isFunctionality_Type {
@@ -7150,19 +7282,19 @@ func (x *Functionality) GetCodeRegion() *CodeRegion {
 	return nil
 }
 
-func (x *Functionality) GetLocalDocumentLocation() *LocalDocumentLocation {
+func (x *Functionality) GetLocalDataLocation() *LocalDataLocation {
 	if x != nil {
-		if x, ok := x.Type.(*Functionality_LocalDocumentLocation); ok {
-			return x.LocalDocumentLocation
+		if x, ok := x.Type.(*Functionality_LocalDataLocation); ok {
+			return x.LocalDataLocation
 		}
 	}
 	return nil
 }
 
-func (x *Functionality) GetRemoteDocumentLocation() *RemoteDocumentLocation {
+func (x *Functionality) GetRemoteDataLocation() *RemoteDataLocation {
 	if x != nil {
-		if x, ok := x.Type.(*Functionality_RemoteDocumentLocation); ok {
-			return x.RemoteDocumentLocation
+		if x, ok := x.Type.(*Functionality_RemoteDataLocation); ok {
+			return x.RemoteDataLocation
 		}
 	}
 	return nil
@@ -7306,12 +7438,12 @@ type Functionality_CodeRegion struct {
 	CodeRegion *CodeRegion `protobuf:"bytes,9184,opt,name=code_region,json=codeRegion,proto3,oneof"`
 }
 
-type Functionality_LocalDocumentLocation struct {
-	LocalDocumentLocation *LocalDocumentLocation `protobuf:"bytes,10096,opt,name=local_document_location,json=localDocumentLocation,proto3,oneof"`
+type Functionality_LocalDataLocation struct {
+	LocalDataLocation *LocalDataLocation `protobuf:"bytes,12313,opt,name=local_data_location,json=localDataLocation,proto3,oneof"`
 }
 
-type Functionality_RemoteDocumentLocation struct {
-	RemoteDocumentLocation *RemoteDocumentLocation `protobuf:"bytes,9297,opt,name=remote_document_location,json=remoteDocumentLocation,proto3,oneof"`
+type Functionality_RemoteDataLocation struct {
+	RemoteDataLocation *RemoteDataLocation `protobuf:"bytes,13541,opt,name=remote_data_location,json=remoteDataLocation,proto3,oneof"`
 }
 
 type Functionality_Error struct {
@@ -7374,9 +7506,9 @@ func (*Functionality_CipherSuite) isFunctionality_Type() {}
 
 func (*Functionality_CodeRegion) isFunctionality_Type() {}
 
-func (*Functionality_LocalDocumentLocation) isFunctionality_Type() {}
+func (*Functionality_LocalDataLocation) isFunctionality_Type() {}
 
-func (*Functionality_RemoteDocumentLocation) isFunctionality_Type() {}
+func (*Functionality_RemoteDataLocation) isFunctionality_Type() {}
 
 func (*Functionality_Error) isFunctionality_Type() {}
 
@@ -7410,27 +7542,27 @@ func (*Functionality_Vulnerability) isFunctionality_Type() {}
 // This is a placeholder for all other documents, e.g. index.txt
 type GenericDocument struct {
 	state        protoimpl.MessageState `protogen:"open.v1"`
-	CreationTime *timestamppb.Timestamp `protobuf:"bytes,11055,opt,name=creation_time,json=creationTime,proto3" json:"creation_time,omitempty"`
-	Description  string                 `protobuf:"bytes,5911,opt,name=description,proto3" json:"description,omitempty"`
-	Filetype     string                 `protobuf:"bytes,4013,opt,name=filetype,proto3" json:"filetype,omitempty"`
-	Id           string                 `protobuf:"bytes,11297,opt,name=id,proto3" json:"id,omitempty"`
-	Labels       map[string]string      `protobuf:"bytes,9013,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Name         string                 `protobuf:"bytes,5165,opt,name=name,proto3" json:"name,omitempty"`
+	CreationTime *timestamppb.Timestamp `protobuf:"bytes,13813,opt,name=creation_time,json=creationTime,proto3" json:"creation_time,omitempty"`
+	Description  string                 `protobuf:"bytes,13541,opt,name=description,proto3" json:"description,omitempty"`
+	Filetype     string                 `protobuf:"bytes,5608,opt,name=filetype,proto3" json:"filetype,omitempty"`
+	Id           string                 `protobuf:"bytes,13778,opt,name=id,proto3" json:"id,omitempty"`
+	Labels       map[string]string      `protobuf:"bytes,4979,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Name         string                 `protobuf:"bytes,7206,opt,name=name,proto3" json:"name,omitempty"`
 	// The raw field contains the raw information that is used to fill in the fields of the ontology.
-	Raw                string               `protobuf:"bytes,2153,opt,name=raw,proto3" json:"raw,omitempty"`
-	DocumentChecksums  []*DocumentChecksum  `protobuf:"bytes,14501,rep,name=document_checksums,json=documentChecksums,proto3" json:"document_checksums,omitempty"`
-	DocumentLocation   *DocumentLocation    `protobuf:"bytes,7961,opt,name=document_location,json=documentLocation,proto3" json:"document_location,omitempty"`
-	DocumentSignatures []*DocumentSignature `protobuf:"bytes,16971,rep,name=document_signatures,json=documentSignatures,proto3" json:"document_signatures,omitempty"`
-	ParentId           *string              `protobuf:"bytes,10767,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`
-	SchemaValidation   *SchemaValidation    `protobuf:"bytes,15254,opt,name=schema_validation,json=schemaValidation,proto3" json:"schema_validation,omitempty"`
-	SecurityFeatures   []*SecurityFeature   `protobuf:"bytes,1202,rep,name=security_features,json=securityFeatures,proto3" json:"security_features,omitempty"`
+	Raw                string               `protobuf:"bytes,13342,opt,name=raw,proto3" json:"raw,omitempty"`
+	DataLocation       *DataLocation        `protobuf:"bytes,16480,opt,name=data_location,json=dataLocation,proto3" json:"data_location,omitempty"`
+	DocumentChecksums  []*DocumentChecksum  `protobuf:"bytes,17366,rep,name=document_checksums,json=documentChecksums,proto3" json:"document_checksums,omitempty"`
+	DocumentSignatures []*DocumentSignature `protobuf:"bytes,18959,rep,name=document_signatures,json=documentSignatures,proto3" json:"document_signatures,omitempty"`
+	ParentId           *string              `protobuf:"bytes,16902,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`
+	SchemaValidation   *SchemaValidation    `protobuf:"bytes,7225,opt,name=schema_validation,json=schemaValidation,proto3" json:"schema_validation,omitempty"`
+	SecurityFeatures   []*SecurityFeature   `protobuf:"bytes,6529,rep,name=security_features,json=securityFeatures,proto3" json:"security_features,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
 
 func (x *GenericDocument) Reset() {
 	*x = GenericDocument{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[62]
+	mi := &file_api_ontology_ontology_proto_msgTypes[63]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7442,7 +7574,7 @@ func (x *GenericDocument) String() string {
 func (*GenericDocument) ProtoMessage() {}
 
 func (x *GenericDocument) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[62]
+	mi := &file_api_ontology_ontology_proto_msgTypes[63]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7455,7 +7587,7 @@ func (x *GenericDocument) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GenericDocument.ProtoReflect.Descriptor instead.
 func (*GenericDocument) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{62}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{63}
 }
 
 func (x *GenericDocument) GetCreationTime() *timestamppb.Timestamp {
@@ -7507,16 +7639,16 @@ func (x *GenericDocument) GetRaw() string {
 	return ""
 }
 
-func (x *GenericDocument) GetDocumentChecksums() []*DocumentChecksum {
+func (x *GenericDocument) GetDataLocation() *DataLocation {
 	if x != nil {
-		return x.DocumentChecksums
+		return x.DataLocation
 	}
 	return nil
 }
 
-func (x *GenericDocument) GetDocumentLocation() *DocumentLocation {
+func (x *GenericDocument) GetDocumentChecksums() []*DocumentChecksum {
 	if x != nil {
-		return x.DocumentLocation
+		return x.DocumentChecksums
 	}
 	return nil
 }
@@ -7578,7 +7710,7 @@ type GenericNetworkService struct {
 
 func (x *GenericNetworkService) Reset() {
 	*x = GenericNetworkService{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[63]
+	mi := &file_api_ontology_ontology_proto_msgTypes[64]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7590,7 +7722,7 @@ func (x *GenericNetworkService) String() string {
 func (*GenericNetworkService) ProtoMessage() {}
 
 func (x *GenericNetworkService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[63]
+	mi := &file_api_ontology_ontology_proto_msgTypes[64]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7603,7 +7735,7 @@ func (x *GenericNetworkService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GenericNetworkService.ProtoReflect.Descriptor instead.
 func (*GenericNetworkService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{63}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{64}
 }
 
 func (x *GenericNetworkService) GetCreationTime() *timestamppb.Timestamp {
@@ -7742,7 +7874,7 @@ type GeoLocation struct {
 
 func (x *GeoLocation) Reset() {
 	*x = GeoLocation{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[64]
+	mi := &file_api_ontology_ontology_proto_msgTypes[65]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7754,7 +7886,7 @@ func (x *GeoLocation) String() string {
 func (*GeoLocation) ProtoMessage() {}
 
 func (x *GeoLocation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[64]
+	mi := &file_api_ontology_ontology_proto_msgTypes[65]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7767,7 +7899,7 @@ func (x *GeoLocation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GeoLocation.ProtoReflect.Descriptor instead.
 func (*GeoLocation) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{64}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{65}
 }
 
 func (x *GeoLocation) GetRegion() string {
@@ -7787,7 +7919,7 @@ type GeoRedundancy struct {
 
 func (x *GeoRedundancy) Reset() {
 	*x = GeoRedundancy{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[65]
+	mi := &file_api_ontology_ontology_proto_msgTypes[66]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7799,7 +7931,7 @@ func (x *GeoRedundancy) String() string {
 func (*GeoRedundancy) ProtoMessage() {}
 
 func (x *GeoRedundancy) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[65]
+	mi := &file_api_ontology_ontology_proto_msgTypes[66]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7812,7 +7944,7 @@ func (x *GeoRedundancy) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GeoRedundancy.ProtoReflect.Descriptor instead.
 func (*GeoRedundancy) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{65}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{66}
 }
 
 func (x *GeoRedundancy) GetGeoLocations() []*GeoLocation {
@@ -7834,7 +7966,7 @@ type CryptographicHash struct {
 
 func (x *CryptographicHash) Reset() {
 	*x = CryptographicHash{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[66]
+	mi := &file_api_ontology_ontology_proto_msgTypes[67]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7846,7 +7978,7 @@ func (x *CryptographicHash) String() string {
 func (*CryptographicHash) ProtoMessage() {}
 
 func (x *CryptographicHash) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[66]
+	mi := &file_api_ontology_ontology_proto_msgTypes[67]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7859,7 +7991,7 @@ func (x *CryptographicHash) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CryptographicHash.ProtoReflect.Descriptor instead.
 func (*CryptographicHash) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{66}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{67}
 }
 
 func (x *CryptographicHash) GetAlgorithm() string {
@@ -7892,7 +8024,7 @@ type HttpClientLibrary struct {
 
 func (x *HttpClientLibrary) Reset() {
 	*x = HttpClientLibrary{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[67]
+	mi := &file_api_ontology_ontology_proto_msgTypes[68]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7904,7 +8036,7 @@ func (x *HttpClientLibrary) String() string {
 func (*HttpClientLibrary) ProtoMessage() {}
 
 func (x *HttpClientLibrary) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[67]
+	mi := &file_api_ontology_ontology_proto_msgTypes[68]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7917,7 +8049,7 @@ func (x *HttpClientLibrary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HttpClientLibrary.ProtoReflect.Descriptor instead.
 func (*HttpClientLibrary) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{67}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{68}
 }
 
 // HttpEndpoint is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -7937,7 +8069,7 @@ type HttpEndpoint struct {
 
 func (x *HttpEndpoint) Reset() {
 	*x = HttpEndpoint{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[68]
+	mi := &file_api_ontology_ontology_proto_msgTypes[69]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7949,7 +8081,7 @@ func (x *HttpEndpoint) String() string {
 func (*HttpEndpoint) ProtoMessage() {}
 
 func (x *HttpEndpoint) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[68]
+	mi := &file_api_ontology_ontology_proto_msgTypes[69]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7962,7 +8094,7 @@ func (x *HttpEndpoint) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HttpEndpoint.ProtoReflect.Descriptor instead.
 func (*HttpEndpoint) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{68}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{69}
 }
 
 func (x *HttpEndpoint) GetHandler() string {
@@ -8020,7 +8152,7 @@ type HttpRequest struct {
 
 func (x *HttpRequest) Reset() {
 	*x = HttpRequest{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[69]
+	mi := &file_api_ontology_ontology_proto_msgTypes[70]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8032,7 +8164,7 @@ func (x *HttpRequest) String() string {
 func (*HttpRequest) ProtoMessage() {}
 
 func (x *HttpRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[69]
+	mi := &file_api_ontology_ontology_proto_msgTypes[70]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8045,7 +8177,7 @@ func (x *HttpRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HttpRequest.ProtoReflect.Descriptor instead.
 func (*HttpRequest) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{69}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{70}
 }
 
 func (x *HttpRequest) GetCall() string {
@@ -8088,7 +8220,7 @@ type HttpRequestHandler struct {
 
 func (x *HttpRequestHandler) Reset() {
 	*x = HttpRequestHandler{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[70]
+	mi := &file_api_ontology_ontology_proto_msgTypes[71]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8100,7 +8232,7 @@ func (x *HttpRequestHandler) String() string {
 func (*HttpRequestHandler) ProtoMessage() {}
 
 func (x *HttpRequestHandler) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[70]
+	mi := &file_api_ontology_ontology_proto_msgTypes[71]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8113,7 +8245,7 @@ func (x *HttpRequestHandler) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HttpRequestHandler.ProtoReflect.Descriptor instead.
 func (*HttpRequestHandler) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{70}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{71}
 }
 
 func (x *HttpRequestHandler) GetPath() string {
@@ -8147,7 +8279,7 @@ type HttpServer struct {
 
 func (x *HttpServer) Reset() {
 	*x = HttpServer{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[71]
+	mi := &file_api_ontology_ontology_proto_msgTypes[72]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8159,7 +8291,7 @@ func (x *HttpServer) String() string {
 func (*HttpServer) ProtoMessage() {}
 
 func (x *HttpServer) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[71]
+	mi := &file_api_ontology_ontology_proto_msgTypes[72]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8172,7 +8304,7 @@ func (x *HttpServer) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HttpServer.ProtoReflect.Descriptor instead.
 func (*HttpServer) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{71}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{72}
 }
 
 func (x *HttpServer) GetHttpRequestHandler() *HttpRequestHandler {
@@ -8196,7 +8328,7 @@ type HumanResources struct {
 
 func (x *HumanResources) Reset() {
 	*x = HumanResources{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[72]
+	mi := &file_api_ontology_ontology_proto_msgTypes[73]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8208,7 +8340,7 @@ func (x *HumanResources) String() string {
 func (*HumanResources) ProtoMessage() {}
 
 func (x *HumanResources) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[72]
+	mi := &file_api_ontology_ontology_proto_msgTypes[73]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8221,7 +8353,7 @@ func (x *HumanResources) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HumanResources.ProtoReflect.Descriptor instead.
 func (*HumanResources) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{72}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{73}
 }
 
 func (x *HumanResources) GetType() isHumanResources_Type {
@@ -8279,7 +8411,7 @@ type Identifiable struct {
 
 func (x *Identifiable) Reset() {
 	*x = Identifiable{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[73]
+	mi := &file_api_ontology_ontology_proto_msgTypes[74]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8291,7 +8423,7 @@ func (x *Identifiable) String() string {
 func (*Identifiable) ProtoMessage() {}
 
 func (x *Identifiable) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[73]
+	mi := &file_api_ontology_ontology_proto_msgTypes[74]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8304,7 +8436,7 @@ func (x *Identifiable) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Identifiable.ProtoReflect.Descriptor instead.
 func (*Identifiable) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{73}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{74}
 }
 
 func (x *Identifiable) GetType() isIdentifiable_Type {
@@ -8378,7 +8510,7 @@ type Identity struct {
 
 func (x *Identity) Reset() {
 	*x = Identity{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[74]
+	mi := &file_api_ontology_ontology_proto_msgTypes[75]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8390,7 +8522,7 @@ func (x *Identity) String() string {
 func (*Identity) ProtoMessage() {}
 
 func (x *Identity) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[74]
+	mi := &file_api_ontology_ontology_proto_msgTypes[75]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8403,7 +8535,7 @@ func (x *Identity) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Identity.ProtoReflect.Descriptor instead.
 func (*Identity) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{74}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{75}
 }
 
 func (x *Identity) GetActivated() bool {
@@ -8560,7 +8692,7 @@ type Image struct {
 
 func (x *Image) Reset() {
 	*x = Image{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[75]
+	mi := &file_api_ontology_ontology_proto_msgTypes[76]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8572,7 +8704,7 @@ func (x *Image) String() string {
 func (*Image) ProtoMessage() {}
 
 func (x *Image) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[75]
+	mi := &file_api_ontology_ontology_proto_msgTypes[76]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8585,7 +8717,7 @@ func (x *Image) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Image.ProtoReflect.Descriptor instead.
 func (*Image) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{75}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{76}
 }
 
 func (x *Image) GetType() isImage_Type {
@@ -8639,7 +8771,7 @@ type Immutability struct {
 
 func (x *Immutability) Reset() {
 	*x = Immutability{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[76]
+	mi := &file_api_ontology_ontology_proto_msgTypes[77]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8651,7 +8783,7 @@ func (x *Immutability) String() string {
 func (*Immutability) ProtoMessage() {}
 
 func (x *Immutability) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[76]
+	mi := &file_api_ontology_ontology_proto_msgTypes[77]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8664,7 +8796,7 @@ func (x *Immutability) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Immutability.ProtoReflect.Descriptor instead.
 func (*Immutability) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{76}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{77}
 }
 
 func (x *Immutability) GetEnabled() bool {
@@ -8692,7 +8824,7 @@ type Integrity struct {
 
 func (x *Integrity) Reset() {
 	*x = Integrity{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[77]
+	mi := &file_api_ontology_ontology_proto_msgTypes[78]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8704,7 +8836,7 @@ func (x *Integrity) String() string {
 func (*Integrity) ProtoMessage() {}
 
 func (x *Integrity) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[77]
+	mi := &file_api_ontology_ontology_proto_msgTypes[78]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8717,7 +8849,7 @@ func (x *Integrity) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Integrity.ProtoReflect.Descriptor instead.
 func (*Integrity) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{77}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{78}
 }
 
 func (x *Integrity) GetType() isIntegrity_Type {
@@ -8835,7 +8967,7 @@ type IoT struct {
 
 func (x *IoT) Reset() {
 	*x = IoT{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[78]
+	mi := &file_api_ontology_ontology_proto_msgTypes[79]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8847,7 +8979,7 @@ func (x *IoT) String() string {
 func (*IoT) ProtoMessage() {}
 
 func (x *IoT) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[78]
+	mi := &file_api_ontology_ontology_proto_msgTypes[79]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8860,7 +8992,7 @@ func (x *IoT) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IoT.ProtoReflect.Descriptor instead.
 func (*IoT) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{78}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{79}
 }
 
 func (x *IoT) GetType() isIoT_Type {
@@ -8926,7 +9058,7 @@ type Job struct {
 
 func (x *Job) Reset() {
 	*x = Job{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[79]
+	mi := &file_api_ontology_ontology_proto_msgTypes[80]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8938,7 +9070,7 @@ func (x *Job) String() string {
 func (*Job) ProtoMessage() {}
 
 func (x *Job) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[79]
+	mi := &file_api_ontology_ontology_proto_msgTypes[80]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8951,7 +9083,7 @@ func (x *Job) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Job.ProtoReflect.Descriptor instead.
 func (*Job) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{79}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{80}
 }
 
 func (x *Job) GetCreationTime() *timestamppb.Timestamp {
@@ -9050,7 +9182,7 @@ type TokenBasedAuthentication struct {
 
 func (x *TokenBasedAuthentication) Reset() {
 	*x = TokenBasedAuthentication{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[80]
+	mi := &file_api_ontology_ontology_proto_msgTypes[81]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9062,7 +9194,7 @@ func (x *TokenBasedAuthentication) String() string {
 func (*TokenBasedAuthentication) ProtoMessage() {}
 
 func (x *TokenBasedAuthentication) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[80]
+	mi := &file_api_ontology_ontology_proto_msgTypes[81]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9075,7 +9207,7 @@ func (x *TokenBasedAuthentication) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TokenBasedAuthentication.ProtoReflect.Descriptor instead.
 func (*TokenBasedAuthentication) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{80}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{81}
 }
 
 func (x *TokenBasedAuthentication) GetContextIsChecked() bool {
@@ -9128,7 +9260,7 @@ type Key struct {
 
 func (x *Key) Reset() {
 	*x = Key{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[81]
+	mi := &file_api_ontology_ontology_proto_msgTypes[82]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9140,7 +9272,7 @@ func (x *Key) String() string {
 func (*Key) ProtoMessage() {}
 
 func (x *Key) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[81]
+	mi := &file_api_ontology_ontology_proto_msgTypes[82]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9153,7 +9285,7 @@ func (x *Key) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Key.ProtoReflect.Descriptor instead.
 func (*Key) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{81}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{82}
 }
 
 func (x *Key) GetAlgorithm() string {
@@ -9322,7 +9454,7 @@ type KeyValueDatabaseService struct {
 
 func (x *KeyValueDatabaseService) Reset() {
 	*x = KeyValueDatabaseService{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[82]
+	mi := &file_api_ontology_ontology_proto_msgTypes[83]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9334,7 +9466,7 @@ func (x *KeyValueDatabaseService) String() string {
 func (*KeyValueDatabaseService) ProtoMessage() {}
 
 func (x *KeyValueDatabaseService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[82]
+	mi := &file_api_ontology_ontology_proto_msgTypes[83]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9347,7 +9479,7 @@ func (x *KeyValueDatabaseService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KeyValueDatabaseService.ProtoReflect.Descriptor instead.
 func (*KeyValueDatabaseService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{82}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{83}
 }
 
 func (x *KeyValueDatabaseService) GetCreationTime() *timestamppb.Timestamp {
@@ -9534,7 +9666,7 @@ type KeyVault struct {
 
 func (x *KeyVault) Reset() {
 	*x = KeyVault{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[83]
+	mi := &file_api_ontology_ontology_proto_msgTypes[84]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9546,7 +9678,7 @@ func (x *KeyVault) String() string {
 func (*KeyVault) ProtoMessage() {}
 
 func (x *KeyVault) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[83]
+	mi := &file_api_ontology_ontology_proto_msgTypes[84]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9559,7 +9691,7 @@ func (x *KeyVault) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KeyVault.ProtoReflect.Descriptor instead.
 func (*KeyVault) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{83}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{84}
 }
 
 func (x *KeyVault) GetCreationTime() *timestamppb.Timestamp {
@@ -9665,7 +9797,7 @@ type L3Firewall struct {
 
 func (x *L3Firewall) Reset() {
 	*x = L3Firewall{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[84]
+	mi := &file_api_ontology_ontology_proto_msgTypes[85]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9677,7 +9809,7 @@ func (x *L3Firewall) String() string {
 func (*L3Firewall) ProtoMessage() {}
 
 func (x *L3Firewall) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[84]
+	mi := &file_api_ontology_ontology_proto_msgTypes[85]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9690,7 +9822,7 @@ func (x *L3Firewall) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use L3Firewall.ProtoReflect.Descriptor instead.
 func (*L3Firewall) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{84}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{85}
 }
 
 func (x *L3Firewall) GetEnabled() bool {
@@ -9736,7 +9868,7 @@ type Library struct {
 
 func (x *Library) Reset() {
 	*x = Library{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[85]
+	mi := &file_api_ontology_ontology_proto_msgTypes[86]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9748,7 +9880,7 @@ func (x *Library) String() string {
 func (*Library) ProtoMessage() {}
 
 func (x *Library) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[85]
+	mi := &file_api_ontology_ontology_proto_msgTypes[86]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9761,7 +9893,7 @@ func (x *Library) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Library.ProtoReflect.Descriptor instead.
 func (*Library) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{85}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{86}
 }
 
 func (x *Library) GetCreationTime() *timestamppb.Timestamp {
@@ -9881,7 +10013,7 @@ type LoadBalancer struct {
 
 func (x *LoadBalancer) Reset() {
 	*x = LoadBalancer{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[86]
+	mi := &file_api_ontology_ontology_proto_msgTypes[87]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9893,7 +10025,7 @@ func (x *LoadBalancer) String() string {
 func (*LoadBalancer) ProtoMessage() {}
 
 func (x *LoadBalancer) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[86]
+	mi := &file_api_ontology_ontology_proto_msgTypes[87]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9906,7 +10038,7 @@ func (x *LoadBalancer) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoadBalancer.ProtoReflect.Descriptor instead.
 func (*LoadBalancer) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{86}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{87}
 }
 
 func (x *LoadBalancer) GetCreationTime() *timestamppb.Timestamp {
@@ -10073,7 +10205,7 @@ type LocalAttestation struct {
 
 func (x *LocalAttestation) Reset() {
 	*x = LocalAttestation{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[87]
+	mi := &file_api_ontology_ontology_proto_msgTypes[88]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10085,7 +10217,7 @@ func (x *LocalAttestation) String() string {
 func (*LocalAttestation) ProtoMessage() {}
 
 func (x *LocalAttestation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[87]
+	mi := &file_api_ontology_ontology_proto_msgTypes[88]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10098,7 +10230,7 @@ func (x *LocalAttestation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LocalAttestation.ProtoReflect.Descriptor instead.
 func (*LocalAttestation) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{87}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{88}
 }
 
 func (x *LocalAttestation) GetEnabled() bool {
@@ -10108,30 +10240,30 @@ func (x *LocalAttestation) GetEnabled() bool {
 	return false
 }
 
-// LocalDocumentLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
-type LocalDocumentLocation struct {
+// LocalDataLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+type LocalDataLocation struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
-	Path             string                 `protobuf:"bytes,5788,opt,name=path,proto3" json:"path,omitempty"`
-	AtRestEncryption *AtRestEncryption      `protobuf:"bytes,47,opt,name=at_rest_encryption,json=atRestEncryption,proto3" json:"at_rest_encryption,omitempty"`
+	Path             string                 `protobuf:"bytes,16659,opt,name=path,proto3" json:"path,omitempty"`
+	AtRestEncryption *AtRestEncryption      `protobuf:"bytes,15797,opt,name=at_rest_encryption,json=atRestEncryption,proto3" json:"at_rest_encryption,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
 
-func (x *LocalDocumentLocation) Reset() {
-	*x = LocalDocumentLocation{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[88]
+func (x *LocalDataLocation) Reset() {
+	*x = LocalDataLocation{}
+	mi := &file_api_ontology_ontology_proto_msgTypes[89]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *LocalDocumentLocation) String() string {
+func (x *LocalDataLocation) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*LocalDocumentLocation) ProtoMessage() {}
+func (*LocalDataLocation) ProtoMessage() {}
 
-func (x *LocalDocumentLocation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[88]
+func (x *LocalDataLocation) ProtoReflect() protoreflect.Message {
+	mi := &file_api_ontology_ontology_proto_msgTypes[89]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10142,19 +10274,19 @@ func (x *LocalDocumentLocation) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use LocalDocumentLocation.ProtoReflect.Descriptor instead.
-func (*LocalDocumentLocation) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{88}
+// Deprecated: Use LocalDataLocation.ProtoReflect.Descriptor instead.
+func (*LocalDataLocation) Descriptor() ([]byte, []int) {
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{89}
 }
 
-func (x *LocalDocumentLocation) GetPath() string {
+func (x *LocalDataLocation) GetPath() string {
 	if x != nil {
 		return x.Path
 	}
 	return ""
 }
 
-func (x *LocalDocumentLocation) GetAtRestEncryption() *AtRestEncryption {
+func (x *LocalDataLocation) GetAtRestEncryption() *AtRestEncryption {
 	if x != nil {
 		return x.AtRestEncryption
 	}
@@ -10171,7 +10303,7 @@ type LocalRedundancy struct {
 
 func (x *LocalRedundancy) Reset() {
 	*x = LocalRedundancy{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[89]
+	mi := &file_api_ontology_ontology_proto_msgTypes[90]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10183,7 +10315,7 @@ func (x *LocalRedundancy) String() string {
 func (*LocalRedundancy) ProtoMessage() {}
 
 func (x *LocalRedundancy) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[89]
+	mi := &file_api_ontology_ontology_proto_msgTypes[90]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10196,7 +10328,7 @@ func (x *LocalRedundancy) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LocalRedundancy.ProtoReflect.Descriptor instead.
 func (*LocalRedundancy) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{89}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{90}
 }
 
 func (x *LocalRedundancy) GetGeoLocations() []*GeoLocation {
@@ -10220,7 +10352,7 @@ type LogOperation struct {
 
 func (x *LogOperation) Reset() {
 	*x = LogOperation{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[90]
+	mi := &file_api_ontology_ontology_proto_msgTypes[91]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10232,7 +10364,7 @@ func (x *LogOperation) String() string {
 func (*LogOperation) ProtoMessage() {}
 
 func (x *LogOperation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[90]
+	mi := &file_api_ontology_ontology_proto_msgTypes[91]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10245,7 +10377,7 @@ func (x *LogOperation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogOperation.ProtoReflect.Descriptor instead.
 func (*LogOperation) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{90}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{91}
 }
 
 func (x *LogOperation) GetCall() string {
@@ -10285,7 +10417,7 @@ type Logger struct {
 
 func (x *Logger) Reset() {
 	*x = Logger{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[91]
+	mi := &file_api_ontology_ontology_proto_msgTypes[92]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10297,7 +10429,7 @@ func (x *Logger) String() string {
 func (*Logger) ProtoMessage() {}
 
 func (x *Logger) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[91]
+	mi := &file_api_ontology_ontology_proto_msgTypes[92]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10310,7 +10442,7 @@ func (x *Logger) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Logger.ProtoReflect.Descriptor instead.
 func (*Logger) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{91}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{92}
 }
 
 // Logging is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -10330,7 +10462,7 @@ type Logging struct {
 
 func (x *Logging) Reset() {
 	*x = Logging{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[92]
+	mi := &file_api_ontology_ontology_proto_msgTypes[93]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10342,7 +10474,7 @@ func (x *Logging) String() string {
 func (*Logging) ProtoMessage() {}
 
 func (x *Logging) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[92]
+	mi := &file_api_ontology_ontology_proto_msgTypes[93]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10355,7 +10487,7 @@ func (x *Logging) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Logging.ProtoReflect.Descriptor instead.
 func (*Logging) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{92}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{93}
 }
 
 func (x *Logging) GetType() isLogging_Type {
@@ -10474,7 +10606,7 @@ type LoggingService struct {
 
 func (x *LoggingService) Reset() {
 	*x = LoggingService{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[93]
+	mi := &file_api_ontology_ontology_proto_msgTypes[94]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10486,7 +10618,7 @@ func (x *LoggingService) String() string {
 func (*LoggingService) ProtoMessage() {}
 
 func (x *LoggingService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[93]
+	mi := &file_api_ontology_ontology_proto_msgTypes[94]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10499,7 +10631,7 @@ func (x *LoggingService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoggingService.ProtoReflect.Descriptor instead.
 func (*LoggingService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{93}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{94}
 }
 
 func (x *LoggingService) GetCreationTime() *timestamppb.Timestamp {
@@ -10635,6 +10767,555 @@ func (x *LoggingService) GetUsageStatistics() *UsageStatistics {
 	return nil
 }
 
+// MachineLearning is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+type MachineLearning struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Type:
+	//
+	//	*MachineLearning_MachineLearningDataset
+	//	*MachineLearning_MachineLearningModel
+	Type          isMachineLearning_Type `protobuf_oneof:"type"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MachineLearning) Reset() {
+	*x = MachineLearning{}
+	mi := &file_api_ontology_ontology_proto_msgTypes[95]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MachineLearning) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MachineLearning) ProtoMessage() {}
+
+func (x *MachineLearning) ProtoReflect() protoreflect.Message {
+	mi := &file_api_ontology_ontology_proto_msgTypes[95]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MachineLearning.ProtoReflect.Descriptor instead.
+func (*MachineLearning) Descriptor() ([]byte, []int) {
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{95}
+}
+
+func (x *MachineLearning) GetType() isMachineLearning_Type {
+	if x != nil {
+		return x.Type
+	}
+	return nil
+}
+
+func (x *MachineLearning) GetMachineLearningDataset() *MachineLearningDataset {
+	if x != nil {
+		if x, ok := x.Type.(*MachineLearning_MachineLearningDataset); ok {
+			return x.MachineLearningDataset
+		}
+	}
+	return nil
+}
+
+func (x *MachineLearning) GetMachineLearningModel() *MachineLearningModel {
+	if x != nil {
+		if x, ok := x.Type.(*MachineLearning_MachineLearningModel); ok {
+			return x.MachineLearningModel
+		}
+	}
+	return nil
+}
+
+type isMachineLearning_Type interface {
+	isMachineLearning_Type()
+}
+
+type MachineLearning_MachineLearningDataset struct {
+	MachineLearningDataset *MachineLearningDataset `protobuf:"bytes,2040,opt,name=machine_learning_dataset,json=machineLearningDataset,proto3,oneof"`
+}
+
+type MachineLearning_MachineLearningModel struct {
+	MachineLearningModel *MachineLearningModel `protobuf:"bytes,15393,opt,name=machine_learning_model,json=machineLearningModel,proto3,oneof"`
+}
+
+func (*MachineLearning_MachineLearningDataset) isMachineLearning_Type() {}
+
+func (*MachineLearning_MachineLearningModel) isMachineLearning_Type() {}
+
+// MachineLearningDataset is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+type MachineLearningDataset struct {
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	CreationTime *timestamppb.Timestamp `protobuf:"bytes,14589,opt,name=creation_time,json=creationTime,proto3" json:"creation_time,omitempty"`
+	Description  string                 `protobuf:"bytes,4701,opt,name=description,proto3" json:"description,omitempty"`
+	Id           string                 `protobuf:"bytes,13709,opt,name=id,proto3" json:"id,omitempty"`
+	Labels       map[string]string      `protobuf:"bytes,3339,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Name         string                 `protobuf:"bytes,14431,opt,name=name,proto3" json:"name,omitempty"`
+	// The raw field contains the raw information that is used to fill in the fields of the ontology.
+	Raw           string        `protobuf:"bytes,6307,opt,name=raw,proto3" json:"raw,omitempty"`
+	Size          int32         `protobuf:"varint,7901,opt,name=size,proto3" json:"size,omitempty"`
+	Type          string        `protobuf:"bytes,5204,opt,name=type,proto3" json:"type,omitempty"`
+	DataLocation  *DataLocation `protobuf:"bytes,3137,opt,name=data_location,json=dataLocation,proto3" json:"data_location,omitempty"`
+	ParentId      *string       `protobuf:"bytes,6542,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MachineLearningDataset) Reset() {
+	*x = MachineLearningDataset{}
+	mi := &file_api_ontology_ontology_proto_msgTypes[96]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MachineLearningDataset) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MachineLearningDataset) ProtoMessage() {}
+
+func (x *MachineLearningDataset) ProtoReflect() protoreflect.Message {
+	mi := &file_api_ontology_ontology_proto_msgTypes[96]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MachineLearningDataset.ProtoReflect.Descriptor instead.
+func (*MachineLearningDataset) Descriptor() ([]byte, []int) {
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{96}
+}
+
+func (x *MachineLearningDataset) GetCreationTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreationTime
+	}
+	return nil
+}
+
+func (x *MachineLearningDataset) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *MachineLearningDataset) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *MachineLearningDataset) GetLabels() map[string]string {
+	if x != nil {
+		return x.Labels
+	}
+	return nil
+}
+
+func (x *MachineLearningDataset) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *MachineLearningDataset) GetRaw() string {
+	if x != nil {
+		return x.Raw
+	}
+	return ""
+}
+
+func (x *MachineLearningDataset) GetSize() int32 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+func (x *MachineLearningDataset) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *MachineLearningDataset) GetDataLocation() *DataLocation {
+	if x != nil {
+		return x.DataLocation
+	}
+	return nil
+}
+
+func (x *MachineLearningDataset) GetParentId() string {
+	if x != nil && x.ParentId != nil {
+		return *x.ParentId
+	}
+	return ""
+}
+
+// MachineLearningModel is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+type MachineLearningModel struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	AdvRobustness  float32                `protobuf:"fixed32,14185,opt,name=adv_robustness,json=advRobustness,proto3" json:"adv_robustness,omitempty"`
+	CreationTime   *timestamppb.Timestamp `protobuf:"bytes,18005,opt,name=creation_time,json=creationTime,proto3" json:"creation_time,omitempty"`
+	Description    string                 `protobuf:"bytes,5272,opt,name=description,proto3" json:"description,omitempty"`
+	Explainability float32                `protobuf:"fixed32,1384,opt,name=explainability,proto3" json:"explainability,omitempty"`
+	Id             string                 `protobuf:"bytes,5520,opt,name=id,proto3" json:"id,omitempty"`
+	Labels         map[string]string      `protobuf:"bytes,1548,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Name           string                 `protobuf:"bytes,1575,opt,name=name,proto3" json:"name,omitempty"`
+	PoisonLevel    float32                `protobuf:"fixed32,836,opt,name=poison_level,json=poisonLevel,proto3" json:"poison_level,omitempty"`
+	PrivacyLabel   float32                `protobuf:"fixed32,8059,opt,name=privacy_label,json=privacyLabel,proto3" json:"privacy_label,omitempty"`
+	PrivacyLevel   float32                `protobuf:"fixed32,1262,opt,name=privacy_level,json=privacyLevel,proto3" json:"privacy_level,omitempty"`
+	// The raw field contains the raw information that is used to fill in the fields of the ontology.
+	Raw           string        `protobuf:"bytes,12454,opt,name=raw,proto3" json:"raw,omitempty"`
+	Robustness    float32       `protobuf:"fixed32,13582,opt,name=robustness,proto3" json:"robustness,omitempty"`
+	DataLocation  *DataLocation `protobuf:"bytes,2998,opt,name=data_location,json=dataLocation,proto3" json:"data_location,omitempty"`
+	ParentId      *string       `protobuf:"bytes,15494,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MachineLearningModel) Reset() {
+	*x = MachineLearningModel{}
+	mi := &file_api_ontology_ontology_proto_msgTypes[97]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MachineLearningModel) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MachineLearningModel) ProtoMessage() {}
+
+func (x *MachineLearningModel) ProtoReflect() protoreflect.Message {
+	mi := &file_api_ontology_ontology_proto_msgTypes[97]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MachineLearningModel.ProtoReflect.Descriptor instead.
+func (*MachineLearningModel) Descriptor() ([]byte, []int) {
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{97}
+}
+
+func (x *MachineLearningModel) GetAdvRobustness() float32 {
+	if x != nil {
+		return x.AdvRobustness
+	}
+	return 0
+}
+
+func (x *MachineLearningModel) GetCreationTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreationTime
+	}
+	return nil
+}
+
+func (x *MachineLearningModel) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *MachineLearningModel) GetExplainability() float32 {
+	if x != nil {
+		return x.Explainability
+	}
+	return 0
+}
+
+func (x *MachineLearningModel) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *MachineLearningModel) GetLabels() map[string]string {
+	if x != nil {
+		return x.Labels
+	}
+	return nil
+}
+
+func (x *MachineLearningModel) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *MachineLearningModel) GetPoisonLevel() float32 {
+	if x != nil {
+		return x.PoisonLevel
+	}
+	return 0
+}
+
+func (x *MachineLearningModel) GetPrivacyLabel() float32 {
+	if x != nil {
+		return x.PrivacyLabel
+	}
+	return 0
+}
+
+func (x *MachineLearningModel) GetPrivacyLevel() float32 {
+	if x != nil {
+		return x.PrivacyLevel
+	}
+	return 0
+}
+
+func (x *MachineLearningModel) GetRaw() string {
+	if x != nil {
+		return x.Raw
+	}
+	return ""
+}
+
+func (x *MachineLearningModel) GetRobustness() float32 {
+	if x != nil {
+		return x.Robustness
+	}
+	return 0
+}
+
+func (x *MachineLearningModel) GetDataLocation() *DataLocation {
+	if x != nil {
+		return x.DataLocation
+	}
+	return nil
+}
+
+func (x *MachineLearningModel) GetParentId() string {
+	if x != nil && x.ParentId != nil {
+		return *x.ParentId
+	}
+	return ""
+}
+
+// MachineLearningService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+type MachineLearningService struct {
+	state                      protoimpl.MessageState `protogen:"open.v1"`
+	CreationTime               *timestamppb.Timestamp `protobuf:"bytes,18259,opt,name=creation_time,json=creationTime,proto3" json:"creation_time,omitempty"`
+	Description                string                 `protobuf:"bytes,2080,opt,name=description,proto3" json:"description,omitempty"`
+	Id                         string                 `protobuf:"bytes,14176,opt,name=id,proto3" json:"id,omitempty"`
+	InternetAccessibleEndpoint bool                   `protobuf:"varint,16109,opt,name=internet_accessible_endpoint,json=internetAccessibleEndpoint,proto3" json:"internet_accessible_endpoint,omitempty"`
+	Ips                        []string               `protobuf:"bytes,11814,rep,name=ips,proto3" json:"ips,omitempty"`
+	Labels                     map[string]string      `protobuf:"bytes,18935,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Name                       string                 `protobuf:"bytes,6061,opt,name=name,proto3" json:"name,omitempty"`
+	Ports                      []uint32               `protobuf:"varint,6816,rep,packed,name=ports,proto3" json:"ports,omitempty"`
+	// The raw field contains the raw information that is used to fill in the fields of the ontology.
+	Raw                       string               `protobuf:"bytes,5983,opt,name=raw,proto3" json:"raw,omitempty"`
+	Authenticity              *Authenticity        `protobuf:"bytes,7702,opt,name=authenticity,proto3" json:"authenticity,omitempty"`
+	ComputeId                 *string              `protobuf:"bytes,10831,opt,name=compute_id,json=computeId,proto3,oneof" json:"compute_id,omitempty"`
+	GeoLocation               *GeoLocation         `protobuf:"bytes,3308,opt,name=geo_location,json=geoLocation,proto3" json:"geo_location,omitempty"`
+	Loggings                  []*Logging           `protobuf:"bytes,6059,rep,name=loggings,proto3" json:"loggings,omitempty"`
+	MachineLearningIds        []string             `protobuf:"bytes,6901,rep,name=machine_learning_ids,json=machineLearningIds,proto3" json:"machine_learning_ids,omitempty"`
+	Redundancies              []*Redundancy        `protobuf:"bytes,16726,rep,name=redundancies,proto3" json:"redundancies,omitempty"`
+	ParentId                  *string              `protobuf:"bytes,2223,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`
+	ServiceMetadataDocumentId *string              `protobuf:"bytes,10709,opt,name=service_metadata_document_id,json=serviceMetadataDocumentId,proto3,oneof" json:"service_metadata_document_id,omitempty"`
+	StorageIds                []string             `protobuf:"bytes,161,rep,name=storage_ids,json=storageIds,proto3" json:"storage_ids,omitempty"`
+	TransportEncryption       *TransportEncryption `protobuf:"bytes,17009,opt,name=transport_encryption,json=transportEncryption,proto3" json:"transport_encryption,omitempty"`
+	UsageStatistics           *UsageStatistics     `protobuf:"bytes,5491,opt,name=usage_statistics,json=usageStatistics,proto3" json:"usage_statistics,omitempty"`
+	unknownFields             protoimpl.UnknownFields
+	sizeCache                 protoimpl.SizeCache
+}
+
+func (x *MachineLearningService) Reset() {
+	*x = MachineLearningService{}
+	mi := &file_api_ontology_ontology_proto_msgTypes[98]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MachineLearningService) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MachineLearningService) ProtoMessage() {}
+
+func (x *MachineLearningService) ProtoReflect() protoreflect.Message {
+	mi := &file_api_ontology_ontology_proto_msgTypes[98]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MachineLearningService.ProtoReflect.Descriptor instead.
+func (*MachineLearningService) Descriptor() ([]byte, []int) {
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{98}
+}
+
+func (x *MachineLearningService) GetCreationTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreationTime
+	}
+	return nil
+}
+
+func (x *MachineLearningService) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *MachineLearningService) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *MachineLearningService) GetInternetAccessibleEndpoint() bool {
+	if x != nil {
+		return x.InternetAccessibleEndpoint
+	}
+	return false
+}
+
+func (x *MachineLearningService) GetIps() []string {
+	if x != nil {
+		return x.Ips
+	}
+	return nil
+}
+
+func (x *MachineLearningService) GetLabels() map[string]string {
+	if x != nil {
+		return x.Labels
+	}
+	return nil
+}
+
+func (x *MachineLearningService) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *MachineLearningService) GetPorts() []uint32 {
+	if x != nil {
+		return x.Ports
+	}
+	return nil
+}
+
+func (x *MachineLearningService) GetRaw() string {
+	if x != nil {
+		return x.Raw
+	}
+	return ""
+}
+
+func (x *MachineLearningService) GetAuthenticity() *Authenticity {
+	if x != nil {
+		return x.Authenticity
+	}
+	return nil
+}
+
+func (x *MachineLearningService) GetComputeId() string {
+	if x != nil && x.ComputeId != nil {
+		return *x.ComputeId
+	}
+	return ""
+}
+
+func (x *MachineLearningService) GetGeoLocation() *GeoLocation {
+	if x != nil {
+		return x.GeoLocation
+	}
+	return nil
+}
+
+func (x *MachineLearningService) GetLoggings() []*Logging {
+	if x != nil {
+		return x.Loggings
+	}
+	return nil
+}
+
+func (x *MachineLearningService) GetMachineLearningIds() []string {
+	if x != nil {
+		return x.MachineLearningIds
+	}
+	return nil
+}
+
+func (x *MachineLearningService) GetRedundancies() []*Redundancy {
+	if x != nil {
+		return x.Redundancies
+	}
+	return nil
+}
+
+func (x *MachineLearningService) GetParentId() string {
+	if x != nil && x.ParentId != nil {
+		return *x.ParentId
+	}
+	return ""
+}
+
+func (x *MachineLearningService) GetServiceMetadataDocumentId() string {
+	if x != nil && x.ServiceMetadataDocumentId != nil {
+		return *x.ServiceMetadataDocumentId
+	}
+	return ""
+}
+
+func (x *MachineLearningService) GetStorageIds() []string {
+	if x != nil {
+		return x.StorageIds
+	}
+	return nil
+}
+
+func (x *MachineLearningService) GetTransportEncryption() *TransportEncryption {
+	if x != nil {
+		return x.TransportEncryption
+	}
+	return nil
+}
+
+func (x *MachineLearningService) GetUsageStatistics() *UsageStatistics {
+	if x != nil {
+		return x.UsageStatistics
+	}
+	return nil
+}
+
 // MalwareProtection is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 // analyzes the activity within a Compute resource
 type MalwareProtection struct {
@@ -10649,7 +11330,7 @@ type MalwareProtection struct {
 
 func (x *MalwareProtection) Reset() {
 	*x = MalwareProtection{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[94]
+	mi := &file_api_ontology_ontology_proto_msgTypes[99]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10661,7 +11342,7 @@ func (x *MalwareProtection) String() string {
 func (*MalwareProtection) ProtoMessage() {}
 
 func (x *MalwareProtection) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[94]
+	mi := &file_api_ontology_ontology_proto_msgTypes[99]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10674,7 +11355,7 @@ func (x *MalwareProtection) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MalwareProtection.ProtoReflect.Descriptor instead.
 func (*MalwareProtection) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{94}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{99}
 }
 
 func (x *MalwareProtection) GetDurationSinceActive() *durationpb.Duration {
@@ -10717,7 +11398,7 @@ type ManagedKeyEncryption struct {
 
 func (x *ManagedKeyEncryption) Reset() {
 	*x = ManagedKeyEncryption{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[95]
+	mi := &file_api_ontology_ontology_proto_msgTypes[100]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10729,7 +11410,7 @@ func (x *ManagedKeyEncryption) String() string {
 func (*ManagedKeyEncryption) ProtoMessage() {}
 
 func (x *ManagedKeyEncryption) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[95]
+	mi := &file_api_ontology_ontology_proto_msgTypes[100]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10742,7 +11423,7 @@ func (x *ManagedKeyEncryption) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ManagedKeyEncryption.ProtoReflect.Descriptor instead.
 func (*ManagedKeyEncryption) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{95}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{100}
 }
 
 func (x *ManagedKeyEncryption) GetAlgorithm() string {
@@ -10788,7 +11469,7 @@ type MessagingHub struct {
 
 func (x *MessagingHub) Reset() {
 	*x = MessagingHub{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[96]
+	mi := &file_api_ontology_ontology_proto_msgTypes[101]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10800,7 +11481,7 @@ func (x *MessagingHub) String() string {
 func (*MessagingHub) ProtoMessage() {}
 
 func (x *MessagingHub) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[96]
+	mi := &file_api_ontology_ontology_proto_msgTypes[101]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10813,7 +11494,7 @@ func (x *MessagingHub) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MessagingHub.ProtoReflect.Descriptor instead.
 func (*MessagingHub) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{96}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{101}
 }
 
 func (x *MessagingHub) GetCreationTime() *timestamppb.Timestamp {
@@ -10913,7 +11594,7 @@ type CodeModule struct {
 
 func (x *CodeModule) Reset() {
 	*x = CodeModule{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[97]
+	mi := &file_api_ontology_ontology_proto_msgTypes[102]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10925,7 +11606,7 @@ func (x *CodeModule) String() string {
 func (*CodeModule) ProtoMessage() {}
 
 func (x *CodeModule) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[97]
+	mi := &file_api_ontology_ontology_proto_msgTypes[102]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10938,7 +11619,7 @@ func (x *CodeModule) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CodeModule.ProtoReflect.Descriptor instead.
 func (*CodeModule) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{97}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{102}
 }
 
 func (x *CodeModule) GetType() isCodeModule_Type {
@@ -10978,7 +11659,7 @@ type MultiFactorAuthentiation struct {
 
 func (x *MultiFactorAuthentiation) Reset() {
 	*x = MultiFactorAuthentiation{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[98]
+	mi := &file_api_ontology_ontology_proto_msgTypes[103]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10990,7 +11671,7 @@ func (x *MultiFactorAuthentiation) String() string {
 func (*MultiFactorAuthentiation) ProtoMessage() {}
 
 func (x *MultiFactorAuthentiation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[98]
+	mi := &file_api_ontology_ontology_proto_msgTypes[103]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11003,7 +11684,7 @@ func (x *MultiFactorAuthentiation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MultiFactorAuthentiation.ProtoReflect.Descriptor instead.
 func (*MultiFactorAuthentiation) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{98}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{103}
 }
 
 func (x *MultiFactorAuthentiation) GetContextIsChecked() bool {
@@ -11054,7 +11735,7 @@ type MultiModalDatabaseService struct {
 
 func (x *MultiModalDatabaseService) Reset() {
 	*x = MultiModalDatabaseService{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[99]
+	mi := &file_api_ontology_ontology_proto_msgTypes[104]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11066,7 +11747,7 @@ func (x *MultiModalDatabaseService) String() string {
 func (*MultiModalDatabaseService) ProtoMessage() {}
 
 func (x *MultiModalDatabaseService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[99]
+	mi := &file_api_ontology_ontology_proto_msgTypes[104]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11079,7 +11760,7 @@ func (x *MultiModalDatabaseService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MultiModalDatabaseService.ProtoReflect.Descriptor instead.
 func (*MultiModalDatabaseService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{99}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{104}
 }
 
 func (x *MultiModalDatabaseService) GetCreationTime() *timestamppb.Timestamp {
@@ -11267,7 +11948,7 @@ type NetworkInterface struct {
 
 func (x *NetworkInterface) Reset() {
 	*x = NetworkInterface{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[100]
+	mi := &file_api_ontology_ontology_proto_msgTypes[105]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11279,7 +11960,7 @@ func (x *NetworkInterface) String() string {
 func (*NetworkInterface) ProtoMessage() {}
 
 func (x *NetworkInterface) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[100]
+	mi := &file_api_ontology_ontology_proto_msgTypes[105]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11292,7 +11973,7 @@ func (x *NetworkInterface) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NetworkInterface.ProtoReflect.Descriptor instead.
 func (*NetworkInterface) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{100}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{105}
 }
 
 func (x *NetworkInterface) GetCreationTime() *timestamppb.Timestamp {
@@ -11415,7 +12096,7 @@ type NetworkSecurityGroup struct {
 
 func (x *NetworkSecurityGroup) Reset() {
 	*x = NetworkSecurityGroup{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[101]
+	mi := &file_api_ontology_ontology_proto_msgTypes[106]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11427,7 +12108,7 @@ func (x *NetworkSecurityGroup) String() string {
 func (*NetworkSecurityGroup) ProtoMessage() {}
 
 func (x *NetworkSecurityGroup) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[101]
+	mi := &file_api_ontology_ontology_proto_msgTypes[106]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11440,7 +12121,7 @@ func (x *NetworkSecurityGroup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NetworkSecurityGroup.ProtoReflect.Descriptor instead.
 func (*NetworkSecurityGroup) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{101}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{106}
 }
 
 func (x *NetworkSecurityGroup) GetCreationTime() *timestamppb.Timestamp {
@@ -11538,6 +12219,7 @@ type NetworkService struct {
 	//	*NetworkService_GenericNetworkService
 	//	*NetworkService_LoadBalancer
 	//	*NetworkService_LoggingService
+	//	*NetworkService_MachineLearningService
 	//	*NetworkService_SecurityAdvisoryService
 	//	*NetworkService_DocumentDatabaseService
 	//	*NetworkService_KeyValueDatabaseService
@@ -11552,7 +12234,7 @@ type NetworkService struct {
 
 func (x *NetworkService) Reset() {
 	*x = NetworkService{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[102]
+	mi := &file_api_ontology_ontology_proto_msgTypes[107]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11564,7 +12246,7 @@ func (x *NetworkService) String() string {
 func (*NetworkService) ProtoMessage() {}
 
 func (x *NetworkService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[102]
+	mi := &file_api_ontology_ontology_proto_msgTypes[107]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11577,7 +12259,7 @@ func (x *NetworkService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NetworkService.ProtoReflect.Descriptor instead.
 func (*NetworkService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{102}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{107}
 }
 
 func (x *NetworkService) GetType() isNetworkService_Type {
@@ -11618,6 +12300,15 @@ func (x *NetworkService) GetLoggingService() *LoggingService {
 	if x != nil {
 		if x, ok := x.Type.(*NetworkService_LoggingService); ok {
 			return x.LoggingService
+		}
+	}
+	return nil
+}
+
+func (x *NetworkService) GetMachineLearningService() *MachineLearningService {
+	if x != nil {
+		if x, ok := x.Type.(*NetworkService_MachineLearningService); ok {
+			return x.MachineLearningService
 		}
 	}
 	return nil
@@ -11706,6 +12397,10 @@ type NetworkService_LoggingService struct {
 	LoggingService *LoggingService `protobuf:"bytes,14131,opt,name=logging_service,json=loggingService,proto3,oneof"`
 }
 
+type NetworkService_MachineLearningService struct {
+	MachineLearningService *MachineLearningService `protobuf:"bytes,16966,opt,name=machine_learning_service,json=machineLearningService,proto3,oneof"`
+}
+
 type NetworkService_SecurityAdvisoryService struct {
 	SecurityAdvisoryService *SecurityAdvisoryService `protobuf:"bytes,173,opt,name=security_advisory_service,json=securityAdvisoryService,proto3,oneof"`
 }
@@ -11742,6 +12437,8 @@ func (*NetworkService_LoadBalancer) isNetworkService_Type() {}
 
 func (*NetworkService_LoggingService) isNetworkService_Type() {}
 
+func (*NetworkService_MachineLearningService) isNetworkService_Type() {}
+
 func (*NetworkService_SecurityAdvisoryService) isNetworkService_Type() {}
 
 func (*NetworkService_DocumentDatabaseService) isNetworkService_Type() {}
@@ -11767,6 +12464,7 @@ type Networking struct {
 	//	*Networking_GenericNetworkService
 	//	*Networking_LoadBalancer
 	//	*Networking_LoggingService
+	//	*Networking_MachineLearningService
 	//	*Networking_SecurityAdvisoryService
 	//	*Networking_DocumentDatabaseService
 	//	*Networking_KeyValueDatabaseService
@@ -11783,7 +12481,7 @@ type Networking struct {
 
 func (x *Networking) Reset() {
 	*x = Networking{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[103]
+	mi := &file_api_ontology_ontology_proto_msgTypes[108]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11795,7 +12493,7 @@ func (x *Networking) String() string {
 func (*Networking) ProtoMessage() {}
 
 func (x *Networking) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[103]
+	mi := &file_api_ontology_ontology_proto_msgTypes[108]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11808,7 +12506,7 @@ func (x *Networking) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Networking.ProtoReflect.Descriptor instead.
 func (*Networking) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{103}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{108}
 }
 
 func (x *Networking) GetType() isNetworking_Type {
@@ -11867,6 +12565,15 @@ func (x *Networking) GetLoggingService() *LoggingService {
 	if x != nil {
 		if x, ok := x.Type.(*Networking_LoggingService); ok {
 			return x.LoggingService
+		}
+	}
+	return nil
+}
+
+func (x *Networking) GetMachineLearningService() *MachineLearningService {
+	if x != nil {
+		if x, ok := x.Type.(*Networking_MachineLearningService); ok {
+			return x.MachineLearningService
 		}
 	}
 	return nil
@@ -11981,6 +12688,10 @@ type Networking_LoggingService struct {
 	LoggingService *LoggingService `protobuf:"bytes,14131,opt,name=logging_service,json=loggingService,proto3,oneof"`
 }
 
+type Networking_MachineLearningService struct {
+	MachineLearningService *MachineLearningService `protobuf:"bytes,16966,opt,name=machine_learning_service,json=machineLearningService,proto3,oneof"`
+}
+
 type Networking_SecurityAdvisoryService struct {
 	SecurityAdvisoryService *SecurityAdvisoryService `protobuf:"bytes,173,opt,name=security_advisory_service,json=securityAdvisoryService,proto3,oneof"`
 }
@@ -12029,6 +12740,8 @@ func (*Networking_LoadBalancer) isNetworking_Type() {}
 
 func (*Networking_LoggingService) isNetworking_Type() {}
 
+func (*Networking_MachineLearningService) isNetworking_Type() {}
+
 func (*Networking_SecurityAdvisoryService) isNetworking_Type() {}
 
 func (*Networking_DocumentDatabaseService) isNetworking_Type() {}
@@ -12057,7 +12770,7 @@ type NoAuthentication struct {
 
 func (x *NoAuthentication) Reset() {
 	*x = NoAuthentication{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[104]
+	mi := &file_api_ontology_ontology_proto_msgTypes[109]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12069,7 +12782,7 @@ func (x *NoAuthentication) String() string {
 func (*NoAuthentication) ProtoMessage() {}
 
 func (x *NoAuthentication) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[104]
+	mi := &file_api_ontology_ontology_proto_msgTypes[109]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12082,7 +12795,7 @@ func (x *NoAuthentication) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NoAuthentication.ProtoReflect.Descriptor instead.
 func (*NoAuthentication) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{104}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{109}
 }
 
 func (x *NoAuthentication) GetContextIsChecked() bool {
@@ -12099,14 +12812,13 @@ type OSLogging struct {
 	MonitoringLogDataEnabled bool                   `protobuf:"varint,12434,opt,name=monitoring_log_data_enabled,json=monitoringLogDataEnabled,proto3" json:"monitoring_log_data_enabled,omitempty"`
 	RetentionPeriod          *durationpb.Duration   `protobuf:"bytes,11358,opt,name=retention_period,json=retentionPeriod,proto3" json:"retention_period,omitempty"`
 	SecurityAlertsEnabled    bool                   `protobuf:"varint,7453,opt,name=security_alerts_enabled,json=securityAlertsEnabled,proto3" json:"security_alerts_enabled,omitempty"`
-	LoggingServiceIds        []string               `protobuf:"bytes,10850,rep,name=logging_service_ids,json=loggingServiceIds,proto3" json:"logging_service_ids,omitempty"`
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
 
 func (x *OSLogging) Reset() {
 	*x = OSLogging{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[105]
+	mi := &file_api_ontology_ontology_proto_msgTypes[110]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12118,7 +12830,7 @@ func (x *OSLogging) String() string {
 func (*OSLogging) ProtoMessage() {}
 
 func (x *OSLogging) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[105]
+	mi := &file_api_ontology_ontology_proto_msgTypes[110]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12131,7 +12843,7 @@ func (x *OSLogging) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OSLogging.ProtoReflect.Descriptor instead.
 func (*OSLogging) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{105}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{110}
 }
 
 func (x *OSLogging) GetEnabled() bool {
@@ -12162,13 +12874,6 @@ func (x *OSLogging) GetSecurityAlertsEnabled() bool {
 	return false
 }
 
-func (x *OSLogging) GetLoggingServiceIds() []string {
-	if x != nil {
-		return x.LoggingServiceIds
-	}
-	return nil
-}
-
 // OTPBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 type OTPBasedAuthentication struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
@@ -12180,7 +12885,7 @@ type OTPBasedAuthentication struct {
 
 func (x *OTPBasedAuthentication) Reset() {
 	*x = OTPBasedAuthentication{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[106]
+	mi := &file_api_ontology_ontology_proto_msgTypes[111]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12192,7 +12897,7 @@ func (x *OTPBasedAuthentication) String() string {
 func (*OTPBasedAuthentication) ProtoMessage() {}
 
 func (x *OTPBasedAuthentication) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[106]
+	mi := &file_api_ontology_ontology_proto_msgTypes[111]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12205,7 +12910,7 @@ func (x *OTPBasedAuthentication) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OTPBasedAuthentication.ProtoReflect.Descriptor instead.
 func (*OTPBasedAuthentication) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{106}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{111}
 }
 
 func (x *OTPBasedAuthentication) GetActivated() bool {
@@ -12250,7 +12955,7 @@ type ObjectStorage struct {
 
 func (x *ObjectStorage) Reset() {
 	*x = ObjectStorage{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[107]
+	mi := &file_api_ontology_ontology_proto_msgTypes[112]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12262,7 +12967,7 @@ func (x *ObjectStorage) String() string {
 func (*ObjectStorage) ProtoMessage() {}
 
 func (x *ObjectStorage) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[107]
+	mi := &file_api_ontology_ontology_proto_msgTypes[112]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12275,7 +12980,7 @@ func (x *ObjectStorage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ObjectStorage.ProtoReflect.Descriptor instead.
 func (*ObjectStorage) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{107}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{112}
 }
 
 func (x *ObjectStorage) GetCreationTime() *timestamppb.Timestamp {
@@ -12416,7 +13121,7 @@ type ObjectStorageRequest struct {
 
 func (x *ObjectStorageRequest) Reset() {
 	*x = ObjectStorageRequest{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[108]
+	mi := &file_api_ontology_ontology_proto_msgTypes[113]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12428,7 +13133,7 @@ func (x *ObjectStorageRequest) String() string {
 func (*ObjectStorageRequest) ProtoMessage() {}
 
 func (x *ObjectStorageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[108]
+	mi := &file_api_ontology_ontology_proto_msgTypes[113]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12441,7 +13146,7 @@ func (x *ObjectStorageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ObjectStorageRequest.ProtoReflect.Descriptor instead.
 func (*ObjectStorageRequest) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{108}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{113}
 }
 
 func (x *ObjectStorageRequest) GetSource() string {
@@ -12497,7 +13202,7 @@ type ObjectStorageService struct {
 
 func (x *ObjectStorageService) Reset() {
 	*x = ObjectStorageService{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[109]
+	mi := &file_api_ontology_ontology_proto_msgTypes[114]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12509,7 +13214,7 @@ func (x *ObjectStorageService) String() string {
 func (*ObjectStorageService) ProtoMessage() {}
 
 func (x *ObjectStorageService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[109]
+	mi := &file_api_ontology_ontology_proto_msgTypes[114]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12522,7 +13227,7 @@ func (x *ObjectStorageService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ObjectStorageService.ProtoReflect.Descriptor instead.
 func (*ObjectStorageService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{109}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{114}
 }
 
 func (x *ObjectStorageService) GetCreationTime() *timestamppb.Timestamp {
@@ -12692,7 +13397,7 @@ type Operation struct {
 
 func (x *Operation) Reset() {
 	*x = Operation{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[110]
+	mi := &file_api_ontology_ontology_proto_msgTypes[115]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12704,7 +13409,7 @@ func (x *Operation) String() string {
 func (*Operation) ProtoMessage() {}
 
 func (x *Operation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[110]
+	mi := &file_api_ontology_ontology_proto_msgTypes[115]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12717,7 +13422,7 @@ func (x *Operation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Operation.ProtoReflect.Descriptor instead.
 func (*Operation) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{110}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{115}
 }
 
 func (x *Operation) GetType() isOperation_Type {
@@ -12862,7 +13567,7 @@ type PasswordBasedAuthentication struct {
 
 func (x *PasswordBasedAuthentication) Reset() {
 	*x = PasswordBasedAuthentication{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[111]
+	mi := &file_api_ontology_ontology_proto_msgTypes[116]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12874,7 +13579,7 @@ func (x *PasswordBasedAuthentication) String() string {
 func (*PasswordBasedAuthentication) ProtoMessage() {}
 
 func (x *PasswordBasedAuthentication) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[111]
+	mi := &file_api_ontology_ontology_proto_msgTypes[116]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12887,7 +13592,7 @@ func (x *PasswordBasedAuthentication) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PasswordBasedAuthentication.ProtoReflect.Descriptor instead.
 func (*PasswordBasedAuthentication) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{111}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{116}
 }
 
 func (x *PasswordBasedAuthentication) GetActivated() bool {
@@ -12926,7 +13631,7 @@ type PasswordPolicy struct {
 
 func (x *PasswordPolicy) Reset() {
 	*x = PasswordPolicy{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[112]
+	mi := &file_api_ontology_ontology_proto_msgTypes[117]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12938,7 +13643,7 @@ func (x *PasswordPolicy) String() string {
 func (*PasswordPolicy) ProtoMessage() {}
 
 func (x *PasswordPolicy) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[112]
+	mi := &file_api_ontology_ontology_proto_msgTypes[117]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12951,7 +13656,7 @@ func (x *PasswordPolicy) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PasswordPolicy.ProtoReflect.Descriptor instead.
 func (*PasswordPolicy) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{112}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{117}
 }
 
 func (x *PasswordPolicy) GetCreationTime() *timestamppb.Timestamp {
@@ -13041,27 +13746,27 @@ func (x *PasswordPolicy) GetUsageStatistics() *UsageStatistics {
 // PolicyDocument is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 type PolicyDocument struct {
 	state        protoimpl.MessageState `protogen:"open.v1"`
-	CreationTime *timestamppb.Timestamp `protobuf:"bytes,82,opt,name=creation_time,json=creationTime,proto3" json:"creation_time,omitempty"`
-	Description  string                 `protobuf:"bytes,3614,opt,name=description,proto3" json:"description,omitempty"`
-	Filetype     string                 `protobuf:"bytes,2752,opt,name=filetype,proto3" json:"filetype,omitempty"`
-	Id           string                 `protobuf:"bytes,15517,opt,name=id,proto3" json:"id,omitempty"`
-	Labels       map[string]string      `protobuf:"bytes,18453,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Name         string                 `protobuf:"bytes,7338,opt,name=name,proto3" json:"name,omitempty"`
+	CreationTime *timestamppb.Timestamp `protobuf:"bytes,8545,opt,name=creation_time,json=creationTime,proto3" json:"creation_time,omitempty"`
+	Description  string                 `protobuf:"bytes,1423,opt,name=description,proto3" json:"description,omitempty"`
+	Filetype     string                 `protobuf:"bytes,11838,opt,name=filetype,proto3" json:"filetype,omitempty"`
+	Id           string                 `protobuf:"bytes,6550,opt,name=id,proto3" json:"id,omitempty"`
+	Labels       map[string]string      `protobuf:"bytes,5677,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Name         string                 `protobuf:"bytes,2052,opt,name=name,proto3" json:"name,omitempty"`
 	// The raw field contains the raw information that is used to fill in the fields of the ontology.
-	Raw                string               `protobuf:"bytes,2867,opt,name=raw,proto3" json:"raw,omitempty"`
-	DocumentChecksums  []*DocumentChecksum  `protobuf:"bytes,11208,rep,name=document_checksums,json=documentChecksums,proto3" json:"document_checksums,omitempty"`
-	DocumentLocation   *DocumentLocation    `protobuf:"bytes,3601,opt,name=document_location,json=documentLocation,proto3" json:"document_location,omitempty"`
-	DocumentSignatures []*DocumentSignature `protobuf:"bytes,13974,rep,name=document_signatures,json=documentSignatures,proto3" json:"document_signatures,omitempty"`
-	ParentId           *string              `protobuf:"bytes,4811,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`
-	SchemaValidation   *SchemaValidation    `protobuf:"bytes,2709,opt,name=schema_validation,json=schemaValidation,proto3" json:"schema_validation,omitempty"`
-	SecurityFeatures   []*SecurityFeature   `protobuf:"bytes,18332,rep,name=security_features,json=securityFeatures,proto3" json:"security_features,omitempty"`
+	Raw                string               `protobuf:"bytes,5038,opt,name=raw,proto3" json:"raw,omitempty"`
+	DataLocation       *DataLocation        `protobuf:"bytes,8404,opt,name=data_location,json=dataLocation,proto3" json:"data_location,omitempty"`
+	DocumentChecksums  []*DocumentChecksum  `protobuf:"bytes,18616,rep,name=document_checksums,json=documentChecksums,proto3" json:"document_checksums,omitempty"`
+	DocumentSignatures []*DocumentSignature `protobuf:"bytes,11914,rep,name=document_signatures,json=documentSignatures,proto3" json:"document_signatures,omitempty"`
+	ParentId           *string              `protobuf:"bytes,9358,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`
+	SchemaValidation   *SchemaValidation    `protobuf:"bytes,15790,opt,name=schema_validation,json=schemaValidation,proto3" json:"schema_validation,omitempty"`
+	SecurityFeatures   []*SecurityFeature   `protobuf:"bytes,15024,rep,name=security_features,json=securityFeatures,proto3" json:"security_features,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
 
 func (x *PolicyDocument) Reset() {
 	*x = PolicyDocument{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[113]
+	mi := &file_api_ontology_ontology_proto_msgTypes[118]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13073,7 +13778,7 @@ func (x *PolicyDocument) String() string {
 func (*PolicyDocument) ProtoMessage() {}
 
 func (x *PolicyDocument) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[113]
+	mi := &file_api_ontology_ontology_proto_msgTypes[118]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13086,7 +13791,7 @@ func (x *PolicyDocument) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PolicyDocument.ProtoReflect.Descriptor instead.
 func (*PolicyDocument) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{113}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{118}
 }
 
 func (x *PolicyDocument) GetCreationTime() *timestamppb.Timestamp {
@@ -13138,16 +13843,16 @@ func (x *PolicyDocument) GetRaw() string {
 	return ""
 }
 
-func (x *PolicyDocument) GetDocumentChecksums() []*DocumentChecksum {
+func (x *PolicyDocument) GetDataLocation() *DataLocation {
 	if x != nil {
-		return x.DocumentChecksums
+		return x.DataLocation
 	}
 	return nil
 }
 
-func (x *PolicyDocument) GetDocumentLocation() *DocumentLocation {
+func (x *PolicyDocument) GetDocumentChecksums() []*DocumentChecksum {
 	if x != nil {
-		return x.DocumentLocation
+		return x.DocumentChecksums
 	}
 	return nil
 }
@@ -13193,7 +13898,7 @@ type RBAC struct {
 
 func (x *RBAC) Reset() {
 	*x = RBAC{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[114]
+	mi := &file_api_ontology_ontology_proto_msgTypes[119]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13205,7 +13910,7 @@ func (x *RBAC) String() string {
 func (*RBAC) ProtoMessage() {}
 
 func (x *RBAC) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[114]
+	mi := &file_api_ontology_ontology_proto_msgTypes[119]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13218,7 +13923,7 @@ func (x *RBAC) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RBAC.ProtoReflect.Descriptor instead.
 func (*RBAC) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{114}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{119}
 }
 
 func (x *RBAC) GetBroadAssignments() float32 {
@@ -13250,7 +13955,7 @@ type Redundancy struct {
 
 func (x *Redundancy) Reset() {
 	*x = Redundancy{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[115]
+	mi := &file_api_ontology_ontology_proto_msgTypes[120]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13262,7 +13967,7 @@ func (x *Redundancy) String() string {
 func (*Redundancy) ProtoMessage() {}
 
 func (x *Redundancy) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[115]
+	mi := &file_api_ontology_ontology_proto_msgTypes[120]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13275,7 +13980,7 @@ func (x *Redundancy) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Redundancy.ProtoReflect.Descriptor instead.
 func (*Redundancy) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{115}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{120}
 }
 
 func (x *Redundancy) GetType() isRedundancy_Type {
@@ -13367,7 +14072,7 @@ type RelationalDatabaseService struct {
 
 func (x *RelationalDatabaseService) Reset() {
 	*x = RelationalDatabaseService{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[116]
+	mi := &file_api_ontology_ontology_proto_msgTypes[121]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13379,7 +14084,7 @@ func (x *RelationalDatabaseService) String() string {
 func (*RelationalDatabaseService) ProtoMessage() {}
 
 func (x *RelationalDatabaseService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[116]
+	mi := &file_api_ontology_ontology_proto_msgTypes[121]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13392,7 +14097,7 @@ func (x *RelationalDatabaseService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RelationalDatabaseService.ProtoReflect.Descriptor instead.
 func (*RelationalDatabaseService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{116}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{121}
 }
 
 func (x *RelationalDatabaseService) GetCreationTime() *timestamppb.Timestamp {
@@ -13570,7 +14275,7 @@ type Reliability struct {
 
 func (x *Reliability) Reset() {
 	*x = Reliability{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[117]
+	mi := &file_api_ontology_ontology_proto_msgTypes[122]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13582,7 +14287,7 @@ func (x *Reliability) String() string {
 func (*Reliability) ProtoMessage() {}
 
 func (x *Reliability) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[117]
+	mi := &file_api_ontology_ontology_proto_msgTypes[122]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13595,7 +14300,7 @@ func (x *Reliability) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Reliability.ProtoReflect.Descriptor instead.
 func (*Reliability) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{117}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{122}
 }
 
 func (x *Reliability) GetType() isReliability_Type {
@@ -13651,7 +14356,7 @@ type RemoteAttestation struct {
 
 func (x *RemoteAttestation) Reset() {
 	*x = RemoteAttestation{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[118]
+	mi := &file_api_ontology_ontology_proto_msgTypes[123]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13663,7 +14368,7 @@ func (x *RemoteAttestation) String() string {
 func (*RemoteAttestation) ProtoMessage() {}
 
 func (x *RemoteAttestation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[118]
+	mi := &file_api_ontology_ontology_proto_msgTypes[123]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13676,7 +14381,7 @@ func (x *RemoteAttestation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoteAttestation.ProtoReflect.Descriptor instead.
 func (*RemoteAttestation) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{118}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{123}
 }
 
 func (x *RemoteAttestation) GetCreationTime() *timestamppb.Timestamp {
@@ -13700,31 +14405,31 @@ func (x *RemoteAttestation) GetStatus() bool {
 	return false
 }
 
-// RemoteDocumentLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
-type RemoteDocumentLocation struct {
+// RemoteDataLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+type RemoteDataLocation struct {
 	state               protoimpl.MessageState `protogen:"open.v1"`
-	Path                string                 `protobuf:"bytes,1220,opt,name=path,proto3" json:"path,omitempty"`
-	Authenticity        *Authenticity          `protobuf:"bytes,8682,opt,name=authenticity,proto3" json:"authenticity,omitempty"`
-	TransportEncryption *TransportEncryption   `protobuf:"bytes,17914,opt,name=transport_encryption,json=transportEncryption,proto3" json:"transport_encryption,omitempty"`
+	Path                string                 `protobuf:"bytes,5099,opt,name=path,proto3" json:"path,omitempty"`
+	Authenticity        *Authenticity          `protobuf:"bytes,2095,opt,name=authenticity,proto3" json:"authenticity,omitempty"`
+	TransportEncryption *TransportEncryption   `protobuf:"bytes,3553,opt,name=transport_encryption,json=transportEncryption,proto3" json:"transport_encryption,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
 
-func (x *RemoteDocumentLocation) Reset() {
-	*x = RemoteDocumentLocation{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[119]
+func (x *RemoteDataLocation) Reset() {
+	*x = RemoteDataLocation{}
+	mi := &file_api_ontology_ontology_proto_msgTypes[124]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *RemoteDocumentLocation) String() string {
+func (x *RemoteDataLocation) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*RemoteDocumentLocation) ProtoMessage() {}
+func (*RemoteDataLocation) ProtoMessage() {}
 
-func (x *RemoteDocumentLocation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[119]
+func (x *RemoteDataLocation) ProtoReflect() protoreflect.Message {
+	mi := &file_api_ontology_ontology_proto_msgTypes[124]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13735,26 +14440,26 @@ func (x *RemoteDocumentLocation) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use RemoteDocumentLocation.ProtoReflect.Descriptor instead.
-func (*RemoteDocumentLocation) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{119}
+// Deprecated: Use RemoteDataLocation.ProtoReflect.Descriptor instead.
+func (*RemoteDataLocation) Descriptor() ([]byte, []int) {
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{124}
 }
 
-func (x *RemoteDocumentLocation) GetPath() string {
+func (x *RemoteDataLocation) GetPath() string {
 	if x != nil {
 		return x.Path
 	}
 	return ""
 }
 
-func (x *RemoteDocumentLocation) GetAuthenticity() *Authenticity {
+func (x *RemoteDataLocation) GetAuthenticity() *Authenticity {
 	if x != nil {
 		return x.Authenticity
 	}
 	return nil
 }
 
-func (x *RemoteDocumentLocation) GetTransportEncryption() *TransportEncryption {
+func (x *RemoteDataLocation) GetTransportEncryption() *TransportEncryption {
 	if x != nil {
 		return x.TransportEncryption
 	}
@@ -13791,6 +14496,7 @@ type Resource struct {
 	//	*Resource_GenericNetworkService
 	//	*Resource_LoadBalancer
 	//	*Resource_LoggingService
+	//	*Resource_MachineLearningService
 	//	*Resource_SecurityAdvisoryService
 	//	*Resource_DocumentDatabaseService
 	//	*Resource_KeyValueDatabaseService
@@ -13810,6 +14516,8 @@ type Resource struct {
 	//	*Resource_PolicyDocument
 	//	*Resource_SecurityAdvisoryDocument
 	//	*Resource_ServiceMetadataDocument
+	//	*Resource_MachineLearningDataset
+	//	*Resource_MachineLearningModel
 	//	*Resource_AwarenessTraining
 	//	*Resource_SecurityTraining
 	//	*Resource_Application
@@ -13822,7 +14530,7 @@ type Resource struct {
 
 func (x *Resource) Reset() {
 	*x = Resource{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[120]
+	mi := &file_api_ontology_ontology_proto_msgTypes[125]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13834,7 +14542,7 @@ func (x *Resource) String() string {
 func (*Resource) ProtoMessage() {}
 
 func (x *Resource) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[120]
+	mi := &file_api_ontology_ontology_proto_msgTypes[125]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13847,7 +14555,7 @@ func (x *Resource) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Resource.ProtoReflect.Descriptor instead.
 func (*Resource) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{120}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{125}
 }
 
 func (x *Resource) GetType() isResource_Type {
@@ -14082,6 +14790,15 @@ func (x *Resource) GetLoggingService() *LoggingService {
 	return nil
 }
 
+func (x *Resource) GetMachineLearningService() *MachineLearningService {
+	if x != nil {
+		if x, ok := x.Type.(*Resource_MachineLearningService); ok {
+			return x.MachineLearningService
+		}
+	}
+	return nil
+}
+
 func (x *Resource) GetSecurityAdvisoryService() *SecurityAdvisoryService {
 	if x != nil {
 		if x, ok := x.Type.(*Resource_SecurityAdvisoryService); ok {
@@ -14253,6 +14970,24 @@ func (x *Resource) GetServiceMetadataDocument() *ServiceMetadataDocument {
 	return nil
 }
 
+func (x *Resource) GetMachineLearningDataset() *MachineLearningDataset {
+	if x != nil {
+		if x, ok := x.Type.(*Resource_MachineLearningDataset); ok {
+			return x.MachineLearningDataset
+		}
+	}
+	return nil
+}
+
+func (x *Resource) GetMachineLearningModel() *MachineLearningModel {
+	if x != nil {
+		if x, ok := x.Type.(*Resource_MachineLearningModel); ok {
+			return x.MachineLearningModel
+		}
+	}
+	return nil
+}
+
 func (x *Resource) GetAwarenessTraining() *AwarenessTraining {
 	if x != nil {
 		if x, ok := x.Type.(*Resource_AwarenessTraining); ok {
@@ -14402,6 +15137,10 @@ type Resource_LoggingService struct {
 	LoggingService *LoggingService `protobuf:"bytes,14131,opt,name=logging_service,json=loggingService,proto3,oneof"`
 }
 
+type Resource_MachineLearningService struct {
+	MachineLearningService *MachineLearningService `protobuf:"bytes,16966,opt,name=machine_learning_service,json=machineLearningService,proto3,oneof"`
+}
+
 type Resource_SecurityAdvisoryService struct {
 	SecurityAdvisoryService *SecurityAdvisoryService `protobuf:"bytes,173,opt,name=security_advisory_service,json=securityAdvisoryService,proto3,oneof"`
 }
@@ -14463,19 +15202,27 @@ type Resource_ObjectStorage struct {
 }
 
 type Resource_GenericDocument struct {
-	GenericDocument *GenericDocument `protobuf:"bytes,5702,opt,name=generic_document,json=genericDocument,proto3,oneof"`
+	GenericDocument *GenericDocument `protobuf:"bytes,4992,opt,name=generic_document,json=genericDocument,proto3,oneof"`
 }
 
 type Resource_PolicyDocument struct {
-	PolicyDocument *PolicyDocument `protobuf:"bytes,3687,opt,name=policy_document,json=policyDocument,proto3,oneof"`
+	PolicyDocument *PolicyDocument `protobuf:"bytes,14953,opt,name=policy_document,json=policyDocument,proto3,oneof"`
 }
 
 type Resource_SecurityAdvisoryDocument struct {
-	SecurityAdvisoryDocument *SecurityAdvisoryDocument `protobuf:"bytes,8513,opt,name=security_advisory_document,json=securityAdvisoryDocument,proto3,oneof"`
+	SecurityAdvisoryDocument *SecurityAdvisoryDocument `protobuf:"bytes,14717,opt,name=security_advisory_document,json=securityAdvisoryDocument,proto3,oneof"`
 }
 
 type Resource_ServiceMetadataDocument struct {
-	ServiceMetadataDocument *ServiceMetadataDocument `protobuf:"bytes,13959,opt,name=service_metadata_document,json=serviceMetadataDocument,proto3,oneof"`
+	ServiceMetadataDocument *ServiceMetadataDocument `protobuf:"bytes,272,opt,name=service_metadata_document,json=serviceMetadataDocument,proto3,oneof"`
+}
+
+type Resource_MachineLearningDataset struct {
+	MachineLearningDataset *MachineLearningDataset `protobuf:"bytes,2040,opt,name=machine_learning_dataset,json=machineLearningDataset,proto3,oneof"`
+}
+
+type Resource_MachineLearningModel struct {
+	MachineLearningModel *MachineLearningModel `protobuf:"bytes,15393,opt,name=machine_learning_model,json=machineLearningModel,proto3,oneof"`
 }
 
 type Resource_AwarenessTraining struct {
@@ -14548,6 +15295,8 @@ func (*Resource_LoadBalancer) isResource_Type() {}
 
 func (*Resource_LoggingService) isResource_Type() {}
 
+func (*Resource_MachineLearningService) isResource_Type() {}
+
 func (*Resource_SecurityAdvisoryService) isResource_Type() {}
 
 func (*Resource_DocumentDatabaseService) isResource_Type() {}
@@ -14586,6 +15335,10 @@ func (*Resource_SecurityAdvisoryDocument) isResource_Type() {}
 
 func (*Resource_ServiceMetadataDocument) isResource_Type() {}
 
+func (*Resource_MachineLearningDataset) isResource_Type() {}
+
+func (*Resource_MachineLearningModel) isResource_Type() {}
+
 func (*Resource_AwarenessTraining) isResource_Type() {}
 
 func (*Resource_SecurityTraining) isResource_Type() {}
@@ -14618,7 +15371,7 @@ type ResourceGroup struct {
 
 func (x *ResourceGroup) Reset() {
 	*x = ResourceGroup{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[121]
+	mi := &file_api_ontology_ontology_proto_msgTypes[126]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14630,7 +15383,7 @@ func (x *ResourceGroup) String() string {
 func (*ResourceGroup) ProtoMessage() {}
 
 func (x *ResourceGroup) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[121]
+	mi := &file_api_ontology_ontology_proto_msgTypes[126]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14643,7 +15396,7 @@ func (x *ResourceGroup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResourceGroup.ProtoReflect.Descriptor instead.
 func (*ResourceGroup) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{121}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{126}
 }
 
 func (x *ResourceGroup) GetCreationTime() *timestamppb.Timestamp {
@@ -14737,14 +15490,13 @@ type ResourceLogging struct {
 	MonitoringLogDataEnabled bool                   `protobuf:"varint,6804,opt,name=monitoring_log_data_enabled,json=monitoringLogDataEnabled,proto3" json:"monitoring_log_data_enabled,omitempty"`
 	RetentionPeriod          *durationpb.Duration   `protobuf:"bytes,6776,opt,name=retention_period,json=retentionPeriod,proto3" json:"retention_period,omitempty"`
 	SecurityAlertsEnabled    bool                   `protobuf:"varint,6099,opt,name=security_alerts_enabled,json=securityAlertsEnabled,proto3" json:"security_alerts_enabled,omitempty"`
-	LoggingServiceIds        []string               `protobuf:"bytes,15310,rep,name=logging_service_ids,json=loggingServiceIds,proto3" json:"logging_service_ids,omitempty"`
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
 
 func (x *ResourceLogging) Reset() {
 	*x = ResourceLogging{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[122]
+	mi := &file_api_ontology_ontology_proto_msgTypes[127]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14756,7 +15508,7 @@ func (x *ResourceLogging) String() string {
 func (*ResourceLogging) ProtoMessage() {}
 
 func (x *ResourceLogging) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[122]
+	mi := &file_api_ontology_ontology_proto_msgTypes[127]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14769,7 +15521,7 @@ func (x *ResourceLogging) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResourceLogging.ProtoReflect.Descriptor instead.
 func (*ResourceLogging) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{122}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{127}
 }
 
 func (x *ResourceLogging) GetEnabled() bool {
@@ -14800,13 +15552,6 @@ func (x *ResourceLogging) GetSecurityAlertsEnabled() bool {
 	return false
 }
 
-func (x *ResourceLogging) GetLoggingServiceIds() []string {
-	if x != nil {
-		return x.LoggingServiceIds
-	}
-	return nil
-}
-
 // ResourceType is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 type ResourceType struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -14816,7 +15561,7 @@ type ResourceType struct {
 
 func (x *ResourceType) Reset() {
 	*x = ResourceType{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[123]
+	mi := &file_api_ontology_ontology_proto_msgTypes[128]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14828,7 +15573,7 @@ func (x *ResourceType) String() string {
 func (*ResourceType) ProtoMessage() {}
 
 func (x *ResourceType) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[123]
+	mi := &file_api_ontology_ontology_proto_msgTypes[128]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14841,7 +15586,7 @@ func (x *ResourceType) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResourceType.ProtoReflect.Descriptor instead.
 func (*ResourceType) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{123}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{128}
 }
 
 // RobustnessScore is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -14853,7 +15598,7 @@ type RobustnessScore struct {
 
 func (x *RobustnessScore) Reset() {
 	*x = RobustnessScore{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[124]
+	mi := &file_api_ontology_ontology_proto_msgTypes[129]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14865,7 +15610,7 @@ func (x *RobustnessScore) String() string {
 func (*RobustnessScore) ProtoMessage() {}
 
 func (x *RobustnessScore) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[124]
+	mi := &file_api_ontology_ontology_proto_msgTypes[129]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14878,7 +15623,7 @@ func (x *RobustnessScore) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RobustnessScore.ProtoReflect.Descriptor instead.
 func (*RobustnessScore) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{124}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{129}
 }
 
 // RoleAssignment is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -14906,7 +15651,7 @@ type RoleAssignment struct {
 
 func (x *RoleAssignment) Reset() {
 	*x = RoleAssignment{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[125]
+	mi := &file_api_ontology_ontology_proto_msgTypes[130]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14918,7 +15663,7 @@ func (x *RoleAssignment) String() string {
 func (*RoleAssignment) ProtoMessage() {}
 
 func (x *RoleAssignment) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[125]
+	mi := &file_api_ontology_ontology_proto_msgTypes[130]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14931,7 +15676,7 @@ func (x *RoleAssignment) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RoleAssignment.ProtoReflect.Descriptor instead.
 func (*RoleAssignment) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{125}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{130}
 }
 
 func (x *RoleAssignment) GetActivated() bool {
@@ -15051,7 +15796,7 @@ type SchemaValidation struct {
 
 func (x *SchemaValidation) Reset() {
 	*x = SchemaValidation{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[126]
+	mi := &file_api_ontology_ontology_proto_msgTypes[131]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15063,7 +15808,7 @@ func (x *SchemaValidation) String() string {
 func (*SchemaValidation) ProtoMessage() {}
 
 func (x *SchemaValidation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[126]
+	mi := &file_api_ontology_ontology_proto_msgTypes[131]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15076,7 +15821,7 @@ func (x *SchemaValidation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SchemaValidation.ProtoReflect.Descriptor instead.
 func (*SchemaValidation) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{126}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{131}
 }
 
 func (x *SchemaValidation) GetFormat() string {
@@ -15127,7 +15872,7 @@ type Secret struct {
 
 func (x *Secret) Reset() {
 	*x = Secret{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[127]
+	mi := &file_api_ontology_ontology_proto_msgTypes[132]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15139,7 +15884,7 @@ func (x *Secret) String() string {
 func (*Secret) ProtoMessage() {}
 
 func (x *Secret) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[127]
+	mi := &file_api_ontology_ontology_proto_msgTypes[132]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15152,7 +15897,7 @@ func (x *Secret) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Secret.ProtoReflect.Descriptor instead.
 func (*Secret) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{127}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{132}
 }
 
 func (x *Secret) GetCreationTime() *timestamppb.Timestamp {
@@ -15277,28 +16022,28 @@ func (x *Secret) GetUsageStatistics() *UsageStatistics {
 // SecurityAdvisoryDocument is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 type SecurityAdvisoryDocument struct {
 	state        protoimpl.MessageState `protogen:"open.v1"`
-	CreationTime *timestamppb.Timestamp `protobuf:"bytes,12215,opt,name=creation_time,json=creationTime,proto3" json:"creation_time,omitempty"`
-	Description  string                 `protobuf:"bytes,18614,opt,name=description,proto3" json:"description,omitempty"`
-	Filetype     string                 `protobuf:"bytes,13221,opt,name=filetype,proto3" json:"filetype,omitempty"`
-	Id           string                 `protobuf:"bytes,10862,opt,name=id,proto3" json:"id,omitempty"`
-	Labels       map[string]string      `protobuf:"bytes,8011,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Name         string                 `protobuf:"bytes,953,opt,name=name,proto3" json:"name,omitempty"`
+	CreationTime *timestamppb.Timestamp `protobuf:"bytes,10952,opt,name=creation_time,json=creationTime,proto3" json:"creation_time,omitempty"`
+	Description  string                 `protobuf:"bytes,3599,opt,name=description,proto3" json:"description,omitempty"`
+	Filetype     string                 `protobuf:"bytes,17266,opt,name=filetype,proto3" json:"filetype,omitempty"`
+	Id           string                 `protobuf:"bytes,15804,opt,name=id,proto3" json:"id,omitempty"`
+	Labels       map[string]string      `protobuf:"bytes,16720,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Name         string                 `protobuf:"bytes,15161,opt,name=name,proto3" json:"name,omitempty"`
 	// The raw field contains the raw information that is used to fill in the fields of the ontology.
-	Raw                string               `protobuf:"bytes,1803,opt,name=raw,proto3" json:"raw,omitempty"`
-	DocumentChecksums  []*DocumentChecksum  `protobuf:"bytes,14645,rep,name=document_checksums,json=documentChecksums,proto3" json:"document_checksums,omitempty"`
-	DocumentLocation   *DocumentLocation    `protobuf:"bytes,11674,opt,name=document_location,json=documentLocation,proto3" json:"document_location,omitempty"`
-	DocumentSignatures []*DocumentSignature `protobuf:"bytes,15164,rep,name=document_signatures,json=documentSignatures,proto3" json:"document_signatures,omitempty"`
-	ParentId           *string              `protobuf:"bytes,17394,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`
-	SchemaValidation   *SchemaValidation    `protobuf:"bytes,2392,opt,name=schema_validation,json=schemaValidation,proto3" json:"schema_validation,omitempty"`
-	SecurityFeatures   []*SecurityFeature   `protobuf:"bytes,11115,rep,name=security_features,json=securityFeatures,proto3" json:"security_features,omitempty"`
-	Vulnerabilities    []*Vulnerability     `protobuf:"bytes,11700,rep,name=vulnerabilities,proto3" json:"vulnerabilities,omitempty"`
+	Raw                string               `protobuf:"bytes,3544,opt,name=raw,proto3" json:"raw,omitempty"`
+	DataLocation       *DataLocation        `protobuf:"bytes,11892,opt,name=data_location,json=dataLocation,proto3" json:"data_location,omitempty"`
+	DocumentChecksums  []*DocumentChecksum  `protobuf:"bytes,13033,rep,name=document_checksums,json=documentChecksums,proto3" json:"document_checksums,omitempty"`
+	DocumentSignatures []*DocumentSignature `protobuf:"bytes,16307,rep,name=document_signatures,json=documentSignatures,proto3" json:"document_signatures,omitempty"`
+	ParentId           *string              `protobuf:"bytes,263,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`
+	SchemaValidation   *SchemaValidation    `protobuf:"bytes,18581,opt,name=schema_validation,json=schemaValidation,proto3" json:"schema_validation,omitempty"`
+	SecurityFeatures   []*SecurityFeature   `protobuf:"bytes,2423,rep,name=security_features,json=securityFeatures,proto3" json:"security_features,omitempty"`
+	Vulnerabilities    []*Vulnerability     `protobuf:"bytes,4395,rep,name=vulnerabilities,proto3" json:"vulnerabilities,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
 
 func (x *SecurityAdvisoryDocument) Reset() {
 	*x = SecurityAdvisoryDocument{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[128]
+	mi := &file_api_ontology_ontology_proto_msgTypes[133]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15310,7 +16055,7 @@ func (x *SecurityAdvisoryDocument) String() string {
 func (*SecurityAdvisoryDocument) ProtoMessage() {}
 
 func (x *SecurityAdvisoryDocument) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[128]
+	mi := &file_api_ontology_ontology_proto_msgTypes[133]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15323,7 +16068,7 @@ func (x *SecurityAdvisoryDocument) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SecurityAdvisoryDocument.ProtoReflect.Descriptor instead.
 func (*SecurityAdvisoryDocument) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{128}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{133}
 }
 
 func (x *SecurityAdvisoryDocument) GetCreationTime() *timestamppb.Timestamp {
@@ -15375,16 +16120,16 @@ func (x *SecurityAdvisoryDocument) GetRaw() string {
 	return ""
 }
 
-func (x *SecurityAdvisoryDocument) GetDocumentChecksums() []*DocumentChecksum {
+func (x *SecurityAdvisoryDocument) GetDataLocation() *DataLocation {
 	if x != nil {
-		return x.DocumentChecksums
+		return x.DataLocation
 	}
 	return nil
 }
 
-func (x *SecurityAdvisoryDocument) GetDocumentLocation() *DocumentLocation {
+func (x *SecurityAdvisoryDocument) GetDocumentChecksums() []*DocumentChecksum {
 	if x != nil {
-		return x.DocumentLocation
+		return x.DocumentChecksums
 	}
 	return nil
 }
@@ -15434,7 +16179,7 @@ type SecurityAdvisoryFeed struct {
 
 func (x *SecurityAdvisoryFeed) Reset() {
 	*x = SecurityAdvisoryFeed{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[129]
+	mi := &file_api_ontology_ontology_proto_msgTypes[134]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15446,7 +16191,7 @@ func (x *SecurityAdvisoryFeed) String() string {
 func (*SecurityAdvisoryFeed) ProtoMessage() {}
 
 func (x *SecurityAdvisoryFeed) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[129]
+	mi := &file_api_ontology_ontology_proto_msgTypes[134]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15459,7 +16204,7 @@ func (x *SecurityAdvisoryFeed) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SecurityAdvisoryFeed.ProtoReflect.Descriptor instead.
 func (*SecurityAdvisoryFeed) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{129}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{134}
 }
 
 func (x *SecurityAdvisoryFeed) GetSecurityAdvisoryDocumentIds() []string {
@@ -15500,7 +16245,7 @@ type SecurityAdvisoryService struct {
 
 func (x *SecurityAdvisoryService) Reset() {
 	*x = SecurityAdvisoryService{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[130]
+	mi := &file_api_ontology_ontology_proto_msgTypes[135]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15512,7 +16257,7 @@ func (x *SecurityAdvisoryService) String() string {
 func (*SecurityAdvisoryService) ProtoMessage() {}
 
 func (x *SecurityAdvisoryService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[130]
+	mi := &file_api_ontology_ontology_proto_msgTypes[135]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15525,7 +16270,7 @@ func (x *SecurityAdvisoryService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SecurityAdvisoryService.ProtoReflect.Descriptor instead.
 func (*SecurityAdvisoryService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{130}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{135}
 }
 
 func (x *SecurityAdvisoryService) GetCreationTime() *timestamppb.Timestamp {
@@ -15717,7 +16462,7 @@ type SecurityFeature struct {
 
 func (x *SecurityFeature) Reset() {
 	*x = SecurityFeature{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[131]
+	mi := &file_api_ontology_ontology_proto_msgTypes[136]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15729,7 +16474,7 @@ func (x *SecurityFeature) String() string {
 func (*SecurityFeature) ProtoMessage() {}
 
 func (x *SecurityFeature) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[131]
+	mi := &file_api_ontology_ontology_proto_msgTypes[136]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15742,7 +16487,7 @@ func (x *SecurityFeature) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SecurityFeature.ProtoReflect.Descriptor instead.
 func (*SecurityFeature) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{131}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{136}
 }
 
 func (x *SecurityFeature) GetType() isSecurityFeature_Type {
@@ -16330,7 +17075,7 @@ type SecurityTraining struct {
 
 func (x *SecurityTraining) Reset() {
 	*x = SecurityTraining{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[132]
+	mi := &file_api_ontology_ontology_proto_msgTypes[137]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16342,7 +17087,7 @@ func (x *SecurityTraining) String() string {
 func (*SecurityTraining) ProtoMessage() {}
 
 func (x *SecurityTraining) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[132]
+	mi := &file_api_ontology_ontology_proto_msgTypes[137]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16355,7 +17100,7 @@ func (x *SecurityTraining) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SecurityTraining.ProtoReflect.Descriptor instead.
 func (*SecurityTraining) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{132}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{137}
 }
 
 func (x *SecurityTraining) GetAnnualUpdateCompleted() bool {
@@ -16424,27 +17169,27 @@ func (x *SecurityTraining) GetParentId() string {
 // ServiceMetadataDocument is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 type ServiceMetadataDocument struct {
 	state        protoimpl.MessageState `protogen:"open.v1"`
-	CreationTime *timestamppb.Timestamp `protobuf:"bytes,7335,opt,name=creation_time,json=creationTime,proto3" json:"creation_time,omitempty"`
-	Description  string                 `protobuf:"bytes,9395,opt,name=description,proto3" json:"description,omitempty"`
-	Filetype     string                 `protobuf:"bytes,16847,opt,name=filetype,proto3" json:"filetype,omitempty"`
-	Id           string                 `protobuf:"bytes,8568,opt,name=id,proto3" json:"id,omitempty"`
-	Labels       map[string]string      `protobuf:"bytes,555,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Name         string                 `protobuf:"bytes,13605,opt,name=name,proto3" json:"name,omitempty"`
+	CreationTime *timestamppb.Timestamp `protobuf:"bytes,5797,opt,name=creation_time,json=creationTime,proto3" json:"creation_time,omitempty"`
+	Description  string                 `protobuf:"bytes,3765,opt,name=description,proto3" json:"description,omitempty"`
+	Filetype     string                 `protobuf:"bytes,4547,opt,name=filetype,proto3" json:"filetype,omitempty"`
+	Id           string                 `protobuf:"bytes,8259,opt,name=id,proto3" json:"id,omitempty"`
+	Labels       map[string]string      `protobuf:"bytes,1672,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Name         string                 `protobuf:"bytes,10912,opt,name=name,proto3" json:"name,omitempty"`
 	// The raw field contains the raw information that is used to fill in the fields of the ontology.
-	Raw                string               `protobuf:"bytes,11658,opt,name=raw,proto3" json:"raw,omitempty"`
-	DocumentChecksums  []*DocumentChecksum  `protobuf:"bytes,11937,rep,name=document_checksums,json=documentChecksums,proto3" json:"document_checksums,omitempty"`
-	DocumentLocation   *DocumentLocation    `protobuf:"bytes,3639,opt,name=document_location,json=documentLocation,proto3" json:"document_location,omitempty"`
-	DocumentSignatures []*DocumentSignature `protobuf:"bytes,1315,rep,name=document_signatures,json=documentSignatures,proto3" json:"document_signatures,omitempty"`
-	ParentId           *string              `protobuf:"bytes,10323,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`
-	SchemaValidation   *SchemaValidation    `protobuf:"bytes,6622,opt,name=schema_validation,json=schemaValidation,proto3" json:"schema_validation,omitempty"`
-	SecurityFeatures   []*SecurityFeature   `protobuf:"bytes,18737,rep,name=security_features,json=securityFeatures,proto3" json:"security_features,omitempty"`
+	Raw                string               `protobuf:"bytes,8064,opt,name=raw,proto3" json:"raw,omitempty"`
+	DataLocation       *DataLocation        `protobuf:"bytes,16095,opt,name=data_location,json=dataLocation,proto3" json:"data_location,omitempty"`
+	DocumentChecksums  []*DocumentChecksum  `protobuf:"bytes,1270,rep,name=document_checksums,json=documentChecksums,proto3" json:"document_checksums,omitempty"`
+	DocumentSignatures []*DocumentSignature `protobuf:"bytes,14892,rep,name=document_signatures,json=documentSignatures,proto3" json:"document_signatures,omitempty"`
+	ParentId           *string              `protobuf:"bytes,13735,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`
+	SchemaValidation   *SchemaValidation    `protobuf:"bytes,9192,opt,name=schema_validation,json=schemaValidation,proto3" json:"schema_validation,omitempty"`
+	SecurityFeatures   []*SecurityFeature   `protobuf:"bytes,17461,rep,name=security_features,json=securityFeatures,proto3" json:"security_features,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
 
 func (x *ServiceMetadataDocument) Reset() {
 	*x = ServiceMetadataDocument{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[133]
+	mi := &file_api_ontology_ontology_proto_msgTypes[138]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16456,7 +17201,7 @@ func (x *ServiceMetadataDocument) String() string {
 func (*ServiceMetadataDocument) ProtoMessage() {}
 
 func (x *ServiceMetadataDocument) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[133]
+	mi := &file_api_ontology_ontology_proto_msgTypes[138]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16469,7 +17214,7 @@ func (x *ServiceMetadataDocument) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServiceMetadataDocument.ProtoReflect.Descriptor instead.
 func (*ServiceMetadataDocument) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{133}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{138}
 }
 
 func (x *ServiceMetadataDocument) GetCreationTime() *timestamppb.Timestamp {
@@ -16521,16 +17266,16 @@ func (x *ServiceMetadataDocument) GetRaw() string {
 	return ""
 }
 
-func (x *ServiceMetadataDocument) GetDocumentChecksums() []*DocumentChecksum {
+func (x *ServiceMetadataDocument) GetDataLocation() *DataLocation {
 	if x != nil {
-		return x.DocumentChecksums
+		return x.DataLocation
 	}
 	return nil
 }
 
-func (x *ServiceMetadataDocument) GetDocumentLocation() *DocumentLocation {
+func (x *ServiceMetadataDocument) GetDocumentChecksums() []*DocumentChecksum {
 	if x != nil {
-		return x.DocumentLocation
+		return x.DocumentChecksums
 	}
 	return nil
 }
@@ -16574,7 +17319,7 @@ type DocumentSignature struct {
 
 func (x *DocumentSignature) Reset() {
 	*x = DocumentSignature{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[134]
+	mi := &file_api_ontology_ontology_proto_msgTypes[139]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16586,7 +17331,7 @@ func (x *DocumentSignature) String() string {
 func (*DocumentSignature) ProtoMessage() {}
 
 func (x *DocumentSignature) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[134]
+	mi := &file_api_ontology_ontology_proto_msgTypes[139]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16599,7 +17344,7 @@ func (x *DocumentSignature) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DocumentSignature.ProtoReflect.Descriptor instead.
 func (*DocumentSignature) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{134}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{139}
 }
 
 func (x *DocumentSignature) GetAlgorithm() string {
@@ -16627,7 +17372,7 @@ type SingleSignOn struct {
 
 func (x *SingleSignOn) Reset() {
 	*x = SingleSignOn{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[135]
+	mi := &file_api_ontology_ontology_proto_msgTypes[140]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16639,7 +17384,7 @@ func (x *SingleSignOn) String() string {
 func (*SingleSignOn) ProtoMessage() {}
 
 func (x *SingleSignOn) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[135]
+	mi := &file_api_ontology_ontology_proto_msgTypes[140]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16652,7 +17397,7 @@ func (x *SingleSignOn) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SingleSignOn.ProtoReflect.Descriptor instead.
 func (*SingleSignOn) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{135}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{140}
 }
 
 func (x *SingleSignOn) GetContextIsChecked() bool {
@@ -16684,7 +17429,7 @@ type Code struct {
 
 func (x *Code) Reset() {
 	*x = Code{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[136]
+	mi := &file_api_ontology_ontology_proto_msgTypes[141]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16696,7 +17441,7 @@ func (x *Code) String() string {
 func (*Code) ProtoMessage() {}
 
 func (x *Code) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[136]
+	mi := &file_api_ontology_ontology_proto_msgTypes[141]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16709,7 +17454,7 @@ func (x *Code) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Code.ProtoReflect.Descriptor instead.
 func (*Code) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{136}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{141}
 }
 
 func (x *Code) GetType() isCode_Type {
@@ -16788,7 +17533,7 @@ type SourceCodeFile struct {
 
 func (x *SourceCodeFile) Reset() {
 	*x = SourceCodeFile{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[137]
+	mi := &file_api_ontology_ontology_proto_msgTypes[142]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16800,7 +17545,7 @@ func (x *SourceCodeFile) String() string {
 func (*SourceCodeFile) ProtoMessage() {}
 
 func (x *SourceCodeFile) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[137]
+	mi := &file_api_ontology_ontology_proto_msgTypes[142]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16813,7 +17558,7 @@ func (x *SourceCodeFile) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SourceCodeFile.ProtoReflect.Descriptor instead.
 func (*SourceCodeFile) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{137}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{142}
 }
 
 func (x *SourceCodeFile) GetCreationTime() *timestamppb.Timestamp {
@@ -16902,7 +17647,7 @@ type Storage struct {
 
 func (x *Storage) Reset() {
 	*x = Storage{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[138]
+	mi := &file_api_ontology_ontology_proto_msgTypes[143]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16914,7 +17659,7 @@ func (x *Storage) String() string {
 func (*Storage) ProtoMessage() {}
 
 func (x *Storage) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[138]
+	mi := &file_api_ontology_ontology_proto_msgTypes[143]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16927,7 +17672,7 @@ func (x *Storage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Storage.ProtoReflect.Descriptor instead.
 func (*Storage) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{138}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{143}
 }
 
 func (x *Storage) GetType() isStorage_Type {
@@ -17020,7 +17765,7 @@ type StorageService struct {
 
 func (x *StorageService) Reset() {
 	*x = StorageService{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[139]
+	mi := &file_api_ontology_ontology_proto_msgTypes[144]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17032,7 +17777,7 @@ func (x *StorageService) String() string {
 func (*StorageService) ProtoMessage() {}
 
 func (x *StorageService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[139]
+	mi := &file_api_ontology_ontology_proto_msgTypes[144]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17045,7 +17790,7 @@ func (x *StorageService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StorageService.ProtoReflect.Descriptor instead.
 func (*StorageService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{139}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{144}
 }
 
 func (x *StorageService) GetType() isStorageService_Type {
@@ -17158,7 +17903,7 @@ type Tool struct {
 
 func (x *Tool) Reset() {
 	*x = Tool{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[140]
+	mi := &file_api_ontology_ontology_proto_msgTypes[145]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17170,7 +17915,7 @@ func (x *Tool) String() string {
 func (*Tool) ProtoMessage() {}
 
 func (x *Tool) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[140]
+	mi := &file_api_ontology_ontology_proto_msgTypes[145]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17183,7 +17928,7 @@ func (x *Tool) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Tool.ProtoReflect.Descriptor instead.
 func (*Tool) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{140}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{145}
 }
 
 // Training is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -17200,7 +17945,7 @@ type Training struct {
 
 func (x *Training) Reset() {
 	*x = Training{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[141]
+	mi := &file_api_ontology_ontology_proto_msgTypes[146]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17212,7 +17957,7 @@ func (x *Training) String() string {
 func (*Training) ProtoMessage() {}
 
 func (x *Training) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[141]
+	mi := &file_api_ontology_ontology_proto_msgTypes[146]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17225,7 +17970,7 @@ func (x *Training) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Training.ProtoReflect.Descriptor instead.
 func (*Training) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{141}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{146}
 }
 
 func (x *Training) GetType() isTraining_Type {
@@ -17284,7 +18029,7 @@ type TransportEncryption struct {
 
 func (x *TransportEncryption) Reset() {
 	*x = TransportEncryption{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[142]
+	mi := &file_api_ontology_ontology_proto_msgTypes[147]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17296,7 +18041,7 @@ func (x *TransportEncryption) String() string {
 func (*TransportEncryption) ProtoMessage() {}
 
 func (x *TransportEncryption) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[142]
+	mi := &file_api_ontology_ontology_proto_msgTypes[147]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17309,7 +18054,7 @@ func (x *TransportEncryption) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransportEncryption.ProtoReflect.Descriptor instead.
 func (*TransportEncryption) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{142}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{147}
 }
 
 func (x *TransportEncryption) GetEnabled() bool {
@@ -17357,7 +18102,7 @@ type UsageStatistics struct {
 
 func (x *UsageStatistics) Reset() {
 	*x = UsageStatistics{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[143]
+	mi := &file_api_ontology_ontology_proto_msgTypes[148]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17369,7 +18114,7 @@ func (x *UsageStatistics) String() string {
 func (*UsageStatistics) ProtoMessage() {}
 
 func (x *UsageStatistics) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[143]
+	mi := &file_api_ontology_ontology_proto_msgTypes[148]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17382,7 +18127,7 @@ func (x *UsageStatistics) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UsageStatistics.ProtoReflect.Descriptor instead.
 func (*UsageStatistics) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{143}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{148}
 }
 
 func (x *UsageStatistics) GetApiHitsPerMonth() int32 {
@@ -17415,7 +18160,7 @@ type VMImage struct {
 
 func (x *VMImage) Reset() {
 	*x = VMImage{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[144]
+	mi := &file_api_ontology_ontology_proto_msgTypes[149]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17427,7 +18172,7 @@ func (x *VMImage) String() string {
 func (*VMImage) ProtoMessage() {}
 
 func (x *VMImage) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[144]
+	mi := &file_api_ontology_ontology_proto_msgTypes[149]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17440,7 +18185,7 @@ func (x *VMImage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VMImage.ProtoReflect.Descriptor instead.
 func (*VMImage) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{144}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{149}
 }
 
 func (x *VMImage) GetCreationTime() *timestamppb.Timestamp {
@@ -17566,7 +18311,7 @@ type VirtualMachine struct {
 
 func (x *VirtualMachine) Reset() {
 	*x = VirtualMachine{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[145]
+	mi := &file_api_ontology_ontology_proto_msgTypes[150]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17578,7 +18323,7 @@ func (x *VirtualMachine) String() string {
 func (*VirtualMachine) ProtoMessage() {}
 
 func (x *VirtualMachine) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[145]
+	mi := &file_api_ontology_ontology_proto_msgTypes[150]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17591,7 +18336,7 @@ func (x *VirtualMachine) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VirtualMachine.ProtoReflect.Descriptor instead.
 func (*VirtualMachine) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{145}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{150}
 }
 
 func (x *VirtualMachine) GetCreationTime() *timestamppb.Timestamp {
@@ -17770,7 +18515,7 @@ type VirtualNetwork struct {
 
 func (x *VirtualNetwork) Reset() {
 	*x = VirtualNetwork{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[146]
+	mi := &file_api_ontology_ontology_proto_msgTypes[151]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17782,7 +18527,7 @@ func (x *VirtualNetwork) String() string {
 func (*VirtualNetwork) ProtoMessage() {}
 
 func (x *VirtualNetwork) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[146]
+	mi := &file_api_ontology_ontology_proto_msgTypes[151]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17795,7 +18540,7 @@ func (x *VirtualNetwork) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VirtualNetwork.ProtoReflect.Descriptor instead.
 func (*VirtualNetwork) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{146}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{151}
 }
 
 func (x *VirtualNetwork) GetCreationTime() *timestamppb.Timestamp {
@@ -17904,7 +18649,7 @@ type VirtualSubNetwork struct {
 
 func (x *VirtualSubNetwork) Reset() {
 	*x = VirtualSubNetwork{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[147]
+	mi := &file_api_ontology_ontology_proto_msgTypes[152]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17916,7 +18661,7 @@ func (x *VirtualSubNetwork) String() string {
 func (*VirtualSubNetwork) ProtoMessage() {}
 
 func (x *VirtualSubNetwork) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[147]
+	mi := &file_api_ontology_ontology_proto_msgTypes[152]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17929,7 +18674,7 @@ func (x *VirtualSubNetwork) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VirtualSubNetwork.ProtoReflect.Descriptor instead.
 func (*VirtualSubNetwork) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{147}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{152}
 }
 
 func (x *VirtualSubNetwork) GetCreationTime() *timestamppb.Timestamp {
@@ -18032,7 +18777,7 @@ type Vulnerability struct {
 
 func (x *Vulnerability) Reset() {
 	*x = Vulnerability{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[148]
+	mi := &file_api_ontology_ontology_proto_msgTypes[153]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18044,7 +18789,7 @@ func (x *Vulnerability) String() string {
 func (*Vulnerability) ProtoMessage() {}
 
 func (x *Vulnerability) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[148]
+	mi := &file_api_ontology_ontology_proto_msgTypes[153]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18057,7 +18802,7 @@ func (x *Vulnerability) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Vulnerability.ProtoReflect.Descriptor instead.
 func (*Vulnerability) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{148}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{153}
 }
 
 func (x *Vulnerability) GetCve() string {
@@ -18106,7 +18851,7 @@ type WebApplicationFirewall struct {
 
 func (x *WebApplicationFirewall) Reset() {
 	*x = WebApplicationFirewall{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[149]
+	mi := &file_api_ontology_ontology_proto_msgTypes[154]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18118,7 +18863,7 @@ func (x *WebApplicationFirewall) String() string {
 func (*WebApplicationFirewall) ProtoMessage() {}
 
 func (x *WebApplicationFirewall) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[149]
+	mi := &file_api_ontology_ontology_proto_msgTypes[154]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18131,7 +18876,7 @@ func (x *WebApplicationFirewall) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WebApplicationFirewall.ProtoReflect.Descriptor instead.
 func (*WebApplicationFirewall) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{149}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{154}
 }
 
 func (x *WebApplicationFirewall) GetEnabled() bool {
@@ -18163,7 +18908,7 @@ type Workflow struct {
 
 func (x *Workflow) Reset() {
 	*x = Workflow{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[150]
+	mi := &file_api_ontology_ontology_proto_msgTypes[155]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18175,7 +18920,7 @@ func (x *Workflow) String() string {
 func (*Workflow) ProtoMessage() {}
 
 func (x *Workflow) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[150]
+	mi := &file_api_ontology_ontology_proto_msgTypes[155]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18188,7 +18933,7 @@ func (x *Workflow) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Workflow.ProtoReflect.Descriptor instead.
 func (*Workflow) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{150}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{155}
 }
 
 func (x *Workflow) GetCreationTime() *timestamppb.Timestamp {
@@ -18285,7 +19030,7 @@ type ZoneRedundancy struct {
 
 func (x *ZoneRedundancy) Reset() {
 	*x = ZoneRedundancy{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[151]
+	mi := &file_api_ontology_ontology_proto_msgTypes[156]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18297,7 +19042,7 @@ func (x *ZoneRedundancy) String() string {
 func (*ZoneRedundancy) ProtoMessage() {}
 
 func (x *ZoneRedundancy) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[151]
+	mi := &file_api_ontology_ontology_proto_msgTypes[156]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18310,7 +19055,7 @@ func (x *ZoneRedundancy) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ZoneRedundancy.ProtoReflect.Descriptor instead.
 func (*ZoneRedundancy) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{151}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{156}
 }
 
 func (x *ZoneRedundancy) GetGeoLocations() []*GeoLocation {
@@ -18366,16 +19111,14 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:)\x82\xa6\x1d\aAccount\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-	"_parent_id\"\xde\x02\n" +
+	"_parent_id\"\xad\x02\n" +
 	"\x0fActivityLogging\x12\x1a\n" +
 	"\aenabled\x18Ս\x01 \x01(\bR\aenabled\x12>\n" +
 	"\x1bmonitoring_log_data_enabled\x18\xbaj \x01(\bR\x18monitoringLogDataEnabled\x12E\n" +
 	"\x10retention_period\x18\xa4T \x01(\v2\x19.google.protobuf.DurationR\x0fretentionPeriod\x128\n" +
-	"\x17security_alerts_enabled\x18\x90\x8a\x01 \x01(\bR\x15securityAlertsEnabled\x12/\n" +
-	"\x13logging_service_ids\x18\xcd\x04 \x03(\tR\x11loggingServiceIds:=\x82\xa6\x1d\x0fActivityLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xd6\x01\n" +
+	"\x17security_alerts_enabled\x18\x90\x8a\x01 \x01(\bR\x15securityAlertsEnabled:=\x82\xa6\x1d\x0fActivityLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xbf\x01\n" +
 	"\x10AnomalyDetection\x12\x19\n" +
-	"\aenabled\x18\x94E \x01(\bR\aenabled\x12\x15\n" +
-	"\x05scope\x18\xa2B \x01(\tR\x05scope\x12[\n" +
+	"\aenabled\x18\x94E \x01(\bR\aenabled\x12[\n" +
 	"\x13application_logging\x18\xfcV \x01(\v2).clouditor.ontology.v1.ApplicationLoggingR\x12applicationLogging:3\x82\xa6\x1d\x10AnomalyDetection\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xa9\a\n" +
 	"\vApplication\x12@\n" +
 	"\rcreation_time\x18\xd1u \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
@@ -18402,13 +19145,12 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x13_code_repository_idB\r\n" +
 	"\v_compute_idB\f\n" +
 	"\n" +
-	"_parent_id\"\xe3\x02\n" +
+	"_parent_id\"\xb2\x02\n" +
 	"\x12ApplicationLogging\x12\x19\n" +
 	"\aenabled\x18\x83j \x01(\bR\aenabled\x12>\n" +
 	"\x1bmonitoring_log_data_enabled\x18\xed  \x01(\bR\x18monitoringLogDataEnabled\x12E\n" +
 	"\x10retention_period\x18\xaf1 \x01(\v2\x19.google.protobuf.DurationR\x0fretentionPeriod\x128\n" +
-	"\x17security_alerts_enabled\x18\u038b\x01 \x01(\bR\x15securityAlertsEnabled\x12/\n" +
-	"\x13logging_service_ids\x18\xd1\x1d \x03(\tR\x11loggingServiceIds:@\x82\xa6\x1d\x12ApplicationLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xe9\x01\n" +
+	"\x17security_alerts_enabled\x18\u038b\x01 \x01(\bR\x15securityAlertsEnabled:@\x82\xa6\x1d\x12ApplicationLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xe9\x01\n" +
 	"\x10AtRestEncryption\x12g\n" +
 	"\x17customer_key_encryption\x18\xab+ \x01(\v2,.clouditor.ontology.v1.CustomerKeyEncryptionH\x00R\x15customerKeyEncryption\x12d\n" +
 	"\x16managed_key_encryption\x18\xedG \x01(\v2+.clouditor.ontology.v1.ManagedKeyEncryptionH\x00R\x14managedKeyEncryptionB\x06\n" +
@@ -18501,13 +19243,12 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:9\x82\xa6\x1d\fBlockStorage\x82\xa6\x1d\aStorage\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-	"_parent_id\"\xd5\x02\n" +
+	"_parent_id\"\xa4\x02\n" +
 	"\vBootLogging\x12\x1a\n" +
 	"\aenabled\x18\xa9\x87\x01 \x01(\bR\aenabled\x12>\n" +
 	"\x1bmonitoring_log_data_enabled\x18\xafG \x01(\bR\x18monitoringLogDataEnabled\x12E\n" +
 	"\x10retention_period\x18\xa2\x12 \x01(\v2\x19.google.protobuf.DurationR\x0fretentionPeriod\x127\n" +
-	"\x17security_alerts_enabled\x18\xbd\x18 \x01(\bR\x15securityAlertsEnabled\x12/\n" +
-	"\x13logging_service_ids\x18\xae{ \x03(\tR\x11loggingServiceIds:9\x82\xa6\x1d\vBootLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\x86\x01\n" +
+	"\x17security_alerts_enabled\x18\xbd\x18 \x01(\bR\x15securityAlertsEnabled:9\x82\xa6\x1d\vBootLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\x86\x01\n" +
 	"\vCICDService\x12/\n" +
 	"\x03job\x18\x9f\x1f \x01(\v2\x1a.clouditor.ontology.v1.JobH\x00R\x03job\x12>\n" +
 	"\bworkflow\x18\xaaD \x01(\v2\x1f.clouditor.ontology.v1.WorkflowH\x00R\bworkflowB\x06\n" +
@@ -18547,7 +19288,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x18authentication_mechanism\x18\xd3\x1c \x01(\tR\x17authenticationMechanism\x125\n" +
 	"\x16key_exchange_algorithm\x18\xc8t \x01(\tR\x14keyExchangeAlgorithm\x12$\n" +
 	"\rmac_algorithm\x18\xa8\x12 \x01(\tR\fmacAlgorithm\x12&\n" +
-	"\x0esession_cipher\x18\xee, \x01(\tR\rsessionCipher: \x82\xa6\x1d\vCipherSuite\x82\xa6\x1d\rFunctionality\"\xc4\x1a\n" +
+	"\x0esession_cipher\x18\xee, \x01(\tR\rsessionCipher: \x82\xa6\x1d\vCipherSuite\x82\xa6\x1d\rFunctionality\"\xb1\x1b\n" +
 	"\x0eInfrastructure\x12;\n" +
 	"\aaccount\x18\xc0Y \x01(\v2\x1e.clouditor.ontology.v1.AccountH\x00R\aaccount\x12/\n" +
 	"\x03job\x18\x9f\x1f \x01(\v2\x1a.clouditor.ontology.v1.JobH\x00R\x03job\x12>\n" +
@@ -18574,7 +19315,8 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x17generic_network_service\x18\xe6\n" +
 	" \x01(\v2,.clouditor.ontology.v1.GenericNetworkServiceH\x00R\x15genericNetworkService\x12K\n" +
 	"\rload_balancer\x18\xe9  \x01(\v2#.clouditor.ontology.v1.LoadBalancerH\x00R\floadBalancer\x12Q\n" +
-	"\x0flogging_service\x18\xb3n \x01(\v2%.clouditor.ontology.v1.LoggingServiceH\x00R\x0eloggingService\x12m\n" +
+	"\x0flogging_service\x18\xb3n \x01(\v2%.clouditor.ontology.v1.LoggingServiceH\x00R\x0eloggingService\x12k\n" +
+	"\x18machine_learning_service\x18Ƅ\x01 \x01(\v2-.clouditor.ontology.v1.MachineLearningServiceH\x00R\x16machineLearningService\x12m\n" +
 	"\x19security_advisory_service\x18\xad\x01 \x01(\v2..clouditor.ontology.v1.SecurityAdvisoryServiceH\x00R\x17securityAdvisoryService\x12n\n" +
 	"\x19document_database_service\x18\x9e\x8c\x01 \x01(\v2..clouditor.ontology.v1.DocumentDatabaseServiceH\x00R\x17documentDatabaseService\x12n\n" +
 	"\x1akey_value_database_service\x18\xec\a \x01(\v2..clouditor.ontology.v1.KeyValueDatabaseServiceH\x00R\x17keyValueDatabaseService\x12t\n" +
@@ -18753,7 +19495,19 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\talgorithm\x18\xa4t \x01(\tR\talgorithm\x12\x19\n" +
 	"\aenabled\x18\xcfc \x01(\bR\aenabled\x12\x18\n" +
 	"\akey_url\x18\x8d2 \x01(\tR\x06keyUrl:S\x82\xa6\x1d\x15CustomerKeyEncryption\x82\xa6\x1d\x10AtRestEncryption\x82\xa6\x1d\x0fConfidentiality\x82\xa6\x1d\x0fSecurityFeature\"G\n" +
-	"\x0eDDoSProtection:5\x82\xa6\x1d\x0eDDoSProtection\x82\xa6\x1d\fAvailability\x82\xa6\x1d\x0fSecurityFeature\"\xb6\x02\n" +
+	"\x0eDDoSProtection:5\x82\xa6\x1d\x0eDDoSProtection\x82\xa6\x1d\fAvailability\x82\xa6\x1d\x0fSecurityFeature\"\xea\x04\n" +
+	"\x04Data\x12T\n" +
+	"\x10generic_document\x18\x80' \x01(\v2&.clouditor.ontology.v1.GenericDocumentH\x00R\x0fgenericDocument\x12Q\n" +
+	"\x0fpolicy_document\x18\xe9t \x01(\v2%.clouditor.ontology.v1.PolicyDocumentH\x00R\x0epolicyDocument\x12p\n" +
+	"\x1asecurity_advisory_document\x18\xfdr \x01(\v2/.clouditor.ontology.v1.SecurityAdvisoryDocumentH\x00R\x18securityAdvisoryDocument\x12m\n" +
+	"\x19service_metadata_document\x18\x90\x02 \x01(\v2..clouditor.ontology.v1.ServiceMetadataDocumentH\x00R\x17serviceMetadataDocument\x12j\n" +
+	"\x18machine_learning_dataset\x18\xf8\x0f \x01(\v2-.clouditor.ontology.v1.MachineLearningDatasetH\x00R\x16machineLearningDataset\x12d\n" +
+	"\x16machine_learning_model\x18\xa1x \x01(\v2+.clouditor.ontology.v1.MachineLearningModelH\x00R\x14machineLearningModelB\x06\n" +
+	"\x04type\"\xd3\x01\n" +
+	"\fDataLocation\x12[\n" +
+	"\x13local_data_location\x18\x99` \x01(\v2(.clouditor.ontology.v1.LocalDataLocationH\x00R\x11localDataLocation\x12^\n" +
+	"\x14remote_data_location\x18\xe5i \x01(\v2).clouditor.ontology.v1.RemoteDataLocationH\x00R\x12remoteDataLocationB\x06\n" +
+	"\x04type\"\xb6\x02\n" +
 	"\x0fDatabaseConnect\x12\x15\n" +
 	"\x05calls\x18\xfad \x03(\tR\x05calls\x12C\n" +
 	"\vcode_region\x18\xdf. \x01(\v2!.clouditor.ontology.v1.CodeRegionR\n" +
@@ -18827,10 +19581,10 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\n" +
 	"_parent_id\"\x9c\x03\n" +
 	"\bDocument\x12T\n" +
-	"\x10generic_document\x18\xc6, \x01(\v2&.clouditor.ontology.v1.GenericDocumentH\x00R\x0fgenericDocument\x12Q\n" +
-	"\x0fpolicy_document\x18\xe7\x1c \x01(\v2%.clouditor.ontology.v1.PolicyDocumentH\x00R\x0epolicyDocument\x12p\n" +
-	"\x1asecurity_advisory_document\x18\xc1B \x01(\v2/.clouditor.ontology.v1.SecurityAdvisoryDocumentH\x00R\x18securityAdvisoryDocument\x12m\n" +
-	"\x19service_metadata_document\x18\x87m \x01(\v2..clouditor.ontology.v1.ServiceMetadataDocumentH\x00R\x17serviceMetadataDocumentB\x06\n" +
+	"\x10generic_document\x18\x80' \x01(\v2&.clouditor.ontology.v1.GenericDocumentH\x00R\x0fgenericDocument\x12Q\n" +
+	"\x0fpolicy_document\x18\xe9t \x01(\v2%.clouditor.ontology.v1.PolicyDocumentH\x00R\x0epolicyDocument\x12p\n" +
+	"\x1asecurity_advisory_document\x18\xfdr \x01(\v2/.clouditor.ontology.v1.SecurityAdvisoryDocumentH\x00R\x18securityAdvisoryDocument\x12m\n" +
+	"\x19service_metadata_document\x18\x90\x02 \x01(\v2..clouditor.ontology.v1.ServiceMetadataDocumentH\x00R\x17serviceMetadataDocumentB\x06\n" +
 	"\x04type\"\xd0\f\n" +
 	"\x17DocumentDatabaseService\x12@\n" +
 	"\rcreation_time\x18\xee[ \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
@@ -18865,11 +19619,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\v_compute_idB\f\n" +
 	"\n" +
 	"_parent_idB\x1f\n" +
-	"\x1d_service_metadata_document_id\"\xef\x01\n" +
-	"\x10DocumentLocation\x12g\n" +
-	"\x17local_document_location\x18\xf0N \x01(\v2,.clouditor.ontology.v1.LocalDocumentLocationH\x00R\x15localDocumentLocation\x12j\n" +
-	"\x18remote_document_location\x18\xd1H \x01(\v2-.clouditor.ontology.v1.RemoteDocumentLocationH\x00R\x16remoteDocumentLocationB\x06\n" +
-	"\x04type\"g\n" +
+	"\x1d_service_metadata_document_id\"g\n" +
 	"\x0fEncryptionInUse\x12\x19\n" +
 	"\aenabled\x18\xdeB \x01(\bR\aenabled:9\x82\xa6\x1d\x0fEncryptionInUse\x82\xa6\x1d\x0fConfidentiality\x82\xa6\x1d\x0fSecurityFeature\"\xb8\x01\n" +
 	"\n" +
@@ -19002,13 +19752,13 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\v_compute_idB\f\n" +
 	"\n" +
 	"_parent_idB\x1f\n" +
-	"\x1d_service_metadata_document_id\"\xfb\v\n" +
+	"\x1d_service_metadata_document_id\"\xe3\v\n" +
 	"\rFunctionality\x12H\n" +
 	"\fcipher_suite\x18\xfcV \x01(\v2\".clouditor.ontology.v1.CipherSuiteH\x00R\vcipherSuite\x12E\n" +
 	"\vcode_region\x18\xe0G \x01(\v2!.clouditor.ontology.v1.CodeRegionH\x00R\n" +
-	"codeRegion\x12g\n" +
-	"\x17local_document_location\x18\xf0N \x01(\v2,.clouditor.ontology.v1.LocalDocumentLocationH\x00R\x15localDocumentLocation\x12j\n" +
-	"\x18remote_document_location\x18\xd1H \x01(\v2-.clouditor.ontology.v1.RemoteDocumentLocationH\x00R\x16remoteDocumentLocation\x125\n" +
+	"codeRegion\x12[\n" +
+	"\x13local_data_location\x18\x99` \x01(\v2(.clouditor.ontology.v1.LocalDataLocationH\x00R\x11localDataLocation\x12^\n" +
+	"\x14remote_data_location\x18\xe5i \x01(\v2).clouditor.ontology.v1.RemoteDataLocationH\x00R\x12remoteDataLocation\x125\n" +
 	"\x05error\x18\x903 \x01(\v2\x1c.clouditor.ontology.v1.ErrorH\x00R\x05error\x12K\n" +
 	"\rhttp_endpoint\x18\xaa! \x01(\v2#.clouditor.ontology.v1.HttpEndpointH\x00R\fhttpEndpoint\x12^\n" +
 	"\x14http_request_handler\x18\xeb9 \x01(\v2).clouditor.ontology.v1.HttpRequestHandlerH\x00R\x12httpRequestHandler\x12D\n" +
@@ -19027,24 +19777,24 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x11schema_validation\x18\xcb\x7f \x01(\v2'.clouditor.ontology.v1.SchemaValidationH\x00R\x10schemaValidation\x12d\n" +
 	"\x16security_advisory_feed\x18\xcfl \x01(\v2+.clouditor.ontology.v1.SecurityAdvisoryFeedH\x00R\x14securityAdvisoryFeed\x12M\n" +
 	"\rvulnerability\x18\xe7' \x01(\v2$.clouditor.ontology.v1.VulnerabilityH\x00R\rvulnerabilityB\x06\n" +
-	"\x04type\"\xfc\x06\n" +
+	"\x04type\"\xfb\x06\n" +
 	"\x0fGenericDocument\x12@\n" +
-	"\rcreation_time\x18\xafV \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
-	"\vdescription\x18\x97. \x01(\tR\vdescription\x12\x1b\n" +
-	"\bfiletype\x18\xad\x1f \x01(\tR\bfiletype\x12\x17\n" +
-	"\x02id\x18\xa1X \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12K\n" +
-	"\x06labels\x18\xb5F \x03(\v22.clouditor.ontology.v1.GenericDocument.LabelsEntryR\x06labels\x12\x1b\n" +
-	"\x04name\x18\xad( \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\x11\n" +
-	"\x03raw\x18\xe9\x10 \x01(\tR\x03raw\x12W\n" +
-	"\x12document_checksums\x18\xa5q \x03(\v2'.clouditor.ontology.v1.DocumentChecksumR\x11documentChecksums\x12U\n" +
-	"\x11document_location\x18\x99> \x01(\v2'.clouditor.ontology.v1.DocumentLocationR\x10documentLocation\x12[\n" +
-	"\x13document_signatures\x18˄\x01 \x03(\v2(.clouditor.ontology.v1.DocumentSignatureR\x12documentSignatures\x12!\n" +
-	"\tparent_id\x18\x8fT \x01(\tH\x00R\bparentId\x88\x01\x01\x12U\n" +
-	"\x11schema_validation\x18\x96w \x01(\v2'.clouditor.ontology.v1.SchemaValidationR\x10schemaValidation\x12T\n" +
-	"\x11security_features\x18\xb2\t \x03(\v2&.clouditor.ontology.v1.SecurityFeatureR\x10securityFeatures\x1a9\n" +
+	"\rcreation_time\x18\xf5k \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
+	"\vdescription\x18\xe5i \x01(\tR\vdescription\x12\x1b\n" +
+	"\bfiletype\x18\xe8+ \x01(\tR\bfiletype\x12\x17\n" +
+	"\x02id\x18\xd2k \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12K\n" +
+	"\x06labels\x18\xf3& \x03(\v22.clouditor.ontology.v1.GenericDocument.LabelsEntryR\x06labels\x12\x1b\n" +
+	"\x04name\x18\xa68 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\x11\n" +
+	"\x03raw\x18\x9eh \x01(\tR\x03raw\x12J\n" +
+	"\rdata_location\x18\xe0\x80\x01 \x01(\v2#.clouditor.ontology.v1.DataLocationR\fdataLocation\x12X\n" +
+	"\x12document_checksums\x18և\x01 \x03(\v2'.clouditor.ontology.v1.DocumentChecksumR\x11documentChecksums\x12[\n" +
+	"\x13document_signatures\x18\x8f\x94\x01 \x03(\v2(.clouditor.ontology.v1.DocumentSignatureR\x12documentSignatures\x12\"\n" +
+	"\tparent_id\x18\x86\x84\x01 \x01(\tH\x00R\bparentId\x88\x01\x01\x12U\n" +
+	"\x11schema_validation\x18\xb98 \x01(\v2'.clouditor.ontology.v1.SchemaValidationR\x10schemaValidation\x12T\n" +
+	"\x11security_features\x18\x813 \x03(\v2&.clouditor.ontology.v1.SecurityFeatureR\x10securityFeatures\x1a9\n" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:+\x82\xa6\x1d\x0fGenericDocument\x82\xa6\x1d\bDocument\x82\xa6\x1d\bResourceB\f\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:3\x82\xa6\x1d\x0fGenericDocument\x82\xa6\x1d\bDocument\x82\xa6\x1d\x04Data\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_id\"\xb3\t\n" +
 	"\x15GenericNetworkService\x12A\n" +
@@ -19325,10 +20075,10 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"_parent_idB\x1f\n" +
 	"\x1d_service_metadata_document_id\"r\n" +
 	"\x10LocalAttestation\x12\x19\n" +
-	"\aenabled\x18\xfeb \x01(\bR\aenabled:C\x82\xa6\x1d\x10LocalAttestation\x82\xa6\x1d\vAttestation\x82\xa6\x1d\tIntegrity\x82\xa6\x1d\x0fSecurityFeature\"\xc3\x01\n" +
-	"\x15LocalDocumentLocation\x12\x13\n" +
-	"\x04path\x18\x9c- \x01(\tR\x04path\x12U\n" +
-	"\x12at_rest_encryption\x18/ \x01(\v2'.clouditor.ontology.v1.AtRestEncryptionR\x10atRestEncryption:>\x82\xa6\x1d\x15LocalDocumentLocation\x82\xa6\x1d\x10DocumentLocation\x82\xa6\x1d\rFunctionality\"\xa1\x01\n" +
+	"\aenabled\x18\xfeb \x01(\bR\aenabled:C\x82\xa6\x1d\x10LocalAttestation\x82\xa6\x1d\vAttestation\x82\xa6\x1d\tIntegrity\x82\xa6\x1d\x0fSecurityFeature\"\xb9\x01\n" +
+	"\x11LocalDataLocation\x12\x14\n" +
+	"\x04path\x18\x93\x82\x01 \x01(\tR\x04path\x12V\n" +
+	"\x12at_rest_encryption\x18\xb5{ \x01(\v2'.clouditor.ontology.v1.AtRestEncryptionR\x10atRestEncryption:6\x82\xa6\x1d\x11LocalDataLocation\x82\xa6\x1d\fDataLocation\x82\xa6\x1d\rFunctionality\"\xa1\x01\n" +
 	"\x0fLocalRedundancy\x12H\n" +
 	"\rgeo_locations\x18\x8e' \x03(\v2\".clouditor.ontology.v1.GeoLocationR\fgeoLocations:D\x82\xa6\x1d\x0fLocalRedundancy\x82\xa6\x1d\n" +
 	"Redundancy\x82\xa6\x1d\fAvailability\x82\xa6\x1d\x0fSecurityFeature\"\xea\x01\n" +
@@ -19372,6 +20122,81 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:P\x82\xa6\x1d\x0eLoggingService\x82\xa6\x1d\x0eNetworkService\x82\xa6\x1d\n" +
+	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\r\n" +
+	"\v_compute_idB\f\n" +
+	"\n" +
+	"_parent_idB\x1f\n" +
+	"\x1d_service_metadata_document_id\"\xeb\x01\n" +
+	"\x0fMachineLearning\x12j\n" +
+	"\x18machine_learning_dataset\x18\xf8\x0f \x01(\v2-.clouditor.ontology.v1.MachineLearningDatasetH\x00R\x16machineLearningDataset\x12d\n" +
+	"\x16machine_learning_model\x18\xa1x \x01(\v2+.clouditor.ontology.v1.MachineLearningModelH\x00R\x14machineLearningModelB\x06\n" +
+	"\x04type\"\xbe\x04\n" +
+	"\x16MachineLearningDataset\x12@\n" +
+	"\rcreation_time\x18\xfdq \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
+	"\vdescription\x18\xdd$ \x01(\tR\vdescription\x12\x17\n" +
+	"\x02id\x18\x8dk \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12R\n" +
+	"\x06labels\x18\x8b\x1a \x03(\v29.clouditor.ontology.v1.MachineLearningDataset.LabelsEntryR\x06labels\x12\x1b\n" +
+	"\x04name\x18\xdfp \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\x11\n" +
+	"\x03raw\x18\xa31 \x01(\tR\x03raw\x12\x13\n" +
+	"\x04size\x18\xdd= \x01(\x05R\x04size\x12\x13\n" +
+	"\x04type\x18\xd4( \x01(\tR\x04type\x12I\n" +
+	"\rdata_location\x18\xc1\x18 \x01(\v2#.clouditor.ontology.v1.DataLocationR\fdataLocation\x12!\n" +
+	"\tparent_id\x18\x8e3 \x01(\tH\x00R\bparentId\x88\x01\x01\x1a9\n" +
+	"\vLabelsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:A\x82\xa6\x1d\x16MachineLearningDataset\x82\xa6\x1d\x0fMachineLearning\x82\xa6\x1d\x04Data\x82\xa6\x1d\bResourceB\f\n" +
+	"\n" +
+	"_parent_id\"\xf1\x05\n" +
+	"\x14MachineLearningModel\x12&\n" +
+	"\x0eadv_robustness\x18\xe9n \x01(\x02R\radvRobustness\x12A\n" +
+	"\rcreation_time\x18Ռ\x01 \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
+	"\vdescription\x18\x98) \x01(\tR\vdescription\x12'\n" +
+	"\x0eexplainability\x18\xe8\n" +
+	" \x01(\x02R\x0eexplainability\x12\x17\n" +
+	"\x02id\x18\x90+ \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12P\n" +
+	"\x06labels\x18\x8c\f \x03(\v27.clouditor.ontology.v1.MachineLearningModel.LabelsEntryR\x06labels\x12\x1b\n" +
+	"\x04name\x18\xa7\f \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\"\n" +
+	"\fpoison_level\x18\xc4\x06 \x01(\x02R\vpoisonLevel\x12$\n" +
+	"\rprivacy_label\x18\xfb> \x01(\x02R\fprivacyLabel\x12$\n" +
+	"\rprivacy_level\x18\xee\t \x01(\x02R\fprivacyLevel\x12\x11\n" +
+	"\x03raw\x18\xa6a \x01(\tR\x03raw\x12\x1f\n" +
+	"\n" +
+	"robustness\x18\x8ej \x01(\x02R\n" +
+	"robustness\x12I\n" +
+	"\rdata_location\x18\xb6\x17 \x01(\v2#.clouditor.ontology.v1.DataLocationR\fdataLocation\x12!\n" +
+	"\tparent_id\x18\x86y \x01(\tH\x00R\bparentId\x88\x01\x01\x1a9\n" +
+	"\vLabelsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:?\x82\xa6\x1d\x14MachineLearningModel\x82\xa6\x1d\x0fMachineLearning\x82\xa6\x1d\x04Data\x82\xa6\x1d\bResourceB\f\n" +
+	"\n" +
+	"_parent_id\"\x8d\n" +
+	"\n" +
+	"\x16MachineLearningService\x12A\n" +
+	"\rcreation_time\x18ӎ\x01 \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
+	"\vdescription\x18\xa0\x10 \x01(\tR\vdescription\x12\x17\n" +
+	"\x02id\x18\xe0n \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12A\n" +
+	"\x1cinternet_accessible_endpoint\x18\xed} \x01(\bR\x1ainternetAccessibleEndpoint\x12\x11\n" +
+	"\x03ips\x18\xa6\\ \x03(\tR\x03ips\x12S\n" +
+	"\x06labels\x18\xf7\x93\x01 \x03(\v29.clouditor.ontology.v1.MachineLearningService.LabelsEntryR\x06labels\x12\x1b\n" +
+	"\x04name\x18\xad/ \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\x15\n" +
+	"\x05ports\x18\xa05 \x03(\rR\x05ports\x12\x11\n" +
+	"\x03raw\x18\xdf. \x01(\tR\x03raw\x12H\n" +
+	"\fauthenticity\x18\x96< \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12#\n" +
+	"\n" +
+	"compute_id\x18\xcfT \x01(\tH\x00R\tcomputeId\x88\x01\x01\x12F\n" +
+	"\fgeo_location\x18\xec\x19 \x01(\v2\".clouditor.ontology.v1.GeoLocationR\vgeoLocation\x12;\n" +
+	"\bloggings\x18\xab/ \x03(\v2\x1e.clouditor.ontology.v1.LoggingR\bloggings\x121\n" +
+	"\x14machine_learning_ids\x18\xf55 \x03(\tR\x12machineLearningIds\x12G\n" +
+	"\fredundancies\x18ւ\x01 \x03(\v2!.clouditor.ontology.v1.RedundancyR\fredundancies\x12!\n" +
+	"\tparent_id\x18\xaf\x11 \x01(\tH\x01R\bparentId\x88\x01\x01\x12E\n" +
+	"\x1cservice_metadata_document_id\x18\xd5S \x01(\tH\x02R\x19serviceMetadataDocumentId\x88\x01\x01\x12 \n" +
+	"\vstorage_ids\x18\xa1\x01 \x03(\tR\n" +
+	"storageIds\x12_\n" +
+	"\x14transport_encryption\x18\xf1\x84\x01 \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption\x12R\n" +
+	"\x10usage_statistics\x18\xf3* \x01(\v2&.clouditor.ontology.v1.UsageStatisticsR\x0fusageStatistics\x1a9\n" +
+	"\vLabelsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:X\x82\xa6\x1d\x16MachineLearningService\x82\xa6\x1d\x0eNetworkService\x82\xa6\x1d\n" +
 	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\r\n" +
 	"\v_compute_idB\f\n" +
 	"\n" +
@@ -19485,13 +20310,14 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:D\x82\xa6\x1d\x14NetworkSecurityGroup\x82\xa6\x1d\n" +
 	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-	"_parent_id\"\xf8\b\n" +
+	"_parent_id\"\xe5\t\n" +
 	"\x0eNetworkService\x12T\n" +
 	"\x10function_service\x18\xc1& \x01(\v2&.clouditor.ontology.v1.FunctionServiceH\x00R\x0ffunctionService\x12g\n" +
 	"\x17generic_network_service\x18\xe6\n" +
 	" \x01(\v2,.clouditor.ontology.v1.GenericNetworkServiceH\x00R\x15genericNetworkService\x12K\n" +
 	"\rload_balancer\x18\xe9  \x01(\v2#.clouditor.ontology.v1.LoadBalancerH\x00R\floadBalancer\x12Q\n" +
-	"\x0flogging_service\x18\xb3n \x01(\v2%.clouditor.ontology.v1.LoggingServiceH\x00R\x0eloggingService\x12m\n" +
+	"\x0flogging_service\x18\xb3n \x01(\v2%.clouditor.ontology.v1.LoggingServiceH\x00R\x0eloggingService\x12k\n" +
+	"\x18machine_learning_service\x18Ƅ\x01 \x01(\v2-.clouditor.ontology.v1.MachineLearningServiceH\x00R\x16machineLearningService\x12m\n" +
 	"\x19security_advisory_service\x18\xad\x01 \x01(\v2..clouditor.ontology.v1.SecurityAdvisoryServiceH\x00R\x17securityAdvisoryService\x12n\n" +
 	"\x19document_database_service\x18\x9e\x8c\x01 \x01(\v2..clouditor.ontology.v1.DocumentDatabaseServiceH\x00R\x17documentDatabaseService\x12n\n" +
 	"\x1akey_value_database_service\x18\xec\a \x01(\v2..clouditor.ontology.v1.KeyValueDatabaseServiceH\x00R\x17keyValueDatabaseService\x12t\n" +
@@ -19499,7 +20325,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x1brelational_database_service\x18\xc5a \x01(\v20.clouditor.ontology.v1.RelationalDatabaseServiceH\x00R\x19relationalDatabaseService\x12_\n" +
 	"\x14file_storage_service\x18\xae\x83\x01 \x01(\v2).clouditor.ontology.v1.FileStorageServiceH\x00R\x12fileStorageService\x12d\n" +
 	"\x16object_storage_service\x18\xbb2 \x01(\v2+.clouditor.ontology.v1.ObjectStorageServiceH\x00R\x14objectStorageServiceB\x06\n" +
-	"\x04type\"\xe3\v\n" +
+	"\x04type\"\xd0\f\n" +
 	"\n" +
 	"Networking\x12W\n" +
 	"\x11network_interface\x18\x83M \x01(\v2'.clouditor.ontology.v1.NetworkInterfaceH\x00R\x10networkInterface\x12d\n" +
@@ -19508,7 +20334,8 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x17generic_network_service\x18\xe6\n" +
 	" \x01(\v2,.clouditor.ontology.v1.GenericNetworkServiceH\x00R\x15genericNetworkService\x12K\n" +
 	"\rload_balancer\x18\xe9  \x01(\v2#.clouditor.ontology.v1.LoadBalancerH\x00R\floadBalancer\x12Q\n" +
-	"\x0flogging_service\x18\xb3n \x01(\v2%.clouditor.ontology.v1.LoggingServiceH\x00R\x0eloggingService\x12m\n" +
+	"\x0flogging_service\x18\xb3n \x01(\v2%.clouditor.ontology.v1.LoggingServiceH\x00R\x0eloggingService\x12k\n" +
+	"\x18machine_learning_service\x18Ƅ\x01 \x01(\v2-.clouditor.ontology.v1.MachineLearningServiceH\x00R\x16machineLearningService\x12m\n" +
 	"\x19security_advisory_service\x18\xad\x01 \x01(\v2..clouditor.ontology.v1.SecurityAdvisoryServiceH\x00R\x17securityAdvisoryService\x12n\n" +
 	"\x19document_database_service\x18\x9e\x8c\x01 \x01(\v2..clouditor.ontology.v1.DocumentDatabaseServiceH\x00R\x17documentDatabaseService\x12n\n" +
 	"\x1akey_value_database_service\x18\xec\a \x01(\v2..clouditor.ontology.v1.KeyValueDatabaseServiceH\x00R\x17keyValueDatabaseService\x12t\n" +
@@ -19520,13 +20347,12 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x13virtual_sub_network\x18\xb2X \x01(\v2(.clouditor.ontology.v1.VirtualSubNetworkH\x00R\x11virtualSubNetworkB\x06\n" +
 	"\x04type\"z\n" +
 	"\x10NoAuthentication\x12-\n" +
-	"\x12context_is_checked\x18\xf7] \x01(\bR\x10contextIsChecked:7\x82\xa6\x1d\x10NoAuthentication\x82\xa6\x1d\fAuthenticity\x82\xa6\x1d\x0fSecurityFeature\"\xd0\x02\n" +
+	"\x12context_is_checked\x18\xf7] \x01(\bR\x10contextIsChecked:7\x82\xa6\x1d\x10NoAuthentication\x82\xa6\x1d\fAuthenticity\x82\xa6\x1d\x0fSecurityFeature\"\x9f\x02\n" +
 	"\tOSLogging\x12\x19\n" +
 	"\aenabled\x18\xcf\x01 \x01(\bR\aenabled\x12>\n" +
 	"\x1bmonitoring_log_data_enabled\x18\x92a \x01(\bR\x18monitoringLogDataEnabled\x12E\n" +
 	"\x10retention_period\x18\xdeX \x01(\v2\x19.google.protobuf.DurationR\x0fretentionPeriod\x127\n" +
-	"\x17security_alerts_enabled\x18\x9d: \x01(\bR\x15securityAlertsEnabled\x12/\n" +
-	"\x13logging_service_ids\x18\xe2T \x03(\tR\x11loggingServiceIds:7\x82\xa6\x1d\tOSLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xa6\x01\n" +
+	"\x17security_alerts_enabled\x18\x9d: \x01(\bR\x15securityAlertsEnabled:7\x82\xa6\x1d\tOSLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xa6\x01\n" +
 	"\x16OTPBasedAuthentication\x12\x1d\n" +
 	"\tactivated\x18\xa0: \x01(\bR\tactivated\x12.\n" +
 	"\x12context_is_checked\x18\xe1\x93\x01 \x01(\bR\x10contextIsChecked:=\x82\xa6\x1d\x16OTPBasedAuthentication\x82\xa6\x1d\fAuthenticity\x82\xa6\x1d\x0fSecurityFeature\"\xbf\t\n" +
@@ -19627,24 +20453,24 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:0\x82\xa6\x1d\x0ePasswordPolicy\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-	"_parent_id\"\xf9\x06\n" +
-	"\x0ePolicyDocument\x12?\n" +
-	"\rcreation_time\x18R \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
-	"\vdescription\x18\x9e\x1c \x01(\tR\vdescription\x12\x1b\n" +
-	"\bfiletype\x18\xc0\x15 \x01(\tR\bfiletype\x12\x17\n" +
-	"\x02id\x18\x9dy \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12K\n" +
-	"\x06labels\x18\x95\x90\x01 \x03(\v21.clouditor.ontology.v1.PolicyDocument.LabelsEntryR\x06labels\x12\x1b\n" +
-	"\x04name\x18\xaa9 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\x11\n" +
-	"\x03raw\x18\xb3\x16 \x01(\tR\x03raw\x12W\n" +
-	"\x12document_checksums\x18\xc8W \x03(\v2'.clouditor.ontology.v1.DocumentChecksumR\x11documentChecksums\x12U\n" +
-	"\x11document_location\x18\x91\x1c \x01(\v2'.clouditor.ontology.v1.DocumentLocationR\x10documentLocation\x12Z\n" +
-	"\x13document_signatures\x18\x96m \x03(\v2(.clouditor.ontology.v1.DocumentSignatureR\x12documentSignatures\x12!\n" +
-	"\tparent_id\x18\xcb% \x01(\tH\x00R\bparentId\x88\x01\x01\x12U\n" +
-	"\x11schema_validation\x18\x95\x15 \x01(\v2'.clouditor.ontology.v1.SchemaValidationR\x10schemaValidation\x12U\n" +
-	"\x11security_features\x18\x9c\x8f\x01 \x03(\v2&.clouditor.ontology.v1.SecurityFeatureR\x10securityFeatures\x1a9\n" +
+	"_parent_id\"\xf5\x06\n" +
+	"\x0ePolicyDocument\x12@\n" +
+	"\rcreation_time\x18\xe1B \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
+	"\vdescription\x18\x8f\v \x01(\tR\vdescription\x12\x1b\n" +
+	"\bfiletype\x18\xbe\\ \x01(\tR\bfiletype\x12\x17\n" +
+	"\x02id\x18\x963 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12J\n" +
+	"\x06labels\x18\xad, \x03(\v21.clouditor.ontology.v1.PolicyDocument.LabelsEntryR\x06labels\x12\x1b\n" +
+	"\x04name\x18\x84\x10 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\x11\n" +
+	"\x03raw\x18\xae' \x01(\tR\x03raw\x12I\n" +
+	"\rdata_location\x18\xd4A \x01(\v2#.clouditor.ontology.v1.DataLocationR\fdataLocation\x12X\n" +
+	"\x12document_checksums\x18\xb8\x91\x01 \x03(\v2'.clouditor.ontology.v1.DocumentChecksumR\x11documentChecksums\x12Z\n" +
+	"\x13document_signatures\x18\x8a] \x03(\v2(.clouditor.ontology.v1.DocumentSignatureR\x12documentSignatures\x12!\n" +
+	"\tparent_id\x18\x8eI \x01(\tH\x00R\bparentId\x88\x01\x01\x12U\n" +
+	"\x11schema_validation\x18\xae{ \x01(\v2'.clouditor.ontology.v1.SchemaValidationR\x10schemaValidation\x12T\n" +
+	"\x11security_features\x18\xb0u \x03(\v2&.clouditor.ontology.v1.SecurityFeatureR\x10securityFeatures\x1a9\n" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:*\x82\xa6\x1d\x0ePolicyDocument\x82\xa6\x1d\bDocument\x82\xa6\x1d\bResourceB\f\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:2\x82\xa6\x1d\x0ePolicyDocument\x82\xa6\x1d\bDocument\x82\xa6\x1d\x04Data\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_id\"\x86\x01\n" +
 	"\x04RBAC\x12,\n" +
@@ -19697,11 +20523,11 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x11RemoteAttestation\x12@\n" +
 	"\rcreation_time\x18\xcd: \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12\x19\n" +
 	"\aenabled\x18\xd6\t \x01(\bR\aenabled\x12\x17\n" +
-	"\x06status\x18\xfdH \x01(\bR\x06status:D\x82\xa6\x1d\x11RemoteAttestation\x82\xa6\x1d\vAttestation\x82\xa6\x1d\tIntegrity\x82\xa6\x1d\x0fSecurityFeature\"\x99\x02\n" +
-	"\x16RemoteDocumentLocation\x12\x13\n" +
-	"\x04path\x18\xc4\t \x01(\tR\x04path\x12H\n" +
-	"\fauthenticity\x18\xeaC \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12_\n" +
-	"\x14transport_encryption\x18\xfa\x8b\x01 \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption:?\x82\xa6\x1d\x16RemoteDocumentLocation\x82\xa6\x1d\x10DocumentLocation\x82\xa6\x1d\rFunctionality\"\xd8 \n" +
+	"\x06status\x18\xfdH \x01(\bR\x06status:D\x82\xa6\x1d\x11RemoteAttestation\x82\xa6\x1d\vAttestation\x82\xa6\x1d\tIntegrity\x82\xa6\x1d\x0fSecurityFeature\"\x8c\x02\n" +
+	"\x12RemoteDataLocation\x12\x13\n" +
+	"\x04path\x18\xeb' \x01(\tR\x04path\x12H\n" +
+	"\fauthenticity\x18\xaf\x10 \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12^\n" +
+	"\x14transport_encryption\x18\xe1\x1b \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption:7\x82\xa6\x1d\x12RemoteDataLocation\x82\xa6\x1d\fDataLocation\x82\xa6\x1d\rFunctionality\"\x97#\n" +
 	"\bResource\x12;\n" +
 	"\aaccount\x18\xc0Y \x01(\v2\x1e.clouditor.ontology.v1.AccountH\x00R\aaccount\x12/\n" +
 	"\x03job\x18\x9f\x1f \x01(\v2\x1a.clouditor.ontology.v1.JobH\x00R\x03job\x12>\n" +
@@ -19728,7 +20554,8 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x17generic_network_service\x18\xe6\n" +
 	" \x01(\v2,.clouditor.ontology.v1.GenericNetworkServiceH\x00R\x15genericNetworkService\x12K\n" +
 	"\rload_balancer\x18\xe9  \x01(\v2#.clouditor.ontology.v1.LoadBalancerH\x00R\floadBalancer\x12Q\n" +
-	"\x0flogging_service\x18\xb3n \x01(\v2%.clouditor.ontology.v1.LoggingServiceH\x00R\x0eloggingService\x12m\n" +
+	"\x0flogging_service\x18\xb3n \x01(\v2%.clouditor.ontology.v1.LoggingServiceH\x00R\x0eloggingService\x12k\n" +
+	"\x18machine_learning_service\x18Ƅ\x01 \x01(\v2-.clouditor.ontology.v1.MachineLearningServiceH\x00R\x16machineLearningService\x12m\n" +
 	"\x19security_advisory_service\x18\xad\x01 \x01(\v2..clouditor.ontology.v1.SecurityAdvisoryServiceH\x00R\x17securityAdvisoryService\x12n\n" +
 	"\x19document_database_service\x18\x9e\x8c\x01 \x01(\v2..clouditor.ontology.v1.DocumentDatabaseServiceH\x00R\x17documentDatabaseService\x12n\n" +
 	"\x1akey_value_database_service\x18\xec\a \x01(\v2..clouditor.ontology.v1.KeyValueDatabaseServiceH\x00R\x17keyValueDatabaseService\x12t\n" +
@@ -19744,10 +20571,12 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x10database_storage\x18\x8b` \x01(\v2&.clouditor.ontology.v1.DatabaseStorageH\x00R\x0fdatabaseStorage\x12H\n" +
 	"\ffile_storage\x18\xb0\x15 \x01(\v2\".clouditor.ontology.v1.FileStorageH\x00R\vfileStorage\x12N\n" +
 	"\x0eobject_storage\x18\xf6T \x01(\v2$.clouditor.ontology.v1.ObjectStorageH\x00R\robjectStorage\x12T\n" +
-	"\x10generic_document\x18\xc6, \x01(\v2&.clouditor.ontology.v1.GenericDocumentH\x00R\x0fgenericDocument\x12Q\n" +
-	"\x0fpolicy_document\x18\xe7\x1c \x01(\v2%.clouditor.ontology.v1.PolicyDocumentH\x00R\x0epolicyDocument\x12p\n" +
-	"\x1asecurity_advisory_document\x18\xc1B \x01(\v2/.clouditor.ontology.v1.SecurityAdvisoryDocumentH\x00R\x18securityAdvisoryDocument\x12m\n" +
-	"\x19service_metadata_document\x18\x87m \x01(\v2..clouditor.ontology.v1.ServiceMetadataDocumentH\x00R\x17serviceMetadataDocument\x12Z\n" +
+	"\x10generic_document\x18\x80' \x01(\v2&.clouditor.ontology.v1.GenericDocumentH\x00R\x0fgenericDocument\x12Q\n" +
+	"\x0fpolicy_document\x18\xe9t \x01(\v2%.clouditor.ontology.v1.PolicyDocumentH\x00R\x0epolicyDocument\x12p\n" +
+	"\x1asecurity_advisory_document\x18\xfdr \x01(\v2/.clouditor.ontology.v1.SecurityAdvisoryDocumentH\x00R\x18securityAdvisoryDocument\x12m\n" +
+	"\x19service_metadata_document\x18\x90\x02 \x01(\v2..clouditor.ontology.v1.ServiceMetadataDocumentH\x00R\x17serviceMetadataDocument\x12j\n" +
+	"\x18machine_learning_dataset\x18\xf8\x0f \x01(\v2-.clouditor.ontology.v1.MachineLearningDatasetH\x00R\x16machineLearningDataset\x12d\n" +
+	"\x16machine_learning_model\x18\xa1x \x01(\v2+.clouditor.ontology.v1.MachineLearningModelH\x00R\x14machineLearningModel\x12Z\n" +
 	"\x12awareness_training\x18\xe3i \x01(\v2(.clouditor.ontology.v1.AwarenessTrainingH\x00R\x11awarenessTraining\x12W\n" +
 	"\x11security_training\x18\xbd' \x01(\v2'.clouditor.ontology.v1.SecurityTrainingH\x00R\x10securityTraining\x12H\n" +
 	"\vapplication\x18\xfa\x90\x01 \x01(\v2\".clouditor.ontology.v1.ApplicationH\x00R\vapplication\x12;\n" +
@@ -19771,13 +20600,12 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:/\x82\xa6\x1d\rResourceGroup\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-	"_parent_id\"\xdc\x02\n" +
+	"_parent_id\"\xab\x02\n" +
 	"\x0fResourceLogging\x12\x19\n" +
 	"\aenabled\x18\xe5\v \x01(\bR\aenabled\x12>\n" +
 	"\x1bmonitoring_log_data_enabled\x18\x945 \x01(\bR\x18monitoringLogDataEnabled\x12E\n" +
 	"\x10retention_period\x18\xf84 \x01(\v2\x19.google.protobuf.DurationR\x0fretentionPeriod\x127\n" +
-	"\x17security_alerts_enabled\x18\xd3/ \x01(\bR\x15securityAlertsEnabled\x12/\n" +
-	"\x13logging_service_ids\x18\xcew \x03(\tR\x11loggingServiceIds:=\x82\xa6\x1d\x0fResourceLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"(\n" +
+	"\x17security_alerts_enabled\x18\xd3/ \x01(\bR\x15securityAlertsEnabled:=\x82\xa6\x1d\x0fResourceLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"(\n" +
 	"\fResourceType:\x18\x82\xa6\x1d\fResourceType\x82\xa6\x1d\x04Core\"H\n" +
 	"\x0fRobustnessScore:5\x82\xa6\x1d\x0fRobustnessScore\x82\xa6\x1d\vReliability\x82\xa6\x1d\x0fSecurityFeature\"\xd5\a\n" +
 	"\x0eRoleAssignment\x12\x1d\n" +
@@ -19831,25 +20659,25 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"Credential\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\x14\n" +
 	"\x12_infrastructure_idB\f\n" +
 	"\n" +
-	"_parent_id\"\xe9\a\n" +
+	"_parent_id\"\xe6\a\n" +
 	"\x18SecurityAdvisoryDocument\x12@\n" +
-	"\rcreation_time\x18\xb7_ \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12\"\n" +
-	"\vdescription\x18\xb6\x91\x01 \x01(\tR\vdescription\x12\x1b\n" +
-	"\bfiletype\x18\xa5g \x01(\tR\bfiletype\x12\x17\n" +
-	"\x02id\x18\xeeT \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12T\n" +
-	"\x06labels\x18\xcb> \x03(\v2;.clouditor.ontology.v1.SecurityAdvisoryDocument.LabelsEntryR\x06labels\x12\x1b\n" +
-	"\x04name\x18\xb9\a \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\x11\n" +
-	"\x03raw\x18\x8b\x0e \x01(\tR\x03raw\x12W\n" +
-	"\x12document_checksums\x18\xb5r \x03(\v2'.clouditor.ontology.v1.DocumentChecksumR\x11documentChecksums\x12U\n" +
-	"\x11document_location\x18\x9a[ \x01(\v2'.clouditor.ontology.v1.DocumentLocationR\x10documentLocation\x12Z\n" +
-	"\x13document_signatures\x18\xbcv \x03(\v2(.clouditor.ontology.v1.DocumentSignatureR\x12documentSignatures\x12\"\n" +
-	"\tparent_id\x18\xf2\x87\x01 \x01(\tH\x00R\bparentId\x88\x01\x01\x12U\n" +
-	"\x11schema_validation\x18\xd8\x12 \x01(\v2'.clouditor.ontology.v1.SchemaValidationR\x10schemaValidation\x12T\n" +
-	"\x11security_features\x18\xebV \x03(\v2&.clouditor.ontology.v1.SecurityFeatureR\x10securityFeatures\x12O\n" +
-	"\x0fvulnerabilities\x18\xb4[ \x03(\v2$.clouditor.ontology.v1.VulnerabilityR\x0fvulnerabilities\x1a9\n" +
+	"\rcreation_time\x18\xc8U \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
+	"\vdescription\x18\x8f\x1c \x01(\tR\vdescription\x12\x1c\n" +
+	"\bfiletype\x18\xf2\x86\x01 \x01(\tR\bfiletype\x12\x17\n" +
+	"\x02id\x18\xbc{ \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12U\n" +
+	"\x06labels\x18Ђ\x01 \x03(\v2;.clouditor.ontology.v1.SecurityAdvisoryDocument.LabelsEntryR\x06labels\x12\x1b\n" +
+	"\x04name\x18\xb9v \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\x11\n" +
+	"\x03raw\x18\xd8\x1b \x01(\tR\x03raw\x12I\n" +
+	"\rdata_location\x18\xf4\\ \x01(\v2#.clouditor.ontology.v1.DataLocationR\fdataLocation\x12W\n" +
+	"\x12document_checksums\x18\xe9e \x03(\v2'.clouditor.ontology.v1.DocumentChecksumR\x11documentChecksums\x12Z\n" +
+	"\x13document_signatures\x18\xb3\x7f \x03(\v2(.clouditor.ontology.v1.DocumentSignatureR\x12documentSignatures\x12!\n" +
+	"\tparent_id\x18\x87\x02 \x01(\tH\x00R\bparentId\x88\x01\x01\x12V\n" +
+	"\x11schema_validation\x18\x95\x91\x01 \x01(\v2'.clouditor.ontology.v1.SchemaValidationR\x10schemaValidation\x12T\n" +
+	"\x11security_features\x18\xf7\x12 \x03(\v2&.clouditor.ontology.v1.SecurityFeatureR\x10securityFeatures\x12O\n" +
+	"\x0fvulnerabilities\x18\xab\" \x03(\v2$.clouditor.ontology.v1.VulnerabilityR\x0fvulnerabilities\x1a9\n" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:4\x82\xa6\x1d\x18SecurityAdvisoryDocument\x82\xa6\x1d\bDocument\x82\xa6\x1d\bResourceB\f\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:<\x82\xa6\x1d\x18SecurityAdvisoryDocument\x82\xa6\x1d\bDocument\x82\xa6\x1d\x04Data\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_id\"\x87\x01\n" +
 	"\x14SecurityAdvisoryFeed\x12D\n" +
@@ -19940,25 +20768,24 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:>\x82\xa6\x1d\x10SecurityTraining\x82\xa6\x1d\bTraining\x82\xa6\x1d\x0eHumanResources\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-	"_parent_id\"\x95\a\n" +
+	"_parent_id\"\x90\a\n" +
 	"\x17ServiceMetadataDocument\x12@\n" +
-	"\rcreation_time\x18\xa79 \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
-	"\vdescription\x18\xb3I \x01(\tR\vdescription\x12\x1c\n" +
-	"\bfiletype\x18σ\x01 \x01(\tR\bfiletype\x12\x17\n" +
-	"\x02id\x18\xf8B \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12S\n" +
-	"\x06labels\x18\xab\x04 \x03(\v2:.clouditor.ontology.v1.ServiceMetadataDocument.LabelsEntryR\x06labels\x12\x1b\n" +
-	"\x04name\x18\xa5j \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\x11\n" +
-	"\x03raw\x18\x8a[ \x01(\tR\x03raw\x12W\n" +
-	"\x12document_checksums\x18\xa1] \x03(\v2'.clouditor.ontology.v1.DocumentChecksumR\x11documentChecksums\x12U\n" +
-	"\x11document_location\x18\xb7\x1c \x01(\v2'.clouditor.ontology.v1.DocumentLocationR\x10documentLocation\x12Z\n" +
-	"\x13document_signatures\x18\xa3\n" +
-	" \x03(\v2(.clouditor.ontology.v1.DocumentSignatureR\x12documentSignatures\x12!\n" +
-	"\tparent_id\x18\xd3P \x01(\tH\x00R\bparentId\x88\x01\x01\x12U\n" +
-	"\x11schema_validation\x18\xde3 \x01(\v2'.clouditor.ontology.v1.SchemaValidationR\x10schemaValidation\x12U\n" +
-	"\x11security_features\x18\xb1\x92\x01 \x03(\v2&.clouditor.ontology.v1.SecurityFeatureR\x10securityFeatures\x1a9\n" +
+	"\rcreation_time\x18\xa5- \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
+	"\vdescription\x18\xb5\x1d \x01(\tR\vdescription\x12\x1b\n" +
+	"\bfiletype\x18\xc3# \x01(\tR\bfiletype\x12\x17\n" +
+	"\x02id\x18\xc3@ \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12S\n" +
+	"\x06labels\x18\x88\r \x03(\v2:.clouditor.ontology.v1.ServiceMetadataDocument.LabelsEntryR\x06labels\x12\x1b\n" +
+	"\x04name\x18\xa0U \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\x11\n" +
+	"\x03raw\x18\x80? \x01(\tR\x03raw\x12I\n" +
+	"\rdata_location\x18\xdf} \x01(\v2#.clouditor.ontology.v1.DataLocationR\fdataLocation\x12W\n" +
+	"\x12document_checksums\x18\xf6\t \x03(\v2'.clouditor.ontology.v1.DocumentChecksumR\x11documentChecksums\x12Z\n" +
+	"\x13document_signatures\x18\xact \x03(\v2(.clouditor.ontology.v1.DocumentSignatureR\x12documentSignatures\x12!\n" +
+	"\tparent_id\x18\xa7k \x01(\tH\x00R\bparentId\x88\x01\x01\x12U\n" +
+	"\x11schema_validation\x18\xe8G \x01(\v2'.clouditor.ontology.v1.SchemaValidationR\x10schemaValidation\x12U\n" +
+	"\x11security_features\x18\xb5\x88\x01 \x03(\v2&.clouditor.ontology.v1.SecurityFeatureR\x10securityFeatures\x1a9\n" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:3\x82\xa6\x1d\x17ServiceMetadataDocument\x82\xa6\x1d\bDocument\x82\xa6\x1d\bResourceB\f\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:;\x82\xa6\x1d\x17ServiceMetadataDocument\x82\xa6\x1d\bDocument\x82\xa6\x1d\x04Data\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_id\"\xa0\x01\n" +
 	"\x11DocumentSignature\x12\x1d\n" +
@@ -20147,7 +20974,7 @@ func file_api_ontology_ontology_proto_rawDescGZIP() []byte {
 	return file_api_ontology_ontology_proto_rawDescData
 }
 
-var file_api_ontology_ontology_proto_msgTypes = make([]protoimpl.MessageInfo, 201)
+var file_api_ontology_ontology_proto_msgTypes = make([]protoimpl.MessageInfo, 209)
 var file_api_ontology_ontology_proto_goTypes = []any{
 	(*ABAC)(nil),                           // 0: clouditor.ontology.v1.ABAC
 	(*AccessRestriction)(nil),              // 1: clouditor.ontology.v1.AccessRestriction
@@ -20189,884 +21016,920 @@ var file_api_ontology_ontology_proto_goTypes = []any{
 	(*CryptographicOperation)(nil),         // 37: clouditor.ontology.v1.CryptographicOperation
 	(*CustomerKeyEncryption)(nil),          // 38: clouditor.ontology.v1.CustomerKeyEncryption
 	(*DDoSProtection)(nil),                 // 39: clouditor.ontology.v1.DDoSProtection
-	(*DatabaseConnect)(nil),                // 40: clouditor.ontology.v1.DatabaseConnect
-	(*DatabaseOperation)(nil),              // 41: clouditor.ontology.v1.DatabaseOperation
-	(*DatabaseQuery)(nil),                  // 42: clouditor.ontology.v1.DatabaseQuery
-	(*DatabaseService)(nil),                // 43: clouditor.ontology.v1.DatabaseService
-	(*DatabaseStorage)(nil),                // 44: clouditor.ontology.v1.DatabaseStorage
-	(*Decryption)(nil),                     // 45: clouditor.ontology.v1.Decryption
-	(*DeviceProvisioningService)(nil),      // 46: clouditor.ontology.v1.DeviceProvisioningService
-	(*Document)(nil),                       // 47: clouditor.ontology.v1.Document
-	(*DocumentDatabaseService)(nil),        // 48: clouditor.ontology.v1.DocumentDatabaseService
-	(*DocumentLocation)(nil),               // 49: clouditor.ontology.v1.DocumentLocation
-	(*EncryptionInUse)(nil),                // 50: clouditor.ontology.v1.EncryptionInUse
-	(*Encryption)(nil),                     // 51: clouditor.ontology.v1.Encryption
-	(*Error)(nil),                          // 52: clouditor.ontology.v1.Error
-	(*Evidence)(nil),                       // 53: clouditor.ontology.v1.Evidence
-	(*ExplainableResults)(nil),             // 54: clouditor.ontology.v1.ExplainableResults
-	(*FileStorage)(nil),                    // 55: clouditor.ontology.v1.FileStorage
-	(*FileStorageService)(nil),             // 56: clouditor.ontology.v1.FileStorageService
-	(*Firewall)(nil),                       // 57: clouditor.ontology.v1.Firewall
-	(*Framework)(nil),                      // 58: clouditor.ontology.v1.Framework
-	(*Function)(nil),                       // 59: clouditor.ontology.v1.Function
-	(*FunctionService)(nil),                // 60: clouditor.ontology.v1.FunctionService
-	(*Functionality)(nil),                  // 61: clouditor.ontology.v1.Functionality
-	(*GenericDocument)(nil),                // 62: clouditor.ontology.v1.GenericDocument
-	(*GenericNetworkService)(nil),          // 63: clouditor.ontology.v1.GenericNetworkService
-	(*GeoLocation)(nil),                    // 64: clouditor.ontology.v1.GeoLocation
-	(*GeoRedundancy)(nil),                  // 65: clouditor.ontology.v1.GeoRedundancy
-	(*CryptographicHash)(nil),              // 66: clouditor.ontology.v1.CryptographicHash
-	(*HttpClientLibrary)(nil),              // 67: clouditor.ontology.v1.HttpClientLibrary
-	(*HttpEndpoint)(nil),                   // 68: clouditor.ontology.v1.HttpEndpoint
-	(*HttpRequest)(nil),                    // 69: clouditor.ontology.v1.HttpRequest
-	(*HttpRequestHandler)(nil),             // 70: clouditor.ontology.v1.HttpRequestHandler
-	(*HttpServer)(nil),                     // 71: clouditor.ontology.v1.HttpServer
-	(*HumanResources)(nil),                 // 72: clouditor.ontology.v1.HumanResources
-	(*Identifiable)(nil),                   // 73: clouditor.ontology.v1.Identifiable
-	(*Identity)(nil),                       // 74: clouditor.ontology.v1.Identity
-	(*Image)(nil),                          // 75: clouditor.ontology.v1.Image
-	(*Immutability)(nil),                   // 76: clouditor.ontology.v1.Immutability
-	(*Integrity)(nil),                      // 77: clouditor.ontology.v1.Integrity
-	(*IoT)(nil),                            // 78: clouditor.ontology.v1.IoT
-	(*Job)(nil),                            // 79: clouditor.ontology.v1.Job
-	(*TokenBasedAuthentication)(nil),       // 80: clouditor.ontology.v1.TokenBasedAuthentication
-	(*Key)(nil),                            // 81: clouditor.ontology.v1.Key
-	(*KeyValueDatabaseService)(nil),        // 82: clouditor.ontology.v1.KeyValueDatabaseService
-	(*KeyVault)(nil),                       // 83: clouditor.ontology.v1.KeyVault
-	(*L3Firewall)(nil),                     // 84: clouditor.ontology.v1.L3Firewall
-	(*Library)(nil),                        // 85: clouditor.ontology.v1.Library
-	(*LoadBalancer)(nil),                   // 86: clouditor.ontology.v1.LoadBalancer
-	(*LocalAttestation)(nil),               // 87: clouditor.ontology.v1.LocalAttestation
-	(*LocalDocumentLocation)(nil),          // 88: clouditor.ontology.v1.LocalDocumentLocation
-	(*LocalRedundancy)(nil),                // 89: clouditor.ontology.v1.LocalRedundancy
-	(*LogOperation)(nil),                   // 90: clouditor.ontology.v1.LogOperation
-	(*Logger)(nil),                         // 91: clouditor.ontology.v1.Logger
-	(*Logging)(nil),                        // 92: clouditor.ontology.v1.Logging
-	(*LoggingService)(nil),                 // 93: clouditor.ontology.v1.LoggingService
-	(*MalwareProtection)(nil),              // 94: clouditor.ontology.v1.MalwareProtection
-	(*ManagedKeyEncryption)(nil),           // 95: clouditor.ontology.v1.ManagedKeyEncryption
-	(*MessagingHub)(nil),                   // 96: clouditor.ontology.v1.MessagingHub
-	(*CodeModule)(nil),                     // 97: clouditor.ontology.v1.CodeModule
-	(*MultiFactorAuthentiation)(nil),       // 98: clouditor.ontology.v1.MultiFactorAuthentiation
-	(*MultiModalDatabaseService)(nil),      // 99: clouditor.ontology.v1.MultiModalDatabaseService
-	(*NetworkInterface)(nil),               // 100: clouditor.ontology.v1.NetworkInterface
-	(*NetworkSecurityGroup)(nil),           // 101: clouditor.ontology.v1.NetworkSecurityGroup
-	(*NetworkService)(nil),                 // 102: clouditor.ontology.v1.NetworkService
-	(*Networking)(nil),                     // 103: clouditor.ontology.v1.Networking
-	(*NoAuthentication)(nil),               // 104: clouditor.ontology.v1.NoAuthentication
-	(*OSLogging)(nil),                      // 105: clouditor.ontology.v1.OSLogging
-	(*OTPBasedAuthentication)(nil),         // 106: clouditor.ontology.v1.OTPBasedAuthentication
-	(*ObjectStorage)(nil),                  // 107: clouditor.ontology.v1.ObjectStorage
-	(*ObjectStorageRequest)(nil),           // 108: clouditor.ontology.v1.ObjectStorageRequest
-	(*ObjectStorageService)(nil),           // 109: clouditor.ontology.v1.ObjectStorageService
-	(*Operation)(nil),                      // 110: clouditor.ontology.v1.Operation
-	(*PasswordBasedAuthentication)(nil),    // 111: clouditor.ontology.v1.PasswordBasedAuthentication
-	(*PasswordPolicy)(nil),                 // 112: clouditor.ontology.v1.PasswordPolicy
-	(*PolicyDocument)(nil),                 // 113: clouditor.ontology.v1.PolicyDocument
-	(*RBAC)(nil),                           // 114: clouditor.ontology.v1.RBAC
-	(*Redundancy)(nil),                     // 115: clouditor.ontology.v1.Redundancy
-	(*RelationalDatabaseService)(nil),      // 116: clouditor.ontology.v1.RelationalDatabaseService
-	(*Reliability)(nil),                    // 117: clouditor.ontology.v1.Reliability
-	(*RemoteAttestation)(nil),              // 118: clouditor.ontology.v1.RemoteAttestation
-	(*RemoteDocumentLocation)(nil),         // 119: clouditor.ontology.v1.RemoteDocumentLocation
-	(*Resource)(nil),                       // 120: clouditor.ontology.v1.Resource
-	(*ResourceGroup)(nil),                  // 121: clouditor.ontology.v1.ResourceGroup
-	(*ResourceLogging)(nil),                // 122: clouditor.ontology.v1.ResourceLogging
-	(*ResourceType)(nil),                   // 123: clouditor.ontology.v1.ResourceType
-	(*RobustnessScore)(nil),                // 124: clouditor.ontology.v1.RobustnessScore
-	(*RoleAssignment)(nil),                 // 125: clouditor.ontology.v1.RoleAssignment
-	(*SchemaValidation)(nil),               // 126: clouditor.ontology.v1.SchemaValidation
-	(*Secret)(nil),                         // 127: clouditor.ontology.v1.Secret
-	(*SecurityAdvisoryDocument)(nil),       // 128: clouditor.ontology.v1.SecurityAdvisoryDocument
-	(*SecurityAdvisoryFeed)(nil),           // 129: clouditor.ontology.v1.SecurityAdvisoryFeed
-	(*SecurityAdvisoryService)(nil),        // 130: clouditor.ontology.v1.SecurityAdvisoryService
-	(*SecurityFeature)(nil),                // 131: clouditor.ontology.v1.SecurityFeature
-	(*SecurityTraining)(nil),               // 132: clouditor.ontology.v1.SecurityTraining
-	(*ServiceMetadataDocument)(nil),        // 133: clouditor.ontology.v1.ServiceMetadataDocument
-	(*DocumentSignature)(nil),              // 134: clouditor.ontology.v1.DocumentSignature
-	(*SingleSignOn)(nil),                   // 135: clouditor.ontology.v1.SingleSignOn
-	(*Code)(nil),                           // 136: clouditor.ontology.v1.Code
-	(*SourceCodeFile)(nil),                 // 137: clouditor.ontology.v1.SourceCodeFile
-	(*Storage)(nil),                        // 138: clouditor.ontology.v1.Storage
-	(*StorageService)(nil),                 // 139: clouditor.ontology.v1.StorageService
-	(*Tool)(nil),                           // 140: clouditor.ontology.v1.Tool
-	(*Training)(nil),                       // 141: clouditor.ontology.v1.Training
-	(*TransportEncryption)(nil),            // 142: clouditor.ontology.v1.TransportEncryption
-	(*UsageStatistics)(nil),                // 143: clouditor.ontology.v1.UsageStatistics
-	(*VMImage)(nil),                        // 144: clouditor.ontology.v1.VMImage
-	(*VirtualMachine)(nil),                 // 145: clouditor.ontology.v1.VirtualMachine
-	(*VirtualNetwork)(nil),                 // 146: clouditor.ontology.v1.VirtualNetwork
-	(*VirtualSubNetwork)(nil),              // 147: clouditor.ontology.v1.VirtualSubNetwork
-	(*Vulnerability)(nil),                  // 148: clouditor.ontology.v1.Vulnerability
-	(*WebApplicationFirewall)(nil),         // 149: clouditor.ontology.v1.WebApplicationFirewall
-	(*Workflow)(nil),                       // 150: clouditor.ontology.v1.Workflow
-	(*ZoneRedundancy)(nil),                 // 151: clouditor.ontology.v1.ZoneRedundancy
-	nil,                                    // 152: clouditor.ontology.v1.Account.LabelsEntry
-	nil,                                    // 153: clouditor.ontology.v1.Application.LabelsEntry
-	nil,                                    // 154: clouditor.ontology.v1.AwarenessTraining.LabelsEntry
-	nil,                                    // 155: clouditor.ontology.v1.BlockStorage.LabelsEntry
-	nil,                                    // 156: clouditor.ontology.v1.Certificate.LabelsEntry
-	nil,                                    // 157: clouditor.ontology.v1.CodeRepository.LabelsEntry
-	nil,                                    // 158: clouditor.ontology.v1.Container.LabelsEntry
-	nil,                                    // 159: clouditor.ontology.v1.ContainerImage.LabelsEntry
-	nil,                                    // 160: clouditor.ontology.v1.ContainerOrchestration.LabelsEntry
-	nil,                                    // 161: clouditor.ontology.v1.ContainerRegistry.LabelsEntry
-	nil,                                    // 162: clouditor.ontology.v1.DatabaseStorage.LabelsEntry
-	nil,                                    // 163: clouditor.ontology.v1.DeviceProvisioningService.LabelsEntry
-	nil,                                    // 164: clouditor.ontology.v1.DocumentDatabaseService.LabelsEntry
-	nil,                                    // 165: clouditor.ontology.v1.FileStorage.LabelsEntry
-	nil,                                    // 166: clouditor.ontology.v1.FileStorageService.LabelsEntry
-	nil,                                    // 167: clouditor.ontology.v1.Function.LabelsEntry
-	nil,                                    // 168: clouditor.ontology.v1.FunctionService.LabelsEntry
-	nil,                                    // 169: clouditor.ontology.v1.GenericDocument.LabelsEntry
-	nil,                                    // 170: clouditor.ontology.v1.GenericNetworkService.LabelsEntry
-	nil,                                    // 171: clouditor.ontology.v1.Identity.LabelsEntry
-	nil,                                    // 172: clouditor.ontology.v1.Job.LabelsEntry
-	nil,                                    // 173: clouditor.ontology.v1.Key.LabelsEntry
-	nil,                                    // 174: clouditor.ontology.v1.KeyValueDatabaseService.LabelsEntry
-	nil,                                    // 175: clouditor.ontology.v1.KeyVault.LabelsEntry
-	nil,                                    // 176: clouditor.ontology.v1.Library.LabelsEntry
-	nil,                                    // 177: clouditor.ontology.v1.LoadBalancer.LabelsEntry
-	nil,                                    // 178: clouditor.ontology.v1.LoggingService.LabelsEntry
-	nil,                                    // 179: clouditor.ontology.v1.MessagingHub.LabelsEntry
-	nil,                                    // 180: clouditor.ontology.v1.MultiModalDatabaseService.LabelsEntry
-	nil,                                    // 181: clouditor.ontology.v1.NetworkInterface.LabelsEntry
-	nil,                                    // 182: clouditor.ontology.v1.NetworkSecurityGroup.LabelsEntry
-	nil,                                    // 183: clouditor.ontology.v1.ObjectStorage.LabelsEntry
-	nil,                                    // 184: clouditor.ontology.v1.ObjectStorageService.LabelsEntry
-	nil,                                    // 185: clouditor.ontology.v1.PasswordPolicy.LabelsEntry
-	nil,                                    // 186: clouditor.ontology.v1.PolicyDocument.LabelsEntry
-	nil,                                    // 187: clouditor.ontology.v1.RelationalDatabaseService.LabelsEntry
-	nil,                                    // 188: clouditor.ontology.v1.ResourceGroup.LabelsEntry
-	nil,                                    // 189: clouditor.ontology.v1.RoleAssignment.LabelsEntry
-	nil,                                    // 190: clouditor.ontology.v1.Secret.LabelsEntry
-	nil,                                    // 191: clouditor.ontology.v1.SecurityAdvisoryDocument.LabelsEntry
-	nil,                                    // 192: clouditor.ontology.v1.SecurityAdvisoryService.LabelsEntry
-	nil,                                    // 193: clouditor.ontology.v1.SecurityTraining.LabelsEntry
-	nil,                                    // 194: clouditor.ontology.v1.ServiceMetadataDocument.LabelsEntry
-	nil,                                    // 195: clouditor.ontology.v1.SourceCodeFile.LabelsEntry
-	nil,                                    // 196: clouditor.ontology.v1.VMImage.LabelsEntry
-	nil,                                    // 197: clouditor.ontology.v1.VirtualMachine.LabelsEntry
-	nil,                                    // 198: clouditor.ontology.v1.VirtualNetwork.LabelsEntry
-	nil,                                    // 199: clouditor.ontology.v1.VirtualSubNetwork.LabelsEntry
-	nil,                                    // 200: clouditor.ontology.v1.Workflow.LabelsEntry
-	(*timestamppb.Timestamp)(nil),          // 201: google.protobuf.Timestamp
-	(*durationpb.Duration)(nil),            // 202: google.protobuf.Duration
-	(*descriptorpb.MessageOptions)(nil),    // 203: google.protobuf.MessageOptions
+	(*Data)(nil),                           // 40: clouditor.ontology.v1.Data
+	(*DataLocation)(nil),                   // 41: clouditor.ontology.v1.DataLocation
+	(*DatabaseConnect)(nil),                // 42: clouditor.ontology.v1.DatabaseConnect
+	(*DatabaseOperation)(nil),              // 43: clouditor.ontology.v1.DatabaseOperation
+	(*DatabaseQuery)(nil),                  // 44: clouditor.ontology.v1.DatabaseQuery
+	(*DatabaseService)(nil),                // 45: clouditor.ontology.v1.DatabaseService
+	(*DatabaseStorage)(nil),                // 46: clouditor.ontology.v1.DatabaseStorage
+	(*Decryption)(nil),                     // 47: clouditor.ontology.v1.Decryption
+	(*DeviceProvisioningService)(nil),      // 48: clouditor.ontology.v1.DeviceProvisioningService
+	(*Document)(nil),                       // 49: clouditor.ontology.v1.Document
+	(*DocumentDatabaseService)(nil),        // 50: clouditor.ontology.v1.DocumentDatabaseService
+	(*EncryptionInUse)(nil),                // 51: clouditor.ontology.v1.EncryptionInUse
+	(*Encryption)(nil),                     // 52: clouditor.ontology.v1.Encryption
+	(*Error)(nil),                          // 53: clouditor.ontology.v1.Error
+	(*Evidence)(nil),                       // 54: clouditor.ontology.v1.Evidence
+	(*ExplainableResults)(nil),             // 55: clouditor.ontology.v1.ExplainableResults
+	(*FileStorage)(nil),                    // 56: clouditor.ontology.v1.FileStorage
+	(*FileStorageService)(nil),             // 57: clouditor.ontology.v1.FileStorageService
+	(*Firewall)(nil),                       // 58: clouditor.ontology.v1.Firewall
+	(*Framework)(nil),                      // 59: clouditor.ontology.v1.Framework
+	(*Function)(nil),                       // 60: clouditor.ontology.v1.Function
+	(*FunctionService)(nil),                // 61: clouditor.ontology.v1.FunctionService
+	(*Functionality)(nil),                  // 62: clouditor.ontology.v1.Functionality
+	(*GenericDocument)(nil),                // 63: clouditor.ontology.v1.GenericDocument
+	(*GenericNetworkService)(nil),          // 64: clouditor.ontology.v1.GenericNetworkService
+	(*GeoLocation)(nil),                    // 65: clouditor.ontology.v1.GeoLocation
+	(*GeoRedundancy)(nil),                  // 66: clouditor.ontology.v1.GeoRedundancy
+	(*CryptographicHash)(nil),              // 67: clouditor.ontology.v1.CryptographicHash
+	(*HttpClientLibrary)(nil),              // 68: clouditor.ontology.v1.HttpClientLibrary
+	(*HttpEndpoint)(nil),                   // 69: clouditor.ontology.v1.HttpEndpoint
+	(*HttpRequest)(nil),                    // 70: clouditor.ontology.v1.HttpRequest
+	(*HttpRequestHandler)(nil),             // 71: clouditor.ontology.v1.HttpRequestHandler
+	(*HttpServer)(nil),                     // 72: clouditor.ontology.v1.HttpServer
+	(*HumanResources)(nil),                 // 73: clouditor.ontology.v1.HumanResources
+	(*Identifiable)(nil),                   // 74: clouditor.ontology.v1.Identifiable
+	(*Identity)(nil),                       // 75: clouditor.ontology.v1.Identity
+	(*Image)(nil),                          // 76: clouditor.ontology.v1.Image
+	(*Immutability)(nil),                   // 77: clouditor.ontology.v1.Immutability
+	(*Integrity)(nil),                      // 78: clouditor.ontology.v1.Integrity
+	(*IoT)(nil),                            // 79: clouditor.ontology.v1.IoT
+	(*Job)(nil),                            // 80: clouditor.ontology.v1.Job
+	(*TokenBasedAuthentication)(nil),       // 81: clouditor.ontology.v1.TokenBasedAuthentication
+	(*Key)(nil),                            // 82: clouditor.ontology.v1.Key
+	(*KeyValueDatabaseService)(nil),        // 83: clouditor.ontology.v1.KeyValueDatabaseService
+	(*KeyVault)(nil),                       // 84: clouditor.ontology.v1.KeyVault
+	(*L3Firewall)(nil),                     // 85: clouditor.ontology.v1.L3Firewall
+	(*Library)(nil),                        // 86: clouditor.ontology.v1.Library
+	(*LoadBalancer)(nil),                   // 87: clouditor.ontology.v1.LoadBalancer
+	(*LocalAttestation)(nil),               // 88: clouditor.ontology.v1.LocalAttestation
+	(*LocalDataLocation)(nil),              // 89: clouditor.ontology.v1.LocalDataLocation
+	(*LocalRedundancy)(nil),                // 90: clouditor.ontology.v1.LocalRedundancy
+	(*LogOperation)(nil),                   // 91: clouditor.ontology.v1.LogOperation
+	(*Logger)(nil),                         // 92: clouditor.ontology.v1.Logger
+	(*Logging)(nil),                        // 93: clouditor.ontology.v1.Logging
+	(*LoggingService)(nil),                 // 94: clouditor.ontology.v1.LoggingService
+	(*MachineLearning)(nil),                // 95: clouditor.ontology.v1.MachineLearning
+	(*MachineLearningDataset)(nil),         // 96: clouditor.ontology.v1.MachineLearningDataset
+	(*MachineLearningModel)(nil),           // 97: clouditor.ontology.v1.MachineLearningModel
+	(*MachineLearningService)(nil),         // 98: clouditor.ontology.v1.MachineLearningService
+	(*MalwareProtection)(nil),              // 99: clouditor.ontology.v1.MalwareProtection
+	(*ManagedKeyEncryption)(nil),           // 100: clouditor.ontology.v1.ManagedKeyEncryption
+	(*MessagingHub)(nil),                   // 101: clouditor.ontology.v1.MessagingHub
+	(*CodeModule)(nil),                     // 102: clouditor.ontology.v1.CodeModule
+	(*MultiFactorAuthentiation)(nil),       // 103: clouditor.ontology.v1.MultiFactorAuthentiation
+	(*MultiModalDatabaseService)(nil),      // 104: clouditor.ontology.v1.MultiModalDatabaseService
+	(*NetworkInterface)(nil),               // 105: clouditor.ontology.v1.NetworkInterface
+	(*NetworkSecurityGroup)(nil),           // 106: clouditor.ontology.v1.NetworkSecurityGroup
+	(*NetworkService)(nil),                 // 107: clouditor.ontology.v1.NetworkService
+	(*Networking)(nil),                     // 108: clouditor.ontology.v1.Networking
+	(*NoAuthentication)(nil),               // 109: clouditor.ontology.v1.NoAuthentication
+	(*OSLogging)(nil),                      // 110: clouditor.ontology.v1.OSLogging
+	(*OTPBasedAuthentication)(nil),         // 111: clouditor.ontology.v1.OTPBasedAuthentication
+	(*ObjectStorage)(nil),                  // 112: clouditor.ontology.v1.ObjectStorage
+	(*ObjectStorageRequest)(nil),           // 113: clouditor.ontology.v1.ObjectStorageRequest
+	(*ObjectStorageService)(nil),           // 114: clouditor.ontology.v1.ObjectStorageService
+	(*Operation)(nil),                      // 115: clouditor.ontology.v1.Operation
+	(*PasswordBasedAuthentication)(nil),    // 116: clouditor.ontology.v1.PasswordBasedAuthentication
+	(*PasswordPolicy)(nil),                 // 117: clouditor.ontology.v1.PasswordPolicy
+	(*PolicyDocument)(nil),                 // 118: clouditor.ontology.v1.PolicyDocument
+	(*RBAC)(nil),                           // 119: clouditor.ontology.v1.RBAC
+	(*Redundancy)(nil),                     // 120: clouditor.ontology.v1.Redundancy
+	(*RelationalDatabaseService)(nil),      // 121: clouditor.ontology.v1.RelationalDatabaseService
+	(*Reliability)(nil),                    // 122: clouditor.ontology.v1.Reliability
+	(*RemoteAttestation)(nil),              // 123: clouditor.ontology.v1.RemoteAttestation
+	(*RemoteDataLocation)(nil),             // 124: clouditor.ontology.v1.RemoteDataLocation
+	(*Resource)(nil),                       // 125: clouditor.ontology.v1.Resource
+	(*ResourceGroup)(nil),                  // 126: clouditor.ontology.v1.ResourceGroup
+	(*ResourceLogging)(nil),                // 127: clouditor.ontology.v1.ResourceLogging
+	(*ResourceType)(nil),                   // 128: clouditor.ontology.v1.ResourceType
+	(*RobustnessScore)(nil),                // 129: clouditor.ontology.v1.RobustnessScore
+	(*RoleAssignment)(nil),                 // 130: clouditor.ontology.v1.RoleAssignment
+	(*SchemaValidation)(nil),               // 131: clouditor.ontology.v1.SchemaValidation
+	(*Secret)(nil),                         // 132: clouditor.ontology.v1.Secret
+	(*SecurityAdvisoryDocument)(nil),       // 133: clouditor.ontology.v1.SecurityAdvisoryDocument
+	(*SecurityAdvisoryFeed)(nil),           // 134: clouditor.ontology.v1.SecurityAdvisoryFeed
+	(*SecurityAdvisoryService)(nil),        // 135: clouditor.ontology.v1.SecurityAdvisoryService
+	(*SecurityFeature)(nil),                // 136: clouditor.ontology.v1.SecurityFeature
+	(*SecurityTraining)(nil),               // 137: clouditor.ontology.v1.SecurityTraining
+	(*ServiceMetadataDocument)(nil),        // 138: clouditor.ontology.v1.ServiceMetadataDocument
+	(*DocumentSignature)(nil),              // 139: clouditor.ontology.v1.DocumentSignature
+	(*SingleSignOn)(nil),                   // 140: clouditor.ontology.v1.SingleSignOn
+	(*Code)(nil),                           // 141: clouditor.ontology.v1.Code
+	(*SourceCodeFile)(nil),                 // 142: clouditor.ontology.v1.SourceCodeFile
+	(*Storage)(nil),                        // 143: clouditor.ontology.v1.Storage
+	(*StorageService)(nil),                 // 144: clouditor.ontology.v1.StorageService
+	(*Tool)(nil),                           // 145: clouditor.ontology.v1.Tool
+	(*Training)(nil),                       // 146: clouditor.ontology.v1.Training
+	(*TransportEncryption)(nil),            // 147: clouditor.ontology.v1.TransportEncryption
+	(*UsageStatistics)(nil),                // 148: clouditor.ontology.v1.UsageStatistics
+	(*VMImage)(nil),                        // 149: clouditor.ontology.v1.VMImage
+	(*VirtualMachine)(nil),                 // 150: clouditor.ontology.v1.VirtualMachine
+	(*VirtualNetwork)(nil),                 // 151: clouditor.ontology.v1.VirtualNetwork
+	(*VirtualSubNetwork)(nil),              // 152: clouditor.ontology.v1.VirtualSubNetwork
+	(*Vulnerability)(nil),                  // 153: clouditor.ontology.v1.Vulnerability
+	(*WebApplicationFirewall)(nil),         // 154: clouditor.ontology.v1.WebApplicationFirewall
+	(*Workflow)(nil),                       // 155: clouditor.ontology.v1.Workflow
+	(*ZoneRedundancy)(nil),                 // 156: clouditor.ontology.v1.ZoneRedundancy
+	nil,                                    // 157: clouditor.ontology.v1.Account.LabelsEntry
+	nil,                                    // 158: clouditor.ontology.v1.Application.LabelsEntry
+	nil,                                    // 159: clouditor.ontology.v1.AwarenessTraining.LabelsEntry
+	nil,                                    // 160: clouditor.ontology.v1.BlockStorage.LabelsEntry
+	nil,                                    // 161: clouditor.ontology.v1.Certificate.LabelsEntry
+	nil,                                    // 162: clouditor.ontology.v1.CodeRepository.LabelsEntry
+	nil,                                    // 163: clouditor.ontology.v1.Container.LabelsEntry
+	nil,                                    // 164: clouditor.ontology.v1.ContainerImage.LabelsEntry
+	nil,                                    // 165: clouditor.ontology.v1.ContainerOrchestration.LabelsEntry
+	nil,                                    // 166: clouditor.ontology.v1.ContainerRegistry.LabelsEntry
+	nil,                                    // 167: clouditor.ontology.v1.DatabaseStorage.LabelsEntry
+	nil,                                    // 168: clouditor.ontology.v1.DeviceProvisioningService.LabelsEntry
+	nil,                                    // 169: clouditor.ontology.v1.DocumentDatabaseService.LabelsEntry
+	nil,                                    // 170: clouditor.ontology.v1.FileStorage.LabelsEntry
+	nil,                                    // 171: clouditor.ontology.v1.FileStorageService.LabelsEntry
+	nil,                                    // 172: clouditor.ontology.v1.Function.LabelsEntry
+	nil,                                    // 173: clouditor.ontology.v1.FunctionService.LabelsEntry
+	nil,                                    // 174: clouditor.ontology.v1.GenericDocument.LabelsEntry
+	nil,                                    // 175: clouditor.ontology.v1.GenericNetworkService.LabelsEntry
+	nil,                                    // 176: clouditor.ontology.v1.Identity.LabelsEntry
+	nil,                                    // 177: clouditor.ontology.v1.Job.LabelsEntry
+	nil,                                    // 178: clouditor.ontology.v1.Key.LabelsEntry
+	nil,                                    // 179: clouditor.ontology.v1.KeyValueDatabaseService.LabelsEntry
+	nil,                                    // 180: clouditor.ontology.v1.KeyVault.LabelsEntry
+	nil,                                    // 181: clouditor.ontology.v1.Library.LabelsEntry
+	nil,                                    // 182: clouditor.ontology.v1.LoadBalancer.LabelsEntry
+	nil,                                    // 183: clouditor.ontology.v1.LoggingService.LabelsEntry
+	nil,                                    // 184: clouditor.ontology.v1.MachineLearningDataset.LabelsEntry
+	nil,                                    // 185: clouditor.ontology.v1.MachineLearningModel.LabelsEntry
+	nil,                                    // 186: clouditor.ontology.v1.MachineLearningService.LabelsEntry
+	nil,                                    // 187: clouditor.ontology.v1.MessagingHub.LabelsEntry
+	nil,                                    // 188: clouditor.ontology.v1.MultiModalDatabaseService.LabelsEntry
+	nil,                                    // 189: clouditor.ontology.v1.NetworkInterface.LabelsEntry
+	nil,                                    // 190: clouditor.ontology.v1.NetworkSecurityGroup.LabelsEntry
+	nil,                                    // 191: clouditor.ontology.v1.ObjectStorage.LabelsEntry
+	nil,                                    // 192: clouditor.ontology.v1.ObjectStorageService.LabelsEntry
+	nil,                                    // 193: clouditor.ontology.v1.PasswordPolicy.LabelsEntry
+	nil,                                    // 194: clouditor.ontology.v1.PolicyDocument.LabelsEntry
+	nil,                                    // 195: clouditor.ontology.v1.RelationalDatabaseService.LabelsEntry
+	nil,                                    // 196: clouditor.ontology.v1.ResourceGroup.LabelsEntry
+	nil,                                    // 197: clouditor.ontology.v1.RoleAssignment.LabelsEntry
+	nil,                                    // 198: clouditor.ontology.v1.Secret.LabelsEntry
+	nil,                                    // 199: clouditor.ontology.v1.SecurityAdvisoryDocument.LabelsEntry
+	nil,                                    // 200: clouditor.ontology.v1.SecurityAdvisoryService.LabelsEntry
+	nil,                                    // 201: clouditor.ontology.v1.SecurityTraining.LabelsEntry
+	nil,                                    // 202: clouditor.ontology.v1.ServiceMetadataDocument.LabelsEntry
+	nil,                                    // 203: clouditor.ontology.v1.SourceCodeFile.LabelsEntry
+	nil,                                    // 204: clouditor.ontology.v1.VMImage.LabelsEntry
+	nil,                                    // 205: clouditor.ontology.v1.VirtualMachine.LabelsEntry
+	nil,                                    // 206: clouditor.ontology.v1.VirtualNetwork.LabelsEntry
+	nil,                                    // 207: clouditor.ontology.v1.VirtualSubNetwork.LabelsEntry
+	nil,                                    // 208: clouditor.ontology.v1.Workflow.LabelsEntry
+	(*timestamppb.Timestamp)(nil),          // 209: google.protobuf.Timestamp
+	(*durationpb.Duration)(nil),            // 210: google.protobuf.Duration
+	(*descriptorpb.MessageOptions)(nil),    // 211: google.protobuf.MessageOptions
 }
 var file_api_ontology_ontology_proto_depIdxs = []int32{
-	84,  // 0: clouditor.ontology.v1.AccessRestriction.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
-	149, // 1: clouditor.ontology.v1.AccessRestriction.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
-	201, // 2: clouditor.ontology.v1.Account.creation_time:type_name -> google.protobuf.Timestamp
-	152, // 3: clouditor.ontology.v1.Account.labels:type_name -> clouditor.ontology.v1.Account.LabelsEntry
-	64,  // 4: clouditor.ontology.v1.Account.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 5: clouditor.ontology.v1.Account.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 6: clouditor.ontology.v1.Account.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 7: clouditor.ontology.v1.Account.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	202, // 8: clouditor.ontology.v1.ActivityLogging.retention_period:type_name -> google.protobuf.Duration
+	85,  // 0: clouditor.ontology.v1.AccessRestriction.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
+	154, // 1: clouditor.ontology.v1.AccessRestriction.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
+	209, // 2: clouditor.ontology.v1.Account.creation_time:type_name -> google.protobuf.Timestamp
+	157, // 3: clouditor.ontology.v1.Account.labels:type_name -> clouditor.ontology.v1.Account.LabelsEntry
+	65,  // 4: clouditor.ontology.v1.Account.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 5: clouditor.ontology.v1.Account.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 6: clouditor.ontology.v1.Account.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 7: clouditor.ontology.v1.Account.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 8: clouditor.ontology.v1.ActivityLogging.retention_period:type_name -> google.protobuf.Duration
 	6,   // 9: clouditor.ontology.v1.AnomalyDetection.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
-	201, // 10: clouditor.ontology.v1.Application.creation_time:type_name -> google.protobuf.Timestamp
-	153, // 11: clouditor.ontology.v1.Application.labels:type_name -> clouditor.ontology.v1.Application.LabelsEntry
+	209, // 10: clouditor.ontology.v1.Application.creation_time:type_name -> google.protobuf.Timestamp
+	158, // 11: clouditor.ontology.v1.Application.labels:type_name -> clouditor.ontology.v1.Application.LabelsEntry
 	12,  // 12: clouditor.ontology.v1.Application.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
-	61,  // 13: clouditor.ontology.v1.Application.functionalities:type_name -> clouditor.ontology.v1.Functionality
-	202, // 14: clouditor.ontology.v1.ApplicationLogging.retention_period:type_name -> google.protobuf.Duration
+	62,  // 13: clouditor.ontology.v1.Application.functionalities:type_name -> clouditor.ontology.v1.Functionality
+	210, // 14: clouditor.ontology.v1.ApplicationLogging.retention_period:type_name -> google.protobuf.Duration
 	38,  // 15: clouditor.ontology.v1.AtRestEncryption.customer_key_encryption:type_name -> clouditor.ontology.v1.CustomerKeyEncryption
-	95,  // 16: clouditor.ontology.v1.AtRestEncryption.managed_key_encryption:type_name -> clouditor.ontology.v1.ManagedKeyEncryption
-	87,  // 17: clouditor.ontology.v1.Attestation.local_attestation:type_name -> clouditor.ontology.v1.LocalAttestation
-	118, // 18: clouditor.ontology.v1.Attestation.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
+	100, // 16: clouditor.ontology.v1.AtRestEncryption.managed_key_encryption:type_name -> clouditor.ontology.v1.ManagedKeyEncryption
+	88,  // 17: clouditor.ontology.v1.Attestation.local_attestation:type_name -> clouditor.ontology.v1.LocalAttestation
+	123, // 18: clouditor.ontology.v1.Attestation.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
 	4,   // 19: clouditor.ontology.v1.Auditing.anomaly_detection:type_name -> clouditor.ontology.v1.AnomalyDetection
 	3,   // 20: clouditor.ontology.v1.Auditing.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
 	6,   // 21: clouditor.ontology.v1.Auditing.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
 	17,  // 22: clouditor.ontology.v1.Auditing.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
-	105, // 23: clouditor.ontology.v1.Auditing.os_logging:type_name -> clouditor.ontology.v1.OSLogging
-	122, // 24: clouditor.ontology.v1.Auditing.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	94,  // 25: clouditor.ontology.v1.Auditing.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	143, // 26: clouditor.ontology.v1.Auditing.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	110, // 23: clouditor.ontology.v1.Auditing.os_logging:type_name -> clouditor.ontology.v1.OSLogging
+	127, // 24: clouditor.ontology.v1.Auditing.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	99,  // 25: clouditor.ontology.v1.Auditing.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	148, // 26: clouditor.ontology.v1.Auditing.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
 	20,  // 27: clouditor.ontology.v1.Authenticity.certificate_based_authentication:type_name -> clouditor.ontology.v1.CertificateBasedAuthentication
-	80,  // 28: clouditor.ontology.v1.Authenticity.token_based_authentication:type_name -> clouditor.ontology.v1.TokenBasedAuthentication
-	98,  // 29: clouditor.ontology.v1.Authenticity.multi_factor_authentiation:type_name -> clouditor.ontology.v1.MultiFactorAuthentiation
-	104, // 30: clouditor.ontology.v1.Authenticity.no_authentication:type_name -> clouditor.ontology.v1.NoAuthentication
-	106, // 31: clouditor.ontology.v1.Authenticity.otp_based_authentication:type_name -> clouditor.ontology.v1.OTPBasedAuthentication
-	111, // 32: clouditor.ontology.v1.Authenticity.password_based_authentication:type_name -> clouditor.ontology.v1.PasswordBasedAuthentication
-	135, // 33: clouditor.ontology.v1.Authenticity.single_sign_on:type_name -> clouditor.ontology.v1.SingleSignOn
+	81,  // 28: clouditor.ontology.v1.Authenticity.token_based_authentication:type_name -> clouditor.ontology.v1.TokenBasedAuthentication
+	103, // 29: clouditor.ontology.v1.Authenticity.multi_factor_authentiation:type_name -> clouditor.ontology.v1.MultiFactorAuthentiation
+	109, // 30: clouditor.ontology.v1.Authenticity.no_authentication:type_name -> clouditor.ontology.v1.NoAuthentication
+	111, // 31: clouditor.ontology.v1.Authenticity.otp_based_authentication:type_name -> clouditor.ontology.v1.OTPBasedAuthentication
+	116, // 32: clouditor.ontology.v1.Authenticity.password_based_authentication:type_name -> clouditor.ontology.v1.PasswordBasedAuthentication
+	140, // 33: clouditor.ontology.v1.Authenticity.single_sign_on:type_name -> clouditor.ontology.v1.SingleSignOn
 	0,   // 34: clouditor.ontology.v1.Authorization.abac:type_name -> clouditor.ontology.v1.ABAC
-	84,  // 35: clouditor.ontology.v1.Authorization.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
-	149, // 36: clouditor.ontology.v1.Authorization.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
-	114, // 37: clouditor.ontology.v1.Authorization.rbac:type_name -> clouditor.ontology.v1.RBAC
-	202, // 38: clouditor.ontology.v1.AutomaticUpdates.interval:type_name -> google.protobuf.Duration
+	85,  // 35: clouditor.ontology.v1.Authorization.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
+	154, // 36: clouditor.ontology.v1.Authorization.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
+	119, // 37: clouditor.ontology.v1.Authorization.rbac:type_name -> clouditor.ontology.v1.RBAC
+	210, // 38: clouditor.ontology.v1.AutomaticUpdates.interval:type_name -> google.protobuf.Duration
 	15,  // 39: clouditor.ontology.v1.Availability.backup:type_name -> clouditor.ontology.v1.Backup
 	39,  // 40: clouditor.ontology.v1.Availability.d_do_s_protection:type_name -> clouditor.ontology.v1.DDoSProtection
-	64,  // 41: clouditor.ontology.v1.Availability.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	65,  // 42: clouditor.ontology.v1.Availability.geo_redundancy:type_name -> clouditor.ontology.v1.GeoRedundancy
-	89,  // 43: clouditor.ontology.v1.Availability.local_redundancy:type_name -> clouditor.ontology.v1.LocalRedundancy
-	151, // 44: clouditor.ontology.v1.Availability.zone_redundancy:type_name -> clouditor.ontology.v1.ZoneRedundancy
-	201, // 45: clouditor.ontology.v1.AwarenessTraining.creation_time:type_name -> google.protobuf.Timestamp
-	154, // 46: clouditor.ontology.v1.AwarenessTraining.labels:type_name -> clouditor.ontology.v1.AwarenessTraining.LabelsEntry
-	202, // 47: clouditor.ontology.v1.Backup.interval:type_name -> google.protobuf.Duration
-	202, // 48: clouditor.ontology.v1.Backup.retention_period:type_name -> google.protobuf.Duration
-	142, // 49: clouditor.ontology.v1.Backup.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	201, // 50: clouditor.ontology.v1.BlockStorage.creation_time:type_name -> google.protobuf.Timestamp
-	155, // 51: clouditor.ontology.v1.BlockStorage.labels:type_name -> clouditor.ontology.v1.BlockStorage.LabelsEntry
+	65,  // 41: clouditor.ontology.v1.Availability.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	66,  // 42: clouditor.ontology.v1.Availability.geo_redundancy:type_name -> clouditor.ontology.v1.GeoRedundancy
+	90,  // 43: clouditor.ontology.v1.Availability.local_redundancy:type_name -> clouditor.ontology.v1.LocalRedundancy
+	156, // 44: clouditor.ontology.v1.Availability.zone_redundancy:type_name -> clouditor.ontology.v1.ZoneRedundancy
+	209, // 45: clouditor.ontology.v1.AwarenessTraining.creation_time:type_name -> google.protobuf.Timestamp
+	159, // 46: clouditor.ontology.v1.AwarenessTraining.labels:type_name -> clouditor.ontology.v1.AwarenessTraining.LabelsEntry
+	210, // 47: clouditor.ontology.v1.Backup.interval:type_name -> google.protobuf.Duration
+	210, // 48: clouditor.ontology.v1.Backup.retention_period:type_name -> google.protobuf.Duration
+	147, // 49: clouditor.ontology.v1.Backup.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	209, // 50: clouditor.ontology.v1.BlockStorage.creation_time:type_name -> google.protobuf.Timestamp
+	160, // 51: clouditor.ontology.v1.BlockStorage.labels:type_name -> clouditor.ontology.v1.BlockStorage.LabelsEntry
 	3,   // 52: clouditor.ontology.v1.BlockStorage.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
 	7,   // 53: clouditor.ontology.v1.BlockStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
 	15,  // 54: clouditor.ontology.v1.BlockStorage.backups:type_name -> clouditor.ontology.v1.Backup
-	64,  // 55: clouditor.ontology.v1.BlockStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	76,  // 56: clouditor.ontology.v1.BlockStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
-	92,  // 57: clouditor.ontology.v1.BlockStorage.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 58: clouditor.ontology.v1.BlockStorage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	122, // 59: clouditor.ontology.v1.BlockStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	143, // 60: clouditor.ontology.v1.BlockStorage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	202, // 61: clouditor.ontology.v1.BootLogging.retention_period:type_name -> google.protobuf.Duration
-	79,  // 62: clouditor.ontology.v1.CICDService.job:type_name -> clouditor.ontology.v1.Job
-	150, // 63: clouditor.ontology.v1.CICDService.workflow:type_name -> clouditor.ontology.v1.Workflow
-	201, // 64: clouditor.ontology.v1.Certificate.creation_time:type_name -> google.protobuf.Timestamp
-	201, // 65: clouditor.ontology.v1.Certificate.expiration_date:type_name -> google.protobuf.Timestamp
-	156, // 66: clouditor.ontology.v1.Certificate.labels:type_name -> clouditor.ontology.v1.Certificate.LabelsEntry
-	201, // 67: clouditor.ontology.v1.Certificate.not_before_date:type_name -> google.protobuf.Timestamp
-	64,  // 68: clouditor.ontology.v1.Certificate.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 69: clouditor.ontology.v1.Certificate.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 70: clouditor.ontology.v1.Certificate.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 71: clouditor.ontology.v1.Certificate.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	65,  // 55: clouditor.ontology.v1.BlockStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	77,  // 56: clouditor.ontology.v1.BlockStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
+	93,  // 57: clouditor.ontology.v1.BlockStorage.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 58: clouditor.ontology.v1.BlockStorage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	127, // 59: clouditor.ontology.v1.BlockStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	148, // 60: clouditor.ontology.v1.BlockStorage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 61: clouditor.ontology.v1.BootLogging.retention_period:type_name -> google.protobuf.Duration
+	80,  // 62: clouditor.ontology.v1.CICDService.job:type_name -> clouditor.ontology.v1.Job
+	155, // 63: clouditor.ontology.v1.CICDService.workflow:type_name -> clouditor.ontology.v1.Workflow
+	209, // 64: clouditor.ontology.v1.Certificate.creation_time:type_name -> google.protobuf.Timestamp
+	209, // 65: clouditor.ontology.v1.Certificate.expiration_date:type_name -> google.protobuf.Timestamp
+	161, // 66: clouditor.ontology.v1.Certificate.labels:type_name -> clouditor.ontology.v1.Certificate.LabelsEntry
+	209, // 67: clouditor.ontology.v1.Certificate.not_before_date:type_name -> google.protobuf.Timestamp
+	65,  // 68: clouditor.ontology.v1.Certificate.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 69: clouditor.ontology.v1.Certificate.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 70: clouditor.ontology.v1.Certificate.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 71: clouditor.ontology.v1.Certificate.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
 	2,   // 72: clouditor.ontology.v1.Infrastructure.account:type_name -> clouditor.ontology.v1.Account
-	79,  // 73: clouditor.ontology.v1.Infrastructure.job:type_name -> clouditor.ontology.v1.Job
-	150, // 74: clouditor.ontology.v1.Infrastructure.workflow:type_name -> clouditor.ontology.v1.Workflow
+	80,  // 73: clouditor.ontology.v1.Infrastructure.job:type_name -> clouditor.ontology.v1.Job
+	155, // 74: clouditor.ontology.v1.Infrastructure.workflow:type_name -> clouditor.ontology.v1.Workflow
 	26,  // 75: clouditor.ontology.v1.Infrastructure.code_repository:type_name -> clouditor.ontology.v1.CodeRepository
 	30,  // 76: clouditor.ontology.v1.Infrastructure.container:type_name -> clouditor.ontology.v1.Container
-	59,  // 77: clouditor.ontology.v1.Infrastructure.function:type_name -> clouditor.ontology.v1.Function
-	145, // 78: clouditor.ontology.v1.Infrastructure.virtual_machine:type_name -> clouditor.ontology.v1.VirtualMachine
+	60,  // 77: clouditor.ontology.v1.Infrastructure.function:type_name -> clouditor.ontology.v1.Function
+	150, // 78: clouditor.ontology.v1.Infrastructure.virtual_machine:type_name -> clouditor.ontology.v1.VirtualMachine
 	32,  // 79: clouditor.ontology.v1.Infrastructure.container_orchestration:type_name -> clouditor.ontology.v1.ContainerOrchestration
 	33,  // 80: clouditor.ontology.v1.Infrastructure.container_registry:type_name -> clouditor.ontology.v1.ContainerRegistry
 	19,  // 81: clouditor.ontology.v1.Infrastructure.certificate:type_name -> clouditor.ontology.v1.Certificate
-	81,  // 82: clouditor.ontology.v1.Infrastructure.key:type_name -> clouditor.ontology.v1.Key
-	127, // 83: clouditor.ontology.v1.Infrastructure.secret:type_name -> clouditor.ontology.v1.Secret
-	74,  // 84: clouditor.ontology.v1.Infrastructure.identity:type_name -> clouditor.ontology.v1.Identity
-	125, // 85: clouditor.ontology.v1.Infrastructure.role_assignment:type_name -> clouditor.ontology.v1.RoleAssignment
+	82,  // 82: clouditor.ontology.v1.Infrastructure.key:type_name -> clouditor.ontology.v1.Key
+	132, // 83: clouditor.ontology.v1.Infrastructure.secret:type_name -> clouditor.ontology.v1.Secret
+	75,  // 84: clouditor.ontology.v1.Infrastructure.identity:type_name -> clouditor.ontology.v1.Identity
+	130, // 85: clouditor.ontology.v1.Infrastructure.role_assignment:type_name -> clouditor.ontology.v1.RoleAssignment
 	31,  // 86: clouditor.ontology.v1.Infrastructure.container_image:type_name -> clouditor.ontology.v1.ContainerImage
-	144, // 87: clouditor.ontology.v1.Infrastructure.vm_image:type_name -> clouditor.ontology.v1.VMImage
-	46,  // 88: clouditor.ontology.v1.Infrastructure.device_provisioning_service:type_name -> clouditor.ontology.v1.DeviceProvisioningService
-	96,  // 89: clouditor.ontology.v1.Infrastructure.messaging_hub:type_name -> clouditor.ontology.v1.MessagingHub
-	83,  // 90: clouditor.ontology.v1.Infrastructure.key_vault:type_name -> clouditor.ontology.v1.KeyVault
-	100, // 91: clouditor.ontology.v1.Infrastructure.network_interface:type_name -> clouditor.ontology.v1.NetworkInterface
-	101, // 92: clouditor.ontology.v1.Infrastructure.network_security_group:type_name -> clouditor.ontology.v1.NetworkSecurityGroup
-	60,  // 93: clouditor.ontology.v1.Infrastructure.function_service:type_name -> clouditor.ontology.v1.FunctionService
-	63,  // 94: clouditor.ontology.v1.Infrastructure.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
-	86,  // 95: clouditor.ontology.v1.Infrastructure.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
-	93,  // 96: clouditor.ontology.v1.Infrastructure.logging_service:type_name -> clouditor.ontology.v1.LoggingService
-	130, // 97: clouditor.ontology.v1.Infrastructure.security_advisory_service:type_name -> clouditor.ontology.v1.SecurityAdvisoryService
-	48,  // 98: clouditor.ontology.v1.Infrastructure.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
-	82,  // 99: clouditor.ontology.v1.Infrastructure.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
-	99,  // 100: clouditor.ontology.v1.Infrastructure.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
-	116, // 101: clouditor.ontology.v1.Infrastructure.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
-	56,  // 102: clouditor.ontology.v1.Infrastructure.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
-	109, // 103: clouditor.ontology.v1.Infrastructure.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
-	146, // 104: clouditor.ontology.v1.Infrastructure.virtual_network:type_name -> clouditor.ontology.v1.VirtualNetwork
-	147, // 105: clouditor.ontology.v1.Infrastructure.virtual_sub_network:type_name -> clouditor.ontology.v1.VirtualSubNetwork
-	112, // 106: clouditor.ontology.v1.Infrastructure.password_policy:type_name -> clouditor.ontology.v1.PasswordPolicy
-	121, // 107: clouditor.ontology.v1.Infrastructure.resource_group:type_name -> clouditor.ontology.v1.ResourceGroup
-	16,  // 108: clouditor.ontology.v1.Infrastructure.block_storage:type_name -> clouditor.ontology.v1.BlockStorage
-	44,  // 109: clouditor.ontology.v1.Infrastructure.database_storage:type_name -> clouditor.ontology.v1.DatabaseStorage
-	55,  // 110: clouditor.ontology.v1.Infrastructure.file_storage:type_name -> clouditor.ontology.v1.FileStorage
-	107, // 111: clouditor.ontology.v1.Infrastructure.object_storage:type_name -> clouditor.ontology.v1.ObjectStorage
-	201, // 112: clouditor.ontology.v1.CodeRepository.creation_time:type_name -> google.protobuf.Timestamp
-	157, // 113: clouditor.ontology.v1.CodeRepository.labels:type_name -> clouditor.ontology.v1.CodeRepository.LabelsEntry
-	64,  // 114: clouditor.ontology.v1.CodeRepository.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 115: clouditor.ontology.v1.CodeRepository.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 116: clouditor.ontology.v1.CodeRepository.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 117: clouditor.ontology.v1.CodeRepository.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	5,   // 118: clouditor.ontology.v1.Component.application:type_name -> clouditor.ontology.v1.Application
-	85,  // 119: clouditor.ontology.v1.Component.library:type_name -> clouditor.ontology.v1.Library
-	30,  // 120: clouditor.ontology.v1.Compute.container:type_name -> clouditor.ontology.v1.Container
-	59,  // 121: clouditor.ontology.v1.Compute.function:type_name -> clouditor.ontology.v1.Function
-	145, // 122: clouditor.ontology.v1.Compute.virtual_machine:type_name -> clouditor.ontology.v1.VirtualMachine
-	38,  // 123: clouditor.ontology.v1.Confidentiality.customer_key_encryption:type_name -> clouditor.ontology.v1.CustomerKeyEncryption
-	95,  // 124: clouditor.ontology.v1.Confidentiality.managed_key_encryption:type_name -> clouditor.ontology.v1.ManagedKeyEncryption
-	50,  // 125: clouditor.ontology.v1.Confidentiality.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
-	142, // 126: clouditor.ontology.v1.Confidentiality.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	201, // 127: clouditor.ontology.v1.Container.creation_time:type_name -> google.protobuf.Timestamp
-	158, // 128: clouditor.ontology.v1.Container.labels:type_name -> clouditor.ontology.v1.Container.LabelsEntry
-	50,  // 129: clouditor.ontology.v1.Container.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
-	64,  // 130: clouditor.ontology.v1.Container.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 131: clouditor.ontology.v1.Container.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 132: clouditor.ontology.v1.Container.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	118, // 133: clouditor.ontology.v1.Container.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
-	122, // 134: clouditor.ontology.v1.Container.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	143, // 135: clouditor.ontology.v1.Container.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	201, // 136: clouditor.ontology.v1.ContainerImage.creation_time:type_name -> google.protobuf.Timestamp
-	159, // 137: clouditor.ontology.v1.ContainerImage.labels:type_name -> clouditor.ontology.v1.ContainerImage.LabelsEntry
-	64,  // 138: clouditor.ontology.v1.ContainerImage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 139: clouditor.ontology.v1.ContainerImage.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 140: clouditor.ontology.v1.ContainerImage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 141: clouditor.ontology.v1.ContainerImage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	201, // 142: clouditor.ontology.v1.ContainerOrchestration.creation_time:type_name -> google.protobuf.Timestamp
-	160, // 143: clouditor.ontology.v1.ContainerOrchestration.labels:type_name -> clouditor.ontology.v1.ContainerOrchestration.LabelsEntry
-	64,  // 144: clouditor.ontology.v1.ContainerOrchestration.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 145: clouditor.ontology.v1.ContainerOrchestration.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 146: clouditor.ontology.v1.ContainerOrchestration.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	122, // 147: clouditor.ontology.v1.ContainerOrchestration.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	143, // 148: clouditor.ontology.v1.ContainerOrchestration.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	201, // 149: clouditor.ontology.v1.ContainerRegistry.creation_time:type_name -> google.protobuf.Timestamp
-	161, // 150: clouditor.ontology.v1.ContainerRegistry.labels:type_name -> clouditor.ontology.v1.ContainerRegistry.LabelsEntry
-	64,  // 151: clouditor.ontology.v1.ContainerRegistry.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 152: clouditor.ontology.v1.ContainerRegistry.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 153: clouditor.ontology.v1.ContainerRegistry.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 154: clouditor.ontology.v1.ContainerRegistry.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	21,  // 155: clouditor.ontology.v1.Core.certification_target:type_name -> clouditor.ontology.v1.CertificationTarget
-	53,  // 156: clouditor.ontology.v1.Core.evidence:type_name -> clouditor.ontology.v1.Evidence
-	24,  // 157: clouditor.ontology.v1.Core.cloud_sdk:type_name -> clouditor.ontology.v1.CloudSDK
-	67,  // 158: clouditor.ontology.v1.Core.http_client_library:type_name -> clouditor.ontology.v1.HttpClientLibrary
-	71,  // 159: clouditor.ontology.v1.Core.http_server:type_name -> clouditor.ontology.v1.HttpServer
-	91,  // 160: clouditor.ontology.v1.Core.logger:type_name -> clouditor.ontology.v1.Logger
-	123, // 161: clouditor.ontology.v1.Core.resource_type:type_name -> clouditor.ontology.v1.ResourceType
-	140, // 162: clouditor.ontology.v1.Core.tool:type_name -> clouditor.ontology.v1.Tool
-	19,  // 163: clouditor.ontology.v1.Credential.certificate:type_name -> clouditor.ontology.v1.Certificate
-	81,  // 164: clouditor.ontology.v1.Credential.key:type_name -> clouditor.ontology.v1.Key
-	127, // 165: clouditor.ontology.v1.Credential.secret:type_name -> clouditor.ontology.v1.Secret
-	52,  // 166: clouditor.ontology.v1.DocumentChecksum.errors:type_name -> clouditor.ontology.v1.Error
-	45,  // 167: clouditor.ontology.v1.CryptographicOperation.decryption:type_name -> clouditor.ontology.v1.Decryption
-	51,  // 168: clouditor.ontology.v1.CryptographicOperation.encryption:type_name -> clouditor.ontology.v1.Encryption
-	66,  // 169: clouditor.ontology.v1.CryptographicOperation.cryptographic_hash:type_name -> clouditor.ontology.v1.CryptographicHash
-	25,  // 170: clouditor.ontology.v1.DatabaseConnect.code_region:type_name -> clouditor.ontology.v1.CodeRegion
-	40,  // 171: clouditor.ontology.v1.DatabaseOperation.database_connect:type_name -> clouditor.ontology.v1.DatabaseConnect
-	42,  // 172: clouditor.ontology.v1.DatabaseOperation.database_query:type_name -> clouditor.ontology.v1.DatabaseQuery
-	25,  // 173: clouditor.ontology.v1.DatabaseQuery.code_region:type_name -> clouditor.ontology.v1.CodeRegion
-	48,  // 174: clouditor.ontology.v1.DatabaseService.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
-	82,  // 175: clouditor.ontology.v1.DatabaseService.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
-	99,  // 176: clouditor.ontology.v1.DatabaseService.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
-	116, // 177: clouditor.ontology.v1.DatabaseService.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
-	201, // 178: clouditor.ontology.v1.DatabaseStorage.creation_time:type_name -> google.protobuf.Timestamp
-	162, // 179: clouditor.ontology.v1.DatabaseStorage.labels:type_name -> clouditor.ontology.v1.DatabaseStorage.LabelsEntry
-	3,   // 180: clouditor.ontology.v1.DatabaseStorage.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	7,   // 181: clouditor.ontology.v1.DatabaseStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
-	15,  // 182: clouditor.ontology.v1.DatabaseStorage.backups:type_name -> clouditor.ontology.v1.Backup
-	64,  // 183: clouditor.ontology.v1.DatabaseStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	76,  // 184: clouditor.ontology.v1.DatabaseStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
-	92,  // 185: clouditor.ontology.v1.DatabaseStorage.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 186: clouditor.ontology.v1.DatabaseStorage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	122, // 187: clouditor.ontology.v1.DatabaseStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	143, // 188: clouditor.ontology.v1.DatabaseStorage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	25,  // 189: clouditor.ontology.v1.Decryption.code_region:type_name -> clouditor.ontology.v1.CodeRegion
-	201, // 190: clouditor.ontology.v1.DeviceProvisioningService.creation_time:type_name -> google.protobuf.Timestamp
-	163, // 191: clouditor.ontology.v1.DeviceProvisioningService.labels:type_name -> clouditor.ontology.v1.DeviceProvisioningService.LabelsEntry
-	64,  // 192: clouditor.ontology.v1.DeviceProvisioningService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 193: clouditor.ontology.v1.DeviceProvisioningService.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 194: clouditor.ontology.v1.DeviceProvisioningService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 195: clouditor.ontology.v1.DeviceProvisioningService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	62,  // 196: clouditor.ontology.v1.Document.generic_document:type_name -> clouditor.ontology.v1.GenericDocument
-	113, // 197: clouditor.ontology.v1.Document.policy_document:type_name -> clouditor.ontology.v1.PolicyDocument
-	128, // 198: clouditor.ontology.v1.Document.security_advisory_document:type_name -> clouditor.ontology.v1.SecurityAdvisoryDocument
-	133, // 199: clouditor.ontology.v1.Document.service_metadata_document:type_name -> clouditor.ontology.v1.ServiceMetadataDocument
-	201, // 200: clouditor.ontology.v1.DocumentDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
-	164, // 201: clouditor.ontology.v1.DocumentDatabaseService.labels:type_name -> clouditor.ontology.v1.DocumentDatabaseService.LabelsEntry
-	3,   // 202: clouditor.ontology.v1.DocumentDatabaseService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	4,   // 203: clouditor.ontology.v1.DocumentDatabaseService.anomaly_detections:type_name -> clouditor.ontology.v1.AnomalyDetection
-	10,  // 204: clouditor.ontology.v1.DocumentDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 205: clouditor.ontology.v1.DocumentDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	68,  // 206: clouditor.ontology.v1.DocumentDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	92,  // 207: clouditor.ontology.v1.DocumentDatabaseService.loggings:type_name -> clouditor.ontology.v1.Logging
-	94,  // 208: clouditor.ontology.v1.DocumentDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	115, // 209: clouditor.ontology.v1.DocumentDatabaseService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	142, // 210: clouditor.ontology.v1.DocumentDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	143, // 211: clouditor.ontology.v1.DocumentDatabaseService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	88,  // 212: clouditor.ontology.v1.DocumentLocation.local_document_location:type_name -> clouditor.ontology.v1.LocalDocumentLocation
-	119, // 213: clouditor.ontology.v1.DocumentLocation.remote_document_location:type_name -> clouditor.ontology.v1.RemoteDocumentLocation
-	25,  // 214: clouditor.ontology.v1.Encryption.code_region:type_name -> clouditor.ontology.v1.CodeRegion
-	201, // 215: clouditor.ontology.v1.FileStorage.creation_time:type_name -> google.protobuf.Timestamp
-	165, // 216: clouditor.ontology.v1.FileStorage.labels:type_name -> clouditor.ontology.v1.FileStorage.LabelsEntry
-	3,   // 217: clouditor.ontology.v1.FileStorage.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	7,   // 218: clouditor.ontology.v1.FileStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
-	15,  // 219: clouditor.ontology.v1.FileStorage.backups:type_name -> clouditor.ontology.v1.Backup
-	64,  // 220: clouditor.ontology.v1.FileStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	76,  // 221: clouditor.ontology.v1.FileStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
-	92,  // 222: clouditor.ontology.v1.FileStorage.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 223: clouditor.ontology.v1.FileStorage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	122, // 224: clouditor.ontology.v1.FileStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	143, // 225: clouditor.ontology.v1.FileStorage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	201, // 226: clouditor.ontology.v1.FileStorageService.creation_time:type_name -> google.protobuf.Timestamp
-	166, // 227: clouditor.ontology.v1.FileStorageService.labels:type_name -> clouditor.ontology.v1.FileStorageService.LabelsEntry
-	3,   // 228: clouditor.ontology.v1.FileStorageService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	10,  // 229: clouditor.ontology.v1.FileStorageService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 230: clouditor.ontology.v1.FileStorageService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	68,  // 231: clouditor.ontology.v1.FileStorageService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	92,  // 232: clouditor.ontology.v1.FileStorageService.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 233: clouditor.ontology.v1.FileStorageService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	142, // 234: clouditor.ontology.v1.FileStorageService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	143, // 235: clouditor.ontology.v1.FileStorageService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	84,  // 236: clouditor.ontology.v1.Firewall.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
-	149, // 237: clouditor.ontology.v1.Firewall.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
-	24,  // 238: clouditor.ontology.v1.Framework.cloud_sdk:type_name -> clouditor.ontology.v1.CloudSDK
-	67,  // 239: clouditor.ontology.v1.Framework.http_client_library:type_name -> clouditor.ontology.v1.HttpClientLibrary
-	71,  // 240: clouditor.ontology.v1.Framework.http_server:type_name -> clouditor.ontology.v1.HttpServer
-	91,  // 241: clouditor.ontology.v1.Framework.logger:type_name -> clouditor.ontology.v1.Logger
-	201, // 242: clouditor.ontology.v1.Function.creation_time:type_name -> google.protobuf.Timestamp
-	167, // 243: clouditor.ontology.v1.Function.labels:type_name -> clouditor.ontology.v1.Function.LabelsEntry
-	50,  // 244: clouditor.ontology.v1.Function.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
-	64,  // 245: clouditor.ontology.v1.Function.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 246: clouditor.ontology.v1.Function.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 247: clouditor.ontology.v1.Function.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	118, // 248: clouditor.ontology.v1.Function.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
-	122, // 249: clouditor.ontology.v1.Function.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	143, // 250: clouditor.ontology.v1.Function.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	201, // 251: clouditor.ontology.v1.FunctionService.creation_time:type_name -> google.protobuf.Timestamp
-	168, // 252: clouditor.ontology.v1.FunctionService.labels:type_name -> clouditor.ontology.v1.FunctionService.LabelsEntry
-	10,  // 253: clouditor.ontology.v1.FunctionService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 254: clouditor.ontology.v1.FunctionService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 255: clouditor.ontology.v1.FunctionService.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 256: clouditor.ontology.v1.FunctionService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	142, // 257: clouditor.ontology.v1.FunctionService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	143, // 258: clouditor.ontology.v1.FunctionService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	22,  // 259: clouditor.ontology.v1.Functionality.cipher_suite:type_name -> clouditor.ontology.v1.CipherSuite
-	25,  // 260: clouditor.ontology.v1.Functionality.code_region:type_name -> clouditor.ontology.v1.CodeRegion
-	88,  // 261: clouditor.ontology.v1.Functionality.local_document_location:type_name -> clouditor.ontology.v1.LocalDocumentLocation
-	119, // 262: clouditor.ontology.v1.Functionality.remote_document_location:type_name -> clouditor.ontology.v1.RemoteDocumentLocation
-	52,  // 263: clouditor.ontology.v1.Functionality.error:type_name -> clouditor.ontology.v1.Error
-	68,  // 264: clouditor.ontology.v1.Functionality.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	70,  // 265: clouditor.ontology.v1.Functionality.http_request_handler:type_name -> clouditor.ontology.v1.HttpRequestHandler
-	45,  // 266: clouditor.ontology.v1.Functionality.decryption:type_name -> clouditor.ontology.v1.Decryption
-	51,  // 267: clouditor.ontology.v1.Functionality.encryption:type_name -> clouditor.ontology.v1.Encryption
-	66,  // 268: clouditor.ontology.v1.Functionality.cryptographic_hash:type_name -> clouditor.ontology.v1.CryptographicHash
-	40,  // 269: clouditor.ontology.v1.Functionality.database_connect:type_name -> clouditor.ontology.v1.DatabaseConnect
-	42,  // 270: clouditor.ontology.v1.Functionality.database_query:type_name -> clouditor.ontology.v1.DatabaseQuery
-	69,  // 271: clouditor.ontology.v1.Functionality.http_request:type_name -> clouditor.ontology.v1.HttpRequest
-	90,  // 272: clouditor.ontology.v1.Functionality.log_operation:type_name -> clouditor.ontology.v1.LogOperation
-	108, // 273: clouditor.ontology.v1.Functionality.object_storage_request:type_name -> clouditor.ontology.v1.ObjectStorageRequest
-	126, // 274: clouditor.ontology.v1.Functionality.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
-	129, // 275: clouditor.ontology.v1.Functionality.security_advisory_feed:type_name -> clouditor.ontology.v1.SecurityAdvisoryFeed
-	148, // 276: clouditor.ontology.v1.Functionality.vulnerability:type_name -> clouditor.ontology.v1.Vulnerability
-	201, // 277: clouditor.ontology.v1.GenericDocument.creation_time:type_name -> google.protobuf.Timestamp
-	169, // 278: clouditor.ontology.v1.GenericDocument.labels:type_name -> clouditor.ontology.v1.GenericDocument.LabelsEntry
-	36,  // 279: clouditor.ontology.v1.GenericDocument.document_checksums:type_name -> clouditor.ontology.v1.DocumentChecksum
-	49,  // 280: clouditor.ontology.v1.GenericDocument.document_location:type_name -> clouditor.ontology.v1.DocumentLocation
-	134, // 281: clouditor.ontology.v1.GenericDocument.document_signatures:type_name -> clouditor.ontology.v1.DocumentSignature
-	126, // 282: clouditor.ontology.v1.GenericDocument.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
-	131, // 283: clouditor.ontology.v1.GenericDocument.security_features:type_name -> clouditor.ontology.v1.SecurityFeature
-	201, // 284: clouditor.ontology.v1.GenericNetworkService.creation_time:type_name -> google.protobuf.Timestamp
-	170, // 285: clouditor.ontology.v1.GenericNetworkService.labels:type_name -> clouditor.ontology.v1.GenericNetworkService.LabelsEntry
-	10,  // 286: clouditor.ontology.v1.GenericNetworkService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 287: clouditor.ontology.v1.GenericNetworkService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 288: clouditor.ontology.v1.GenericNetworkService.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 289: clouditor.ontology.v1.GenericNetworkService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	142, // 290: clouditor.ontology.v1.GenericNetworkService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	143, // 291: clouditor.ontology.v1.GenericNetworkService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	64,  // 292: clouditor.ontology.v1.GeoRedundancy.geo_locations:type_name -> clouditor.ontology.v1.GeoLocation
-	25,  // 293: clouditor.ontology.v1.CryptographicHash.code_region:type_name -> clouditor.ontology.v1.CodeRegion
-	10,  // 294: clouditor.ontology.v1.HttpEndpoint.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	142, // 295: clouditor.ontology.v1.HttpEndpoint.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	25,  // 296: clouditor.ontology.v1.HttpRequest.code_region:type_name -> clouditor.ontology.v1.CodeRegion
-	68,  // 297: clouditor.ontology.v1.HttpRequest.http_endpoints:type_name -> clouditor.ontology.v1.HttpEndpoint
-	68,  // 298: clouditor.ontology.v1.HttpRequestHandler.http_endpoints:type_name -> clouditor.ontology.v1.HttpEndpoint
-	70,  // 299: clouditor.ontology.v1.HttpServer.http_request_handler:type_name -> clouditor.ontology.v1.HttpRequestHandler
-	14,  // 300: clouditor.ontology.v1.HumanResources.awareness_training:type_name -> clouditor.ontology.v1.AwarenessTraining
-	132, // 301: clouditor.ontology.v1.HumanResources.security_training:type_name -> clouditor.ontology.v1.SecurityTraining
-	74,  // 302: clouditor.ontology.v1.Identifiable.identity:type_name -> clouditor.ontology.v1.Identity
-	125, // 303: clouditor.ontology.v1.Identifiable.role_assignment:type_name -> clouditor.ontology.v1.RoleAssignment
-	201, // 304: clouditor.ontology.v1.Identity.creation_time:type_name -> google.protobuf.Timestamp
-	171, // 305: clouditor.ontology.v1.Identity.labels:type_name -> clouditor.ontology.v1.Identity.LabelsEntry
-	201, // 306: clouditor.ontology.v1.Identity.last_activity:type_name -> google.protobuf.Timestamp
-	10,  // 307: clouditor.ontology.v1.Identity.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	11,  // 308: clouditor.ontology.v1.Identity.authorization:type_name -> clouditor.ontology.v1.Authorization
-	64,  // 309: clouditor.ontology.v1.Identity.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 310: clouditor.ontology.v1.Identity.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 311: clouditor.ontology.v1.Identity.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 312: clouditor.ontology.v1.Identity.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	31,  // 313: clouditor.ontology.v1.Image.container_image:type_name -> clouditor.ontology.v1.ContainerImage
-	144, // 314: clouditor.ontology.v1.Image.vm_image:type_name -> clouditor.ontology.v1.VMImage
-	87,  // 315: clouditor.ontology.v1.Integrity.local_attestation:type_name -> clouditor.ontology.v1.LocalAttestation
-	118, // 316: clouditor.ontology.v1.Integrity.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
-	12,  // 317: clouditor.ontology.v1.Integrity.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
-	36,  // 318: clouditor.ontology.v1.Integrity.document_checksum:type_name -> clouditor.ontology.v1.DocumentChecksum
-	76,  // 319: clouditor.ontology.v1.Integrity.immutability:type_name -> clouditor.ontology.v1.Immutability
-	134, // 320: clouditor.ontology.v1.Integrity.document_signature:type_name -> clouditor.ontology.v1.DocumentSignature
-	46,  // 321: clouditor.ontology.v1.IoT.device_provisioning_service:type_name -> clouditor.ontology.v1.DeviceProvisioningService
-	96,  // 322: clouditor.ontology.v1.IoT.messaging_hub:type_name -> clouditor.ontology.v1.MessagingHub
-	201, // 323: clouditor.ontology.v1.Job.creation_time:type_name -> google.protobuf.Timestamp
-	172, // 324: clouditor.ontology.v1.Job.labels:type_name -> clouditor.ontology.v1.Job.LabelsEntry
-	64,  // 325: clouditor.ontology.v1.Job.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 326: clouditor.ontology.v1.Job.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 327: clouditor.ontology.v1.Job.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 328: clouditor.ontology.v1.Job.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	201, // 329: clouditor.ontology.v1.Key.creation_time:type_name -> google.protobuf.Timestamp
-	201, // 330: clouditor.ontology.v1.Key.expiration_date:type_name -> google.protobuf.Timestamp
-	173, // 331: clouditor.ontology.v1.Key.labels:type_name -> clouditor.ontology.v1.Key.LabelsEntry
-	201, // 332: clouditor.ontology.v1.Key.not_before_date:type_name -> google.protobuf.Timestamp
-	64,  // 333: clouditor.ontology.v1.Key.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 334: clouditor.ontology.v1.Key.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 335: clouditor.ontology.v1.Key.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 336: clouditor.ontology.v1.Key.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	201, // 337: clouditor.ontology.v1.KeyValueDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
-	174, // 338: clouditor.ontology.v1.KeyValueDatabaseService.labels:type_name -> clouditor.ontology.v1.KeyValueDatabaseService.LabelsEntry
-	3,   // 339: clouditor.ontology.v1.KeyValueDatabaseService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	4,   // 340: clouditor.ontology.v1.KeyValueDatabaseService.anomaly_detections:type_name -> clouditor.ontology.v1.AnomalyDetection
-	10,  // 341: clouditor.ontology.v1.KeyValueDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 342: clouditor.ontology.v1.KeyValueDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	68,  // 343: clouditor.ontology.v1.KeyValueDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	92,  // 344: clouditor.ontology.v1.KeyValueDatabaseService.loggings:type_name -> clouditor.ontology.v1.Logging
-	94,  // 345: clouditor.ontology.v1.KeyValueDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	115, // 346: clouditor.ontology.v1.KeyValueDatabaseService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	142, // 347: clouditor.ontology.v1.KeyValueDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	143, // 348: clouditor.ontology.v1.KeyValueDatabaseService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	201, // 349: clouditor.ontology.v1.KeyVault.creation_time:type_name -> google.protobuf.Timestamp
-	175, // 350: clouditor.ontology.v1.KeyVault.labels:type_name -> clouditor.ontology.v1.KeyVault.LabelsEntry
-	64,  // 351: clouditor.ontology.v1.KeyVault.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 352: clouditor.ontology.v1.KeyVault.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 353: clouditor.ontology.v1.KeyVault.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 354: clouditor.ontology.v1.KeyVault.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	201, // 355: clouditor.ontology.v1.Library.creation_time:type_name -> google.protobuf.Timestamp
-	176, // 356: clouditor.ontology.v1.Library.labels:type_name -> clouditor.ontology.v1.Library.LabelsEntry
-	61,  // 357: clouditor.ontology.v1.Library.functionalities:type_name -> clouditor.ontology.v1.Functionality
-	148, // 358: clouditor.ontology.v1.Library.vulnerabilities:type_name -> clouditor.ontology.v1.Vulnerability
-	201, // 359: clouditor.ontology.v1.LoadBalancer.creation_time:type_name -> google.protobuf.Timestamp
-	177, // 360: clouditor.ontology.v1.LoadBalancer.labels:type_name -> clouditor.ontology.v1.LoadBalancer.LabelsEntry
-	1,   // 361: clouditor.ontology.v1.LoadBalancer.access_restriction:type_name -> clouditor.ontology.v1.AccessRestriction
-	10,  // 362: clouditor.ontology.v1.LoadBalancer.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 363: clouditor.ontology.v1.LoadBalancer.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	68,  // 364: clouditor.ontology.v1.LoadBalancer.http_endpoints:type_name -> clouditor.ontology.v1.HttpEndpoint
-	92,  // 365: clouditor.ontology.v1.LoadBalancer.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 366: clouditor.ontology.v1.LoadBalancer.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	142, // 367: clouditor.ontology.v1.LoadBalancer.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	143, // 368: clouditor.ontology.v1.LoadBalancer.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	7,   // 369: clouditor.ontology.v1.LocalDocumentLocation.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
-	64,  // 370: clouditor.ontology.v1.LocalRedundancy.geo_locations:type_name -> clouditor.ontology.v1.GeoLocation
-	25,  // 371: clouditor.ontology.v1.LogOperation.code_region:type_name -> clouditor.ontology.v1.CodeRegion
-	92,  // 372: clouditor.ontology.v1.LogOperation.logging:type_name -> clouditor.ontology.v1.Logging
-	3,   // 373: clouditor.ontology.v1.Logging.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	6,   // 374: clouditor.ontology.v1.Logging.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
-	17,  // 375: clouditor.ontology.v1.Logging.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
-	105, // 376: clouditor.ontology.v1.Logging.os_logging:type_name -> clouditor.ontology.v1.OSLogging
-	122, // 377: clouditor.ontology.v1.Logging.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	201, // 378: clouditor.ontology.v1.LoggingService.creation_time:type_name -> google.protobuf.Timestamp
-	178, // 379: clouditor.ontology.v1.LoggingService.labels:type_name -> clouditor.ontology.v1.LoggingService.LabelsEntry
-	10,  // 380: clouditor.ontology.v1.LoggingService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 381: clouditor.ontology.v1.LoggingService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 382: clouditor.ontology.v1.LoggingService.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 383: clouditor.ontology.v1.LoggingService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	142, // 384: clouditor.ontology.v1.LoggingService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	143, // 385: clouditor.ontology.v1.LoggingService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	202, // 386: clouditor.ontology.v1.MalwareProtection.duration_since_active:type_name -> google.protobuf.Duration
-	6,   // 387: clouditor.ontology.v1.MalwareProtection.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
-	201, // 388: clouditor.ontology.v1.MessagingHub.creation_time:type_name -> google.protobuf.Timestamp
-	179, // 389: clouditor.ontology.v1.MessagingHub.labels:type_name -> clouditor.ontology.v1.MessagingHub.LabelsEntry
-	64,  // 390: clouditor.ontology.v1.MessagingHub.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 391: clouditor.ontology.v1.MessagingHub.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 392: clouditor.ontology.v1.MessagingHub.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 393: clouditor.ontology.v1.MessagingHub.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	137, // 394: clouditor.ontology.v1.CodeModule.source_code_file:type_name -> clouditor.ontology.v1.SourceCodeFile
-	10,  // 395: clouditor.ontology.v1.MultiFactorAuthentiation.authenticities:type_name -> clouditor.ontology.v1.Authenticity
-	201, // 396: clouditor.ontology.v1.MultiModalDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
-	180, // 397: clouditor.ontology.v1.MultiModalDatabaseService.labels:type_name -> clouditor.ontology.v1.MultiModalDatabaseService.LabelsEntry
-	3,   // 398: clouditor.ontology.v1.MultiModalDatabaseService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	4,   // 399: clouditor.ontology.v1.MultiModalDatabaseService.anomaly_detections:type_name -> clouditor.ontology.v1.AnomalyDetection
-	10,  // 400: clouditor.ontology.v1.MultiModalDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 401: clouditor.ontology.v1.MultiModalDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	68,  // 402: clouditor.ontology.v1.MultiModalDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	92,  // 403: clouditor.ontology.v1.MultiModalDatabaseService.loggings:type_name -> clouditor.ontology.v1.Logging
-	94,  // 404: clouditor.ontology.v1.MultiModalDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	115, // 405: clouditor.ontology.v1.MultiModalDatabaseService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	142, // 406: clouditor.ontology.v1.MultiModalDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	143, // 407: clouditor.ontology.v1.MultiModalDatabaseService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	201, // 408: clouditor.ontology.v1.NetworkInterface.creation_time:type_name -> google.protobuf.Timestamp
-	181, // 409: clouditor.ontology.v1.NetworkInterface.labels:type_name -> clouditor.ontology.v1.NetworkInterface.LabelsEntry
-	1,   // 410: clouditor.ontology.v1.NetworkInterface.access_restriction:type_name -> clouditor.ontology.v1.AccessRestriction
-	64,  // 411: clouditor.ontology.v1.NetworkInterface.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 412: clouditor.ontology.v1.NetworkInterface.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 413: clouditor.ontology.v1.NetworkInterface.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 414: clouditor.ontology.v1.NetworkInterface.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	201, // 415: clouditor.ontology.v1.NetworkSecurityGroup.creation_time:type_name -> google.protobuf.Timestamp
-	182, // 416: clouditor.ontology.v1.NetworkSecurityGroup.labels:type_name -> clouditor.ontology.v1.NetworkSecurityGroup.LabelsEntry
-	64,  // 417: clouditor.ontology.v1.NetworkSecurityGroup.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 418: clouditor.ontology.v1.NetworkSecurityGroup.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 419: clouditor.ontology.v1.NetworkSecurityGroup.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 420: clouditor.ontology.v1.NetworkSecurityGroup.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	60,  // 421: clouditor.ontology.v1.NetworkService.function_service:type_name -> clouditor.ontology.v1.FunctionService
-	63,  // 422: clouditor.ontology.v1.NetworkService.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
-	86,  // 423: clouditor.ontology.v1.NetworkService.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
-	93,  // 424: clouditor.ontology.v1.NetworkService.logging_service:type_name -> clouditor.ontology.v1.LoggingService
-	130, // 425: clouditor.ontology.v1.NetworkService.security_advisory_service:type_name -> clouditor.ontology.v1.SecurityAdvisoryService
-	48,  // 426: clouditor.ontology.v1.NetworkService.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
-	82,  // 427: clouditor.ontology.v1.NetworkService.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
-	99,  // 428: clouditor.ontology.v1.NetworkService.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
-	116, // 429: clouditor.ontology.v1.NetworkService.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
-	56,  // 430: clouditor.ontology.v1.NetworkService.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
-	109, // 431: clouditor.ontology.v1.NetworkService.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
-	100, // 432: clouditor.ontology.v1.Networking.network_interface:type_name -> clouditor.ontology.v1.NetworkInterface
-	101, // 433: clouditor.ontology.v1.Networking.network_security_group:type_name -> clouditor.ontology.v1.NetworkSecurityGroup
-	60,  // 434: clouditor.ontology.v1.Networking.function_service:type_name -> clouditor.ontology.v1.FunctionService
-	63,  // 435: clouditor.ontology.v1.Networking.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
-	86,  // 436: clouditor.ontology.v1.Networking.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
-	93,  // 437: clouditor.ontology.v1.Networking.logging_service:type_name -> clouditor.ontology.v1.LoggingService
-	130, // 438: clouditor.ontology.v1.Networking.security_advisory_service:type_name -> clouditor.ontology.v1.SecurityAdvisoryService
-	48,  // 439: clouditor.ontology.v1.Networking.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
-	82,  // 440: clouditor.ontology.v1.Networking.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
-	99,  // 441: clouditor.ontology.v1.Networking.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
-	116, // 442: clouditor.ontology.v1.Networking.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
-	56,  // 443: clouditor.ontology.v1.Networking.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
-	109, // 444: clouditor.ontology.v1.Networking.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
-	146, // 445: clouditor.ontology.v1.Networking.virtual_network:type_name -> clouditor.ontology.v1.VirtualNetwork
-	147, // 446: clouditor.ontology.v1.Networking.virtual_sub_network:type_name -> clouditor.ontology.v1.VirtualSubNetwork
-	202, // 447: clouditor.ontology.v1.OSLogging.retention_period:type_name -> google.protobuf.Duration
-	201, // 448: clouditor.ontology.v1.ObjectStorage.creation_time:type_name -> google.protobuf.Timestamp
-	183, // 449: clouditor.ontology.v1.ObjectStorage.labels:type_name -> clouditor.ontology.v1.ObjectStorage.LabelsEntry
-	3,   // 450: clouditor.ontology.v1.ObjectStorage.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	7,   // 451: clouditor.ontology.v1.ObjectStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
-	15,  // 452: clouditor.ontology.v1.ObjectStorage.backups:type_name -> clouditor.ontology.v1.Backup
-	64,  // 453: clouditor.ontology.v1.ObjectStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	76,  // 454: clouditor.ontology.v1.ObjectStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
-	92,  // 455: clouditor.ontology.v1.ObjectStorage.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 456: clouditor.ontology.v1.ObjectStorage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	122, // 457: clouditor.ontology.v1.ObjectStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	143, // 458: clouditor.ontology.v1.ObjectStorage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	25,  // 459: clouditor.ontology.v1.ObjectStorageRequest.code_region:type_name -> clouditor.ontology.v1.CodeRegion
-	201, // 460: clouditor.ontology.v1.ObjectStorageService.creation_time:type_name -> google.protobuf.Timestamp
-	184, // 461: clouditor.ontology.v1.ObjectStorageService.labels:type_name -> clouditor.ontology.v1.ObjectStorageService.LabelsEntry
-	3,   // 462: clouditor.ontology.v1.ObjectStorageService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	10,  // 463: clouditor.ontology.v1.ObjectStorageService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 464: clouditor.ontology.v1.ObjectStorageService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	68,  // 465: clouditor.ontology.v1.ObjectStorageService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	92,  // 466: clouditor.ontology.v1.ObjectStorageService.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 467: clouditor.ontology.v1.ObjectStorageService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	142, // 468: clouditor.ontology.v1.ObjectStorageService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	143, // 469: clouditor.ontology.v1.ObjectStorageService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	45,  // 470: clouditor.ontology.v1.Operation.decryption:type_name -> clouditor.ontology.v1.Decryption
-	51,  // 471: clouditor.ontology.v1.Operation.encryption:type_name -> clouditor.ontology.v1.Encryption
-	66,  // 472: clouditor.ontology.v1.Operation.cryptographic_hash:type_name -> clouditor.ontology.v1.CryptographicHash
-	40,  // 473: clouditor.ontology.v1.Operation.database_connect:type_name -> clouditor.ontology.v1.DatabaseConnect
-	42,  // 474: clouditor.ontology.v1.Operation.database_query:type_name -> clouditor.ontology.v1.DatabaseQuery
-	69,  // 475: clouditor.ontology.v1.Operation.http_request:type_name -> clouditor.ontology.v1.HttpRequest
-	90,  // 476: clouditor.ontology.v1.Operation.log_operation:type_name -> clouditor.ontology.v1.LogOperation
-	108, // 477: clouditor.ontology.v1.Operation.object_storage_request:type_name -> clouditor.ontology.v1.ObjectStorageRequest
-	201, // 478: clouditor.ontology.v1.PasswordPolicy.creation_time:type_name -> google.protobuf.Timestamp
-	185, // 479: clouditor.ontology.v1.PasswordPolicy.labels:type_name -> clouditor.ontology.v1.PasswordPolicy.LabelsEntry
-	64,  // 480: clouditor.ontology.v1.PasswordPolicy.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 481: clouditor.ontology.v1.PasswordPolicy.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 482: clouditor.ontology.v1.PasswordPolicy.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 483: clouditor.ontology.v1.PasswordPolicy.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	201, // 484: clouditor.ontology.v1.PolicyDocument.creation_time:type_name -> google.protobuf.Timestamp
-	186, // 485: clouditor.ontology.v1.PolicyDocument.labels:type_name -> clouditor.ontology.v1.PolicyDocument.LabelsEntry
-	36,  // 486: clouditor.ontology.v1.PolicyDocument.document_checksums:type_name -> clouditor.ontology.v1.DocumentChecksum
-	49,  // 487: clouditor.ontology.v1.PolicyDocument.document_location:type_name -> clouditor.ontology.v1.DocumentLocation
-	134, // 488: clouditor.ontology.v1.PolicyDocument.document_signatures:type_name -> clouditor.ontology.v1.DocumentSignature
-	126, // 489: clouditor.ontology.v1.PolicyDocument.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
-	131, // 490: clouditor.ontology.v1.PolicyDocument.security_features:type_name -> clouditor.ontology.v1.SecurityFeature
-	65,  // 491: clouditor.ontology.v1.Redundancy.geo_redundancy:type_name -> clouditor.ontology.v1.GeoRedundancy
-	89,  // 492: clouditor.ontology.v1.Redundancy.local_redundancy:type_name -> clouditor.ontology.v1.LocalRedundancy
-	151, // 493: clouditor.ontology.v1.Redundancy.zone_redundancy:type_name -> clouditor.ontology.v1.ZoneRedundancy
-	201, // 494: clouditor.ontology.v1.RelationalDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
-	187, // 495: clouditor.ontology.v1.RelationalDatabaseService.labels:type_name -> clouditor.ontology.v1.RelationalDatabaseService.LabelsEntry
-	3,   // 496: clouditor.ontology.v1.RelationalDatabaseService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	4,   // 497: clouditor.ontology.v1.RelationalDatabaseService.anomaly_detections:type_name -> clouditor.ontology.v1.AnomalyDetection
-	10,  // 498: clouditor.ontology.v1.RelationalDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 499: clouditor.ontology.v1.RelationalDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	68,  // 500: clouditor.ontology.v1.RelationalDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	92,  // 501: clouditor.ontology.v1.RelationalDatabaseService.loggings:type_name -> clouditor.ontology.v1.Logging
-	94,  // 502: clouditor.ontology.v1.RelationalDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	115, // 503: clouditor.ontology.v1.RelationalDatabaseService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	142, // 504: clouditor.ontology.v1.RelationalDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	143, // 505: clouditor.ontology.v1.RelationalDatabaseService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	54,  // 506: clouditor.ontology.v1.Reliability.explainable_results:type_name -> clouditor.ontology.v1.ExplainableResults
-	124, // 507: clouditor.ontology.v1.Reliability.robustness_score:type_name -> clouditor.ontology.v1.RobustnessScore
-	201, // 508: clouditor.ontology.v1.RemoteAttestation.creation_time:type_name -> google.protobuf.Timestamp
-	10,  // 509: clouditor.ontology.v1.RemoteDocumentLocation.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	142, // 510: clouditor.ontology.v1.RemoteDocumentLocation.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	2,   // 511: clouditor.ontology.v1.Resource.account:type_name -> clouditor.ontology.v1.Account
-	79,  // 512: clouditor.ontology.v1.Resource.job:type_name -> clouditor.ontology.v1.Job
-	150, // 513: clouditor.ontology.v1.Resource.workflow:type_name -> clouditor.ontology.v1.Workflow
-	26,  // 514: clouditor.ontology.v1.Resource.code_repository:type_name -> clouditor.ontology.v1.CodeRepository
-	30,  // 515: clouditor.ontology.v1.Resource.container:type_name -> clouditor.ontology.v1.Container
-	59,  // 516: clouditor.ontology.v1.Resource.function:type_name -> clouditor.ontology.v1.Function
-	145, // 517: clouditor.ontology.v1.Resource.virtual_machine:type_name -> clouditor.ontology.v1.VirtualMachine
-	32,  // 518: clouditor.ontology.v1.Resource.container_orchestration:type_name -> clouditor.ontology.v1.ContainerOrchestration
-	33,  // 519: clouditor.ontology.v1.Resource.container_registry:type_name -> clouditor.ontology.v1.ContainerRegistry
-	19,  // 520: clouditor.ontology.v1.Resource.certificate:type_name -> clouditor.ontology.v1.Certificate
-	81,  // 521: clouditor.ontology.v1.Resource.key:type_name -> clouditor.ontology.v1.Key
-	127, // 522: clouditor.ontology.v1.Resource.secret:type_name -> clouditor.ontology.v1.Secret
-	74,  // 523: clouditor.ontology.v1.Resource.identity:type_name -> clouditor.ontology.v1.Identity
-	125, // 524: clouditor.ontology.v1.Resource.role_assignment:type_name -> clouditor.ontology.v1.RoleAssignment
-	31,  // 525: clouditor.ontology.v1.Resource.container_image:type_name -> clouditor.ontology.v1.ContainerImage
-	144, // 526: clouditor.ontology.v1.Resource.vm_image:type_name -> clouditor.ontology.v1.VMImage
-	46,  // 527: clouditor.ontology.v1.Resource.device_provisioning_service:type_name -> clouditor.ontology.v1.DeviceProvisioningService
-	96,  // 528: clouditor.ontology.v1.Resource.messaging_hub:type_name -> clouditor.ontology.v1.MessagingHub
-	83,  // 529: clouditor.ontology.v1.Resource.key_vault:type_name -> clouditor.ontology.v1.KeyVault
-	100, // 530: clouditor.ontology.v1.Resource.network_interface:type_name -> clouditor.ontology.v1.NetworkInterface
-	101, // 531: clouditor.ontology.v1.Resource.network_security_group:type_name -> clouditor.ontology.v1.NetworkSecurityGroup
-	60,  // 532: clouditor.ontology.v1.Resource.function_service:type_name -> clouditor.ontology.v1.FunctionService
-	63,  // 533: clouditor.ontology.v1.Resource.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
-	86,  // 534: clouditor.ontology.v1.Resource.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
-	93,  // 535: clouditor.ontology.v1.Resource.logging_service:type_name -> clouditor.ontology.v1.LoggingService
-	130, // 536: clouditor.ontology.v1.Resource.security_advisory_service:type_name -> clouditor.ontology.v1.SecurityAdvisoryService
-	48,  // 537: clouditor.ontology.v1.Resource.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
-	82,  // 538: clouditor.ontology.v1.Resource.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
-	99,  // 539: clouditor.ontology.v1.Resource.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
-	116, // 540: clouditor.ontology.v1.Resource.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
-	56,  // 541: clouditor.ontology.v1.Resource.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
-	109, // 542: clouditor.ontology.v1.Resource.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
-	146, // 543: clouditor.ontology.v1.Resource.virtual_network:type_name -> clouditor.ontology.v1.VirtualNetwork
-	147, // 544: clouditor.ontology.v1.Resource.virtual_sub_network:type_name -> clouditor.ontology.v1.VirtualSubNetwork
-	112, // 545: clouditor.ontology.v1.Resource.password_policy:type_name -> clouditor.ontology.v1.PasswordPolicy
-	121, // 546: clouditor.ontology.v1.Resource.resource_group:type_name -> clouditor.ontology.v1.ResourceGroup
-	16,  // 547: clouditor.ontology.v1.Resource.block_storage:type_name -> clouditor.ontology.v1.BlockStorage
-	44,  // 548: clouditor.ontology.v1.Resource.database_storage:type_name -> clouditor.ontology.v1.DatabaseStorage
-	55,  // 549: clouditor.ontology.v1.Resource.file_storage:type_name -> clouditor.ontology.v1.FileStorage
-	107, // 550: clouditor.ontology.v1.Resource.object_storage:type_name -> clouditor.ontology.v1.ObjectStorage
-	62,  // 551: clouditor.ontology.v1.Resource.generic_document:type_name -> clouditor.ontology.v1.GenericDocument
-	113, // 552: clouditor.ontology.v1.Resource.policy_document:type_name -> clouditor.ontology.v1.PolicyDocument
-	128, // 553: clouditor.ontology.v1.Resource.security_advisory_document:type_name -> clouditor.ontology.v1.SecurityAdvisoryDocument
-	133, // 554: clouditor.ontology.v1.Resource.service_metadata_document:type_name -> clouditor.ontology.v1.ServiceMetadataDocument
-	14,  // 555: clouditor.ontology.v1.Resource.awareness_training:type_name -> clouditor.ontology.v1.AwarenessTraining
-	132, // 556: clouditor.ontology.v1.Resource.security_training:type_name -> clouditor.ontology.v1.SecurityTraining
-	5,   // 557: clouditor.ontology.v1.Resource.application:type_name -> clouditor.ontology.v1.Application
-	85,  // 558: clouditor.ontology.v1.Resource.library:type_name -> clouditor.ontology.v1.Library
-	137, // 559: clouditor.ontology.v1.Resource.source_code_file:type_name -> clouditor.ontology.v1.SourceCodeFile
-	201, // 560: clouditor.ontology.v1.ResourceGroup.creation_time:type_name -> google.protobuf.Timestamp
-	188, // 561: clouditor.ontology.v1.ResourceGroup.labels:type_name -> clouditor.ontology.v1.ResourceGroup.LabelsEntry
-	64,  // 562: clouditor.ontology.v1.ResourceGroup.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 563: clouditor.ontology.v1.ResourceGroup.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 564: clouditor.ontology.v1.ResourceGroup.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 565: clouditor.ontology.v1.ResourceGroup.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	202, // 566: clouditor.ontology.v1.ResourceLogging.retention_period:type_name -> google.protobuf.Duration
-	201, // 567: clouditor.ontology.v1.RoleAssignment.creation_time:type_name -> google.protobuf.Timestamp
-	189, // 568: clouditor.ontology.v1.RoleAssignment.labels:type_name -> clouditor.ontology.v1.RoleAssignment.LabelsEntry
-	10,  // 569: clouditor.ontology.v1.RoleAssignment.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	11,  // 570: clouditor.ontology.v1.RoleAssignment.authorization:type_name -> clouditor.ontology.v1.Authorization
-	64,  // 571: clouditor.ontology.v1.RoleAssignment.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 572: clouditor.ontology.v1.RoleAssignment.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 573: clouditor.ontology.v1.RoleAssignment.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 574: clouditor.ontology.v1.RoleAssignment.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	52,  // 575: clouditor.ontology.v1.SchemaValidation.errors:type_name -> clouditor.ontology.v1.Error
-	201, // 576: clouditor.ontology.v1.Secret.creation_time:type_name -> google.protobuf.Timestamp
-	201, // 577: clouditor.ontology.v1.Secret.expiration_date:type_name -> google.protobuf.Timestamp
-	190, // 578: clouditor.ontology.v1.Secret.labels:type_name -> clouditor.ontology.v1.Secret.LabelsEntry
-	201, // 579: clouditor.ontology.v1.Secret.not_before_date:type_name -> google.protobuf.Timestamp
-	64,  // 580: clouditor.ontology.v1.Secret.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 581: clouditor.ontology.v1.Secret.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 582: clouditor.ontology.v1.Secret.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 583: clouditor.ontology.v1.Secret.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	201, // 584: clouditor.ontology.v1.SecurityAdvisoryDocument.creation_time:type_name -> google.protobuf.Timestamp
-	191, // 585: clouditor.ontology.v1.SecurityAdvisoryDocument.labels:type_name -> clouditor.ontology.v1.SecurityAdvisoryDocument.LabelsEntry
-	36,  // 586: clouditor.ontology.v1.SecurityAdvisoryDocument.document_checksums:type_name -> clouditor.ontology.v1.DocumentChecksum
-	49,  // 587: clouditor.ontology.v1.SecurityAdvisoryDocument.document_location:type_name -> clouditor.ontology.v1.DocumentLocation
-	134, // 588: clouditor.ontology.v1.SecurityAdvisoryDocument.document_signatures:type_name -> clouditor.ontology.v1.DocumentSignature
-	126, // 589: clouditor.ontology.v1.SecurityAdvisoryDocument.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
-	131, // 590: clouditor.ontology.v1.SecurityAdvisoryDocument.security_features:type_name -> clouditor.ontology.v1.SecurityFeature
-	148, // 591: clouditor.ontology.v1.SecurityAdvisoryDocument.vulnerabilities:type_name -> clouditor.ontology.v1.Vulnerability
-	201, // 592: clouditor.ontology.v1.SecurityAdvisoryService.creation_time:type_name -> google.protobuf.Timestamp
-	192, // 593: clouditor.ontology.v1.SecurityAdvisoryService.labels:type_name -> clouditor.ontology.v1.SecurityAdvisoryService.LabelsEntry
-	10,  // 594: clouditor.ontology.v1.SecurityAdvisoryService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 595: clouditor.ontology.v1.SecurityAdvisoryService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 596: clouditor.ontology.v1.SecurityAdvisoryService.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 597: clouditor.ontology.v1.SecurityAdvisoryService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	129, // 598: clouditor.ontology.v1.SecurityAdvisoryService.security_advisory_feeds:type_name -> clouditor.ontology.v1.SecurityAdvisoryFeed
-	142, // 599: clouditor.ontology.v1.SecurityAdvisoryService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	143, // 600: clouditor.ontology.v1.SecurityAdvisoryService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	4,   // 601: clouditor.ontology.v1.SecurityFeature.anomaly_detection:type_name -> clouditor.ontology.v1.AnomalyDetection
-	3,   // 602: clouditor.ontology.v1.SecurityFeature.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	6,   // 603: clouditor.ontology.v1.SecurityFeature.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
-	17,  // 604: clouditor.ontology.v1.SecurityFeature.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
-	105, // 605: clouditor.ontology.v1.SecurityFeature.os_logging:type_name -> clouditor.ontology.v1.OSLogging
-	122, // 606: clouditor.ontology.v1.SecurityFeature.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	94,  // 607: clouditor.ontology.v1.SecurityFeature.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	143, // 608: clouditor.ontology.v1.SecurityFeature.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	20,  // 609: clouditor.ontology.v1.SecurityFeature.certificate_based_authentication:type_name -> clouditor.ontology.v1.CertificateBasedAuthentication
-	80,  // 610: clouditor.ontology.v1.SecurityFeature.token_based_authentication:type_name -> clouditor.ontology.v1.TokenBasedAuthentication
-	98,  // 611: clouditor.ontology.v1.SecurityFeature.multi_factor_authentiation:type_name -> clouditor.ontology.v1.MultiFactorAuthentiation
-	104, // 612: clouditor.ontology.v1.SecurityFeature.no_authentication:type_name -> clouditor.ontology.v1.NoAuthentication
-	106, // 613: clouditor.ontology.v1.SecurityFeature.otp_based_authentication:type_name -> clouditor.ontology.v1.OTPBasedAuthentication
-	111, // 614: clouditor.ontology.v1.SecurityFeature.password_based_authentication:type_name -> clouditor.ontology.v1.PasswordBasedAuthentication
-	135, // 615: clouditor.ontology.v1.SecurityFeature.single_sign_on:type_name -> clouditor.ontology.v1.SingleSignOn
-	0,   // 616: clouditor.ontology.v1.SecurityFeature.abac:type_name -> clouditor.ontology.v1.ABAC
-	84,  // 617: clouditor.ontology.v1.SecurityFeature.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
-	149, // 618: clouditor.ontology.v1.SecurityFeature.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
-	114, // 619: clouditor.ontology.v1.SecurityFeature.rbac:type_name -> clouditor.ontology.v1.RBAC
-	15,  // 620: clouditor.ontology.v1.SecurityFeature.backup:type_name -> clouditor.ontology.v1.Backup
-	39,  // 621: clouditor.ontology.v1.SecurityFeature.d_do_s_protection:type_name -> clouditor.ontology.v1.DDoSProtection
-	64,  // 622: clouditor.ontology.v1.SecurityFeature.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	65,  // 623: clouditor.ontology.v1.SecurityFeature.geo_redundancy:type_name -> clouditor.ontology.v1.GeoRedundancy
-	89,  // 624: clouditor.ontology.v1.SecurityFeature.local_redundancy:type_name -> clouditor.ontology.v1.LocalRedundancy
-	151, // 625: clouditor.ontology.v1.SecurityFeature.zone_redundancy:type_name -> clouditor.ontology.v1.ZoneRedundancy
-	38,  // 626: clouditor.ontology.v1.SecurityFeature.customer_key_encryption:type_name -> clouditor.ontology.v1.CustomerKeyEncryption
-	95,  // 627: clouditor.ontology.v1.SecurityFeature.managed_key_encryption:type_name -> clouditor.ontology.v1.ManagedKeyEncryption
-	50,  // 628: clouditor.ontology.v1.SecurityFeature.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
-	142, // 629: clouditor.ontology.v1.SecurityFeature.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	87,  // 630: clouditor.ontology.v1.SecurityFeature.local_attestation:type_name -> clouditor.ontology.v1.LocalAttestation
-	118, // 631: clouditor.ontology.v1.SecurityFeature.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
-	12,  // 632: clouditor.ontology.v1.SecurityFeature.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
-	36,  // 633: clouditor.ontology.v1.SecurityFeature.document_checksum:type_name -> clouditor.ontology.v1.DocumentChecksum
-	76,  // 634: clouditor.ontology.v1.SecurityFeature.immutability:type_name -> clouditor.ontology.v1.Immutability
-	134, // 635: clouditor.ontology.v1.SecurityFeature.document_signature:type_name -> clouditor.ontology.v1.DocumentSignature
-	54,  // 636: clouditor.ontology.v1.SecurityFeature.explainable_results:type_name -> clouditor.ontology.v1.ExplainableResults
-	124, // 637: clouditor.ontology.v1.SecurityFeature.robustness_score:type_name -> clouditor.ontology.v1.RobustnessScore
-	201, // 638: clouditor.ontology.v1.SecurityTraining.creation_time:type_name -> google.protobuf.Timestamp
-	193, // 639: clouditor.ontology.v1.SecurityTraining.labels:type_name -> clouditor.ontology.v1.SecurityTraining.LabelsEntry
-	201, // 640: clouditor.ontology.v1.ServiceMetadataDocument.creation_time:type_name -> google.protobuf.Timestamp
-	194, // 641: clouditor.ontology.v1.ServiceMetadataDocument.labels:type_name -> clouditor.ontology.v1.ServiceMetadataDocument.LabelsEntry
-	36,  // 642: clouditor.ontology.v1.ServiceMetadataDocument.document_checksums:type_name -> clouditor.ontology.v1.DocumentChecksum
-	49,  // 643: clouditor.ontology.v1.ServiceMetadataDocument.document_location:type_name -> clouditor.ontology.v1.DocumentLocation
-	134, // 644: clouditor.ontology.v1.ServiceMetadataDocument.document_signatures:type_name -> clouditor.ontology.v1.DocumentSignature
-	126, // 645: clouditor.ontology.v1.ServiceMetadataDocument.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
-	131, // 646: clouditor.ontology.v1.ServiceMetadataDocument.security_features:type_name -> clouditor.ontology.v1.SecurityFeature
-	52,  // 647: clouditor.ontology.v1.DocumentSignature.errors:type_name -> clouditor.ontology.v1.Error
-	5,   // 648: clouditor.ontology.v1.Code.application:type_name -> clouditor.ontology.v1.Application
-	85,  // 649: clouditor.ontology.v1.Code.library:type_name -> clouditor.ontology.v1.Library
-	137, // 650: clouditor.ontology.v1.Code.source_code_file:type_name -> clouditor.ontology.v1.SourceCodeFile
-	201, // 651: clouditor.ontology.v1.SourceCodeFile.creation_time:type_name -> google.protobuf.Timestamp
-	195, // 652: clouditor.ontology.v1.SourceCodeFile.labels:type_name -> clouditor.ontology.v1.SourceCodeFile.LabelsEntry
-	61,  // 653: clouditor.ontology.v1.SourceCodeFile.functionalities:type_name -> clouditor.ontology.v1.Functionality
-	16,  // 654: clouditor.ontology.v1.Storage.block_storage:type_name -> clouditor.ontology.v1.BlockStorage
-	44,  // 655: clouditor.ontology.v1.Storage.database_storage:type_name -> clouditor.ontology.v1.DatabaseStorage
-	55,  // 656: clouditor.ontology.v1.Storage.file_storage:type_name -> clouditor.ontology.v1.FileStorage
-	107, // 657: clouditor.ontology.v1.Storage.object_storage:type_name -> clouditor.ontology.v1.ObjectStorage
-	48,  // 658: clouditor.ontology.v1.StorageService.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
-	82,  // 659: clouditor.ontology.v1.StorageService.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
-	99,  // 660: clouditor.ontology.v1.StorageService.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
-	116, // 661: clouditor.ontology.v1.StorageService.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
-	56,  // 662: clouditor.ontology.v1.StorageService.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
-	109, // 663: clouditor.ontology.v1.StorageService.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
-	14,  // 664: clouditor.ontology.v1.Training.awareness_training:type_name -> clouditor.ontology.v1.AwarenessTraining
-	132, // 665: clouditor.ontology.v1.Training.security_training:type_name -> clouditor.ontology.v1.SecurityTraining
-	22,  // 666: clouditor.ontology.v1.TransportEncryption.cipher_suites:type_name -> clouditor.ontology.v1.CipherSuite
-	201, // 667: clouditor.ontology.v1.VMImage.creation_time:type_name -> google.protobuf.Timestamp
-	196, // 668: clouditor.ontology.v1.VMImage.labels:type_name -> clouditor.ontology.v1.VMImage.LabelsEntry
-	64,  // 669: clouditor.ontology.v1.VMImage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 670: clouditor.ontology.v1.VMImage.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 671: clouditor.ontology.v1.VMImage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 672: clouditor.ontology.v1.VMImage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	201, // 673: clouditor.ontology.v1.VirtualMachine.creation_time:type_name -> google.protobuf.Timestamp
-	197, // 674: clouditor.ontology.v1.VirtualMachine.labels:type_name -> clouditor.ontology.v1.VirtualMachine.LabelsEntry
-	3,   // 675: clouditor.ontology.v1.VirtualMachine.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	12,  // 676: clouditor.ontology.v1.VirtualMachine.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
-	17,  // 677: clouditor.ontology.v1.VirtualMachine.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
-	50,  // 678: clouditor.ontology.v1.VirtualMachine.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
-	64,  // 679: clouditor.ontology.v1.VirtualMachine.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 680: clouditor.ontology.v1.VirtualMachine.loggings:type_name -> clouditor.ontology.v1.Logging
-	94,  // 681: clouditor.ontology.v1.VirtualMachine.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	105, // 682: clouditor.ontology.v1.VirtualMachine.os_logging:type_name -> clouditor.ontology.v1.OSLogging
-	115, // 683: clouditor.ontology.v1.VirtualMachine.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	118, // 684: clouditor.ontology.v1.VirtualMachine.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
-	122, // 685: clouditor.ontology.v1.VirtualMachine.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	143, // 686: clouditor.ontology.v1.VirtualMachine.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	201, // 687: clouditor.ontology.v1.VirtualNetwork.creation_time:type_name -> google.protobuf.Timestamp
-	198, // 688: clouditor.ontology.v1.VirtualNetwork.labels:type_name -> clouditor.ontology.v1.VirtualNetwork.LabelsEntry
-	64,  // 689: clouditor.ontology.v1.VirtualNetwork.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 690: clouditor.ontology.v1.VirtualNetwork.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 691: clouditor.ontology.v1.VirtualNetwork.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 692: clouditor.ontology.v1.VirtualNetwork.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	201, // 693: clouditor.ontology.v1.VirtualSubNetwork.creation_time:type_name -> google.protobuf.Timestamp
-	199, // 694: clouditor.ontology.v1.VirtualSubNetwork.labels:type_name -> clouditor.ontology.v1.VirtualSubNetwork.LabelsEntry
-	64,  // 695: clouditor.ontology.v1.VirtualSubNetwork.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 696: clouditor.ontology.v1.VirtualSubNetwork.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 697: clouditor.ontology.v1.VirtualSubNetwork.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 698: clouditor.ontology.v1.VirtualSubNetwork.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	201, // 699: clouditor.ontology.v1.Workflow.creation_time:type_name -> google.protobuf.Timestamp
-	200, // 700: clouditor.ontology.v1.Workflow.labels:type_name -> clouditor.ontology.v1.Workflow.LabelsEntry
-	64,  // 701: clouditor.ontology.v1.Workflow.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 702: clouditor.ontology.v1.Workflow.loggings:type_name -> clouditor.ontology.v1.Logging
-	115, // 703: clouditor.ontology.v1.Workflow.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	143, // 704: clouditor.ontology.v1.Workflow.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	64,  // 705: clouditor.ontology.v1.ZoneRedundancy.geo_locations:type_name -> clouditor.ontology.v1.GeoLocation
-	203, // 706: clouditor.ontology.v1.resource_type_names:extendee -> google.protobuf.MessageOptions
-	707, // [707:707] is the sub-list for method output_type
-	707, // [707:707] is the sub-list for method input_type
-	707, // [707:707] is the sub-list for extension type_name
-	706, // [706:707] is the sub-list for extension extendee
-	0,   // [0:706] is the sub-list for field type_name
+	149, // 87: clouditor.ontology.v1.Infrastructure.vm_image:type_name -> clouditor.ontology.v1.VMImage
+	48,  // 88: clouditor.ontology.v1.Infrastructure.device_provisioning_service:type_name -> clouditor.ontology.v1.DeviceProvisioningService
+	101, // 89: clouditor.ontology.v1.Infrastructure.messaging_hub:type_name -> clouditor.ontology.v1.MessagingHub
+	84,  // 90: clouditor.ontology.v1.Infrastructure.key_vault:type_name -> clouditor.ontology.v1.KeyVault
+	105, // 91: clouditor.ontology.v1.Infrastructure.network_interface:type_name -> clouditor.ontology.v1.NetworkInterface
+	106, // 92: clouditor.ontology.v1.Infrastructure.network_security_group:type_name -> clouditor.ontology.v1.NetworkSecurityGroup
+	61,  // 93: clouditor.ontology.v1.Infrastructure.function_service:type_name -> clouditor.ontology.v1.FunctionService
+	64,  // 94: clouditor.ontology.v1.Infrastructure.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
+	87,  // 95: clouditor.ontology.v1.Infrastructure.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
+	94,  // 96: clouditor.ontology.v1.Infrastructure.logging_service:type_name -> clouditor.ontology.v1.LoggingService
+	98,  // 97: clouditor.ontology.v1.Infrastructure.machine_learning_service:type_name -> clouditor.ontology.v1.MachineLearningService
+	135, // 98: clouditor.ontology.v1.Infrastructure.security_advisory_service:type_name -> clouditor.ontology.v1.SecurityAdvisoryService
+	50,  // 99: clouditor.ontology.v1.Infrastructure.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
+	83,  // 100: clouditor.ontology.v1.Infrastructure.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
+	104, // 101: clouditor.ontology.v1.Infrastructure.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
+	121, // 102: clouditor.ontology.v1.Infrastructure.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
+	57,  // 103: clouditor.ontology.v1.Infrastructure.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
+	114, // 104: clouditor.ontology.v1.Infrastructure.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
+	151, // 105: clouditor.ontology.v1.Infrastructure.virtual_network:type_name -> clouditor.ontology.v1.VirtualNetwork
+	152, // 106: clouditor.ontology.v1.Infrastructure.virtual_sub_network:type_name -> clouditor.ontology.v1.VirtualSubNetwork
+	117, // 107: clouditor.ontology.v1.Infrastructure.password_policy:type_name -> clouditor.ontology.v1.PasswordPolicy
+	126, // 108: clouditor.ontology.v1.Infrastructure.resource_group:type_name -> clouditor.ontology.v1.ResourceGroup
+	16,  // 109: clouditor.ontology.v1.Infrastructure.block_storage:type_name -> clouditor.ontology.v1.BlockStorage
+	46,  // 110: clouditor.ontology.v1.Infrastructure.database_storage:type_name -> clouditor.ontology.v1.DatabaseStorage
+	56,  // 111: clouditor.ontology.v1.Infrastructure.file_storage:type_name -> clouditor.ontology.v1.FileStorage
+	112, // 112: clouditor.ontology.v1.Infrastructure.object_storage:type_name -> clouditor.ontology.v1.ObjectStorage
+	209, // 113: clouditor.ontology.v1.CodeRepository.creation_time:type_name -> google.protobuf.Timestamp
+	162, // 114: clouditor.ontology.v1.CodeRepository.labels:type_name -> clouditor.ontology.v1.CodeRepository.LabelsEntry
+	65,  // 115: clouditor.ontology.v1.CodeRepository.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 116: clouditor.ontology.v1.CodeRepository.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 117: clouditor.ontology.v1.CodeRepository.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 118: clouditor.ontology.v1.CodeRepository.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	5,   // 119: clouditor.ontology.v1.Component.application:type_name -> clouditor.ontology.v1.Application
+	86,  // 120: clouditor.ontology.v1.Component.library:type_name -> clouditor.ontology.v1.Library
+	30,  // 121: clouditor.ontology.v1.Compute.container:type_name -> clouditor.ontology.v1.Container
+	60,  // 122: clouditor.ontology.v1.Compute.function:type_name -> clouditor.ontology.v1.Function
+	150, // 123: clouditor.ontology.v1.Compute.virtual_machine:type_name -> clouditor.ontology.v1.VirtualMachine
+	38,  // 124: clouditor.ontology.v1.Confidentiality.customer_key_encryption:type_name -> clouditor.ontology.v1.CustomerKeyEncryption
+	100, // 125: clouditor.ontology.v1.Confidentiality.managed_key_encryption:type_name -> clouditor.ontology.v1.ManagedKeyEncryption
+	51,  // 126: clouditor.ontology.v1.Confidentiality.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
+	147, // 127: clouditor.ontology.v1.Confidentiality.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	209, // 128: clouditor.ontology.v1.Container.creation_time:type_name -> google.protobuf.Timestamp
+	163, // 129: clouditor.ontology.v1.Container.labels:type_name -> clouditor.ontology.v1.Container.LabelsEntry
+	51,  // 130: clouditor.ontology.v1.Container.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
+	65,  // 131: clouditor.ontology.v1.Container.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 132: clouditor.ontology.v1.Container.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 133: clouditor.ontology.v1.Container.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	123, // 134: clouditor.ontology.v1.Container.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
+	127, // 135: clouditor.ontology.v1.Container.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	148, // 136: clouditor.ontology.v1.Container.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	209, // 137: clouditor.ontology.v1.ContainerImage.creation_time:type_name -> google.protobuf.Timestamp
+	164, // 138: clouditor.ontology.v1.ContainerImage.labels:type_name -> clouditor.ontology.v1.ContainerImage.LabelsEntry
+	65,  // 139: clouditor.ontology.v1.ContainerImage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 140: clouditor.ontology.v1.ContainerImage.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 141: clouditor.ontology.v1.ContainerImage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 142: clouditor.ontology.v1.ContainerImage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	209, // 143: clouditor.ontology.v1.ContainerOrchestration.creation_time:type_name -> google.protobuf.Timestamp
+	165, // 144: clouditor.ontology.v1.ContainerOrchestration.labels:type_name -> clouditor.ontology.v1.ContainerOrchestration.LabelsEntry
+	65,  // 145: clouditor.ontology.v1.ContainerOrchestration.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 146: clouditor.ontology.v1.ContainerOrchestration.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 147: clouditor.ontology.v1.ContainerOrchestration.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	127, // 148: clouditor.ontology.v1.ContainerOrchestration.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	148, // 149: clouditor.ontology.v1.ContainerOrchestration.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	209, // 150: clouditor.ontology.v1.ContainerRegistry.creation_time:type_name -> google.protobuf.Timestamp
+	166, // 151: clouditor.ontology.v1.ContainerRegistry.labels:type_name -> clouditor.ontology.v1.ContainerRegistry.LabelsEntry
+	65,  // 152: clouditor.ontology.v1.ContainerRegistry.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 153: clouditor.ontology.v1.ContainerRegistry.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 154: clouditor.ontology.v1.ContainerRegistry.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 155: clouditor.ontology.v1.ContainerRegistry.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	21,  // 156: clouditor.ontology.v1.Core.certification_target:type_name -> clouditor.ontology.v1.CertificationTarget
+	54,  // 157: clouditor.ontology.v1.Core.evidence:type_name -> clouditor.ontology.v1.Evidence
+	24,  // 158: clouditor.ontology.v1.Core.cloud_sdk:type_name -> clouditor.ontology.v1.CloudSDK
+	68,  // 159: clouditor.ontology.v1.Core.http_client_library:type_name -> clouditor.ontology.v1.HttpClientLibrary
+	72,  // 160: clouditor.ontology.v1.Core.http_server:type_name -> clouditor.ontology.v1.HttpServer
+	92,  // 161: clouditor.ontology.v1.Core.logger:type_name -> clouditor.ontology.v1.Logger
+	128, // 162: clouditor.ontology.v1.Core.resource_type:type_name -> clouditor.ontology.v1.ResourceType
+	145, // 163: clouditor.ontology.v1.Core.tool:type_name -> clouditor.ontology.v1.Tool
+	19,  // 164: clouditor.ontology.v1.Credential.certificate:type_name -> clouditor.ontology.v1.Certificate
+	82,  // 165: clouditor.ontology.v1.Credential.key:type_name -> clouditor.ontology.v1.Key
+	132, // 166: clouditor.ontology.v1.Credential.secret:type_name -> clouditor.ontology.v1.Secret
+	53,  // 167: clouditor.ontology.v1.DocumentChecksum.errors:type_name -> clouditor.ontology.v1.Error
+	47,  // 168: clouditor.ontology.v1.CryptographicOperation.decryption:type_name -> clouditor.ontology.v1.Decryption
+	52,  // 169: clouditor.ontology.v1.CryptographicOperation.encryption:type_name -> clouditor.ontology.v1.Encryption
+	67,  // 170: clouditor.ontology.v1.CryptographicOperation.cryptographic_hash:type_name -> clouditor.ontology.v1.CryptographicHash
+	63,  // 171: clouditor.ontology.v1.Data.generic_document:type_name -> clouditor.ontology.v1.GenericDocument
+	118, // 172: clouditor.ontology.v1.Data.policy_document:type_name -> clouditor.ontology.v1.PolicyDocument
+	133, // 173: clouditor.ontology.v1.Data.security_advisory_document:type_name -> clouditor.ontology.v1.SecurityAdvisoryDocument
+	138, // 174: clouditor.ontology.v1.Data.service_metadata_document:type_name -> clouditor.ontology.v1.ServiceMetadataDocument
+	96,  // 175: clouditor.ontology.v1.Data.machine_learning_dataset:type_name -> clouditor.ontology.v1.MachineLearningDataset
+	97,  // 176: clouditor.ontology.v1.Data.machine_learning_model:type_name -> clouditor.ontology.v1.MachineLearningModel
+	89,  // 177: clouditor.ontology.v1.DataLocation.local_data_location:type_name -> clouditor.ontology.v1.LocalDataLocation
+	124, // 178: clouditor.ontology.v1.DataLocation.remote_data_location:type_name -> clouditor.ontology.v1.RemoteDataLocation
+	25,  // 179: clouditor.ontology.v1.DatabaseConnect.code_region:type_name -> clouditor.ontology.v1.CodeRegion
+	42,  // 180: clouditor.ontology.v1.DatabaseOperation.database_connect:type_name -> clouditor.ontology.v1.DatabaseConnect
+	44,  // 181: clouditor.ontology.v1.DatabaseOperation.database_query:type_name -> clouditor.ontology.v1.DatabaseQuery
+	25,  // 182: clouditor.ontology.v1.DatabaseQuery.code_region:type_name -> clouditor.ontology.v1.CodeRegion
+	50,  // 183: clouditor.ontology.v1.DatabaseService.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
+	83,  // 184: clouditor.ontology.v1.DatabaseService.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
+	104, // 185: clouditor.ontology.v1.DatabaseService.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
+	121, // 186: clouditor.ontology.v1.DatabaseService.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
+	209, // 187: clouditor.ontology.v1.DatabaseStorage.creation_time:type_name -> google.protobuf.Timestamp
+	167, // 188: clouditor.ontology.v1.DatabaseStorage.labels:type_name -> clouditor.ontology.v1.DatabaseStorage.LabelsEntry
+	3,   // 189: clouditor.ontology.v1.DatabaseStorage.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	7,   // 190: clouditor.ontology.v1.DatabaseStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
+	15,  // 191: clouditor.ontology.v1.DatabaseStorage.backups:type_name -> clouditor.ontology.v1.Backup
+	65,  // 192: clouditor.ontology.v1.DatabaseStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	77,  // 193: clouditor.ontology.v1.DatabaseStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
+	93,  // 194: clouditor.ontology.v1.DatabaseStorage.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 195: clouditor.ontology.v1.DatabaseStorage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	127, // 196: clouditor.ontology.v1.DatabaseStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	148, // 197: clouditor.ontology.v1.DatabaseStorage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	25,  // 198: clouditor.ontology.v1.Decryption.code_region:type_name -> clouditor.ontology.v1.CodeRegion
+	209, // 199: clouditor.ontology.v1.DeviceProvisioningService.creation_time:type_name -> google.protobuf.Timestamp
+	168, // 200: clouditor.ontology.v1.DeviceProvisioningService.labels:type_name -> clouditor.ontology.v1.DeviceProvisioningService.LabelsEntry
+	65,  // 201: clouditor.ontology.v1.DeviceProvisioningService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 202: clouditor.ontology.v1.DeviceProvisioningService.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 203: clouditor.ontology.v1.DeviceProvisioningService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 204: clouditor.ontology.v1.DeviceProvisioningService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	63,  // 205: clouditor.ontology.v1.Document.generic_document:type_name -> clouditor.ontology.v1.GenericDocument
+	118, // 206: clouditor.ontology.v1.Document.policy_document:type_name -> clouditor.ontology.v1.PolicyDocument
+	133, // 207: clouditor.ontology.v1.Document.security_advisory_document:type_name -> clouditor.ontology.v1.SecurityAdvisoryDocument
+	138, // 208: clouditor.ontology.v1.Document.service_metadata_document:type_name -> clouditor.ontology.v1.ServiceMetadataDocument
+	209, // 209: clouditor.ontology.v1.DocumentDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
+	169, // 210: clouditor.ontology.v1.DocumentDatabaseService.labels:type_name -> clouditor.ontology.v1.DocumentDatabaseService.LabelsEntry
+	3,   // 211: clouditor.ontology.v1.DocumentDatabaseService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	4,   // 212: clouditor.ontology.v1.DocumentDatabaseService.anomaly_detections:type_name -> clouditor.ontology.v1.AnomalyDetection
+	10,  // 213: clouditor.ontology.v1.DocumentDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	65,  // 214: clouditor.ontology.v1.DocumentDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	69,  // 215: clouditor.ontology.v1.DocumentDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	93,  // 216: clouditor.ontology.v1.DocumentDatabaseService.loggings:type_name -> clouditor.ontology.v1.Logging
+	99,  // 217: clouditor.ontology.v1.DocumentDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	120, // 218: clouditor.ontology.v1.DocumentDatabaseService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 219: clouditor.ontology.v1.DocumentDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 220: clouditor.ontology.v1.DocumentDatabaseService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	25,  // 221: clouditor.ontology.v1.Encryption.code_region:type_name -> clouditor.ontology.v1.CodeRegion
+	209, // 222: clouditor.ontology.v1.FileStorage.creation_time:type_name -> google.protobuf.Timestamp
+	170, // 223: clouditor.ontology.v1.FileStorage.labels:type_name -> clouditor.ontology.v1.FileStorage.LabelsEntry
+	3,   // 224: clouditor.ontology.v1.FileStorage.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	7,   // 225: clouditor.ontology.v1.FileStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
+	15,  // 226: clouditor.ontology.v1.FileStorage.backups:type_name -> clouditor.ontology.v1.Backup
+	65,  // 227: clouditor.ontology.v1.FileStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	77,  // 228: clouditor.ontology.v1.FileStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
+	93,  // 229: clouditor.ontology.v1.FileStorage.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 230: clouditor.ontology.v1.FileStorage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	127, // 231: clouditor.ontology.v1.FileStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	148, // 232: clouditor.ontology.v1.FileStorage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	209, // 233: clouditor.ontology.v1.FileStorageService.creation_time:type_name -> google.protobuf.Timestamp
+	171, // 234: clouditor.ontology.v1.FileStorageService.labels:type_name -> clouditor.ontology.v1.FileStorageService.LabelsEntry
+	3,   // 235: clouditor.ontology.v1.FileStorageService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	10,  // 236: clouditor.ontology.v1.FileStorageService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	65,  // 237: clouditor.ontology.v1.FileStorageService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	69,  // 238: clouditor.ontology.v1.FileStorageService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	93,  // 239: clouditor.ontology.v1.FileStorageService.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 240: clouditor.ontology.v1.FileStorageService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 241: clouditor.ontology.v1.FileStorageService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 242: clouditor.ontology.v1.FileStorageService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	85,  // 243: clouditor.ontology.v1.Firewall.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
+	154, // 244: clouditor.ontology.v1.Firewall.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
+	24,  // 245: clouditor.ontology.v1.Framework.cloud_sdk:type_name -> clouditor.ontology.v1.CloudSDK
+	68,  // 246: clouditor.ontology.v1.Framework.http_client_library:type_name -> clouditor.ontology.v1.HttpClientLibrary
+	72,  // 247: clouditor.ontology.v1.Framework.http_server:type_name -> clouditor.ontology.v1.HttpServer
+	92,  // 248: clouditor.ontology.v1.Framework.logger:type_name -> clouditor.ontology.v1.Logger
+	209, // 249: clouditor.ontology.v1.Function.creation_time:type_name -> google.protobuf.Timestamp
+	172, // 250: clouditor.ontology.v1.Function.labels:type_name -> clouditor.ontology.v1.Function.LabelsEntry
+	51,  // 251: clouditor.ontology.v1.Function.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
+	65,  // 252: clouditor.ontology.v1.Function.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 253: clouditor.ontology.v1.Function.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 254: clouditor.ontology.v1.Function.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	123, // 255: clouditor.ontology.v1.Function.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
+	127, // 256: clouditor.ontology.v1.Function.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	148, // 257: clouditor.ontology.v1.Function.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	209, // 258: clouditor.ontology.v1.FunctionService.creation_time:type_name -> google.protobuf.Timestamp
+	173, // 259: clouditor.ontology.v1.FunctionService.labels:type_name -> clouditor.ontology.v1.FunctionService.LabelsEntry
+	10,  // 260: clouditor.ontology.v1.FunctionService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	65,  // 261: clouditor.ontology.v1.FunctionService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 262: clouditor.ontology.v1.FunctionService.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 263: clouditor.ontology.v1.FunctionService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 264: clouditor.ontology.v1.FunctionService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 265: clouditor.ontology.v1.FunctionService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	22,  // 266: clouditor.ontology.v1.Functionality.cipher_suite:type_name -> clouditor.ontology.v1.CipherSuite
+	25,  // 267: clouditor.ontology.v1.Functionality.code_region:type_name -> clouditor.ontology.v1.CodeRegion
+	89,  // 268: clouditor.ontology.v1.Functionality.local_data_location:type_name -> clouditor.ontology.v1.LocalDataLocation
+	124, // 269: clouditor.ontology.v1.Functionality.remote_data_location:type_name -> clouditor.ontology.v1.RemoteDataLocation
+	53,  // 270: clouditor.ontology.v1.Functionality.error:type_name -> clouditor.ontology.v1.Error
+	69,  // 271: clouditor.ontology.v1.Functionality.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	71,  // 272: clouditor.ontology.v1.Functionality.http_request_handler:type_name -> clouditor.ontology.v1.HttpRequestHandler
+	47,  // 273: clouditor.ontology.v1.Functionality.decryption:type_name -> clouditor.ontology.v1.Decryption
+	52,  // 274: clouditor.ontology.v1.Functionality.encryption:type_name -> clouditor.ontology.v1.Encryption
+	67,  // 275: clouditor.ontology.v1.Functionality.cryptographic_hash:type_name -> clouditor.ontology.v1.CryptographicHash
+	42,  // 276: clouditor.ontology.v1.Functionality.database_connect:type_name -> clouditor.ontology.v1.DatabaseConnect
+	44,  // 277: clouditor.ontology.v1.Functionality.database_query:type_name -> clouditor.ontology.v1.DatabaseQuery
+	70,  // 278: clouditor.ontology.v1.Functionality.http_request:type_name -> clouditor.ontology.v1.HttpRequest
+	91,  // 279: clouditor.ontology.v1.Functionality.log_operation:type_name -> clouditor.ontology.v1.LogOperation
+	113, // 280: clouditor.ontology.v1.Functionality.object_storage_request:type_name -> clouditor.ontology.v1.ObjectStorageRequest
+	131, // 281: clouditor.ontology.v1.Functionality.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
+	134, // 282: clouditor.ontology.v1.Functionality.security_advisory_feed:type_name -> clouditor.ontology.v1.SecurityAdvisoryFeed
+	153, // 283: clouditor.ontology.v1.Functionality.vulnerability:type_name -> clouditor.ontology.v1.Vulnerability
+	209, // 284: clouditor.ontology.v1.GenericDocument.creation_time:type_name -> google.protobuf.Timestamp
+	174, // 285: clouditor.ontology.v1.GenericDocument.labels:type_name -> clouditor.ontology.v1.GenericDocument.LabelsEntry
+	41,  // 286: clouditor.ontology.v1.GenericDocument.data_location:type_name -> clouditor.ontology.v1.DataLocation
+	36,  // 287: clouditor.ontology.v1.GenericDocument.document_checksums:type_name -> clouditor.ontology.v1.DocumentChecksum
+	139, // 288: clouditor.ontology.v1.GenericDocument.document_signatures:type_name -> clouditor.ontology.v1.DocumentSignature
+	131, // 289: clouditor.ontology.v1.GenericDocument.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
+	136, // 290: clouditor.ontology.v1.GenericDocument.security_features:type_name -> clouditor.ontology.v1.SecurityFeature
+	209, // 291: clouditor.ontology.v1.GenericNetworkService.creation_time:type_name -> google.protobuf.Timestamp
+	175, // 292: clouditor.ontology.v1.GenericNetworkService.labels:type_name -> clouditor.ontology.v1.GenericNetworkService.LabelsEntry
+	10,  // 293: clouditor.ontology.v1.GenericNetworkService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	65,  // 294: clouditor.ontology.v1.GenericNetworkService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 295: clouditor.ontology.v1.GenericNetworkService.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 296: clouditor.ontology.v1.GenericNetworkService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 297: clouditor.ontology.v1.GenericNetworkService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 298: clouditor.ontology.v1.GenericNetworkService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	65,  // 299: clouditor.ontology.v1.GeoRedundancy.geo_locations:type_name -> clouditor.ontology.v1.GeoLocation
+	25,  // 300: clouditor.ontology.v1.CryptographicHash.code_region:type_name -> clouditor.ontology.v1.CodeRegion
+	10,  // 301: clouditor.ontology.v1.HttpEndpoint.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	147, // 302: clouditor.ontology.v1.HttpEndpoint.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	25,  // 303: clouditor.ontology.v1.HttpRequest.code_region:type_name -> clouditor.ontology.v1.CodeRegion
+	69,  // 304: clouditor.ontology.v1.HttpRequest.http_endpoints:type_name -> clouditor.ontology.v1.HttpEndpoint
+	69,  // 305: clouditor.ontology.v1.HttpRequestHandler.http_endpoints:type_name -> clouditor.ontology.v1.HttpEndpoint
+	71,  // 306: clouditor.ontology.v1.HttpServer.http_request_handler:type_name -> clouditor.ontology.v1.HttpRequestHandler
+	14,  // 307: clouditor.ontology.v1.HumanResources.awareness_training:type_name -> clouditor.ontology.v1.AwarenessTraining
+	137, // 308: clouditor.ontology.v1.HumanResources.security_training:type_name -> clouditor.ontology.v1.SecurityTraining
+	75,  // 309: clouditor.ontology.v1.Identifiable.identity:type_name -> clouditor.ontology.v1.Identity
+	130, // 310: clouditor.ontology.v1.Identifiable.role_assignment:type_name -> clouditor.ontology.v1.RoleAssignment
+	209, // 311: clouditor.ontology.v1.Identity.creation_time:type_name -> google.protobuf.Timestamp
+	176, // 312: clouditor.ontology.v1.Identity.labels:type_name -> clouditor.ontology.v1.Identity.LabelsEntry
+	209, // 313: clouditor.ontology.v1.Identity.last_activity:type_name -> google.protobuf.Timestamp
+	10,  // 314: clouditor.ontology.v1.Identity.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	11,  // 315: clouditor.ontology.v1.Identity.authorization:type_name -> clouditor.ontology.v1.Authorization
+	65,  // 316: clouditor.ontology.v1.Identity.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 317: clouditor.ontology.v1.Identity.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 318: clouditor.ontology.v1.Identity.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 319: clouditor.ontology.v1.Identity.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	31,  // 320: clouditor.ontology.v1.Image.container_image:type_name -> clouditor.ontology.v1.ContainerImage
+	149, // 321: clouditor.ontology.v1.Image.vm_image:type_name -> clouditor.ontology.v1.VMImage
+	88,  // 322: clouditor.ontology.v1.Integrity.local_attestation:type_name -> clouditor.ontology.v1.LocalAttestation
+	123, // 323: clouditor.ontology.v1.Integrity.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
+	12,  // 324: clouditor.ontology.v1.Integrity.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
+	36,  // 325: clouditor.ontology.v1.Integrity.document_checksum:type_name -> clouditor.ontology.v1.DocumentChecksum
+	77,  // 326: clouditor.ontology.v1.Integrity.immutability:type_name -> clouditor.ontology.v1.Immutability
+	139, // 327: clouditor.ontology.v1.Integrity.document_signature:type_name -> clouditor.ontology.v1.DocumentSignature
+	48,  // 328: clouditor.ontology.v1.IoT.device_provisioning_service:type_name -> clouditor.ontology.v1.DeviceProvisioningService
+	101, // 329: clouditor.ontology.v1.IoT.messaging_hub:type_name -> clouditor.ontology.v1.MessagingHub
+	209, // 330: clouditor.ontology.v1.Job.creation_time:type_name -> google.protobuf.Timestamp
+	177, // 331: clouditor.ontology.v1.Job.labels:type_name -> clouditor.ontology.v1.Job.LabelsEntry
+	65,  // 332: clouditor.ontology.v1.Job.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 333: clouditor.ontology.v1.Job.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 334: clouditor.ontology.v1.Job.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 335: clouditor.ontology.v1.Job.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	209, // 336: clouditor.ontology.v1.Key.creation_time:type_name -> google.protobuf.Timestamp
+	209, // 337: clouditor.ontology.v1.Key.expiration_date:type_name -> google.protobuf.Timestamp
+	178, // 338: clouditor.ontology.v1.Key.labels:type_name -> clouditor.ontology.v1.Key.LabelsEntry
+	209, // 339: clouditor.ontology.v1.Key.not_before_date:type_name -> google.protobuf.Timestamp
+	65,  // 340: clouditor.ontology.v1.Key.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 341: clouditor.ontology.v1.Key.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 342: clouditor.ontology.v1.Key.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 343: clouditor.ontology.v1.Key.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	209, // 344: clouditor.ontology.v1.KeyValueDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
+	179, // 345: clouditor.ontology.v1.KeyValueDatabaseService.labels:type_name -> clouditor.ontology.v1.KeyValueDatabaseService.LabelsEntry
+	3,   // 346: clouditor.ontology.v1.KeyValueDatabaseService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	4,   // 347: clouditor.ontology.v1.KeyValueDatabaseService.anomaly_detections:type_name -> clouditor.ontology.v1.AnomalyDetection
+	10,  // 348: clouditor.ontology.v1.KeyValueDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	65,  // 349: clouditor.ontology.v1.KeyValueDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	69,  // 350: clouditor.ontology.v1.KeyValueDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	93,  // 351: clouditor.ontology.v1.KeyValueDatabaseService.loggings:type_name -> clouditor.ontology.v1.Logging
+	99,  // 352: clouditor.ontology.v1.KeyValueDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	120, // 353: clouditor.ontology.v1.KeyValueDatabaseService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 354: clouditor.ontology.v1.KeyValueDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 355: clouditor.ontology.v1.KeyValueDatabaseService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	209, // 356: clouditor.ontology.v1.KeyVault.creation_time:type_name -> google.protobuf.Timestamp
+	180, // 357: clouditor.ontology.v1.KeyVault.labels:type_name -> clouditor.ontology.v1.KeyVault.LabelsEntry
+	65,  // 358: clouditor.ontology.v1.KeyVault.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 359: clouditor.ontology.v1.KeyVault.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 360: clouditor.ontology.v1.KeyVault.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 361: clouditor.ontology.v1.KeyVault.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	209, // 362: clouditor.ontology.v1.Library.creation_time:type_name -> google.protobuf.Timestamp
+	181, // 363: clouditor.ontology.v1.Library.labels:type_name -> clouditor.ontology.v1.Library.LabelsEntry
+	62,  // 364: clouditor.ontology.v1.Library.functionalities:type_name -> clouditor.ontology.v1.Functionality
+	153, // 365: clouditor.ontology.v1.Library.vulnerabilities:type_name -> clouditor.ontology.v1.Vulnerability
+	209, // 366: clouditor.ontology.v1.LoadBalancer.creation_time:type_name -> google.protobuf.Timestamp
+	182, // 367: clouditor.ontology.v1.LoadBalancer.labels:type_name -> clouditor.ontology.v1.LoadBalancer.LabelsEntry
+	1,   // 368: clouditor.ontology.v1.LoadBalancer.access_restriction:type_name -> clouditor.ontology.v1.AccessRestriction
+	10,  // 369: clouditor.ontology.v1.LoadBalancer.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	65,  // 370: clouditor.ontology.v1.LoadBalancer.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	69,  // 371: clouditor.ontology.v1.LoadBalancer.http_endpoints:type_name -> clouditor.ontology.v1.HttpEndpoint
+	93,  // 372: clouditor.ontology.v1.LoadBalancer.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 373: clouditor.ontology.v1.LoadBalancer.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 374: clouditor.ontology.v1.LoadBalancer.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 375: clouditor.ontology.v1.LoadBalancer.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	7,   // 376: clouditor.ontology.v1.LocalDataLocation.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
+	65,  // 377: clouditor.ontology.v1.LocalRedundancy.geo_locations:type_name -> clouditor.ontology.v1.GeoLocation
+	25,  // 378: clouditor.ontology.v1.LogOperation.code_region:type_name -> clouditor.ontology.v1.CodeRegion
+	93,  // 379: clouditor.ontology.v1.LogOperation.logging:type_name -> clouditor.ontology.v1.Logging
+	3,   // 380: clouditor.ontology.v1.Logging.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	6,   // 381: clouditor.ontology.v1.Logging.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
+	17,  // 382: clouditor.ontology.v1.Logging.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
+	110, // 383: clouditor.ontology.v1.Logging.os_logging:type_name -> clouditor.ontology.v1.OSLogging
+	127, // 384: clouditor.ontology.v1.Logging.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	209, // 385: clouditor.ontology.v1.LoggingService.creation_time:type_name -> google.protobuf.Timestamp
+	183, // 386: clouditor.ontology.v1.LoggingService.labels:type_name -> clouditor.ontology.v1.LoggingService.LabelsEntry
+	10,  // 387: clouditor.ontology.v1.LoggingService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	65,  // 388: clouditor.ontology.v1.LoggingService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 389: clouditor.ontology.v1.LoggingService.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 390: clouditor.ontology.v1.LoggingService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 391: clouditor.ontology.v1.LoggingService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 392: clouditor.ontology.v1.LoggingService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	96,  // 393: clouditor.ontology.v1.MachineLearning.machine_learning_dataset:type_name -> clouditor.ontology.v1.MachineLearningDataset
+	97,  // 394: clouditor.ontology.v1.MachineLearning.machine_learning_model:type_name -> clouditor.ontology.v1.MachineLearningModel
+	209, // 395: clouditor.ontology.v1.MachineLearningDataset.creation_time:type_name -> google.protobuf.Timestamp
+	184, // 396: clouditor.ontology.v1.MachineLearningDataset.labels:type_name -> clouditor.ontology.v1.MachineLearningDataset.LabelsEntry
+	41,  // 397: clouditor.ontology.v1.MachineLearningDataset.data_location:type_name -> clouditor.ontology.v1.DataLocation
+	209, // 398: clouditor.ontology.v1.MachineLearningModel.creation_time:type_name -> google.protobuf.Timestamp
+	185, // 399: clouditor.ontology.v1.MachineLearningModel.labels:type_name -> clouditor.ontology.v1.MachineLearningModel.LabelsEntry
+	41,  // 400: clouditor.ontology.v1.MachineLearningModel.data_location:type_name -> clouditor.ontology.v1.DataLocation
+	209, // 401: clouditor.ontology.v1.MachineLearningService.creation_time:type_name -> google.protobuf.Timestamp
+	186, // 402: clouditor.ontology.v1.MachineLearningService.labels:type_name -> clouditor.ontology.v1.MachineLearningService.LabelsEntry
+	10,  // 403: clouditor.ontology.v1.MachineLearningService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	65,  // 404: clouditor.ontology.v1.MachineLearningService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 405: clouditor.ontology.v1.MachineLearningService.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 406: clouditor.ontology.v1.MachineLearningService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 407: clouditor.ontology.v1.MachineLearningService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 408: clouditor.ontology.v1.MachineLearningService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 409: clouditor.ontology.v1.MalwareProtection.duration_since_active:type_name -> google.protobuf.Duration
+	6,   // 410: clouditor.ontology.v1.MalwareProtection.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
+	209, // 411: clouditor.ontology.v1.MessagingHub.creation_time:type_name -> google.protobuf.Timestamp
+	187, // 412: clouditor.ontology.v1.MessagingHub.labels:type_name -> clouditor.ontology.v1.MessagingHub.LabelsEntry
+	65,  // 413: clouditor.ontology.v1.MessagingHub.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 414: clouditor.ontology.v1.MessagingHub.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 415: clouditor.ontology.v1.MessagingHub.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 416: clouditor.ontology.v1.MessagingHub.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	142, // 417: clouditor.ontology.v1.CodeModule.source_code_file:type_name -> clouditor.ontology.v1.SourceCodeFile
+	10,  // 418: clouditor.ontology.v1.MultiFactorAuthentiation.authenticities:type_name -> clouditor.ontology.v1.Authenticity
+	209, // 419: clouditor.ontology.v1.MultiModalDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
+	188, // 420: clouditor.ontology.v1.MultiModalDatabaseService.labels:type_name -> clouditor.ontology.v1.MultiModalDatabaseService.LabelsEntry
+	3,   // 421: clouditor.ontology.v1.MultiModalDatabaseService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	4,   // 422: clouditor.ontology.v1.MultiModalDatabaseService.anomaly_detections:type_name -> clouditor.ontology.v1.AnomalyDetection
+	10,  // 423: clouditor.ontology.v1.MultiModalDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	65,  // 424: clouditor.ontology.v1.MultiModalDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	69,  // 425: clouditor.ontology.v1.MultiModalDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	93,  // 426: clouditor.ontology.v1.MultiModalDatabaseService.loggings:type_name -> clouditor.ontology.v1.Logging
+	99,  // 427: clouditor.ontology.v1.MultiModalDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	120, // 428: clouditor.ontology.v1.MultiModalDatabaseService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 429: clouditor.ontology.v1.MultiModalDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 430: clouditor.ontology.v1.MultiModalDatabaseService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	209, // 431: clouditor.ontology.v1.NetworkInterface.creation_time:type_name -> google.protobuf.Timestamp
+	189, // 432: clouditor.ontology.v1.NetworkInterface.labels:type_name -> clouditor.ontology.v1.NetworkInterface.LabelsEntry
+	1,   // 433: clouditor.ontology.v1.NetworkInterface.access_restriction:type_name -> clouditor.ontology.v1.AccessRestriction
+	65,  // 434: clouditor.ontology.v1.NetworkInterface.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 435: clouditor.ontology.v1.NetworkInterface.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 436: clouditor.ontology.v1.NetworkInterface.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 437: clouditor.ontology.v1.NetworkInterface.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	209, // 438: clouditor.ontology.v1.NetworkSecurityGroup.creation_time:type_name -> google.protobuf.Timestamp
+	190, // 439: clouditor.ontology.v1.NetworkSecurityGroup.labels:type_name -> clouditor.ontology.v1.NetworkSecurityGroup.LabelsEntry
+	65,  // 440: clouditor.ontology.v1.NetworkSecurityGroup.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 441: clouditor.ontology.v1.NetworkSecurityGroup.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 442: clouditor.ontology.v1.NetworkSecurityGroup.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 443: clouditor.ontology.v1.NetworkSecurityGroup.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	61,  // 444: clouditor.ontology.v1.NetworkService.function_service:type_name -> clouditor.ontology.v1.FunctionService
+	64,  // 445: clouditor.ontology.v1.NetworkService.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
+	87,  // 446: clouditor.ontology.v1.NetworkService.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
+	94,  // 447: clouditor.ontology.v1.NetworkService.logging_service:type_name -> clouditor.ontology.v1.LoggingService
+	98,  // 448: clouditor.ontology.v1.NetworkService.machine_learning_service:type_name -> clouditor.ontology.v1.MachineLearningService
+	135, // 449: clouditor.ontology.v1.NetworkService.security_advisory_service:type_name -> clouditor.ontology.v1.SecurityAdvisoryService
+	50,  // 450: clouditor.ontology.v1.NetworkService.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
+	83,  // 451: clouditor.ontology.v1.NetworkService.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
+	104, // 452: clouditor.ontology.v1.NetworkService.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
+	121, // 453: clouditor.ontology.v1.NetworkService.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
+	57,  // 454: clouditor.ontology.v1.NetworkService.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
+	114, // 455: clouditor.ontology.v1.NetworkService.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
+	105, // 456: clouditor.ontology.v1.Networking.network_interface:type_name -> clouditor.ontology.v1.NetworkInterface
+	106, // 457: clouditor.ontology.v1.Networking.network_security_group:type_name -> clouditor.ontology.v1.NetworkSecurityGroup
+	61,  // 458: clouditor.ontology.v1.Networking.function_service:type_name -> clouditor.ontology.v1.FunctionService
+	64,  // 459: clouditor.ontology.v1.Networking.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
+	87,  // 460: clouditor.ontology.v1.Networking.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
+	94,  // 461: clouditor.ontology.v1.Networking.logging_service:type_name -> clouditor.ontology.v1.LoggingService
+	98,  // 462: clouditor.ontology.v1.Networking.machine_learning_service:type_name -> clouditor.ontology.v1.MachineLearningService
+	135, // 463: clouditor.ontology.v1.Networking.security_advisory_service:type_name -> clouditor.ontology.v1.SecurityAdvisoryService
+	50,  // 464: clouditor.ontology.v1.Networking.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
+	83,  // 465: clouditor.ontology.v1.Networking.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
+	104, // 466: clouditor.ontology.v1.Networking.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
+	121, // 467: clouditor.ontology.v1.Networking.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
+	57,  // 468: clouditor.ontology.v1.Networking.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
+	114, // 469: clouditor.ontology.v1.Networking.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
+	151, // 470: clouditor.ontology.v1.Networking.virtual_network:type_name -> clouditor.ontology.v1.VirtualNetwork
+	152, // 471: clouditor.ontology.v1.Networking.virtual_sub_network:type_name -> clouditor.ontology.v1.VirtualSubNetwork
+	210, // 472: clouditor.ontology.v1.OSLogging.retention_period:type_name -> google.protobuf.Duration
+	209, // 473: clouditor.ontology.v1.ObjectStorage.creation_time:type_name -> google.protobuf.Timestamp
+	191, // 474: clouditor.ontology.v1.ObjectStorage.labels:type_name -> clouditor.ontology.v1.ObjectStorage.LabelsEntry
+	3,   // 475: clouditor.ontology.v1.ObjectStorage.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	7,   // 476: clouditor.ontology.v1.ObjectStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
+	15,  // 477: clouditor.ontology.v1.ObjectStorage.backups:type_name -> clouditor.ontology.v1.Backup
+	65,  // 478: clouditor.ontology.v1.ObjectStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	77,  // 479: clouditor.ontology.v1.ObjectStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
+	93,  // 480: clouditor.ontology.v1.ObjectStorage.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 481: clouditor.ontology.v1.ObjectStorage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	127, // 482: clouditor.ontology.v1.ObjectStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	148, // 483: clouditor.ontology.v1.ObjectStorage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	25,  // 484: clouditor.ontology.v1.ObjectStorageRequest.code_region:type_name -> clouditor.ontology.v1.CodeRegion
+	209, // 485: clouditor.ontology.v1.ObjectStorageService.creation_time:type_name -> google.protobuf.Timestamp
+	192, // 486: clouditor.ontology.v1.ObjectStorageService.labels:type_name -> clouditor.ontology.v1.ObjectStorageService.LabelsEntry
+	3,   // 487: clouditor.ontology.v1.ObjectStorageService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	10,  // 488: clouditor.ontology.v1.ObjectStorageService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	65,  // 489: clouditor.ontology.v1.ObjectStorageService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	69,  // 490: clouditor.ontology.v1.ObjectStorageService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	93,  // 491: clouditor.ontology.v1.ObjectStorageService.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 492: clouditor.ontology.v1.ObjectStorageService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 493: clouditor.ontology.v1.ObjectStorageService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 494: clouditor.ontology.v1.ObjectStorageService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	47,  // 495: clouditor.ontology.v1.Operation.decryption:type_name -> clouditor.ontology.v1.Decryption
+	52,  // 496: clouditor.ontology.v1.Operation.encryption:type_name -> clouditor.ontology.v1.Encryption
+	67,  // 497: clouditor.ontology.v1.Operation.cryptographic_hash:type_name -> clouditor.ontology.v1.CryptographicHash
+	42,  // 498: clouditor.ontology.v1.Operation.database_connect:type_name -> clouditor.ontology.v1.DatabaseConnect
+	44,  // 499: clouditor.ontology.v1.Operation.database_query:type_name -> clouditor.ontology.v1.DatabaseQuery
+	70,  // 500: clouditor.ontology.v1.Operation.http_request:type_name -> clouditor.ontology.v1.HttpRequest
+	91,  // 501: clouditor.ontology.v1.Operation.log_operation:type_name -> clouditor.ontology.v1.LogOperation
+	113, // 502: clouditor.ontology.v1.Operation.object_storage_request:type_name -> clouditor.ontology.v1.ObjectStorageRequest
+	209, // 503: clouditor.ontology.v1.PasswordPolicy.creation_time:type_name -> google.protobuf.Timestamp
+	193, // 504: clouditor.ontology.v1.PasswordPolicy.labels:type_name -> clouditor.ontology.v1.PasswordPolicy.LabelsEntry
+	65,  // 505: clouditor.ontology.v1.PasswordPolicy.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 506: clouditor.ontology.v1.PasswordPolicy.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 507: clouditor.ontology.v1.PasswordPolicy.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 508: clouditor.ontology.v1.PasswordPolicy.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	209, // 509: clouditor.ontology.v1.PolicyDocument.creation_time:type_name -> google.protobuf.Timestamp
+	194, // 510: clouditor.ontology.v1.PolicyDocument.labels:type_name -> clouditor.ontology.v1.PolicyDocument.LabelsEntry
+	41,  // 511: clouditor.ontology.v1.PolicyDocument.data_location:type_name -> clouditor.ontology.v1.DataLocation
+	36,  // 512: clouditor.ontology.v1.PolicyDocument.document_checksums:type_name -> clouditor.ontology.v1.DocumentChecksum
+	139, // 513: clouditor.ontology.v1.PolicyDocument.document_signatures:type_name -> clouditor.ontology.v1.DocumentSignature
+	131, // 514: clouditor.ontology.v1.PolicyDocument.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
+	136, // 515: clouditor.ontology.v1.PolicyDocument.security_features:type_name -> clouditor.ontology.v1.SecurityFeature
+	66,  // 516: clouditor.ontology.v1.Redundancy.geo_redundancy:type_name -> clouditor.ontology.v1.GeoRedundancy
+	90,  // 517: clouditor.ontology.v1.Redundancy.local_redundancy:type_name -> clouditor.ontology.v1.LocalRedundancy
+	156, // 518: clouditor.ontology.v1.Redundancy.zone_redundancy:type_name -> clouditor.ontology.v1.ZoneRedundancy
+	209, // 519: clouditor.ontology.v1.RelationalDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
+	195, // 520: clouditor.ontology.v1.RelationalDatabaseService.labels:type_name -> clouditor.ontology.v1.RelationalDatabaseService.LabelsEntry
+	3,   // 521: clouditor.ontology.v1.RelationalDatabaseService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	4,   // 522: clouditor.ontology.v1.RelationalDatabaseService.anomaly_detections:type_name -> clouditor.ontology.v1.AnomalyDetection
+	10,  // 523: clouditor.ontology.v1.RelationalDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	65,  // 524: clouditor.ontology.v1.RelationalDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	69,  // 525: clouditor.ontology.v1.RelationalDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	93,  // 526: clouditor.ontology.v1.RelationalDatabaseService.loggings:type_name -> clouditor.ontology.v1.Logging
+	99,  // 527: clouditor.ontology.v1.RelationalDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	120, // 528: clouditor.ontology.v1.RelationalDatabaseService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 529: clouditor.ontology.v1.RelationalDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 530: clouditor.ontology.v1.RelationalDatabaseService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	55,  // 531: clouditor.ontology.v1.Reliability.explainable_results:type_name -> clouditor.ontology.v1.ExplainableResults
+	129, // 532: clouditor.ontology.v1.Reliability.robustness_score:type_name -> clouditor.ontology.v1.RobustnessScore
+	209, // 533: clouditor.ontology.v1.RemoteAttestation.creation_time:type_name -> google.protobuf.Timestamp
+	10,  // 534: clouditor.ontology.v1.RemoteDataLocation.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	147, // 535: clouditor.ontology.v1.RemoteDataLocation.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	2,   // 536: clouditor.ontology.v1.Resource.account:type_name -> clouditor.ontology.v1.Account
+	80,  // 537: clouditor.ontology.v1.Resource.job:type_name -> clouditor.ontology.v1.Job
+	155, // 538: clouditor.ontology.v1.Resource.workflow:type_name -> clouditor.ontology.v1.Workflow
+	26,  // 539: clouditor.ontology.v1.Resource.code_repository:type_name -> clouditor.ontology.v1.CodeRepository
+	30,  // 540: clouditor.ontology.v1.Resource.container:type_name -> clouditor.ontology.v1.Container
+	60,  // 541: clouditor.ontology.v1.Resource.function:type_name -> clouditor.ontology.v1.Function
+	150, // 542: clouditor.ontology.v1.Resource.virtual_machine:type_name -> clouditor.ontology.v1.VirtualMachine
+	32,  // 543: clouditor.ontology.v1.Resource.container_orchestration:type_name -> clouditor.ontology.v1.ContainerOrchestration
+	33,  // 544: clouditor.ontology.v1.Resource.container_registry:type_name -> clouditor.ontology.v1.ContainerRegistry
+	19,  // 545: clouditor.ontology.v1.Resource.certificate:type_name -> clouditor.ontology.v1.Certificate
+	82,  // 546: clouditor.ontology.v1.Resource.key:type_name -> clouditor.ontology.v1.Key
+	132, // 547: clouditor.ontology.v1.Resource.secret:type_name -> clouditor.ontology.v1.Secret
+	75,  // 548: clouditor.ontology.v1.Resource.identity:type_name -> clouditor.ontology.v1.Identity
+	130, // 549: clouditor.ontology.v1.Resource.role_assignment:type_name -> clouditor.ontology.v1.RoleAssignment
+	31,  // 550: clouditor.ontology.v1.Resource.container_image:type_name -> clouditor.ontology.v1.ContainerImage
+	149, // 551: clouditor.ontology.v1.Resource.vm_image:type_name -> clouditor.ontology.v1.VMImage
+	48,  // 552: clouditor.ontology.v1.Resource.device_provisioning_service:type_name -> clouditor.ontology.v1.DeviceProvisioningService
+	101, // 553: clouditor.ontology.v1.Resource.messaging_hub:type_name -> clouditor.ontology.v1.MessagingHub
+	84,  // 554: clouditor.ontology.v1.Resource.key_vault:type_name -> clouditor.ontology.v1.KeyVault
+	105, // 555: clouditor.ontology.v1.Resource.network_interface:type_name -> clouditor.ontology.v1.NetworkInterface
+	106, // 556: clouditor.ontology.v1.Resource.network_security_group:type_name -> clouditor.ontology.v1.NetworkSecurityGroup
+	61,  // 557: clouditor.ontology.v1.Resource.function_service:type_name -> clouditor.ontology.v1.FunctionService
+	64,  // 558: clouditor.ontology.v1.Resource.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
+	87,  // 559: clouditor.ontology.v1.Resource.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
+	94,  // 560: clouditor.ontology.v1.Resource.logging_service:type_name -> clouditor.ontology.v1.LoggingService
+	98,  // 561: clouditor.ontology.v1.Resource.machine_learning_service:type_name -> clouditor.ontology.v1.MachineLearningService
+	135, // 562: clouditor.ontology.v1.Resource.security_advisory_service:type_name -> clouditor.ontology.v1.SecurityAdvisoryService
+	50,  // 563: clouditor.ontology.v1.Resource.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
+	83,  // 564: clouditor.ontology.v1.Resource.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
+	104, // 565: clouditor.ontology.v1.Resource.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
+	121, // 566: clouditor.ontology.v1.Resource.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
+	57,  // 567: clouditor.ontology.v1.Resource.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
+	114, // 568: clouditor.ontology.v1.Resource.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
+	151, // 569: clouditor.ontology.v1.Resource.virtual_network:type_name -> clouditor.ontology.v1.VirtualNetwork
+	152, // 570: clouditor.ontology.v1.Resource.virtual_sub_network:type_name -> clouditor.ontology.v1.VirtualSubNetwork
+	117, // 571: clouditor.ontology.v1.Resource.password_policy:type_name -> clouditor.ontology.v1.PasswordPolicy
+	126, // 572: clouditor.ontology.v1.Resource.resource_group:type_name -> clouditor.ontology.v1.ResourceGroup
+	16,  // 573: clouditor.ontology.v1.Resource.block_storage:type_name -> clouditor.ontology.v1.BlockStorage
+	46,  // 574: clouditor.ontology.v1.Resource.database_storage:type_name -> clouditor.ontology.v1.DatabaseStorage
+	56,  // 575: clouditor.ontology.v1.Resource.file_storage:type_name -> clouditor.ontology.v1.FileStorage
+	112, // 576: clouditor.ontology.v1.Resource.object_storage:type_name -> clouditor.ontology.v1.ObjectStorage
+	63,  // 577: clouditor.ontology.v1.Resource.generic_document:type_name -> clouditor.ontology.v1.GenericDocument
+	118, // 578: clouditor.ontology.v1.Resource.policy_document:type_name -> clouditor.ontology.v1.PolicyDocument
+	133, // 579: clouditor.ontology.v1.Resource.security_advisory_document:type_name -> clouditor.ontology.v1.SecurityAdvisoryDocument
+	138, // 580: clouditor.ontology.v1.Resource.service_metadata_document:type_name -> clouditor.ontology.v1.ServiceMetadataDocument
+	96,  // 581: clouditor.ontology.v1.Resource.machine_learning_dataset:type_name -> clouditor.ontology.v1.MachineLearningDataset
+	97,  // 582: clouditor.ontology.v1.Resource.machine_learning_model:type_name -> clouditor.ontology.v1.MachineLearningModel
+	14,  // 583: clouditor.ontology.v1.Resource.awareness_training:type_name -> clouditor.ontology.v1.AwarenessTraining
+	137, // 584: clouditor.ontology.v1.Resource.security_training:type_name -> clouditor.ontology.v1.SecurityTraining
+	5,   // 585: clouditor.ontology.v1.Resource.application:type_name -> clouditor.ontology.v1.Application
+	86,  // 586: clouditor.ontology.v1.Resource.library:type_name -> clouditor.ontology.v1.Library
+	142, // 587: clouditor.ontology.v1.Resource.source_code_file:type_name -> clouditor.ontology.v1.SourceCodeFile
+	209, // 588: clouditor.ontology.v1.ResourceGroup.creation_time:type_name -> google.protobuf.Timestamp
+	196, // 589: clouditor.ontology.v1.ResourceGroup.labels:type_name -> clouditor.ontology.v1.ResourceGroup.LabelsEntry
+	65,  // 590: clouditor.ontology.v1.ResourceGroup.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 591: clouditor.ontology.v1.ResourceGroup.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 592: clouditor.ontology.v1.ResourceGroup.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 593: clouditor.ontology.v1.ResourceGroup.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 594: clouditor.ontology.v1.ResourceLogging.retention_period:type_name -> google.protobuf.Duration
+	209, // 595: clouditor.ontology.v1.RoleAssignment.creation_time:type_name -> google.protobuf.Timestamp
+	197, // 596: clouditor.ontology.v1.RoleAssignment.labels:type_name -> clouditor.ontology.v1.RoleAssignment.LabelsEntry
+	10,  // 597: clouditor.ontology.v1.RoleAssignment.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	11,  // 598: clouditor.ontology.v1.RoleAssignment.authorization:type_name -> clouditor.ontology.v1.Authorization
+	65,  // 599: clouditor.ontology.v1.RoleAssignment.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 600: clouditor.ontology.v1.RoleAssignment.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 601: clouditor.ontology.v1.RoleAssignment.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 602: clouditor.ontology.v1.RoleAssignment.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	53,  // 603: clouditor.ontology.v1.SchemaValidation.errors:type_name -> clouditor.ontology.v1.Error
+	209, // 604: clouditor.ontology.v1.Secret.creation_time:type_name -> google.protobuf.Timestamp
+	209, // 605: clouditor.ontology.v1.Secret.expiration_date:type_name -> google.protobuf.Timestamp
+	198, // 606: clouditor.ontology.v1.Secret.labels:type_name -> clouditor.ontology.v1.Secret.LabelsEntry
+	209, // 607: clouditor.ontology.v1.Secret.not_before_date:type_name -> google.protobuf.Timestamp
+	65,  // 608: clouditor.ontology.v1.Secret.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 609: clouditor.ontology.v1.Secret.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 610: clouditor.ontology.v1.Secret.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 611: clouditor.ontology.v1.Secret.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	209, // 612: clouditor.ontology.v1.SecurityAdvisoryDocument.creation_time:type_name -> google.protobuf.Timestamp
+	199, // 613: clouditor.ontology.v1.SecurityAdvisoryDocument.labels:type_name -> clouditor.ontology.v1.SecurityAdvisoryDocument.LabelsEntry
+	41,  // 614: clouditor.ontology.v1.SecurityAdvisoryDocument.data_location:type_name -> clouditor.ontology.v1.DataLocation
+	36,  // 615: clouditor.ontology.v1.SecurityAdvisoryDocument.document_checksums:type_name -> clouditor.ontology.v1.DocumentChecksum
+	139, // 616: clouditor.ontology.v1.SecurityAdvisoryDocument.document_signatures:type_name -> clouditor.ontology.v1.DocumentSignature
+	131, // 617: clouditor.ontology.v1.SecurityAdvisoryDocument.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
+	136, // 618: clouditor.ontology.v1.SecurityAdvisoryDocument.security_features:type_name -> clouditor.ontology.v1.SecurityFeature
+	153, // 619: clouditor.ontology.v1.SecurityAdvisoryDocument.vulnerabilities:type_name -> clouditor.ontology.v1.Vulnerability
+	209, // 620: clouditor.ontology.v1.SecurityAdvisoryService.creation_time:type_name -> google.protobuf.Timestamp
+	200, // 621: clouditor.ontology.v1.SecurityAdvisoryService.labels:type_name -> clouditor.ontology.v1.SecurityAdvisoryService.LabelsEntry
+	10,  // 622: clouditor.ontology.v1.SecurityAdvisoryService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	65,  // 623: clouditor.ontology.v1.SecurityAdvisoryService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 624: clouditor.ontology.v1.SecurityAdvisoryService.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 625: clouditor.ontology.v1.SecurityAdvisoryService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	134, // 626: clouditor.ontology.v1.SecurityAdvisoryService.security_advisory_feeds:type_name -> clouditor.ontology.v1.SecurityAdvisoryFeed
+	147, // 627: clouditor.ontology.v1.SecurityAdvisoryService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 628: clouditor.ontology.v1.SecurityAdvisoryService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	4,   // 629: clouditor.ontology.v1.SecurityFeature.anomaly_detection:type_name -> clouditor.ontology.v1.AnomalyDetection
+	3,   // 630: clouditor.ontology.v1.SecurityFeature.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	6,   // 631: clouditor.ontology.v1.SecurityFeature.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
+	17,  // 632: clouditor.ontology.v1.SecurityFeature.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
+	110, // 633: clouditor.ontology.v1.SecurityFeature.os_logging:type_name -> clouditor.ontology.v1.OSLogging
+	127, // 634: clouditor.ontology.v1.SecurityFeature.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	99,  // 635: clouditor.ontology.v1.SecurityFeature.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	148, // 636: clouditor.ontology.v1.SecurityFeature.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	20,  // 637: clouditor.ontology.v1.SecurityFeature.certificate_based_authentication:type_name -> clouditor.ontology.v1.CertificateBasedAuthentication
+	81,  // 638: clouditor.ontology.v1.SecurityFeature.token_based_authentication:type_name -> clouditor.ontology.v1.TokenBasedAuthentication
+	103, // 639: clouditor.ontology.v1.SecurityFeature.multi_factor_authentiation:type_name -> clouditor.ontology.v1.MultiFactorAuthentiation
+	109, // 640: clouditor.ontology.v1.SecurityFeature.no_authentication:type_name -> clouditor.ontology.v1.NoAuthentication
+	111, // 641: clouditor.ontology.v1.SecurityFeature.otp_based_authentication:type_name -> clouditor.ontology.v1.OTPBasedAuthentication
+	116, // 642: clouditor.ontology.v1.SecurityFeature.password_based_authentication:type_name -> clouditor.ontology.v1.PasswordBasedAuthentication
+	140, // 643: clouditor.ontology.v1.SecurityFeature.single_sign_on:type_name -> clouditor.ontology.v1.SingleSignOn
+	0,   // 644: clouditor.ontology.v1.SecurityFeature.abac:type_name -> clouditor.ontology.v1.ABAC
+	85,  // 645: clouditor.ontology.v1.SecurityFeature.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
+	154, // 646: clouditor.ontology.v1.SecurityFeature.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
+	119, // 647: clouditor.ontology.v1.SecurityFeature.rbac:type_name -> clouditor.ontology.v1.RBAC
+	15,  // 648: clouditor.ontology.v1.SecurityFeature.backup:type_name -> clouditor.ontology.v1.Backup
+	39,  // 649: clouditor.ontology.v1.SecurityFeature.d_do_s_protection:type_name -> clouditor.ontology.v1.DDoSProtection
+	65,  // 650: clouditor.ontology.v1.SecurityFeature.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	66,  // 651: clouditor.ontology.v1.SecurityFeature.geo_redundancy:type_name -> clouditor.ontology.v1.GeoRedundancy
+	90,  // 652: clouditor.ontology.v1.SecurityFeature.local_redundancy:type_name -> clouditor.ontology.v1.LocalRedundancy
+	156, // 653: clouditor.ontology.v1.SecurityFeature.zone_redundancy:type_name -> clouditor.ontology.v1.ZoneRedundancy
+	38,  // 654: clouditor.ontology.v1.SecurityFeature.customer_key_encryption:type_name -> clouditor.ontology.v1.CustomerKeyEncryption
+	100, // 655: clouditor.ontology.v1.SecurityFeature.managed_key_encryption:type_name -> clouditor.ontology.v1.ManagedKeyEncryption
+	51,  // 656: clouditor.ontology.v1.SecurityFeature.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
+	147, // 657: clouditor.ontology.v1.SecurityFeature.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	88,  // 658: clouditor.ontology.v1.SecurityFeature.local_attestation:type_name -> clouditor.ontology.v1.LocalAttestation
+	123, // 659: clouditor.ontology.v1.SecurityFeature.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
+	12,  // 660: clouditor.ontology.v1.SecurityFeature.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
+	36,  // 661: clouditor.ontology.v1.SecurityFeature.document_checksum:type_name -> clouditor.ontology.v1.DocumentChecksum
+	77,  // 662: clouditor.ontology.v1.SecurityFeature.immutability:type_name -> clouditor.ontology.v1.Immutability
+	139, // 663: clouditor.ontology.v1.SecurityFeature.document_signature:type_name -> clouditor.ontology.v1.DocumentSignature
+	55,  // 664: clouditor.ontology.v1.SecurityFeature.explainable_results:type_name -> clouditor.ontology.v1.ExplainableResults
+	129, // 665: clouditor.ontology.v1.SecurityFeature.robustness_score:type_name -> clouditor.ontology.v1.RobustnessScore
+	209, // 666: clouditor.ontology.v1.SecurityTraining.creation_time:type_name -> google.protobuf.Timestamp
+	201, // 667: clouditor.ontology.v1.SecurityTraining.labels:type_name -> clouditor.ontology.v1.SecurityTraining.LabelsEntry
+	209, // 668: clouditor.ontology.v1.ServiceMetadataDocument.creation_time:type_name -> google.protobuf.Timestamp
+	202, // 669: clouditor.ontology.v1.ServiceMetadataDocument.labels:type_name -> clouditor.ontology.v1.ServiceMetadataDocument.LabelsEntry
+	41,  // 670: clouditor.ontology.v1.ServiceMetadataDocument.data_location:type_name -> clouditor.ontology.v1.DataLocation
+	36,  // 671: clouditor.ontology.v1.ServiceMetadataDocument.document_checksums:type_name -> clouditor.ontology.v1.DocumentChecksum
+	139, // 672: clouditor.ontology.v1.ServiceMetadataDocument.document_signatures:type_name -> clouditor.ontology.v1.DocumentSignature
+	131, // 673: clouditor.ontology.v1.ServiceMetadataDocument.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
+	136, // 674: clouditor.ontology.v1.ServiceMetadataDocument.security_features:type_name -> clouditor.ontology.v1.SecurityFeature
+	53,  // 675: clouditor.ontology.v1.DocumentSignature.errors:type_name -> clouditor.ontology.v1.Error
+	5,   // 676: clouditor.ontology.v1.Code.application:type_name -> clouditor.ontology.v1.Application
+	86,  // 677: clouditor.ontology.v1.Code.library:type_name -> clouditor.ontology.v1.Library
+	142, // 678: clouditor.ontology.v1.Code.source_code_file:type_name -> clouditor.ontology.v1.SourceCodeFile
+	209, // 679: clouditor.ontology.v1.SourceCodeFile.creation_time:type_name -> google.protobuf.Timestamp
+	203, // 680: clouditor.ontology.v1.SourceCodeFile.labels:type_name -> clouditor.ontology.v1.SourceCodeFile.LabelsEntry
+	62,  // 681: clouditor.ontology.v1.SourceCodeFile.functionalities:type_name -> clouditor.ontology.v1.Functionality
+	16,  // 682: clouditor.ontology.v1.Storage.block_storage:type_name -> clouditor.ontology.v1.BlockStorage
+	46,  // 683: clouditor.ontology.v1.Storage.database_storage:type_name -> clouditor.ontology.v1.DatabaseStorage
+	56,  // 684: clouditor.ontology.v1.Storage.file_storage:type_name -> clouditor.ontology.v1.FileStorage
+	112, // 685: clouditor.ontology.v1.Storage.object_storage:type_name -> clouditor.ontology.v1.ObjectStorage
+	50,  // 686: clouditor.ontology.v1.StorageService.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
+	83,  // 687: clouditor.ontology.v1.StorageService.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
+	104, // 688: clouditor.ontology.v1.StorageService.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
+	121, // 689: clouditor.ontology.v1.StorageService.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
+	57,  // 690: clouditor.ontology.v1.StorageService.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
+	114, // 691: clouditor.ontology.v1.StorageService.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
+	14,  // 692: clouditor.ontology.v1.Training.awareness_training:type_name -> clouditor.ontology.v1.AwarenessTraining
+	137, // 693: clouditor.ontology.v1.Training.security_training:type_name -> clouditor.ontology.v1.SecurityTraining
+	22,  // 694: clouditor.ontology.v1.TransportEncryption.cipher_suites:type_name -> clouditor.ontology.v1.CipherSuite
+	209, // 695: clouditor.ontology.v1.VMImage.creation_time:type_name -> google.protobuf.Timestamp
+	204, // 696: clouditor.ontology.v1.VMImage.labels:type_name -> clouditor.ontology.v1.VMImage.LabelsEntry
+	65,  // 697: clouditor.ontology.v1.VMImage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 698: clouditor.ontology.v1.VMImage.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 699: clouditor.ontology.v1.VMImage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 700: clouditor.ontology.v1.VMImage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	209, // 701: clouditor.ontology.v1.VirtualMachine.creation_time:type_name -> google.protobuf.Timestamp
+	205, // 702: clouditor.ontology.v1.VirtualMachine.labels:type_name -> clouditor.ontology.v1.VirtualMachine.LabelsEntry
+	3,   // 703: clouditor.ontology.v1.VirtualMachine.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	12,  // 704: clouditor.ontology.v1.VirtualMachine.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
+	17,  // 705: clouditor.ontology.v1.VirtualMachine.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
+	51,  // 706: clouditor.ontology.v1.VirtualMachine.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
+	65,  // 707: clouditor.ontology.v1.VirtualMachine.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 708: clouditor.ontology.v1.VirtualMachine.loggings:type_name -> clouditor.ontology.v1.Logging
+	99,  // 709: clouditor.ontology.v1.VirtualMachine.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	110, // 710: clouditor.ontology.v1.VirtualMachine.os_logging:type_name -> clouditor.ontology.v1.OSLogging
+	120, // 711: clouditor.ontology.v1.VirtualMachine.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	123, // 712: clouditor.ontology.v1.VirtualMachine.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
+	127, // 713: clouditor.ontology.v1.VirtualMachine.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	148, // 714: clouditor.ontology.v1.VirtualMachine.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	209, // 715: clouditor.ontology.v1.VirtualNetwork.creation_time:type_name -> google.protobuf.Timestamp
+	206, // 716: clouditor.ontology.v1.VirtualNetwork.labels:type_name -> clouditor.ontology.v1.VirtualNetwork.LabelsEntry
+	65,  // 717: clouditor.ontology.v1.VirtualNetwork.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 718: clouditor.ontology.v1.VirtualNetwork.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 719: clouditor.ontology.v1.VirtualNetwork.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 720: clouditor.ontology.v1.VirtualNetwork.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	209, // 721: clouditor.ontology.v1.VirtualSubNetwork.creation_time:type_name -> google.protobuf.Timestamp
+	207, // 722: clouditor.ontology.v1.VirtualSubNetwork.labels:type_name -> clouditor.ontology.v1.VirtualSubNetwork.LabelsEntry
+	65,  // 723: clouditor.ontology.v1.VirtualSubNetwork.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 724: clouditor.ontology.v1.VirtualSubNetwork.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 725: clouditor.ontology.v1.VirtualSubNetwork.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 726: clouditor.ontology.v1.VirtualSubNetwork.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	209, // 727: clouditor.ontology.v1.Workflow.creation_time:type_name -> google.protobuf.Timestamp
+	208, // 728: clouditor.ontology.v1.Workflow.labels:type_name -> clouditor.ontology.v1.Workflow.LabelsEntry
+	65,  // 729: clouditor.ontology.v1.Workflow.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	93,  // 730: clouditor.ontology.v1.Workflow.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 731: clouditor.ontology.v1.Workflow.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 732: clouditor.ontology.v1.Workflow.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	65,  // 733: clouditor.ontology.v1.ZoneRedundancy.geo_locations:type_name -> clouditor.ontology.v1.GeoLocation
+	211, // 734: clouditor.ontology.v1.resource_type_names:extendee -> google.protobuf.MessageOptions
+	735, // [735:735] is the sub-list for method output_type
+	735, // [735:735] is the sub-list for method input_type
+	735, // [735:735] is the sub-list for extension type_name
+	734, // [734:735] is the sub-list for extension extendee
+	0,   // [0:734] is the sub-list for field type_name
 }
 
 func init() { file_api_ontology_ontology_proto_init() }
@@ -21155,6 +22018,7 @@ func file_api_ontology_ontology_proto_init() {
 		(*Infrastructure_GenericNetworkService)(nil),
 		(*Infrastructure_LoadBalancer)(nil),
 		(*Infrastructure_LoggingService)(nil),
+		(*Infrastructure_MachineLearningService)(nil),
 		(*Infrastructure_SecurityAdvisoryService)(nil),
 		(*Infrastructure_DocumentDatabaseService)(nil),
 		(*Infrastructure_KeyValueDatabaseService)(nil),
@@ -21211,50 +22075,58 @@ func file_api_ontology_ontology_proto_init() {
 		(*CryptographicOperation_Encryption)(nil),
 		(*CryptographicOperation_CryptographicHash)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[40].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[40].OneofWrappers = []any{
+		(*Data_GenericDocument)(nil),
+		(*Data_PolicyDocument)(nil),
+		(*Data_SecurityAdvisoryDocument)(nil),
+		(*Data_ServiceMetadataDocument)(nil),
+		(*Data_MachineLearningDataset)(nil),
+		(*Data_MachineLearningModel)(nil),
+	}
 	file_api_ontology_ontology_proto_msgTypes[41].OneofWrappers = []any{
-		(*DatabaseOperation_DatabaseConnect)(nil),
-		(*DatabaseOperation_DatabaseQuery)(nil),
+		(*DataLocation_LocalDataLocation)(nil),
+		(*DataLocation_RemoteDataLocation)(nil),
 	}
 	file_api_ontology_ontology_proto_msgTypes[42].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[43].OneofWrappers = []any{
+		(*DatabaseOperation_DatabaseConnect)(nil),
+		(*DatabaseOperation_DatabaseQuery)(nil),
+	}
+	file_api_ontology_ontology_proto_msgTypes[44].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[45].OneofWrappers = []any{
 		(*DatabaseService_DocumentDatabaseService)(nil),
 		(*DatabaseService_KeyValueDatabaseService)(nil),
 		(*DatabaseService_MultiModalDatabaseService)(nil),
 		(*DatabaseService_RelationalDatabaseService)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[44].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[46].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[47].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[48].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[49].OneofWrappers = []any{
 		(*Document_GenericDocument)(nil),
 		(*Document_PolicyDocument)(nil),
 		(*Document_SecurityAdvisoryDocument)(nil),
 		(*Document_ServiceMetadataDocument)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[48].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[49].OneofWrappers = []any{
-		(*DocumentLocation_LocalDocumentLocation)(nil),
-		(*DocumentLocation_RemoteDocumentLocation)(nil),
-	}
-	file_api_ontology_ontology_proto_msgTypes[55].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[50].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[56].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[57].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[57].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[58].OneofWrappers = []any{
 		(*Firewall_L3Firewall)(nil),
 		(*Firewall_WebApplicationFirewall)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[58].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[59].OneofWrappers = []any{
 		(*Framework_CloudSdk)(nil),
 		(*Framework_HttpClientLibrary)(nil),
 		(*Framework_HttpServer)(nil),
 		(*Framework_Logger)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[59].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[60].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[61].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[61].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[62].OneofWrappers = []any{
 		(*Functionality_CipherSuite)(nil),
 		(*Functionality_CodeRegion)(nil),
-		(*Functionality_LocalDocumentLocation)(nil),
-		(*Functionality_RemoteDocumentLocation)(nil),
+		(*Functionality_LocalDataLocation)(nil),
+		(*Functionality_RemoteDataLocation)(nil),
 		(*Functionality_Error)(nil),
 		(*Functionality_HttpEndpoint)(nil),
 		(*Functionality_HttpRequestHandler)(nil),
@@ -21270,23 +22142,23 @@ func file_api_ontology_ontology_proto_init() {
 		(*Functionality_SecurityAdvisoryFeed)(nil),
 		(*Functionality_Vulnerability)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[62].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[63].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[70].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[72].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[64].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[71].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[73].OneofWrappers = []any{
 		(*HumanResources_AwarenessTraining)(nil),
 		(*HumanResources_SecurityTraining)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[73].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[74].OneofWrappers = []any{
 		(*Identifiable_Identity)(nil),
 		(*Identifiable_RoleAssignment)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[74].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[75].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[75].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[76].OneofWrappers = []any{
 		(*Image_ContainerImage)(nil),
 		(*Image_VmImage)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[77].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[78].OneofWrappers = []any{
 		(*Integrity_LocalAttestation)(nil),
 		(*Integrity_RemoteAttestation)(nil),
 		(*Integrity_AutomaticUpdates)(nil),
@@ -21294,36 +22166,44 @@ func file_api_ontology_ontology_proto_init() {
 		(*Integrity_Immutability)(nil),
 		(*Integrity_DocumentSignature)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[78].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[79].OneofWrappers = []any{
 		(*IoT_DeviceProvisioningService)(nil),
 		(*IoT_MessagingHub)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[79].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[81].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[80].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[82].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[83].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[85].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[84].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[86].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[92].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[87].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[93].OneofWrappers = []any{
 		(*Logging_ActivityLogging)(nil),
 		(*Logging_ApplicationLogging)(nil),
 		(*Logging_BootLogging)(nil),
 		(*Logging_OsLogging)(nil),
 		(*Logging_ResourceLogging)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[93].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[96].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[97].OneofWrappers = []any{
-		(*CodeModule_SourceCodeFile)(nil),
+	file_api_ontology_ontology_proto_msgTypes[94].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[95].OneofWrappers = []any{
+		(*MachineLearning_MachineLearningDataset)(nil),
+		(*MachineLearning_MachineLearningModel)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[99].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[100].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[96].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[97].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[98].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[101].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[102].OneofWrappers = []any{
+		(*CodeModule_SourceCodeFile)(nil),
+	}
+	file_api_ontology_ontology_proto_msgTypes[104].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[105].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[106].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[107].OneofWrappers = []any{
 		(*NetworkService_FunctionService)(nil),
 		(*NetworkService_GenericNetworkService)(nil),
 		(*NetworkService_LoadBalancer)(nil),
 		(*NetworkService_LoggingService)(nil),
+		(*NetworkService_MachineLearningService)(nil),
 		(*NetworkService_SecurityAdvisoryService)(nil),
 		(*NetworkService_DocumentDatabaseService)(nil),
 		(*NetworkService_KeyValueDatabaseService)(nil),
@@ -21332,13 +22212,14 @@ func file_api_ontology_ontology_proto_init() {
 		(*NetworkService_FileStorageService)(nil),
 		(*NetworkService_ObjectStorageService)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[103].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[108].OneofWrappers = []any{
 		(*Networking_NetworkInterface)(nil),
 		(*Networking_NetworkSecurityGroup)(nil),
 		(*Networking_FunctionService)(nil),
 		(*Networking_GenericNetworkService)(nil),
 		(*Networking_LoadBalancer)(nil),
 		(*Networking_LoggingService)(nil),
+		(*Networking_MachineLearningService)(nil),
 		(*Networking_SecurityAdvisoryService)(nil),
 		(*Networking_DocumentDatabaseService)(nil),
 		(*Networking_KeyValueDatabaseService)(nil),
@@ -21349,9 +22230,9 @@ func file_api_ontology_ontology_proto_init() {
 		(*Networking_VirtualNetwork)(nil),
 		(*Networking_VirtualSubNetwork)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[107].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[109].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[110].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[112].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[114].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[115].OneofWrappers = []any{
 		(*Operation_Decryption)(nil),
 		(*Operation_Encryption)(nil),
 		(*Operation_CryptographicHash)(nil),
@@ -21361,19 +22242,19 @@ func file_api_ontology_ontology_proto_init() {
 		(*Operation_LogOperation)(nil),
 		(*Operation_ObjectStorageRequest)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[112].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[113].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[115].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[117].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[118].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[120].OneofWrappers = []any{
 		(*Redundancy_GeoRedundancy)(nil),
 		(*Redundancy_LocalRedundancy)(nil),
 		(*Redundancy_ZoneRedundancy)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[116].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[117].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[121].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[122].OneofWrappers = []any{
 		(*Reliability_ExplainableResults)(nil),
 		(*Reliability_RobustnessScore)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[120].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[125].OneofWrappers = []any{
 		(*Resource_Account)(nil),
 		(*Resource_Job)(nil),
 		(*Resource_Workflow)(nil),
@@ -21399,6 +22280,7 @@ func file_api_ontology_ontology_proto_init() {
 		(*Resource_GenericNetworkService)(nil),
 		(*Resource_LoadBalancer)(nil),
 		(*Resource_LoggingService)(nil),
+		(*Resource_MachineLearningService)(nil),
 		(*Resource_SecurityAdvisoryService)(nil),
 		(*Resource_DocumentDatabaseService)(nil),
 		(*Resource_KeyValueDatabaseService)(nil),
@@ -21418,18 +22300,20 @@ func file_api_ontology_ontology_proto_init() {
 		(*Resource_PolicyDocument)(nil),
 		(*Resource_SecurityAdvisoryDocument)(nil),
 		(*Resource_ServiceMetadataDocument)(nil),
+		(*Resource_MachineLearningDataset)(nil),
+		(*Resource_MachineLearningModel)(nil),
 		(*Resource_AwarenessTraining)(nil),
 		(*Resource_SecurityTraining)(nil),
 		(*Resource_Application)(nil),
 		(*Resource_Library)(nil),
 		(*Resource_SourceCodeFile)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[121].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[125].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[127].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[128].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[126].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[130].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[131].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[132].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[133].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[135].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[136].OneofWrappers = []any{
 		(*SecurityFeature_AnomalyDetection)(nil),
 		(*SecurityFeature_ActivityLogging)(nil),
 		(*SecurityFeature_ApplicationLogging)(nil),
@@ -21468,21 +22352,21 @@ func file_api_ontology_ontology_proto_init() {
 		(*SecurityFeature_ExplainableResults)(nil),
 		(*SecurityFeature_RobustnessScore)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[132].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[133].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[136].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[137].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[138].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[141].OneofWrappers = []any{
 		(*Code_Application)(nil),
 		(*Code_Library)(nil),
 		(*Code_SourceCodeFile)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[137].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[138].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[142].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[143].OneofWrappers = []any{
 		(*Storage_BlockStorage)(nil),
 		(*Storage_DatabaseStorage)(nil),
 		(*Storage_FileStorage)(nil),
 		(*Storage_ObjectStorage)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[139].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[144].OneofWrappers = []any{
 		(*StorageService_DocumentDatabaseService)(nil),
 		(*StorageService_KeyValueDatabaseService)(nil),
 		(*StorageService_MultiModalDatabaseService)(nil),
@@ -21490,22 +22374,22 @@ func file_api_ontology_ontology_proto_init() {
 		(*StorageService_FileStorageService)(nil),
 		(*StorageService_ObjectStorageService)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[141].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[146].OneofWrappers = []any{
 		(*Training_AwarenessTraining)(nil),
 		(*Training_SecurityTraining)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[144].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[145].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[146].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[147].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[149].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[150].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[151].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[152].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[155].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_ontology_ontology_proto_rawDesc), len(file_api_ontology_ontology_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   201,
+			NumMessages:   209,
 			NumExtensions: 1,
 			NumServices:   0,
 		},

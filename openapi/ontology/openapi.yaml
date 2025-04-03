@@ -92,18 +92,12 @@ components:
                     type: string
                 securityAlertsEnabled:
                     type: boolean
-                loggingServiceIds:
-                    type: array
-                    items:
-                        type: string
             description: ActivityLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         AnomalyDetection:
             type: object
             properties:
                 enabled:
                     type: boolean
-                scope:
-                    type: string
                 applicationLogging:
                     $ref: '#/components/schemas/ApplicationLogging'
             description: |-
@@ -172,10 +166,6 @@ components:
                     type: string
                 securityAlertsEnabled:
                     type: boolean
-                loggingServiceIds:
-                    type: array
-                    items:
-                        type: string
             description: ApplicationLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         AtRestEncryption:
             type: object
@@ -334,10 +324,6 @@ components:
                     type: string
                 securityAlertsEnabled:
                     type: boolean
-                loggingServiceIds:
-                    type: array
-                    items:
-                        type: string
             description: BootLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Certificate:
             type: object
@@ -656,6 +642,16 @@ components:
             type: object
             properties: {}
             description: DDoSProtection is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        DataLocation:
+            type: object
+            properties:
+                localDataLocation:
+                    $ref: '#/components/schemas/LocalDataLocation'
+                remoteDataLocation:
+                    $ref: '#/components/schemas/RemoteDataLocation'
+            description: |-
+                DataLocation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+                 path: Describes either local path or path in URL format
         DatabaseConnect:
             type: object
             properties:
@@ -861,14 +857,6 @@ components:
                 usageStatistics:
                     $ref: '#/components/schemas/UsageStatistics'
             description: DocumentDatabaseService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
-        DocumentLocation:
-            type: object
-            properties:
-                localDocumentLocation:
-                    $ref: '#/components/schemas/LocalDocumentLocation'
-                remoteDocumentLocation:
-                    $ref: '#/components/schemas/RemoteDocumentLocation'
-            description: DocumentLocation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
         DocumentSignature:
             type: object
             properties:
@@ -1130,10 +1118,10 @@ components:
                     $ref: '#/components/schemas/CipherSuite'
                 codeRegion:
                     $ref: '#/components/schemas/CodeRegion'
-                localDocumentLocation:
-                    $ref: '#/components/schemas/LocalDocumentLocation'
-                remoteDocumentLocation:
-                    $ref: '#/components/schemas/RemoteDocumentLocation'
+                localDataLocation:
+                    $ref: '#/components/schemas/LocalDataLocation'
+                remoteDataLocation:
+                    $ref: '#/components/schemas/RemoteDataLocation'
                 error:
                     $ref: '#/components/schemas/Error'
                 httpEndpoint:
@@ -1184,12 +1172,12 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                dataLocation:
+                    $ref: '#/components/schemas/DataLocation'
                 documentChecksums:
                     type: array
                     items:
                         $ref: '#/components/schemas/DocumentChecksum'
-                documentLocation:
-                    $ref: '#/components/schemas/DocumentLocation'
                 documentSignatures:
                     type: array
                     items:
@@ -1705,14 +1693,14 @@ components:
                 enabled:
                     type: boolean
             description: LocalAttestation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
-        LocalDocumentLocation:
+        LocalDataLocation:
             type: object
             properties:
                 path:
                     type: string
                 atRestEncryption:
                     $ref: '#/components/schemas/AtRestEncryption'
-            description: LocalDocumentLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+            description: LocalDataLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         LocalRedundancy:
             type: object
             properties:
@@ -1808,6 +1796,138 @@ components:
             description: |-
                 LoggingService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  A logging-as-a-service offering, e.g. for analyzing logs; has a Storage resource that stores the logs
+        MachineLearningDataset:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                description:
+                    type: string
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                size:
+                    type: integer
+                    format: int32
+                type:
+                    type: string
+                dataLocation:
+                    $ref: '#/components/schemas/DataLocation'
+                parentId:
+                    type: string
+            description: MachineLearningDataset is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        MachineLearningModel:
+            type: object
+            properties:
+                advRobustness:
+                    type: number
+                    format: float
+                creationTime:
+                    type: string
+                    format: date-time
+                description:
+                    type: string
+                explainability:
+                    type: number
+                    format: float
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                poisonLevel:
+                    type: number
+                    format: float
+                privacyLabel:
+                    type: number
+                    format: float
+                privacyLevel:
+                    type: number
+                    format: float
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                robustness:
+                    type: number
+                    format: float
+                dataLocation:
+                    $ref: '#/components/schemas/DataLocation'
+                parentId:
+                    type: string
+            description: MachineLearningModel is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        MachineLearningService:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                description:
+                    type: string
+                id:
+                    type: string
+                internetAccessibleEndpoint:
+                    type: boolean
+                ips:
+                    type: array
+                    items:
+                        type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                ports:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                authenticity:
+                    $ref: '#/components/schemas/Authenticity'
+                computeId:
+                    type: string
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
+                machineLearningIds:
+                    type: array
+                    items:
+                        type: string
+                redundancies:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Redundancy'
+                parentId:
+                    type: string
+                serviceMetadataDocumentId:
+                    type: string
+                storageIds:
+                    type: array
+                    items:
+                        type: string
+                transportEncryption:
+                    $ref: '#/components/schemas/TransportEncryption'
+                usageStatistics:
+                    $ref: '#/components/schemas/UsageStatistics'
+            description: MachineLearningService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         MalwareProtection:
             type: object
             properties:
@@ -2043,10 +2163,6 @@ components:
                     type: string
                 securityAlertsEnabled:
                     type: boolean
-                loggingServiceIds:
-                    type: array
-                    items:
-                        type: string
             description: OSLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         OTPBasedAuthentication:
             type: object
@@ -2246,12 +2362,12 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                dataLocation:
+                    $ref: '#/components/schemas/DataLocation'
                 documentChecksums:
                     type: array
                     items:
                         $ref: '#/components/schemas/DocumentChecksum'
-                documentLocation:
-                    $ref: '#/components/schemas/DocumentLocation'
                 documentSignatures:
                     type: array
                     items:
@@ -2365,7 +2481,7 @@ components:
                 status:
                     type: boolean
             description: RemoteAttestation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
-        RemoteDocumentLocation:
+        RemoteDataLocation:
             type: object
             properties:
                 path:
@@ -2374,7 +2490,7 @@ components:
                     $ref: '#/components/schemas/Authenticity'
                 transportEncryption:
                     $ref: '#/components/schemas/TransportEncryption'
-            description: RemoteDocumentLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+            description: RemoteDataLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Resource:
             type: object
             properties:
@@ -2428,6 +2544,8 @@ components:
                     $ref: '#/components/schemas/LoadBalancer'
                 loggingService:
                     $ref: '#/components/schemas/LoggingService'
+                machineLearningService:
+                    $ref: '#/components/schemas/MachineLearningService'
                 securityAdvisoryService:
                     $ref: '#/components/schemas/SecurityAdvisoryService'
                 documentDatabaseService:
@@ -2466,6 +2584,10 @@ components:
                     $ref: '#/components/schemas/SecurityAdvisoryDocument'
                 serviceMetadataDocument:
                     $ref: '#/components/schemas/ServiceMetadataDocument'
+                machineLearningDataset:
+                    $ref: '#/components/schemas/MachineLearningDataset'
+                machineLearningModel:
+                    $ref: '#/components/schemas/MachineLearningModel'
                 awarenessTraining:
                     $ref: '#/components/schemas/AwarenessTraining'
                 securityTraining:
@@ -2525,10 +2647,6 @@ components:
                     type: string
                 securityAlertsEnabled:
                     type: boolean
-                loggingServiceIds:
-                    type: array
-                    items:
-                        type: string
             description: ResourceLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         RobustnessScore:
             type: object
@@ -2657,12 +2775,12 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                dataLocation:
+                    $ref: '#/components/schemas/DataLocation'
                 documentChecksums:
                     type: array
                     items:
                         $ref: '#/components/schemas/DocumentChecksum'
-                documentLocation:
-                    $ref: '#/components/schemas/DocumentLocation'
                 documentSignatures:
                     type: array
                     items:
@@ -2876,12 +2994,12 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                dataLocation:
+                    $ref: '#/components/schemas/DataLocation'
                 documentChecksums:
                     type: array
                     items:
                         $ref: '#/components/schemas/DocumentChecksum'
-                documentLocation:
-                    $ref: '#/components/schemas/DocumentLocation'
                 documentSignatures:
                     type: array
                     items:
