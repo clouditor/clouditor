@@ -10245,6 +10245,7 @@ type LocalDataLocation struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	Path             string                 `protobuf:"bytes,16659,opt,name=path,proto3" json:"path,omitempty"`
 	AtRestEncryption *AtRestEncryption      `protobuf:"bytes,15797,opt,name=at_rest_encryption,json=atRestEncryption,proto3" json:"at_rest_encryption,omitempty"`
+	StorageId        *string                `protobuf:"bytes,8744,opt,name=storage_id,json=storageId,proto3,oneof" json:"storage_id,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -10291,6 +10292,13 @@ func (x *LocalDataLocation) GetAtRestEncryption() *AtRestEncryption {
 		return x.AtRestEncryption
 	}
 	return nil
+}
+
+func (x *LocalDataLocation) GetStorageId() string {
+	if x != nil && x.StorageId != nil {
+		return *x.StorageId
+	}
+	return ""
 }
 
 // LocalRedundancy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -14410,6 +14418,7 @@ type RemoteDataLocation struct {
 	state               protoimpl.MessageState `protogen:"open.v1"`
 	Path                string                 `protobuf:"bytes,5099,opt,name=path,proto3" json:"path,omitempty"`
 	Authenticity        *Authenticity          `protobuf:"bytes,2095,opt,name=authenticity,proto3" json:"authenticity,omitempty"`
+	StorageId           *string                `protobuf:"bytes,15169,opt,name=storage_id,json=storageId,proto3,oneof" json:"storage_id,omitempty"`
 	TransportEncryption *TransportEncryption   `protobuf:"bytes,3553,opt,name=transport_encryption,json=transportEncryption,proto3" json:"transport_encryption,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
@@ -14457,6 +14466,13 @@ func (x *RemoteDataLocation) GetAuthenticity() *Authenticity {
 		return x.Authenticity
 	}
 	return nil
+}
+
+func (x *RemoteDataLocation) GetStorageId() string {
+	if x != nil && x.StorageId != nil {
+		return *x.StorageId
+	}
+	return ""
 }
 
 func (x *RemoteDataLocation) GetTransportEncryption() *TransportEncryption {
@@ -20075,10 +20091,13 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"_parent_idB\x1f\n" +
 	"\x1d_service_metadata_document_id\"r\n" +
 	"\x10LocalAttestation\x12\x19\n" +
-	"\aenabled\x18\xfeb \x01(\bR\aenabled:C\x82\xa6\x1d\x10LocalAttestation\x82\xa6\x1d\vAttestation\x82\xa6\x1d\tIntegrity\x82\xa6\x1d\x0fSecurityFeature\"\xb9\x01\n" +
+	"\aenabled\x18\xfeb \x01(\bR\aenabled:C\x82\xa6\x1d\x10LocalAttestation\x82\xa6\x1d\vAttestation\x82\xa6\x1d\tIntegrity\x82\xa6\x1d\x0fSecurityFeature\"\xed\x01\n" +
 	"\x11LocalDataLocation\x12\x14\n" +
 	"\x04path\x18\x93\x82\x01 \x01(\tR\x04path\x12V\n" +
-	"\x12at_rest_encryption\x18\xb5{ \x01(\v2'.clouditor.ontology.v1.AtRestEncryptionR\x10atRestEncryption:6\x82\xa6\x1d\x11LocalDataLocation\x82\xa6\x1d\fDataLocation\x82\xa6\x1d\rFunctionality\"\xa1\x01\n" +
+	"\x12at_rest_encryption\x18\xb5{ \x01(\v2'.clouditor.ontology.v1.AtRestEncryptionR\x10atRestEncryption\x12#\n" +
+	"\n" +
+	"storage_id\x18\xa8D \x01(\tH\x00R\tstorageId\x88\x01\x01:6\x82\xa6\x1d\x11LocalDataLocation\x82\xa6\x1d\fDataLocation\x82\xa6\x1d\rFunctionalityB\r\n" +
+	"\v_storage_id\"\xa1\x01\n" +
 	"\x0fLocalRedundancy\x12H\n" +
 	"\rgeo_locations\x18\x8e' \x03(\v2\".clouditor.ontology.v1.GeoLocationR\fgeoLocations:D\x82\xa6\x1d\x0fLocalRedundancy\x82\xa6\x1d\n" +
 	"Redundancy\x82\xa6\x1d\fAvailability\x82\xa6\x1d\x0fSecurityFeature\"\xea\x01\n" +
@@ -20523,11 +20542,14 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x11RemoteAttestation\x12@\n" +
 	"\rcreation_time\x18\xcd: \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12\x19\n" +
 	"\aenabled\x18\xd6\t \x01(\bR\aenabled\x12\x17\n" +
-	"\x06status\x18\xfdH \x01(\bR\x06status:D\x82\xa6\x1d\x11RemoteAttestation\x82\xa6\x1d\vAttestation\x82\xa6\x1d\tIntegrity\x82\xa6\x1d\x0fSecurityFeature\"\x8c\x02\n" +
+	"\x06status\x18\xfdH \x01(\bR\x06status:D\x82\xa6\x1d\x11RemoteAttestation\x82\xa6\x1d\vAttestation\x82\xa6\x1d\tIntegrity\x82\xa6\x1d\x0fSecurityFeature\"\xc0\x02\n" +
 	"\x12RemoteDataLocation\x12\x13\n" +
 	"\x04path\x18\xeb' \x01(\tR\x04path\x12H\n" +
-	"\fauthenticity\x18\xaf\x10 \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12^\n" +
-	"\x14transport_encryption\x18\xe1\x1b \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption:7\x82\xa6\x1d\x12RemoteDataLocation\x82\xa6\x1d\fDataLocation\x82\xa6\x1d\rFunctionality\"\x97#\n" +
+	"\fauthenticity\x18\xaf\x10 \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12#\n" +
+	"\n" +
+	"storage_id\x18\xc1v \x01(\tH\x00R\tstorageId\x88\x01\x01\x12^\n" +
+	"\x14transport_encryption\x18\xe1\x1b \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption:7\x82\xa6\x1d\x12RemoteDataLocation\x82\xa6\x1d\fDataLocation\x82\xa6\x1d\rFunctionalityB\r\n" +
+	"\v_storage_id\"\x97#\n" +
 	"\bResource\x12;\n" +
 	"\aaccount\x18\xc0Y \x01(\v2\x1e.clouditor.ontology.v1.AccountH\x00R\aaccount\x12/\n" +
 	"\x03job\x18\x9f\x1f \x01(\v2\x1a.clouditor.ontology.v1.JobH\x00R\x03job\x12>\n" +
@@ -22176,6 +22198,7 @@ func file_api_ontology_ontology_proto_init() {
 	file_api_ontology_ontology_proto_msgTypes[84].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[86].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[87].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[89].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[93].OneofWrappers = []any{
 		(*Logging_ActivityLogging)(nil),
 		(*Logging_ApplicationLogging)(nil),
@@ -22254,6 +22277,7 @@ func file_api_ontology_ontology_proto_init() {
 		(*Reliability_ExplainableResults)(nil),
 		(*Reliability_RobustnessScore)(nil),
 	}
+	file_api_ontology_ontology_proto_msgTypes[124].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[125].OneofWrappers = []any{
 		(*Resource_Account)(nil),
 		(*Resource_Job)(nil),

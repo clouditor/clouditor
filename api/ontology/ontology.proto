@@ -1436,6 +1436,7 @@ message LocalDataLocation {
 
   string path = 16659;
   AtRestEncryption at_rest_encryption = 15797;
+  optional string storage_id = 8744;
 }
 
 // LocalRedundancy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -2040,6 +2041,7 @@ message RemoteDataLocation {
 
   string path = 5099;
   Authenticity authenticity = 2095;
+  optional string storage_id = 15169;
   TransportEncryption transport_encryption = 3553;
 }
 

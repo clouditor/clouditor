@@ -561,6 +561,9 @@
         <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/runsOn"/>
     </Declaration>
     <Declaration>
+        <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/scope"/>
+    </Declaration>
+    <Declaration>
         <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/serviceOf"/>
     </Declaration>
     <Declaration>
@@ -1119,7 +1122,7 @@
     <SubClassOf>
         <Class IRI="https://ontology.emerald-he.eu/classes/AnomalyDetection"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="https://ontology.emerald-he.eu/classes/scope"/>
+            <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/scope"/>
             <NamedIndividual IRI="https://ontology.emerald-he.eu/classes/resourceId"/>
         </ObjectHasValue>
     </SubClassOf>
@@ -1633,10 +1636,10 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="https://ontology.emerald-he.eu/classes/DataLocation"/>
-        <DataSomeValuesFrom>
-            <DataProperty IRI="https://ontology.emerald-he.eu/properties/has"/>
-            <Datatype IRI="https://ontology.emerald-he.eu/classes/Storage"/>
-        </DataSomeValuesFrom>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/has"/>
+            <Class IRI="https://ontology.emerald-he.eu/classes/Storage"/>
+        </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="https://ontology.emerald-he.eu/classes/DataLocation"/>
@@ -5342,6 +5345,11 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>https://ontology.emerald-he.eu/properties/runsOn</IRI>
         <Literal xml:lang="english">runsOn</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>https://ontology.emerald-he.eu/properties/scope</IRI>
+        <Literal>scope</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>

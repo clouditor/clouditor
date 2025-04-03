@@ -1700,6 +1700,8 @@ components:
                     type: string
                 atRestEncryption:
                     $ref: '#/components/schemas/AtRestEncryption'
+                storageId:
+                    type: string
             description: LocalDataLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         LocalRedundancy:
             type: object
@@ -2488,6 +2490,8 @@ components:
                     type: string
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
+                storageId:
+                    type: string
                 transportEncryption:
                     $ref: '#/components/schemas/TransportEncryption'
             description: RemoteDataLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
