@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <Ontology xmlns="http://www.w3.org/2002/07/owl#"
-     xml:base="http://www.semanticweb.org/ang95681/ontologies/2025/3/untitled-ontology-28"
+     xml:base="http://www.semanticweb.org/ang95681/ontologies/2025/3/untitled-ontology-30"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:xml="http://www.w3.org/XML/1998/namespace"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-     ontologyIRI="http://www.semanticweb.org/ang95681/ontologies/2025/3/untitled-ontology-28">
+     ontologyIRI="http://www.semanticweb.org/ang95681/ontologies/2025/3/untitled-ontology-30">
     <Prefix name="owl" IRI="http://www.w3.org/2002/07/owl#"/>
     <Prefix name="rdf" IRI="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
     <Prefix name="xml" IRI="http://www.w3.org/XML/1998/namespace"/>
@@ -897,9 +897,6 @@
         <NamedIndividual IRI="https://ontology.emerald-he.eu/classes/Specification"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="https://ontology.emerald-he.eu/classes/resourceId"/>
-    </Declaration>
-    <Declaration>
         <NamedIndividual IRI="https://ontology.emerald-he.eu/individuals/AmazonWebServices"/>
     </Declaration>
     <Declaration>
@@ -910,6 +907,9 @@
     </Declaration>
     <Declaration>
         <NamedIndividual IRI="https://ontology.emerald-he.eu/individuals/TeamCity"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="https://ontology.emerald-he.eu/individuals/resourceId"/>
     </Declaration>
     <Declaration>
         <NamedIndividual IRI="https://ontology.emerald-he.eu/individuals/aws/Account"/>
@@ -1123,7 +1123,7 @@
         <Class IRI="https://ontology.emerald-he.eu/classes/AnomalyDetection"/>
         <ObjectHasValue>
             <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/scope"/>
-            <NamedIndividual IRI="https://ontology.emerald-he.eu/classes/resourceId"/>
+            <NamedIndividual IRI="https://ontology.emerald-he.eu/individuals/resourceId"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
@@ -4784,11 +4784,6 @@ name = metadata.name</Literal>
         <Literal>reqBody</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
-        <IRI>https://ontology.emerald-he.eu/classes/resourceId</IRI>
-        <Literal>resourceId</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
         <IRI>https://ontology.emerald-he.eu/classes/resourceType</IRI>
         <Literal>The resource type. It is an array, because a type can be derived from another.</Literal>
@@ -4917,6 +4912,16 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>https://ontology.emerald-he.eu/individuals/TeamCity</IRI>
         <Literal xml:lang="english">TeamCity</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>https://ontology.emerald-he.eu/individuals/resourceId</IRI>
+        <Literal>resourceId</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:seeAlso"/>
+        <IRI>https://ontology.emerald-he.eu/individuals/resourceId</IRI>
+        <Literal>string</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>

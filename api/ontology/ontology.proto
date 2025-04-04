@@ -100,6 +100,7 @@ message AnomalyDetection {
   option (resource_type_names) = "SecurityFeature";
 
   bool enabled = 8852;
+  string scope = 8482;
   ApplicationLogging application_logging = 11132;
 }
 

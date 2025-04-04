@@ -102,6 +102,8 @@ components:
             properties:
                 enabled:
                     type: boolean
+                scope:
+                    type: string
                 applicationLogging:
                     $ref: '#/components/schemas/ApplicationLogging'
             description: |-

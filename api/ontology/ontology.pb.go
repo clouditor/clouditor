@@ -390,6 +390,7 @@ func (x *ActivityLogging) GetLoggingServiceIds() []string {
 type AnomalyDetection struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	Enabled            bool                   `protobuf:"varint,8852,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	Scope              string                 `protobuf:"bytes,8482,opt,name=scope,proto3" json:"scope,omitempty"`
 	ApplicationLogging *ApplicationLogging    `protobuf:"bytes,11132,opt,name=application_logging,json=applicationLogging,proto3" json:"application_logging,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
@@ -430,6 +431,13 @@ func (x *AnomalyDetection) GetEnabled() bool {
 		return x.Enabled
 	}
 	return false
+}
+
+func (x *AnomalyDetection) GetScope() string {
+	if x != nil {
+		return x.Scope
+	}
+	return ""
 }
 
 func (x *AnomalyDetection) GetApplicationLogging() *ApplicationLogging {
@@ -19173,9 +19181,10 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x1bmonitoring_log_data_enabled\x18\xbaj \x01(\bR\x18monitoringLogDataEnabled\x12E\n" +
 	"\x10retention_period\x18\xa4T \x01(\v2\x19.google.protobuf.DurationR\x0fretentionPeriod\x128\n" +
 	"\x17security_alerts_enabled\x18\x90\x8a\x01 \x01(\bR\x15securityAlertsEnabled\x12/\n" +
-	"\x13logging_service_ids\x18\xcd\x04 \x03(\tR\x11loggingServiceIds:=\x82\xa6\x1d\x0fActivityLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xbf\x01\n" +
+	"\x13logging_service_ids\x18\xcd\x04 \x03(\tR\x11loggingServiceIds:=\x82\xa6\x1d\x0fActivityLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xd6\x01\n" +
 	"\x10AnomalyDetection\x12\x19\n" +
-	"\aenabled\x18\x94E \x01(\bR\aenabled\x12[\n" +
+	"\aenabled\x18\x94E \x01(\bR\aenabled\x12\x15\n" +
+	"\x05scope\x18\xa2B \x01(\tR\x05scope\x12[\n" +
 	"\x13application_logging\x18\xfcV \x01(\v2).clouditor.ontology.v1.ApplicationLoggingR\x12applicationLogging:3\x82\xa6\x1d\x10AnomalyDetection\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xa9\a\n" +
 	"\vApplication\x12@\n" +
 	"\rcreation_time\x18\xd1u \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
