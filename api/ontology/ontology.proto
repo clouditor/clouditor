@@ -795,7 +795,7 @@ message DocumentDatabaseService {
   ActivityLogging activity_logging = 8;
   repeated AnomalyDetection anomaly_detections = 1003;
   Authenticity authenticity = 6961;
-  optional string compute_id = 6197;
+  repeated string compute_ids = 6197;
   GeoLocation geo_location = 9480;
   HttpEndpoint http_endpoint = 7406;
   repeated Logging loggings = 4410;
@@ -899,7 +899,7 @@ message FileStorageService {
   string raw = 13948;
   ActivityLogging activity_logging = 12272;
   Authenticity authenticity = 16174;
-  optional string compute_id = 15440;
+  repeated string compute_ids = 15440;
   GeoLocation geo_location = 16763;
   HttpEndpoint http_endpoint = 12282;
   repeated Logging loggings = 18653;
@@ -976,7 +976,7 @@ message FunctionService {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 4925;
   Authenticity authenticity = 17652;
-  optional string compute_id = 5429;
+  repeated string compute_ids = 5429;
   repeated string function_ids = 2362;
   GeoLocation geo_location = 8116;
   repeated Logging loggings = 15412;
@@ -1055,7 +1055,7 @@ message GenericNetworkService {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 10844;
   Authenticity authenticity = 16001;
-  optional string compute_id = 6238;
+  repeated string compute_ids = 6238;
   GeoLocation geo_location = 10055;
   repeated Logging loggings = 15073;
   repeated Redundancy redundancies = 16059;
@@ -1317,7 +1317,7 @@ message KeyValueDatabaseService {
   ActivityLogging activity_logging = 1125;
   repeated AnomalyDetection anomaly_detections = 18959;
   Authenticity authenticity = 11723;
-  optional string compute_id = 11235;
+  repeated string compute_ids = 11235;
   GeoLocation geo_location = 6514;
   HttpEndpoint http_endpoint = 15867;
   repeated Logging loggings = 5263;
@@ -1409,7 +1409,7 @@ message LoadBalancer {
   string url = 2355;
   AccessRestriction access_restriction = 6911;
   Authenticity authenticity = 4102;
-  optional string compute_id = 4301;
+  repeated string compute_ids = 4301;
   GeoLocation geo_location = 17490;
   repeated HttpEndpoint http_endpoints = 10792;
   repeated Logging loggings = 6664;
@@ -1503,7 +1503,7 @@ message LoggingService {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 3703;
   Authenticity authenticity = 15306;
-  optional string compute_id = 10285;
+  repeated string compute_ids = 10285;
   GeoLocation geo_location = 4238;
   repeated Logging loggings = 5453;
   repeated Redundancy redundancies = 1550;
@@ -1585,7 +1585,7 @@ message MachineLearningService {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 5983;
   Authenticity authenticity = 7702;
-  optional string compute_id = 10831;
+  repeated string compute_ids = 10831;
   GeoLocation geo_location = 3308;
   repeated Logging loggings = 6059;
   repeated string machine_learning_ids = 6901;
@@ -1685,7 +1685,7 @@ message MultiModalDatabaseService {
   ActivityLogging activity_logging = 6692;
   repeated AnomalyDetection anomaly_detections = 7208;
   Authenticity authenticity = 12713;
-  optional string compute_id = 18111;
+  repeated string compute_ids = 18111;
   GeoLocation geo_location = 4221;
   HttpEndpoint http_endpoint = 8906;
   repeated Logging loggings = 15824;
@@ -1880,7 +1880,7 @@ message ObjectStorageService {
   string raw = 16651;
   ActivityLogging activity_logging = 6581;
   Authenticity authenticity = 6852;
-  optional string compute_id = 4562;
+  repeated string compute_ids = 4562;
   GeoLocation geo_location = 18831;
   HttpEndpoint http_endpoint = 6388;
   repeated Logging loggings = 18299;
@@ -2004,7 +2004,7 @@ message RelationalDatabaseService {
   ActivityLogging activity_logging = 7809;
   repeated AnomalyDetection anomaly_detections = 13020;
   Authenticity authenticity = 6;
-  optional string compute_id = 18729;
+  repeated string compute_ids = 18729;
   GeoLocation geo_location = 2744;
   HttpEndpoint http_endpoint = 5892;
   repeated Logging loggings = 8431;
@@ -2269,7 +2269,7 @@ message SecurityAdvisoryService {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 10467;
   Authenticity authenticity = 13452;
-  optional string compute_id = 7662;
+  repeated string compute_ids = 7662;
   GeoLocation geo_location = 16008;
   repeated string key_ids = 16432;
   repeated Logging loggings = 2782;

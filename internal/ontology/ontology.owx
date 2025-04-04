@@ -2539,14 +2539,14 @@
         <Class IRI="https://ontology.emerald-he.eu/classes/NetworkService"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/has"/>
-            <Class IRI="https://ontology.emerald-he.eu/classes/Compute"/>
+            <Class IRI="https://ontology.emerald-he.eu/classes/ServiceMetadataDocument"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="https://ontology.emerald-he.eu/classes/NetworkService"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/has"/>
-            <Class IRI="https://ontology.emerald-he.eu/classes/ServiceMetadataDocument"/>
+            <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/hasMultiple"/>
+            <Class IRI="https://ontology.emerald-he.eu/classes/Compute"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>

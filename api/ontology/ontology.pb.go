@@ -5841,7 +5841,7 @@ type DocumentDatabaseService struct {
 	ActivityLogging           *ActivityLogging     `protobuf:"bytes,8,opt,name=activity_logging,json=activityLogging,proto3" json:"activity_logging,omitempty"`
 	AnomalyDetections         []*AnomalyDetection  `protobuf:"bytes,1003,rep,name=anomaly_detections,json=anomalyDetections,proto3" json:"anomaly_detections,omitempty"`
 	Authenticity              *Authenticity        `protobuf:"bytes,6961,opt,name=authenticity,proto3" json:"authenticity,omitempty"`
-	ComputeId                 *string              `protobuf:"bytes,6197,opt,name=compute_id,json=computeId,proto3,oneof" json:"compute_id,omitempty"`
+	ComputeIds                []string             `protobuf:"bytes,6197,rep,name=compute_ids,json=computeIds,proto3" json:"compute_ids,omitempty"`
 	GeoLocation               *GeoLocation         `protobuf:"bytes,9480,opt,name=geo_location,json=geoLocation,proto3" json:"geo_location,omitempty"`
 	HttpEndpoint              *HttpEndpoint        `protobuf:"bytes,7406,opt,name=http_endpoint,json=httpEndpoint,proto3" json:"http_endpoint,omitempty"`
 	Loggings                  []*Logging           `protobuf:"bytes,4410,rep,name=loggings,proto3" json:"loggings,omitempty"`
@@ -5970,11 +5970,11 @@ func (x *DocumentDatabaseService) GetAuthenticity() *Authenticity {
 	return nil
 }
 
-func (x *DocumentDatabaseService) GetComputeId() string {
-	if x != nil && x.ComputeId != nil {
-		return *x.ComputeId
+func (x *DocumentDatabaseService) GetComputeIds() []string {
+	if x != nil {
+		return x.ComputeIds
 	}
-	return ""
+	return nil
 }
 
 func (x *DocumentDatabaseService) GetGeoLocation() *GeoLocation {
@@ -6462,7 +6462,7 @@ type FileStorageService struct {
 	Raw                       string               `protobuf:"bytes,13948,opt,name=raw,proto3" json:"raw,omitempty"`
 	ActivityLogging           *ActivityLogging     `protobuf:"bytes,12272,opt,name=activity_logging,json=activityLogging,proto3" json:"activity_logging,omitempty"`
 	Authenticity              *Authenticity        `protobuf:"bytes,16174,opt,name=authenticity,proto3" json:"authenticity,omitempty"`
-	ComputeId                 *string              `protobuf:"bytes,15440,opt,name=compute_id,json=computeId,proto3,oneof" json:"compute_id,omitempty"`
+	ComputeIds                []string             `protobuf:"bytes,15440,rep,name=compute_ids,json=computeIds,proto3" json:"compute_ids,omitempty"`
 	GeoLocation               *GeoLocation         `protobuf:"bytes,16763,opt,name=geo_location,json=geoLocation,proto3" json:"geo_location,omitempty"`
 	HttpEndpoint              *HttpEndpoint        `protobuf:"bytes,12282,opt,name=http_endpoint,json=httpEndpoint,proto3" json:"http_endpoint,omitempty"`
 	Loggings                  []*Logging           `protobuf:"bytes,18653,rep,name=loggings,proto3" json:"loggings,omitempty"`
@@ -6583,11 +6583,11 @@ func (x *FileStorageService) GetAuthenticity() *Authenticity {
 	return nil
 }
 
-func (x *FileStorageService) GetComputeId() string {
-	if x != nil && x.ComputeId != nil {
-		return *x.ComputeId
+func (x *FileStorageService) GetComputeIds() []string {
+	if x != nil {
+		return x.ComputeIds
 	}
-	return ""
+	return nil
 }
 
 func (x *FileStorageService) GetGeoLocation() *GeoLocation {
@@ -7047,7 +7047,7 @@ type FunctionService struct {
 	// The raw field contains the raw information that is used to fill in the fields of the ontology.
 	Raw                       string               `protobuf:"bytes,4925,opt,name=raw,proto3" json:"raw,omitempty"`
 	Authenticity              *Authenticity        `protobuf:"bytes,17652,opt,name=authenticity,proto3" json:"authenticity,omitempty"`
-	ComputeId                 *string              `protobuf:"bytes,5429,opt,name=compute_id,json=computeId,proto3,oneof" json:"compute_id,omitempty"`
+	ComputeIds                []string             `protobuf:"bytes,5429,rep,name=compute_ids,json=computeIds,proto3" json:"compute_ids,omitempty"`
 	FunctionIds               []string             `protobuf:"bytes,2362,rep,name=function_ids,json=functionIds,proto3" json:"function_ids,omitempty"`
 	GeoLocation               *GeoLocation         `protobuf:"bytes,8116,opt,name=geo_location,json=geoLocation,proto3" json:"geo_location,omitempty"`
 	Loggings                  []*Logging           `protobuf:"bytes,15412,rep,name=loggings,proto3" json:"loggings,omitempty"`
@@ -7160,11 +7160,11 @@ func (x *FunctionService) GetAuthenticity() *Authenticity {
 	return nil
 }
 
-func (x *FunctionService) GetComputeId() string {
-	if x != nil && x.ComputeId != nil {
-		return *x.ComputeId
+func (x *FunctionService) GetComputeIds() []string {
+	if x != nil {
+		return x.ComputeIds
 	}
-	return ""
+	return nil
 }
 
 func (x *FunctionService) GetFunctionIds() []string {
@@ -7720,7 +7720,7 @@ type GenericNetworkService struct {
 	// The raw field contains the raw information that is used to fill in the fields of the ontology.
 	Raw                       string               `protobuf:"bytes,10844,opt,name=raw,proto3" json:"raw,omitempty"`
 	Authenticity              *Authenticity        `protobuf:"bytes,16001,opt,name=authenticity,proto3" json:"authenticity,omitempty"`
-	ComputeId                 *string              `protobuf:"bytes,6238,opt,name=compute_id,json=computeId,proto3,oneof" json:"compute_id,omitempty"`
+	ComputeIds                []string             `protobuf:"bytes,6238,rep,name=compute_ids,json=computeIds,proto3" json:"compute_ids,omitempty"`
 	GeoLocation               *GeoLocation         `protobuf:"bytes,10055,opt,name=geo_location,json=geoLocation,proto3" json:"geo_location,omitempty"`
 	Loggings                  []*Logging           `protobuf:"bytes,15073,rep,name=loggings,proto3" json:"loggings,omitempty"`
 	Redundancies              []*Redundancy        `protobuf:"bytes,16059,rep,name=redundancies,proto3" json:"redundancies,omitempty"`
@@ -7832,11 +7832,11 @@ func (x *GenericNetworkService) GetAuthenticity() *Authenticity {
 	return nil
 }
 
-func (x *GenericNetworkService) GetComputeId() string {
-	if x != nil && x.ComputeId != nil {
-		return *x.ComputeId
+func (x *GenericNetworkService) GetComputeIds() []string {
+	if x != nil {
+		return x.ComputeIds
 	}
-	return ""
+	return nil
 }
 
 func (x *GenericNetworkService) GetGeoLocation() *GeoLocation {
@@ -9461,7 +9461,7 @@ type KeyValueDatabaseService struct {
 	ActivityLogging           *ActivityLogging     `protobuf:"bytes,1125,opt,name=activity_logging,json=activityLogging,proto3" json:"activity_logging,omitempty"`
 	AnomalyDetections         []*AnomalyDetection  `protobuf:"bytes,18959,rep,name=anomaly_detections,json=anomalyDetections,proto3" json:"anomaly_detections,omitempty"`
 	Authenticity              *Authenticity        `protobuf:"bytes,11723,opt,name=authenticity,proto3" json:"authenticity,omitempty"`
-	ComputeId                 *string              `protobuf:"bytes,11235,opt,name=compute_id,json=computeId,proto3,oneof" json:"compute_id,omitempty"`
+	ComputeIds                []string             `protobuf:"bytes,11235,rep,name=compute_ids,json=computeIds,proto3" json:"compute_ids,omitempty"`
 	GeoLocation               *GeoLocation         `protobuf:"bytes,6514,opt,name=geo_location,json=geoLocation,proto3" json:"geo_location,omitempty"`
 	HttpEndpoint              *HttpEndpoint        `protobuf:"bytes,15867,opt,name=http_endpoint,json=httpEndpoint,proto3" json:"http_endpoint,omitempty"`
 	Loggings                  []*Logging           `protobuf:"bytes,5263,rep,name=loggings,proto3" json:"loggings,omitempty"`
@@ -9590,11 +9590,11 @@ func (x *KeyValueDatabaseService) GetAuthenticity() *Authenticity {
 	return nil
 }
 
-func (x *KeyValueDatabaseService) GetComputeId() string {
-	if x != nil && x.ComputeId != nil {
-		return *x.ComputeId
+func (x *KeyValueDatabaseService) GetComputeIds() []string {
+	if x != nil {
+		return x.ComputeIds
 	}
-	return ""
+	return nil
 }
 
 func (x *KeyValueDatabaseService) GetGeoLocation() *GeoLocation {
@@ -10021,7 +10021,7 @@ type LoadBalancer struct {
 	Url                       string               `protobuf:"bytes,2355,opt,name=url,proto3" json:"url,omitempty"`
 	AccessRestriction         *AccessRestriction   `protobuf:"bytes,6911,opt,name=access_restriction,json=accessRestriction,proto3" json:"access_restriction,omitempty"`
 	Authenticity              *Authenticity        `protobuf:"bytes,4102,opt,name=authenticity,proto3" json:"authenticity,omitempty"`
-	ComputeId                 *string              `protobuf:"bytes,4301,opt,name=compute_id,json=computeId,proto3,oneof" json:"compute_id,omitempty"`
+	ComputeIds                []string             `protobuf:"bytes,4301,rep,name=compute_ids,json=computeIds,proto3" json:"compute_ids,omitempty"`
 	GeoLocation               *GeoLocation         `protobuf:"bytes,17490,opt,name=geo_location,json=geoLocation,proto3" json:"geo_location,omitempty"`
 	HttpEndpoints             []*HttpEndpoint      `protobuf:"bytes,10792,rep,name=http_endpoints,json=httpEndpoints,proto3" json:"http_endpoints,omitempty"`
 	Loggings                  []*Logging           `protobuf:"bytes,6664,rep,name=loggings,proto3" json:"loggings,omitempty"`
@@ -10149,11 +10149,11 @@ func (x *LoadBalancer) GetAuthenticity() *Authenticity {
 	return nil
 }
 
-func (x *LoadBalancer) GetComputeId() string {
-	if x != nil && x.ComputeId != nil {
-		return *x.ComputeId
+func (x *LoadBalancer) GetComputeIds() []string {
+	if x != nil {
+		return x.ComputeIds
 	}
-	return ""
+	return nil
 }
 
 func (x *LoadBalancer) GetGeoLocation() *GeoLocation {
@@ -10623,7 +10623,7 @@ type LoggingService struct {
 	// The raw field contains the raw information that is used to fill in the fields of the ontology.
 	Raw                       string               `protobuf:"bytes,3703,opt,name=raw,proto3" json:"raw,omitempty"`
 	Authenticity              *Authenticity        `protobuf:"bytes,15306,opt,name=authenticity,proto3" json:"authenticity,omitempty"`
-	ComputeId                 *string              `protobuf:"bytes,10285,opt,name=compute_id,json=computeId,proto3,oneof" json:"compute_id,omitempty"`
+	ComputeIds                []string             `protobuf:"bytes,10285,rep,name=compute_ids,json=computeIds,proto3" json:"compute_ids,omitempty"`
 	GeoLocation               *GeoLocation         `protobuf:"bytes,4238,opt,name=geo_location,json=geoLocation,proto3" json:"geo_location,omitempty"`
 	Loggings                  []*Logging           `protobuf:"bytes,5453,rep,name=loggings,proto3" json:"loggings,omitempty"`
 	Redundancies              []*Redundancy        `protobuf:"bytes,1550,rep,name=redundancies,proto3" json:"redundancies,omitempty"`
@@ -10736,11 +10736,11 @@ func (x *LoggingService) GetAuthenticity() *Authenticity {
 	return nil
 }
 
-func (x *LoggingService) GetComputeId() string {
-	if x != nil && x.ComputeId != nil {
-		return *x.ComputeId
+func (x *LoggingService) GetComputeIds() []string {
+	if x != nil {
+		return x.ComputeIds
 	}
-	return ""
+	return nil
 }
 
 func (x *LoggingService) GetGeoLocation() *GeoLocation {
@@ -11164,7 +11164,7 @@ type MachineLearningService struct {
 	// The raw field contains the raw information that is used to fill in the fields of the ontology.
 	Raw                       string               `protobuf:"bytes,5983,opt,name=raw,proto3" json:"raw,omitempty"`
 	Authenticity              *Authenticity        `protobuf:"bytes,7702,opt,name=authenticity,proto3" json:"authenticity,omitempty"`
-	ComputeId                 *string              `protobuf:"bytes,10831,opt,name=compute_id,json=computeId,proto3,oneof" json:"compute_id,omitempty"`
+	ComputeIds                []string             `protobuf:"bytes,10831,rep,name=compute_ids,json=computeIds,proto3" json:"compute_ids,omitempty"`
 	GeoLocation               *GeoLocation         `protobuf:"bytes,3308,opt,name=geo_location,json=geoLocation,proto3" json:"geo_location,omitempty"`
 	Loggings                  []*Logging           `protobuf:"bytes,6059,rep,name=loggings,proto3" json:"loggings,omitempty"`
 	MachineLearningIds        []string             `protobuf:"bytes,6901,rep,name=machine_learning_ids,json=machineLearningIds,proto3" json:"machine_learning_ids,omitempty"`
@@ -11278,11 +11278,11 @@ func (x *MachineLearningService) GetAuthenticity() *Authenticity {
 	return nil
 }
 
-func (x *MachineLearningService) GetComputeId() string {
-	if x != nil && x.ComputeId != nil {
-		return *x.ComputeId
+func (x *MachineLearningService) GetComputeIds() []string {
+	if x != nil {
+		return x.ComputeIds
 	}
-	return ""
+	return nil
 }
 
 func (x *MachineLearningService) GetGeoLocation() *GeoLocation {
@@ -11750,7 +11750,7 @@ type MultiModalDatabaseService struct {
 	ActivityLogging           *ActivityLogging     `protobuf:"bytes,6692,opt,name=activity_logging,json=activityLogging,proto3" json:"activity_logging,omitempty"`
 	AnomalyDetections         []*AnomalyDetection  `protobuf:"bytes,7208,rep,name=anomaly_detections,json=anomalyDetections,proto3" json:"anomaly_detections,omitempty"`
 	Authenticity              *Authenticity        `protobuf:"bytes,12713,opt,name=authenticity,proto3" json:"authenticity,omitempty"`
-	ComputeId                 *string              `protobuf:"bytes,18111,opt,name=compute_id,json=computeId,proto3,oneof" json:"compute_id,omitempty"`
+	ComputeIds                []string             `protobuf:"bytes,18111,rep,name=compute_ids,json=computeIds,proto3" json:"compute_ids,omitempty"`
 	GeoLocation               *GeoLocation         `protobuf:"bytes,4221,opt,name=geo_location,json=geoLocation,proto3" json:"geo_location,omitempty"`
 	HttpEndpoint              *HttpEndpoint        `protobuf:"bytes,8906,opt,name=http_endpoint,json=httpEndpoint,proto3" json:"http_endpoint,omitempty"`
 	Loggings                  []*Logging           `protobuf:"bytes,15824,rep,name=loggings,proto3" json:"loggings,omitempty"`
@@ -11879,11 +11879,11 @@ func (x *MultiModalDatabaseService) GetAuthenticity() *Authenticity {
 	return nil
 }
 
-func (x *MultiModalDatabaseService) GetComputeId() string {
-	if x != nil && x.ComputeId != nil {
-		return *x.ComputeId
+func (x *MultiModalDatabaseService) GetComputeIds() []string {
+	if x != nil {
+		return x.ComputeIds
 	}
-	return ""
+	return nil
 }
 
 func (x *MultiModalDatabaseService) GetGeoLocation() *GeoLocation {
@@ -13226,7 +13226,7 @@ type ObjectStorageService struct {
 	Raw                       string               `protobuf:"bytes,16651,opt,name=raw,proto3" json:"raw,omitempty"`
 	ActivityLogging           *ActivityLogging     `protobuf:"bytes,6581,opt,name=activity_logging,json=activityLogging,proto3" json:"activity_logging,omitempty"`
 	Authenticity              *Authenticity        `protobuf:"bytes,6852,opt,name=authenticity,proto3" json:"authenticity,omitempty"`
-	ComputeId                 *string              `protobuf:"bytes,4562,opt,name=compute_id,json=computeId,proto3,oneof" json:"compute_id,omitempty"`
+	ComputeIds                []string             `protobuf:"bytes,4562,rep,name=compute_ids,json=computeIds,proto3" json:"compute_ids,omitempty"`
 	GeoLocation               *GeoLocation         `protobuf:"bytes,18831,opt,name=geo_location,json=geoLocation,proto3" json:"geo_location,omitempty"`
 	HttpEndpoint              *HttpEndpoint        `protobuf:"bytes,6388,opt,name=http_endpoint,json=httpEndpoint,proto3" json:"http_endpoint,omitempty"`
 	Loggings                  []*Logging           `protobuf:"bytes,18299,rep,name=loggings,proto3" json:"loggings,omitempty"`
@@ -13347,11 +13347,11 @@ func (x *ObjectStorageService) GetAuthenticity() *Authenticity {
 	return nil
 }
 
-func (x *ObjectStorageService) GetComputeId() string {
-	if x != nil && x.ComputeId != nil {
-		return *x.ComputeId
+func (x *ObjectStorageService) GetComputeIds() []string {
+	if x != nil {
+		return x.ComputeIds
 	}
-	return ""
+	return nil
 }
 
 func (x *ObjectStorageService) GetGeoLocation() *GeoLocation {
@@ -14095,7 +14095,7 @@ type RelationalDatabaseService struct {
 	ActivityLogging           *ActivityLogging     `protobuf:"bytes,7809,opt,name=activity_logging,json=activityLogging,proto3" json:"activity_logging,omitempty"`
 	AnomalyDetections         []*AnomalyDetection  `protobuf:"bytes,13020,rep,name=anomaly_detections,json=anomalyDetections,proto3" json:"anomaly_detections,omitempty"`
 	Authenticity              *Authenticity        `protobuf:"bytes,6,opt,name=authenticity,proto3" json:"authenticity,omitempty"`
-	ComputeId                 *string              `protobuf:"bytes,18729,opt,name=compute_id,json=computeId,proto3,oneof" json:"compute_id,omitempty"`
+	ComputeIds                []string             `protobuf:"bytes,18729,rep,name=compute_ids,json=computeIds,proto3" json:"compute_ids,omitempty"`
 	GeoLocation               *GeoLocation         `protobuf:"bytes,2744,opt,name=geo_location,json=geoLocation,proto3" json:"geo_location,omitempty"`
 	HttpEndpoint              *HttpEndpoint        `protobuf:"bytes,5892,opt,name=http_endpoint,json=httpEndpoint,proto3" json:"http_endpoint,omitempty"`
 	Loggings                  []*Logging           `protobuf:"bytes,8431,rep,name=loggings,proto3" json:"loggings,omitempty"`
@@ -14224,11 +14224,11 @@ func (x *RelationalDatabaseService) GetAuthenticity() *Authenticity {
 	return nil
 }
 
-func (x *RelationalDatabaseService) GetComputeId() string {
-	if x != nil && x.ComputeId != nil {
-		return *x.ComputeId
+func (x *RelationalDatabaseService) GetComputeIds() []string {
+	if x != nil {
+		return x.ComputeIds
 	}
-	return ""
+	return nil
 }
 
 func (x *RelationalDatabaseService) GetGeoLocation() *GeoLocation {
@@ -16285,7 +16285,7 @@ type SecurityAdvisoryService struct {
 	// The raw field contains the raw information that is used to fill in the fields of the ontology.
 	Raw                       string                  `protobuf:"bytes,10467,opt,name=raw,proto3" json:"raw,omitempty"`
 	Authenticity              *Authenticity           `protobuf:"bytes,13452,opt,name=authenticity,proto3" json:"authenticity,omitempty"`
-	ComputeId                 *string                 `protobuf:"bytes,7662,opt,name=compute_id,json=computeId,proto3,oneof" json:"compute_id,omitempty"`
+	ComputeIds                []string                `protobuf:"bytes,7662,rep,name=compute_ids,json=computeIds,proto3" json:"compute_ids,omitempty"`
 	GeoLocation               *GeoLocation            `protobuf:"bytes,16008,opt,name=geo_location,json=geoLocation,proto3" json:"geo_location,omitempty"`
 	KeyIds                    []string                `protobuf:"bytes,16432,rep,name=key_ids,json=keyIds,proto3" json:"key_ids,omitempty"`
 	Loggings                  []*Logging              `protobuf:"bytes,2782,rep,name=loggings,proto3" json:"loggings,omitempty"`
@@ -16399,11 +16399,11 @@ func (x *SecurityAdvisoryService) GetAuthenticity() *Authenticity {
 	return nil
 }
 
-func (x *SecurityAdvisoryService) GetComputeId() string {
-	if x != nil && x.ComputeId != nil {
-		return *x.ComputeId
+func (x *SecurityAdvisoryService) GetComputeIds() []string {
+	if x != nil {
+		return x.ComputeIds
 	}
-	return ""
+	return nil
 }
 
 func (x *SecurityAdvisoryService) GetGeoLocation() *GeoLocation {
@@ -19644,7 +19644,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x0fpolicy_document\x18\xe9t \x01(\v2%.clouditor.ontology.v1.PolicyDocumentH\x00R\x0epolicyDocument\x12p\n" +
 	"\x1asecurity_advisory_document\x18\xfdr \x01(\v2/.clouditor.ontology.v1.SecurityAdvisoryDocumentH\x00R\x18securityAdvisoryDocument\x12m\n" +
 	"\x19service_metadata_document\x18\x90\x02 \x01(\v2..clouditor.ontology.v1.ServiceMetadataDocumentH\x00R\x17serviceMetadataDocumentB\x06\n" +
-	"\x04type\"\xd0\f\n" +
+	"\x04type\"\xbe\f\n" +
 	"\x17DocumentDatabaseService\x12@\n" +
 	"\rcreation_time\x18\xee[ \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
 	"\vdescription\x18\xcek \x01(\tR\vdescription\x12\x17\n" +
@@ -19657,16 +19657,16 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03raw\x18\x959 \x01(\tR\x03raw\x12Q\n" +
 	"\x10activity_logging\x18\b \x01(\v2&.clouditor.ontology.v1.ActivityLoggingR\x0factivityLogging\x12W\n" +
 	"\x12anomaly_detections\x18\xeb\a \x03(\v2'.clouditor.ontology.v1.AnomalyDetectionR\x11anomalyDetections\x12H\n" +
-	"\fauthenticity\x18\xb16 \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12#\n" +
-	"\n" +
-	"compute_id\x18\xb50 \x01(\tH\x00R\tcomputeId\x88\x01\x01\x12F\n" +
+	"\fauthenticity\x18\xb16 \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12 \n" +
+	"\vcompute_ids\x18\xb50 \x03(\tR\n" +
+	"computeIds\x12F\n" +
 	"\fgeo_location\x18\x88J \x01(\v2\".clouditor.ontology.v1.GeoLocationR\vgeoLocation\x12I\n" +
 	"\rhttp_endpoint\x18\xee9 \x01(\v2#.clouditor.ontology.v1.HttpEndpointR\fhttpEndpoint\x12;\n" +
 	"\bloggings\x18\xba\" \x03(\v2\x1e.clouditor.ontology.v1.LoggingR\bloggings\x12X\n" +
 	"\x12malware_protection\x18\xd8u \x01(\v2(.clouditor.ontology.v1.MalwareProtectionR\x11malwareProtection\x12F\n" +
 	"\fredundancies\x18\xb9\a \x03(\v2!.clouditor.ontology.v1.RedundancyR\fredundancies\x12\"\n" +
-	"\tparent_id\x18\xa0\x89\x01 \x01(\tH\x01R\bparentId\x88\x01\x01\x12E\n" +
-	"\x1cservice_metadata_document_id\x18\xd8\b \x01(\tH\x02R\x19serviceMetadataDocumentId\x88\x01\x01\x12 \n" +
+	"\tparent_id\x18\xa0\x89\x01 \x01(\tH\x00R\bparentId\x88\x01\x01\x12E\n" +
+	"\x1cservice_metadata_document_id\x18\xd8\b \x01(\tH\x01R\x19serviceMetadataDocumentId\x88\x01\x01\x12 \n" +
 	"\vstorage_ids\x18\xec6 \x03(\tR\n" +
 	"storageIds\x12^\n" +
 	"\x14transport_encryption\x18\xb7P \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption\x12R\n" +
@@ -19674,8 +19674,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:~\x82\xa6\x1d\x17DocumentDatabaseService\x82\xa6\x1d\x0fDatabaseService\x82\xa6\x1d\x0eStorageService\x82\xa6\x1d\x0eNetworkService\x82\xa6\x1d\n" +
-	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\r\n" +
-	"\v_compute_idB\f\n" +
+	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_idB\x1f\n" +
 	"\x1d_service_metadata_document_id\"g\n" +
@@ -19714,7 +19713,8 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:8\x82\xa6\x1d\vFileStorage\x82\xa6\x1d\aStorage\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-	"_parent_id\"\x80\v\n" +
+	"_parent_id\"\xee\n" +
+	"\n" +
 	"\x12FileStorageService\x12A\n" +
 	"\rcreation_time\x18\xb7\x91\x01 \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
 	"\vdescription\x18\xd4M \x01(\tR\vdescription\x12\x18\n" +
@@ -19726,15 +19726,15 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x05ports\x18\xdda \x03(\rR\x05ports\x12\x11\n" +
 	"\x03raw\x18\xfcl \x01(\tR\x03raw\x12R\n" +
 	"\x10activity_logging\x18\xf0_ \x01(\v2&.clouditor.ontology.v1.ActivityLoggingR\x0factivityLogging\x12H\n" +
-	"\fauthenticity\x18\xae~ \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12#\n" +
-	"\n" +
-	"compute_id\x18\xd0x \x01(\tH\x00R\tcomputeId\x88\x01\x01\x12G\n" +
+	"\fauthenticity\x18\xae~ \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12 \n" +
+	"\vcompute_ids\x18\xd0x \x03(\tR\n" +
+	"computeIds\x12G\n" +
 	"\fgeo_location\x18\xfb\x82\x01 \x01(\v2\".clouditor.ontology.v1.GeoLocationR\vgeoLocation\x12I\n" +
 	"\rhttp_endpoint\x18\xfa_ \x01(\v2#.clouditor.ontology.v1.HttpEndpointR\fhttpEndpoint\x12<\n" +
 	"\bloggings\x18ݑ\x01 \x03(\v2\x1e.clouditor.ontology.v1.LoggingR\bloggings\x12F\n" +
 	"\fredundancies\x18\x91# \x03(\v2!.clouditor.ontology.v1.RedundancyR\fredundancies\x12!\n" +
-	"\tparent_id\x18\xf0\x1b \x01(\tH\x01R\bparentId\x88\x01\x01\x12E\n" +
-	"\x1cservice_metadata_document_id\x18\xe7R \x01(\tH\x02R\x19serviceMetadataDocumentId\x88\x01\x01\x12 \n" +
+	"\tparent_id\x18\xf0\x1b \x01(\tH\x00R\bparentId\x88\x01\x01\x12E\n" +
+	"\x1cservice_metadata_document_id\x18\xe7R \x01(\tH\x01R\x19serviceMetadataDocumentId\x88\x01\x01\x12 \n" +
 	"\vstorage_ids\x18\xf7* \x03(\tR\n" +
 	"storageIds\x12_\n" +
 	"\x14transport_encryption\x18\xa5\x8f\x01 \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption\x12R\n" +
@@ -19742,8 +19742,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:f\x82\xa6\x1d\x12FileStorageService\x82\xa6\x1d\x0eStorageService\x82\xa6\x1d\x0eNetworkService\x82\xa6\x1d\n" +
-	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\r\n" +
-	"\v_compute_idB\f\n" +
+	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_idB\x1f\n" +
 	"\x1d_service_metadata_document_id\"\xc5\x01\n" +
@@ -19782,7 +19781,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:5\x82\xa6\x1d\bFunction\x82\xa6\x1d\aCompute\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-	"_parent_id\"\xc8\t\n" +
+	"_parent_id\"\xb6\t\n" +
 	"\x0fFunctionService\x12@\n" +
 	"\rcreation_time\x18\xb0\x1c \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12\"\n" +
 	"\vdescription\x18χ\x01 \x01(\tR\vdescription\x12\x17\n" +
@@ -19793,22 +19792,21 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x04name\x18\xf3z \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\x16\n" +
 	"\x05ports\x18\xb1\x8a\x01 \x03(\rR\x05ports\x12\x11\n" +
 	"\x03raw\x18\xbd& \x01(\tR\x03raw\x12I\n" +
-	"\fauthenticity\x18\xf4\x89\x01 \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12#\n" +
-	"\n" +
-	"compute_id\x18\xb5* \x01(\tH\x00R\tcomputeId\x88\x01\x01\x12\"\n" +
+	"\fauthenticity\x18\xf4\x89\x01 \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12 \n" +
+	"\vcompute_ids\x18\xb5* \x03(\tR\n" +
+	"computeIds\x12\"\n" +
 	"\ffunction_ids\x18\xba\x12 \x03(\tR\vfunctionIds\x12F\n" +
 	"\fgeo_location\x18\xb4? \x01(\v2\".clouditor.ontology.v1.GeoLocationR\vgeoLocation\x12;\n" +
 	"\bloggings\x18\xb4x \x03(\v2\x1e.clouditor.ontology.v1.LoggingR\bloggings\x12G\n" +
 	"\fredundancies\x18\xfb\x8a\x01 \x03(\v2!.clouditor.ontology.v1.RedundancyR\fredundancies\x12!\n" +
-	"\tparent_id\x18\xd1Y \x01(\tH\x01R\bparentId\x88\x01\x01\x12E\n" +
-	"\x1cservice_metadata_document_id\x18\x84+ \x01(\tH\x02R\x19serviceMetadataDocumentId\x88\x01\x01\x12^\n" +
+	"\tparent_id\x18\xd1Y \x01(\tH\x00R\bparentId\x88\x01\x01\x12E\n" +
+	"\x1cservice_metadata_document_id\x18\x84+ \x01(\tH\x01R\x19serviceMetadataDocumentId\x88\x01\x01\x12^\n" +
 	"\x14transport_encryption\x18\xcf? \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption\x12R\n" +
 	"\x10usage_statistics\x18\xbd: \x01(\v2&.clouditor.ontology.v1.UsageStatisticsR\x0fusageStatistics\x1a9\n" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:Q\x82\xa6\x1d\x0fFunctionService\x82\xa6\x1d\x0eNetworkService\x82\xa6\x1d\n" +
-	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\r\n" +
-	"\v_compute_idB\f\n" +
+	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_idB\x1f\n" +
 	"\x1d_service_metadata_document_id\"\xe3\v\n" +
@@ -19855,7 +19853,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:3\x82\xa6\x1d\x0fGenericDocument\x82\xa6\x1d\bDocument\x82\xa6\x1d\x04Data\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-	"_parent_id\"\xb3\t\n" +
+	"_parent_id\"\xa1\t\n" +
 	"\x15GenericNetworkService\x12A\n" +
 	"\rcreation_time\x18ށ\x01 \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
 	"\vdescription\x18\x9bo \x01(\tR\vdescription\x12\x17\n" +
@@ -19866,21 +19864,20 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x04name\x18\x9bi \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\x15\n" +
 	"\x05ports\x18\x94\x04 \x03(\rR\x05ports\x12\x11\n" +
 	"\x03raw\x18\xdcT \x01(\tR\x03raw\x12H\n" +
-	"\fauthenticity\x18\x81} \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12#\n" +
-	"\n" +
-	"compute_id\x18\xde0 \x01(\tH\x00R\tcomputeId\x88\x01\x01\x12F\n" +
+	"\fauthenticity\x18\x81} \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12 \n" +
+	"\vcompute_ids\x18\xde0 \x03(\tR\n" +
+	"computeIds\x12F\n" +
 	"\fgeo_location\x18\xc7N \x01(\v2\".clouditor.ontology.v1.GeoLocationR\vgeoLocation\x12;\n" +
 	"\bloggings\x18\xe1u \x03(\v2\x1e.clouditor.ontology.v1.LoggingR\bloggings\x12F\n" +
 	"\fredundancies\x18\xbb} \x03(\v2!.clouditor.ontology.v1.RedundancyR\fredundancies\x12!\n" +
-	"\tparent_id\x18\x9fe \x01(\tH\x01R\bparentId\x88\x01\x01\x12E\n" +
-	"\x1cservice_metadata_document_id\x18\xb1\\ \x01(\tH\x02R\x19serviceMetadataDocumentId\x88\x01\x01\x12^\n" +
+	"\tparent_id\x18\x9fe \x01(\tH\x00R\bparentId\x88\x01\x01\x12E\n" +
+	"\x1cservice_metadata_document_id\x18\xb1\\ \x01(\tH\x01R\x19serviceMetadataDocumentId\x88\x01\x01\x12^\n" +
 	"\x14transport_encryption\x18\x87m \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption\x12S\n" +
 	"\x10usage_statistics\x18\x95\x83\x01 \x01(\v2&.clouditor.ontology.v1.UsageStatisticsR\x0fusageStatistics\x1a9\n" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:W\x82\xa6\x1d\x15GenericNetworkService\x82\xa6\x1d\x0eNetworkService\x82\xa6\x1d\n" +
-	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\r\n" +
-	"\v_compute_idB\f\n" +
+	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_idB\x1f\n" +
 	"\x1d_service_metadata_document_id\"Z\n" +
@@ -20021,7 +20018,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"Credential\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\x14\n" +
 	"\x12_infrastructure_idB\f\n" +
 	"\n" +
-	"_parent_id\"\xd2\f\n" +
+	"_parent_id\"\xc0\f\n" +
 	"\x17KeyValueDatabaseService\x12@\n" +
 	"\rcreation_time\x18\x90z \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
 	"\vdescription\x18\x9c\v \x01(\tR\vdescription\x12\x17\n" +
@@ -20034,16 +20031,16 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03raw\x18\xadq \x01(\tR\x03raw\x12R\n" +
 	"\x10activity_logging\x18\xe5\b \x01(\v2&.clouditor.ontology.v1.ActivityLoggingR\x0factivityLogging\x12X\n" +
 	"\x12anomaly_detections\x18\x8f\x94\x01 \x03(\v2'.clouditor.ontology.v1.AnomalyDetectionR\x11anomalyDetections\x12H\n" +
-	"\fauthenticity\x18\xcb[ \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12#\n" +
-	"\n" +
-	"compute_id\x18\xe3W \x01(\tH\x00R\tcomputeId\x88\x01\x01\x12F\n" +
+	"\fauthenticity\x18\xcb[ \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12 \n" +
+	"\vcompute_ids\x18\xe3W \x03(\tR\n" +
+	"computeIds\x12F\n" +
 	"\fgeo_location\x18\xf22 \x01(\v2\".clouditor.ontology.v1.GeoLocationR\vgeoLocation\x12I\n" +
 	"\rhttp_endpoint\x18\xfb{ \x01(\v2#.clouditor.ontology.v1.HttpEndpointR\fhttpEndpoint\x12;\n" +
 	"\bloggings\x18\x8f) \x03(\v2\x1e.clouditor.ontology.v1.LoggingR\bloggings\x12X\n" +
 	"\x12malware_protection\x18\xe5O \x01(\v2(.clouditor.ontology.v1.MalwareProtectionR\x11malwareProtection\x12F\n" +
 	"\fredundancies\x18\x99\x02 \x03(\v2!.clouditor.ontology.v1.RedundancyR\fredundancies\x12\"\n" +
-	"\tparent_id\x18\x81\x94\x01 \x01(\tH\x01R\bparentId\x88\x01\x01\x12E\n" +
-	"\x1cservice_metadata_document_id\x18\xa3\x1d \x01(\tH\x02R\x19serviceMetadataDocumentId\x88\x01\x01\x12 \n" +
+	"\tparent_id\x18\x81\x94\x01 \x01(\tH\x00R\bparentId\x88\x01\x01\x12E\n" +
+	"\x1cservice_metadata_document_id\x18\xa3\x1d \x01(\tH\x01R\x19serviceMetadataDocumentId\x88\x01\x01\x12 \n" +
 	"\vstorage_ids\x18\xfes \x03(\tR\n" +
 	"storageIds\x12^\n" +
 	"\x14transport_encryption\x18\xf7, \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption\x12R\n" +
@@ -20051,8 +20048,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:~\x82\xa6\x1d\x17KeyValueDatabaseService\x82\xa6\x1d\x0fDatabaseService\x82\xa6\x1d\x0eStorageService\x82\xa6\x1d\x0eNetworkService\x82\xa6\x1d\n" +
-	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\r\n" +
-	"\v_compute_idB\f\n" +
+	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_idB\x1f\n" +
 	"\x1d_service_metadata_document_id\"\xa4\x06\n" +
@@ -20100,7 +20096,8 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:,\x82\xa6\x1d\aLibrary\x82\xa6\x1d\tComponent\x82\xa6\x1d\x04Code\x82\xa6\x1d\bResourceB\x15\n" +
 	"\x13_code_repository_idB\f\n" +
 	"\n" +
-	"_parent_id\"\x85\v\n" +
+	"_parent_id\"\xf3\n" +
+	"\n" +
 	"\fLoadBalancer\x12@\n" +
 	"\rcreation_time\x18\x94\x15 \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
 	"\vdescription\x18\x86\x16 \x01(\tR\vdescription\x12\x17\n" +
@@ -20113,23 +20110,22 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03raw\x18\xfb\x7f \x01(\tR\x03raw\x12\x11\n" +
 	"\x03url\x18\xb3\x12 \x01(\tR\x03url\x12X\n" +
 	"\x12access_restriction\x18\xff5 \x01(\v2(.clouditor.ontology.v1.AccessRestrictionR\x11accessRestriction\x12H\n" +
-	"\fauthenticity\x18\x86  \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12#\n" +
-	"\n" +
-	"compute_id\x18\xcd! \x01(\tH\x00R\tcomputeId\x88\x01\x01\x12G\n" +
+	"\fauthenticity\x18\x86  \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12 \n" +
+	"\vcompute_ids\x18\xcd! \x03(\tR\n" +
+	"computeIds\x12G\n" +
 	"\fgeo_location\x18҈\x01 \x01(\v2\".clouditor.ontology.v1.GeoLocationR\vgeoLocation\x12K\n" +
 	"\x0ehttp_endpoints\x18\xa8T \x03(\v2#.clouditor.ontology.v1.HttpEndpointR\rhttpEndpoints\x12;\n" +
 	"\bloggings\x18\x884 \x03(\v2\x1e.clouditor.ontology.v1.LoggingR\bloggings\x12/\n" +
 	"\x13network_service_ids\x18\xc9q \x03(\tR\x11networkServiceIds\x12F\n" +
 	"\fredundancies\x18\xc1S \x03(\v2!.clouditor.ontology.v1.RedundancyR\fredundancies\x12!\n" +
-	"\tparent_id\x18\xee\x1d \x01(\tH\x01R\bparentId\x88\x01\x01\x12E\n" +
-	"\x1cservice_metadata_document_id\x18\x81D \x01(\tH\x02R\x19serviceMetadataDocumentId\x88\x01\x01\x12^\n" +
+	"\tparent_id\x18\xee\x1d \x01(\tH\x00R\bparentId\x88\x01\x01\x12E\n" +
+	"\x1cservice_metadata_document_id\x18\x81D \x01(\tH\x01R\x19serviceMetadataDocumentId\x88\x01\x01\x12^\n" +
 	"\x14transport_encryption\x18\x8dJ \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption\x12S\n" +
 	"\x10usage_statistics\x18\xa9\x83\x01 \x01(\v2&.clouditor.ontology.v1.UsageStatisticsR\x0fusageStatistics\x1a9\n" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:N\x82\xa6\x1d\fLoadBalancer\x82\xa6\x1d\x0eNetworkService\x82\xa6\x1d\n" +
-	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\r\n" +
-	"\v_compute_idB\f\n" +
+	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_idB\x1f\n" +
 	"\x1d_service_metadata_document_id\"r\n" +
@@ -20158,7 +20154,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\n" +
 	"os_logging\x18\xee\x16 \x01(\v2 .clouditor.ontology.v1.OSLoggingH\x00R\tosLogging\x12U\n" +
 	"\x10resource_logging\x18\x9b\x89\x01 \x01(\v2&.clouditor.ontology.v1.ResourceLoggingH\x00R\x0fresourceLoggingB\x06\n" +
-	"\x04type\"\xbf\t\n" +
+	"\x04type\"\xad\t\n" +
 	"\x0eLoggingService\x12@\n" +
 	"\rcreation_time\x18\x96k \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
 	"\vdescription\x18\xe4u \x01(\tR\vdescription\x12\x17\n" +
@@ -20169,14 +20165,14 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x04name\x18\xfc\x1e \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\x15\n" +
 	"\x05ports\x18\xf5\x13 \x03(\rR\x05ports\x12\x11\n" +
 	"\x03raw\x18\xf7\x1c \x01(\tR\x03raw\x12H\n" +
-	"\fauthenticity\x18\xcaw \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12#\n" +
-	"\n" +
-	"compute_id\x18\xadP \x01(\tH\x00R\tcomputeId\x88\x01\x01\x12F\n" +
+	"\fauthenticity\x18\xcaw \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12 \n" +
+	"\vcompute_ids\x18\xadP \x03(\tR\n" +
+	"computeIds\x12F\n" +
 	"\fgeo_location\x18\x8e! \x01(\v2\".clouditor.ontology.v1.GeoLocationR\vgeoLocation\x12;\n" +
 	"\bloggings\x18\xcd* \x03(\v2\x1e.clouditor.ontology.v1.LoggingR\bloggings\x12F\n" +
 	"\fredundancies\x18\x8e\f \x03(\v2!.clouditor.ontology.v1.RedundancyR\fredundancies\x12!\n" +
-	"\tparent_id\x18\x82\x02 \x01(\tH\x01R\bparentId\x88\x01\x01\x12E\n" +
-	"\x1cservice_metadata_document_id\x18\x8d} \x01(\tH\x02R\x19serviceMetadataDocumentId\x88\x01\x01\x12 \n" +
+	"\tparent_id\x18\x82\x02 \x01(\tH\x00R\bparentId\x88\x01\x01\x12E\n" +
+	"\x1cservice_metadata_document_id\x18\x8d} \x01(\tH\x01R\x19serviceMetadataDocumentId\x88\x01\x01\x12 \n" +
 	"\vstorage_ids\x18\x847 \x03(\tR\n" +
 	"storageIds\x12_\n" +
 	"\x14transport_encryption\x18\xab\x87\x01 \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption\x12R\n" +
@@ -20184,8 +20180,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:P\x82\xa6\x1d\x0eLoggingService\x82\xa6\x1d\x0eNetworkService\x82\xa6\x1d\n" +
-	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\r\n" +
-	"\v_compute_idB\f\n" +
+	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_idB\x1f\n" +
 	"\x1d_service_metadata_document_id\"\xeb\x01\n" +
@@ -20231,8 +20226,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:?\x82\xa6\x1d\x14MachineLearningModel\x82\xa6\x1d\x0fMachineLearning\x82\xa6\x1d\x04Data\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-	"_parent_id\"\x8d\n" +
-	"\n" +
+	"_parent_id\"\xfb\t\n" +
 	"\x16MachineLearningService\x12A\n" +
 	"\rcreation_time\x18ӎ\x01 \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
 	"\vdescription\x18\xa0\x10 \x01(\tR\vdescription\x12\x17\n" +
@@ -20243,15 +20237,15 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x04name\x18\xad/ \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\x15\n" +
 	"\x05ports\x18\xa05 \x03(\rR\x05ports\x12\x11\n" +
 	"\x03raw\x18\xdf. \x01(\tR\x03raw\x12H\n" +
-	"\fauthenticity\x18\x96< \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12#\n" +
-	"\n" +
-	"compute_id\x18\xcfT \x01(\tH\x00R\tcomputeId\x88\x01\x01\x12F\n" +
+	"\fauthenticity\x18\x96< \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12 \n" +
+	"\vcompute_ids\x18\xcfT \x03(\tR\n" +
+	"computeIds\x12F\n" +
 	"\fgeo_location\x18\xec\x19 \x01(\v2\".clouditor.ontology.v1.GeoLocationR\vgeoLocation\x12;\n" +
 	"\bloggings\x18\xab/ \x03(\v2\x1e.clouditor.ontology.v1.LoggingR\bloggings\x121\n" +
 	"\x14machine_learning_ids\x18\xf55 \x03(\tR\x12machineLearningIds\x12G\n" +
 	"\fredundancies\x18ւ\x01 \x03(\v2!.clouditor.ontology.v1.RedundancyR\fredundancies\x12!\n" +
-	"\tparent_id\x18\xaf\x11 \x01(\tH\x01R\bparentId\x88\x01\x01\x12E\n" +
-	"\x1cservice_metadata_document_id\x18\xd5S \x01(\tH\x02R\x19serviceMetadataDocumentId\x88\x01\x01\x12 \n" +
+	"\tparent_id\x18\xaf\x11 \x01(\tH\x00R\bparentId\x88\x01\x01\x12E\n" +
+	"\x1cservice_metadata_document_id\x18\xd5S \x01(\tH\x01R\x19serviceMetadataDocumentId\x88\x01\x01\x12 \n" +
 	"\vstorage_ids\x18\xa1\x01 \x03(\tR\n" +
 	"storageIds\x12_\n" +
 	"\x14transport_encryption\x18\xf1\x84\x01 \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption\x12R\n" +
@@ -20259,8 +20253,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:X\x82\xa6\x1d\x16MachineLearningService\x82\xa6\x1d\x0eNetworkService\x82\xa6\x1d\n" +
-	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\r\n" +
-	"\v_compute_idB\f\n" +
+	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_idB\x1f\n" +
 	"\x1d_service_metadata_document_id\"\xcb\x02\n" +
@@ -20297,7 +20290,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x04type\"\xd9\x01\n" +
 	"\x18MultiFactorAuthentiation\x12.\n" +
 	"\x12context_is_checked\x18\xb7\x87\x01 \x01(\bR\x10contextIsChecked\x12L\n" +
-	"\x0eauthenticities\x18\xc3t \x03(\v2#.clouditor.ontology.v1.AuthenticityR\x0eauthenticities:?\x82\xa6\x1d\x18MultiFactorAuthentiation\x82\xa6\x1d\fAuthenticity\x82\xa6\x1d\x0fSecurityFeature\"\xd8\f\n" +
+	"\x0eauthenticities\x18\xc3t \x03(\v2#.clouditor.ontology.v1.AuthenticityR\x0eauthenticities:?\x82\xa6\x1d\x18MultiFactorAuthentiation\x82\xa6\x1d\fAuthenticity\x82\xa6\x1d\x0fSecurityFeature\"\xc6\f\n" +
 	"\x19MultiModalDatabaseService\x12@\n" +
 	"\rcreation_time\x18\xe1Q \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
 	"\vdescription\x18\x8fz \x01(\tR\vdescription\x12\x17\n" +
@@ -20310,16 +20303,16 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03raw\x18\xa9\x88\x01 \x01(\tR\x03raw\x12R\n" +
 	"\x10activity_logging\x18\xa44 \x01(\v2&.clouditor.ontology.v1.ActivityLoggingR\x0factivityLogging\x12W\n" +
 	"\x12anomaly_detections\x18\xa88 \x03(\v2'.clouditor.ontology.v1.AnomalyDetectionR\x11anomalyDetections\x12H\n" +
-	"\fauthenticity\x18\xa9c \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12$\n" +
-	"\n" +
-	"compute_id\x18\xbf\x8d\x01 \x01(\tH\x00R\tcomputeId\x88\x01\x01\x12F\n" +
+	"\fauthenticity\x18\xa9c \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12!\n" +
+	"\vcompute_ids\x18\xbf\x8d\x01 \x03(\tR\n" +
+	"computeIds\x12F\n" +
 	"\fgeo_location\x18\xfd  \x01(\v2\".clouditor.ontology.v1.GeoLocationR\vgeoLocation\x12I\n" +
 	"\rhttp_endpoint\x18\xcaE \x01(\v2#.clouditor.ontology.v1.HttpEndpointR\fhttpEndpoint\x12;\n" +
 	"\bloggings\x18\xd0{ \x03(\v2\x1e.clouditor.ontology.v1.LoggingR\bloggings\x12X\n" +
 	"\x12malware_protection\x18\x97k \x01(\v2(.clouditor.ontology.v1.MalwareProtectionR\x11malwareProtection\x12F\n" +
 	"\fredundancies\x18\xbcF \x03(\v2!.clouditor.ontology.v1.RedundancyR\fredundancies\x12!\n" +
-	"\tparent_id\x18\xb8\" \x01(\tH\x01R\bparentId\x88\x01\x01\x12E\n" +
-	"\x1cservice_metadata_document_id\x18\xb9j \x01(\tH\x02R\x19serviceMetadataDocumentId\x88\x01\x01\x12 \n" +
+	"\tparent_id\x18\xb8\" \x01(\tH\x00R\bparentId\x88\x01\x01\x12E\n" +
+	"\x1cservice_metadata_document_id\x18\xb9j \x01(\tH\x01R\x19serviceMetadataDocumentId\x88\x01\x01\x12 \n" +
 	"\vstorage_ids\x18\x92= \x03(\tR\n" +
 	"storageIds\x12^\n" +
 	"\x14transport_encryption\x18\x9b\x1e \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption\x12R\n" +
@@ -20327,8 +20320,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:\x80\x01\x82\xa6\x1d\x19MultiModalDatabaseService\x82\xa6\x1d\x0fDatabaseService\x82\xa6\x1d\x0eStorageService\x82\xa6\x1d\x0eNetworkService\x82\xa6\x1d\n" +
-	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\r\n" +
-	"\v_compute_idB\f\n" +
+	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_idB\x1f\n" +
 	"\x1d_service_metadata_document_id\"\xc7\a\n" +
@@ -20447,7 +20439,8 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x06source\x18\xb2\x01 \x01(\tR\x06source\x12D\n" +
 	"\vcode_region\x18ю\x01 \x01(\v2!.clouditor.ontology.v1.CodeRegionR\n" +
 	"codeRegion\x12-\n" +
-	"\x12object_storage_ids\x18\xbc\x12 \x03(\tR\x10objectStorageIds:6\x82\xa6\x1d\x14ObjectStorageRequest\x82\xa6\x1d\tOperation\x82\xa6\x1d\rFunctionality\"\x87\v\n" +
+	"\x12object_storage_ids\x18\xbc\x12 \x03(\tR\x10objectStorageIds:6\x82\xa6\x1d\x14ObjectStorageRequest\x82\xa6\x1d\tOperation\x82\xa6\x1d\rFunctionality\"\xf5\n" +
+	"\n" +
 	"\x14ObjectStorageService\x12@\n" +
 	"\rcreation_time\x18\x93\\ \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
 	"\vdescription\x18\xbcW \x01(\tR\vdescription\x12\x18\n" +
@@ -20460,15 +20453,15 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x05ports\x18\xe6? \x03(\rR\x05ports\x12\x12\n" +
 	"\x03raw\x18\x8b\x82\x01 \x01(\tR\x03raw\x12R\n" +
 	"\x10activity_logging\x18\xb53 \x01(\v2&.clouditor.ontology.v1.ActivityLoggingR\x0factivityLogging\x12H\n" +
-	"\fauthenticity\x18\xc45 \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12#\n" +
-	"\n" +
-	"compute_id\x18\xd2# \x01(\tH\x00R\tcomputeId\x88\x01\x01\x12G\n" +
+	"\fauthenticity\x18\xc45 \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12 \n" +
+	"\vcompute_ids\x18\xd2# \x03(\tR\n" +
+	"computeIds\x12G\n" +
 	"\fgeo_location\x18\x8f\x93\x01 \x01(\v2\".clouditor.ontology.v1.GeoLocationR\vgeoLocation\x12I\n" +
 	"\rhttp_endpoint\x18\xf41 \x01(\v2#.clouditor.ontology.v1.HttpEndpointR\fhttpEndpoint\x12<\n" +
 	"\bloggings\x18\xfb\x8e\x01 \x03(\v2\x1e.clouditor.ontology.v1.LoggingR\bloggings\x12F\n" +
 	"\fredundancies\x18\xdd[ \x03(\v2!.clouditor.ontology.v1.RedundancyR\fredundancies\x12!\n" +
-	"\tparent_id\x18\x96\t \x01(\tH\x01R\bparentId\x88\x01\x01\x12E\n" +
-	"\x1cservice_metadata_document_id\x18\xdfH \x01(\tH\x02R\x19serviceMetadataDocumentId\x88\x01\x01\x12 \n" +
+	"\tparent_id\x18\x96\t \x01(\tH\x00R\bparentId\x88\x01\x01\x12E\n" +
+	"\x1cservice_metadata_document_id\x18\xdfH \x01(\tH\x01R\x19serviceMetadataDocumentId\x88\x01\x01\x12 \n" +
 	"\vstorage_ids\x18\xad@ \x03(\tR\n" +
 	"storageIds\x12^\n" +
 	"\x14transport_encryption\x18\xde9 \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption\x12R\n" +
@@ -20476,8 +20469,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:h\x82\xa6\x1d\x14ObjectStorageService\x82\xa6\x1d\x0eStorageService\x82\xa6\x1d\x0eNetworkService\x82\xa6\x1d\n" +
-	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\r\n" +
-	"\v_compute_idB\f\n" +
+	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_idB\x1f\n" +
 	"\x1d_service_metadata_document_id\"\x9f\x05\n" +
@@ -20544,7 +20536,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x0egeo_redundancy\x18\x84\x13 \x01(\v2$.clouditor.ontology.v1.GeoRedundancyH\x00R\rgeoRedundancy\x12T\n" +
 	"\x10local_redundancy\x18\xe9\x13 \x01(\v2&.clouditor.ontology.v1.LocalRedundancyH\x00R\x0flocalRedundancy\x12Q\n" +
 	"\x0fzone_redundancy\x18\x89W \x01(\v2%.clouditor.ontology.v1.ZoneRedundancyH\x00R\x0ezoneRedundancyB\x06\n" +
-	"\x04type\"\xd7\f\n" +
+	"\x04type\"\xc5\f\n" +
 	"\x19RelationalDatabaseService\x12@\n" +
 	"\rcreation_time\x18\x9fT \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
 	"\vdescription\x18\xe8c \x01(\tR\vdescription\x12\x17\n" +
@@ -20557,16 +20549,16 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03raw\x18\xb4\x02 \x01(\tR\x03raw\x12R\n" +
 	"\x10activity_logging\x18\x81= \x01(\v2&.clouditor.ontology.v1.ActivityLoggingR\x0factivityLogging\x12W\n" +
 	"\x12anomaly_detections\x18\xdce \x03(\v2'.clouditor.ontology.v1.AnomalyDetectionR\x11anomalyDetections\x12G\n" +
-	"\fauthenticity\x18\x06 \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12$\n" +
-	"\n" +
-	"compute_id\x18\xa9\x92\x01 \x01(\tH\x00R\tcomputeId\x88\x01\x01\x12F\n" +
+	"\fauthenticity\x18\x06 \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12!\n" +
+	"\vcompute_ids\x18\xa9\x92\x01 \x03(\tR\n" +
+	"computeIds\x12F\n" +
 	"\fgeo_location\x18\xb8\x15 \x01(\v2\".clouditor.ontology.v1.GeoLocationR\vgeoLocation\x12I\n" +
 	"\rhttp_endpoint\x18\x84. \x01(\v2#.clouditor.ontology.v1.HttpEndpointR\fhttpEndpoint\x12;\n" +
 	"\bloggings\x18\xefA \x03(\v2\x1e.clouditor.ontology.v1.LoggingR\bloggings\x12X\n" +
 	"\x12malware_protection\x18\xc9_ \x01(\v2(.clouditor.ontology.v1.MalwareProtectionR\x11malwareProtection\x12F\n" +
 	"\fredundancies\x18\xf6u \x03(\v2!.clouditor.ontology.v1.RedundancyR\fredundancies\x12!\n" +
-	"\tparent_id\x18\xf2# \x01(\tH\x01R\bparentId\x88\x01\x01\x12E\n" +
-	"\x1cservice_metadata_document_id\x18\xfd> \x01(\tH\x02R\x19serviceMetadataDocumentId\x88\x01\x01\x12 \n" +
+	"\tparent_id\x18\xf2# \x01(\tH\x00R\bparentId\x88\x01\x01\x12E\n" +
+	"\x1cservice_metadata_document_id\x18\xfd> \x01(\tH\x01R\x19serviceMetadataDocumentId\x88\x01\x01\x12 \n" +
 	"\vstorage_ids\x18\x93! \x03(\tR\n" +
 	"storageIds\x12^\n" +
 	"\x14transport_encryption\x18\x91Y \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption\x12R\n" +
@@ -20574,8 +20566,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:\x80\x01\x82\xa6\x1d\x19RelationalDatabaseService\x82\xa6\x1d\x0fDatabaseService\x82\xa6\x1d\x0eStorageService\x82\xa6\x1d\x0eNetworkService\x82\xa6\x1d\n" +
-	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\r\n" +
-	"\v_compute_idB\f\n" +
+	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_idB\x1f\n" +
 	"\x1d_service_metadata_document_id\"\xca\x01\n" +
@@ -20748,7 +20739,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\n" +
 	"_parent_id\"\x87\x01\n" +
 	"\x14SecurityAdvisoryFeed\x12D\n" +
-	"\x1esecurity_advisory_document_ids\x18\xbd\t \x03(\tR\x1bsecurityAdvisoryDocumentIds:)\x82\xa6\x1d\x14SecurityAdvisoryFeed\x82\xa6\x1d\rFunctionality\"\xba\n" +
+	"\x1esecurity_advisory_document_ids\x18\xbd\t \x03(\tR\x1bsecurityAdvisoryDocumentIds:)\x82\xa6\x1d\x14SecurityAdvisoryFeed\x82\xa6\x1d\rFunctionality\"\xa8\n" +
 	"\n" +
 	"\x17SecurityAdvisoryService\x12@\n" +
 	"\rcreation_time\x18\xd1\x17 \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
@@ -20760,23 +20751,22 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x04name\x18\xb6\x10 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\x15\n" +
 	"\x05ports\x18\xcb# \x03(\rR\x05ports\x12\x11\n" +
 	"\x03raw\x18\xe3Q \x01(\tR\x03raw\x12H\n" +
-	"\fauthenticity\x18\x8ci \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12#\n" +
-	"\n" +
-	"compute_id\x18\xee; \x01(\tH\x00R\tcomputeId\x88\x01\x01\x12F\n" +
+	"\fauthenticity\x18\x8ci \x01(\v2#.clouditor.ontology.v1.AuthenticityR\fauthenticity\x12 \n" +
+	"\vcompute_ids\x18\xee; \x03(\tR\n" +
+	"computeIds\x12F\n" +
 	"\fgeo_location\x18\x88} \x01(\v2\".clouditor.ontology.v1.GeoLocationR\vgeoLocation\x12\x19\n" +
 	"\akey_ids\x18\xb0\x80\x01 \x03(\tR\x06keyIds\x12;\n" +
 	"\bloggings\x18\xde\x15 \x03(\v2\x1e.clouditor.ontology.v1.LoggingR\bloggings\x12G\n" +
 	"\fredundancies\x18ь\x01 \x03(\v2!.clouditor.ontology.v1.RedundancyR\fredundancies\x12!\n" +
-	"\tparent_id\x18\xd0\x04 \x01(\tH\x01R\bparentId\x88\x01\x01\x12d\n" +
+	"\tparent_id\x18\xd0\x04 \x01(\tH\x00R\bparentId\x88\x01\x01\x12d\n" +
 	"\x17security_advisory_feeds\x18\xa8^ \x03(\v2+.clouditor.ontology.v1.SecurityAdvisoryFeedR\x15securityAdvisoryFeeds\x12E\n" +
-	"\x1cservice_metadata_document_id\x18\xdeI \x01(\tH\x02R\x19serviceMetadataDocumentId\x88\x01\x01\x12^\n" +
+	"\x1cservice_metadata_document_id\x18\xdeI \x01(\tH\x01R\x19serviceMetadataDocumentId\x88\x01\x01\x12^\n" +
 	"\x14transport_encryption\x18\xedV \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption\x12R\n" +
 	"\x10usage_statistics\x18\x9d\x1c \x01(\v2&.clouditor.ontology.v1.UsageStatisticsR\x0fusageStatistics\x1a9\n" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:Y\x82\xa6\x1d\x17SecurityAdvisoryService\x82\xa6\x1d\x0eNetworkService\x82\xa6\x1d\n" +
-	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\r\n" +
-	"\v_compute_idB\f\n" +
+	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
 	"_parent_idB\x1f\n" +
 	"\x1d_service_metadata_document_id\"\xf5\x19\n" +

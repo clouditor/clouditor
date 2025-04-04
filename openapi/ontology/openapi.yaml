@@ -840,8 +840,10 @@ components:
                         $ref: '#/components/schemas/AnomalyDetection'
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 httpEndpoint:
@@ -987,8 +989,10 @@ components:
                     $ref: '#/components/schemas/ActivityLogging'
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 httpEndpoint:
@@ -1098,8 +1102,10 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 functionIds:
                     type: array
                     items:
@@ -1237,8 +1243,10 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
@@ -1513,8 +1521,10 @@ components:
                         $ref: '#/components/schemas/AnomalyDetection'
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 httpEndpoint:
@@ -1668,8 +1678,10 @@ components:
                     $ref: '#/components/schemas/AccessRestriction'
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 httpEndpoints:
@@ -1783,8 +1795,10 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
@@ -1913,8 +1927,10 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
@@ -2052,8 +2068,10 @@ components:
                         $ref: '#/components/schemas/AnomalyDetection'
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 httpEndpoint:
@@ -2286,8 +2304,10 @@ components:
                     $ref: '#/components/schemas/ActivityLogging'
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 httpEndpoint:
@@ -2459,8 +2479,10 @@ components:
                         $ref: '#/components/schemas/AnomalyDetection'
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 httpEndpoint:
@@ -2862,8 +2884,10 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 keyIds:
