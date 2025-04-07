@@ -246,11 +246,38 @@ components:
                 interval:
                     pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
                     type: string
+                    description: The interval refers to the update interval in days.
                 securityOnly:
                     type: boolean
             description: |-
                 AutomaticUpdates is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  This feature is, e.g., available on some VM services to automatically update their software. It ensures that a resource is protected from tampering with its state.
+        AwarenessTraining:
+            type: object
+            properties:
+                annualUpdateCompleted:
+                    type: boolean
+                creationTime:
+                    type: string
+                    format: date-time
+                description:
+                    type: string
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                successfullyCompletedPercentage:
+                    type: boolean
+                parentId:
+                    type: string
+            description: AwarenessTraining is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Backup:
             type: object
             properties:
@@ -259,6 +286,7 @@ components:
                 interval:
                     pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
                     type: string
+                    description: The interval refers to the update interval in days.
                 retentionPeriod:
                     pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
                     type: string
@@ -405,38 +433,6 @@ components:
                     type: string
                     description: 'naming schema: AES-128-GCM'
             description: CipherSuite is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
-        CodeModule:
-            type: object
-            properties:
-                creationTime:
-                    type: string
-                    format: date-time
-                description:
-                    type: string
-                id:
-                    type: string
-                labels:
-                    type: object
-                    additionalProperties:
-                        type: string
-                name:
-                    type: string
-                raw:
-                    type: string
-                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
-                codeModuleIds:
-                    type: array
-                    items:
-                        type: string
-                codeRepositoryId:
-                    type: string
-                functionalities:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/Functionality'
-                parentId:
-                    type: string
-            description: CodeModule is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         CodeRegion:
             type: object
             properties:
@@ -690,7 +686,9 @@ components:
                     $ref: '#/components/schemas/LocalDataLocation'
                 remoteDataLocation:
                     $ref: '#/components/schemas/RemoteDataLocation'
-            description: DataLocation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+            description: |-
+                DataLocation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+                 path: Describes either local path or path in URL format
         DatabaseConnect:
             type: object
             properties:
@@ -961,6 +959,10 @@ components:
                          assessment and are recent enough. In the future, this will be replaced with information in the "related" edges in
                          the resource. For now, this needs to be set manually in the evidence.
             description: An evidence resource
+        ExplainableResults:
+            type: object
+            properties: {}
+            description: ExplainableResults is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         FileStorage:
             type: object
             properties:
@@ -1202,8 +1204,6 @@ components:
                     $ref: '#/components/schemas/HttpEndpoint'
                 httpRequestHandler:
                     $ref: '#/components/schemas/HttpRequestHandler'
-                machineLearning:
-                    $ref: '#/components/schemas/MachineLearning'
                 decryption:
                     $ref: '#/components/schemas/Decryption'
                 encryption:
@@ -1658,9 +1658,7 @@ components:
                 inbound:
                     type: boolean
                 restrictedPorts:
-                    type: array
-                    items:
-                        type: string
+                    type: string
             description: L3Firewall is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Library:
             type: object
@@ -1884,14 +1882,6 @@ components:
             description: |-
                 LoggingService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  A logging-as-a-service offering, e.g. for analyzing logs; has a Storage resource that stores the logs
-        MachineLearning:
-            type: object
-            properties:
-                machineLearningDatasetId:
-                    type: string
-                machineLearningModelId:
-                    type: string
-            description: MachineLearning is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         MachineLearningDataset:
             type: object
             properties:
@@ -1911,19 +1901,30 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                size:
+                    type: integer
+                    format: int32
+                type:
+                    type: string
+                dataLocation:
+                    $ref: '#/components/schemas/DataLocation'
                 parentId:
                     type: string
             description: MachineLearningDataset is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         MachineLearningModel:
             type: object
             properties:
+                advRobustness:
+                    type: number
+                    format: float
                 creationTime:
                     type: string
                     format: date-time
                 description:
                     type: string
-                expendability:
-                    type: string
+                explainability:
+                    type: number
+                    format: float
                 id:
                     type: string
                 labels:
@@ -1932,7 +1933,13 @@ components:
                         type: string
                 name:
                     type: string
+                poisonLevel:
+                    type: number
+                    format: float
                 privacyLabel:
+                    type: number
+                    format: float
+                privacyLevel:
                     type: number
                     format: float
                 raw:
@@ -1941,6 +1948,8 @@ components:
                 robustness:
                     type: number
                     format: float
+                dataLocation:
+                    $ref: '#/components/schemas/DataLocation'
                 parentId:
                     type: string
             description: MachineLearningModel is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1986,10 +1995,10 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
-                machineLearnings:
+                machineLearningIds:
                     type: array
                     items:
-                        $ref: '#/components/schemas/MachineLearning'
+                        type: string
                 redundancies:
                     type: array
                     items:
@@ -2428,6 +2437,46 @@ components:
                 usageStatistics:
                     $ref: '#/components/schemas/UsageStatistics'
             description: PasswordPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        PolicyDocument:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                description:
+                    type: string
+                filetype:
+                    type: string
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                dataLocation:
+                    $ref: '#/components/schemas/DataLocation'
+                documentChecksums:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DocumentChecksum'
+                documentSignatures:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DocumentSignature'
+                parentId:
+                    type: string
+                schemaValidation:
+                    $ref: '#/components/schemas/SchemaValidation'
+                securityFeatures:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SecurityFeature'
+            description: PolicyDocument is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         RBAC:
             type: object
             properties:
@@ -2627,14 +2676,10 @@ components:
                     $ref: '#/components/schemas/FileStorage'
                 objectStorage:
                     $ref: '#/components/schemas/ObjectStorage'
-                application:
-                    $ref: '#/components/schemas/Application'
-                library:
-                    $ref: '#/components/schemas/Library'
-                codeModule:
-                    $ref: '#/components/schemas/CodeModule'
                 genericDocument:
                     $ref: '#/components/schemas/GenericDocument'
+                policyDocument:
+                    $ref: '#/components/schemas/PolicyDocument'
                 securityAdvisoryDocument:
                     $ref: '#/components/schemas/SecurityAdvisoryDocument'
                 serviceMetadataDocument:
@@ -2643,6 +2688,16 @@ components:
                     $ref: '#/components/schemas/MachineLearningDataset'
                 machineLearningModel:
                     $ref: '#/components/schemas/MachineLearningModel'
+                awarenessTraining:
+                    $ref: '#/components/schemas/AwarenessTraining'
+                securityTraining:
+                    $ref: '#/components/schemas/SecurityTraining'
+                application:
+                    $ref: '#/components/schemas/Application'
+                library:
+                    $ref: '#/components/schemas/Library'
+                sourceCodeFile:
+                    $ref: '#/components/schemas/SourceCodeFile'
             description: Resource is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
         ResourceGroup:
             type: object
@@ -2697,6 +2752,10 @@ components:
                     items:
                         type: string
             description: ResourceLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        RobustnessScore:
+            type: object
+            properties: {}
+            description: RobustnessScore is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         RoleAssignment:
             type: object
             properties:
@@ -2989,7 +3048,37 @@ components:
                     $ref: '#/components/schemas/Immutability'
                 documentSignature:
                     $ref: '#/components/schemas/DocumentSignature'
+                explainableResults:
+                    $ref: '#/components/schemas/ExplainableResults'
+                robustnessScore:
+                    $ref: '#/components/schemas/RobustnessScore'
             description: SecurityFeature is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+        SecurityTraining:
+            type: object
+            properties:
+                annualUpdateCompleted:
+                    type: boolean
+                creationTime:
+                    type: string
+                    format: date-time
+                description:
+                    type: string
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                successfullyCompletedPercentage:
+                    type: boolean
+                parentId:
+                    type: string
+            description: SecurityTraining is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         ServiceMetadataDocument:
             type: object
             properties:
@@ -3038,6 +3127,38 @@ components:
                 enabled:
                     type: boolean
             description: SingleSignOn is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        SourceCodeFile:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                description:
+                    type: string
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                codeModuleIds:
+                    type: array
+                    items:
+                        type: string
+                codeRepositoryId:
+                    type: string
+                functionalities:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Functionality'
+                parentId:
+                    type: string
+            description: SourceCodeFile is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Status:
             type: object
             properties:

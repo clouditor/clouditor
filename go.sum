@@ -309,8 +309,8 @@ github.com/open-policy-agent/opa v1.3.0/go.mod h1:t9iPNhaplD2qpiBqeudzJtEX3fKHK8
 github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
 github.com/oxisto/oauth2go v0.14.0 h1:VjMJCBC3TxnXPEANWWsZudKlGYh06YgBl49fb5JhavM=
 github.com/oxisto/oauth2go v0.14.0/go.mod h1:8mUk9Gsrh4xgzrVLsliSGi/X3+ZQkXztfK+dpdAkRZM=
-github.com/oxisto/owl2proto v0.2.1 h1:/ZRvY/jqezC8JprKhP/XRYhgIvOVhu2F3AVWqrWllNc=
-github.com/oxisto/owl2proto v0.2.1/go.mod h1:U1q1xFOfqagvgSn9SuTVPcnubnNUd0VG0qn/1WG8370=
+github.com/oxisto/owl2proto v0.2.2 h1:TEztsBE3Fkz29+RcdHL5aoO84s5WHll4+x7qG9DWBxY=
+github.com/oxisto/owl2proto v0.2.2/go.mod h1:U1q1xFOfqagvgSn9SuTVPcnubnNUd0VG0qn/1WG8370=
 github.com/pelletier/go-toml/v2 v2.2.3 h1:YmeHyLY8mFWbdkNWwpr+qIL2bEqT0o95WSdkNHvL12M=
 github.com/pelletier/go-toml/v2 v2.2.3/go.mod h1:MfCQTFTvCcUyyvvwm1+G6H/jORL20Xlb6rzQu9GuUkc=
 github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c h1:+mdjkGKdHQG3305AYmdv1U2eRNDiU2ErMBj1gwrq8eQ=
