@@ -202,7 +202,7 @@ func Test_openstackDiscovery_authorize(t *testing.T) {
 					provider: &gophercloud.ProviderClient{
 						TokenID: client.TokenID,
 						EndpointLocator: func(eo gophercloud.EndpointOpts) (string, error) {
-							if eo.Type == "volumev3" {
+							if eo.Type == "block-storage" {
 								return "", errors.New("this is a test error")
 							}
 							return testhelper.Endpoint(), nil
