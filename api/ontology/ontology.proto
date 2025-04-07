@@ -577,7 +577,6 @@ message ContainerRegistry {
 message Core {
   oneof type {
     CertificationTarget certification_target = 11245;
-    Evidence evidence = 18196;
     CloudSDK cloud_sdk = 14752;
     HttpClientLibrary http_client_library = 8816;
     HttpServer http_server = 7177;
@@ -835,12 +834,6 @@ message Error {
   option (resource_type_names) = "Functionality";
 
   string message = 3497;
-}
-
-// Evidence is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
-message Evidence {
-  option (resource_type_names) = "Evidence";
-  option (resource_type_names) = "Core";
 }
 
 // ExplainableResults is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.

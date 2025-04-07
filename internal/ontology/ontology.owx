@@ -174,9 +174,6 @@
         <Class IRI="https://ontology.emerald-he.eu/classes/Error"/>
     </Declaration>
     <Declaration>
-        <Class IRI="https://ontology.emerald-he.eu/classes/Evidence"/>
-    </Declaration>
-    <Declaration>
         <Class IRI="https://ontology.emerald-he.eu/classes/ExplainableResults"/>
     </Declaration>
     <Declaration>
@@ -1807,10 +1804,6 @@
             <DataProperty IRI="https://ontology.emerald-he.eu/classes/message"/>
             <Datatype abbreviatedIRI="xsd:string"/>
         </DataSomeValuesFrom>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="https://ontology.emerald-he.eu/classes/Evidence"/>
-        <Class IRI="https://ontology.emerald-he.eu/classes/Core"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="https://ontology.emerald-he.eu/classes/ExplainableResults"/>
@@ -3512,18 +3505,6 @@ name = metadata.name</Literal>
         <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/hasMultiple"/>
         <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/has"/>
     </SubObjectPropertyOf>
-    <ObjectPropertyDomain>
-        <ObjectProperty IRI="https://ontology.emerald-he.eu/classes/belongsTo"/>
-        <Class IRI="https://ontology.emerald-he.eu/classes/Evidence"/>
-    </ObjectPropertyDomain>
-    <ObjectPropertyDomain>
-        <ObjectProperty IRI="https://ontology.emerald-he.eu/classes/describes"/>
-        <Class IRI="https://ontology.emerald-he.eu/classes/Evidence"/>
-    </ObjectPropertyDomain>
-    <ObjectPropertyDomain>
-        <ObjectProperty IRI="https://ontology.emerald-he.eu/classes/extractedBy"/>
-        <Class IRI="https://ontology.emerald-he.eu/classes/Evidence"/>
-    </ObjectPropertyDomain>
     <ObjectPropertyDomain>
         <ObjectProperty IRI="https://ontology.emerald-he.eu/classes/hasType"/>
         <Class IRI="https://ontology.emerald-he.eu/classes/Resource"/>
