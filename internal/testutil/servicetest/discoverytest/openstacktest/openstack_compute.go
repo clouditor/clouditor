@@ -44,6 +44,7 @@ import (
 //
 // Changes:
 // - 2025-01-13: Added function HandleShowConsoleOutputSuccessfullyModified to get console output of server and delete `"length": 50` in TestJSONRequest, otherwise it does not work. (@anatheka)
+// - 2025-04-07: Added error check to fmt.Fprint() (@anatheka)
 
 // ServerListBody contains the canned body of a servers.List response.
 const ServerListBody = `
@@ -500,7 +501,9 @@ func HandleServerListSuccessfully(t *testing.T) {
 		marker := r.Form.Get("marker")
 		switch marker {
 		case "":
-			fmt.Fprint(w, ServerListBody)
+			if _, err := fmt.Fprint(w, ServerListBody); err != nil {
+				t.Errorf("Failed to write response: %v", err)
+			}
 		case "9e5476bd-a4ec-4653-93d6-72c93aa682ba":
 			fmt.Fprint(w, `{ "servers": [] }`)
 		default:
@@ -518,6 +521,8 @@ func HandleShowConsoleOutputSuccessfully(t *testing.T, response string) {
 
 		w.WriteHeader(http.StatusOK)
 		w.Header().Add("Content-Type", "application/json")
-		fmt.Fprint(w, response)
+		if _, err := fmt.Fprint(w, response); err != nil {
+			t.Errorf("Failed to write response: %v", err)
+		}
 	})
 }

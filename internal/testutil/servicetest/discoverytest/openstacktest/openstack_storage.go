@@ -41,6 +41,7 @@ import (
 //
 // Changes:
 // - 2025-03-12: Rename function name from MockListResponse() to MockStorageListResponse()(@anatheka)
+// - 2025-04-07: Changing fmt.Fprintf() to fmt.Sprintf and adding an error check in MockStorageListResponse()(@anatheka)
 
 func MockStorageListResponse(t *testing.T) {
 	th.Mux.HandleFunc("/volumes/detail", func(w http.ResponseWriter, r *http.Request) {
@@ -56,77 +57,81 @@ func MockStorageListResponse(t *testing.T) {
 		marker := r.Form.Get("marker")
 		switch marker {
 		case "":
-			fmt.Fprintf(w, `
+			response := fmt.Sprintf(`
   {
   "volumes": [
-    {
-      "volume_type": "lvmdriver-1",
-      "created_at": "2015-09-17T03:35:03.000000",
-      "bootable": "false",
-      "name": "vol-001",
-      "os-vol-mig-status-attr:name_id": null,
-      "consistencygroup_id": null,
-      "source_volid": null,
-      "os-volume-replication:driver_data": null,
-      "multiattach": false,
-      "snapshot_id": null,
-      "replication_status": "disabled",
-      "os-volume-replication:extended_status": null,
-      "encrypted": false,
-      "os-vol-host-attr:host": "host-001",
-      "availability_zone": "nova",
-      "attachments": [{
-        "server_id": "83ec2e3b-4321-422b-8706-a84185f52a0a",
-        "attachment_id": "05551600-a936-4d4a-ba42-79a037c1-c91a",
-        "attached_at": "2016-08-06T14:48:20.000000",
-        "host_name": "foobar",
-        "volume_id": "d6cacb1a-8b59-4c88-ad90-d70ebb82bb75",
-        "device": "/dev/vdc",
-        "id": "d6cacb1a-8b59-4c88-ad90-d70ebb82bb75"
-      }],
-      "id": "289da7f8-6440-407c-9fb4-7db01ec49164",
-      "size": 75,
-      "user_id": "ff1ce52c03ab433aaba9108c2e3ef541",
-      "os-vol-tenant-attr:tenant_id": "304dc00909ac4d0da6c62d816bcb3459",
-      "os-vol-mig-status-attr:migstat": null,
-      "metadata": {"foo": "bar"},
-      "status": "available",
-      "description": null
-    },
-    {
-      "volume_type": "lvmdriver-1",
-      "created_at": "2015-09-17T03:32:29.000000",
-      "bootable": "false",
-      "name": "vol-002",
-      "os-vol-mig-status-attr:name_id": null,
-      "consistencygroup_id": null,
-      "source_volid": null,
-      "os-volume-replication:driver_data": null,
-      "multiattach": false,
-      "snapshot_id": null,
-      "replication_status": "disabled",
-      "os-volume-replication:extended_status": null,
-      "encrypted": false,
-      "os-vol-host-attr:host": null,
-      "availability_zone": "nova",
-      "attachments": [],
-      "id": "96c3bda7-c82a-4f50-be73-ca7621794835",
-      "size": 75,
-      "user_id": "ff1ce52c03ab433aaba9108c2e3ef541",
-      "os-vol-tenant-attr:tenant_id": "304dc00909ac4d0da6c62d816bcb3459",
-      "os-vol-mig-status-attr:migstat": null,
-      "metadata": {},
-      "status": "available",
-      "description": null
-    }
+  {
+  "volume_type": "lvmdriver-1",
+  "created_at": "2015-09-17T03:35:03.000000",
+  "bootable": "false",
+  "name": "vol-001",
+  "os-vol-mig-status-attr:name_id": null,
+  "consistencygroup_id": null,
+  "source_volid": null,
+  "os-volume-replication:driver_data": null,
+  "multiattach": false,
+  "snapshot_id": null,
+  "replication_status": "disabled",
+  "os-volume-replication:extended_status": null,
+  "encrypted": false,
+  "os-vol-host-attr:host": "host-001",
+  "availability_zone": "nova",
+  "attachments": [{
+  "server_id": "83ec2e3b-4321-422b-8706-a84185f52a0a",
+  "attachment_id": "05551600-a936-4d4a-ba42-79a037c1-c91a",
+  "attached_at": "2016-08-06T14:48:20.000000",
+  "host_name": "foobar",
+  "volume_id": "d6cacb1a-8b59-4c88-ad90-d70ebb82bb75",
+  "device": "/dev/vdc",
+  "id": "d6cacb1a-8b59-4c88-ad90-d70ebb82bb75"
+  }],
+  "id": "289da7f8-6440-407c-9fb4-7db01ec49164",
+  "size": 75,
+  "user_id": "ff1ce52c03ab433aaba9108c2e3ef541",
+  "os-vol-tenant-attr:tenant_id": "304dc00909ac4d0da6c62d816bcb3459",
+  "os-vol-mig-status-attr:migstat": null,
+  "metadata": {"foo": "bar"},
+  "status": "available",
+  "description": null
+  },
+  {
+  "volume_type": "lvmdriver-1",
+  "created_at": "2015-09-17T03:32:29.000000",
+  "bootable": "false",
+  "name": "vol-002",
+  "os-vol-mig-status-attr:name_id": null,
+  "consistencygroup_id": null,
+  "source_volid": null,
+  "os-volume-replication:driver_data": null,
+  "multiattach": false,
+  "snapshot_id": null,
+  "replication_status": "disabled",
+  "os-volume-replication:extended_status": null,
+  "encrypted": false,
+  "os-vol-host-attr:host": null,
+  "availability_zone": "nova",
+  "attachments": [],
+  "id": "96c3bda7-c82a-4f50-be73-ca7621794835",
+  "size": 75,
+  "user_id": "ff1ce52c03ab433aaba9108c2e3ef541",
+  "os-vol-tenant-attr:tenant_id": "304dc00909ac4d0da6c62d816bcb3459",
+  "os-vol-mig-status-attr:migstat": null,
+  "metadata": {},
+  "status": "available",
+  "description": null
+  }
   ],
-	"volumes_links": [
-	{
-		"href": "%s/volumes/detail?marker=1",
-		"rel": "next"
-	}]
+  "volumes_links": [
+  {
+  "href": "%s/volumes/detail?marker=1",
+  "rel": "next"
+  }]
 }
   `, th.Server.URL)
+
+			if _, err := fmt.Fprint(w, response); err != nil {
+				t.Errorf("Failed to write response: %v", err)
+			}
 		case "1":
 			fmt.Fprint(w, `{"volumes": []}`)
 		default:
