@@ -33,7 +33,6 @@ import (
 
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/v2/testhelper"
-	th "github.com/gophercloud/gophercloud/v2/testhelper"
 	"github.com/gophercloud/gophercloud/v2/testhelper/client"
 )
 
@@ -516,10 +515,10 @@ func HandleServerListSuccessfully(t *testing.T) {
 
 // HandleShowConsoleOutputSuccessfully sets up the test server to respond to a os-getConsoleOutput request with success.
 func HandleShowConsoleOutputSuccessfully(t *testing.T, response string) {
-	th.Mux.HandleFunc("/servers/ef079b0c-e610-4dfb-b1aa-b49f07ac48e5/action", func(w http.ResponseWriter, r *http.Request) {
-		th.TestMethod(t, r, "POST")
-		th.TestHeader(t, r, "X-Auth-Token", client.TokenID)
-		th.TestJSONRequest(t, r, `{ "os-getConsoleOutput": {} }`)
+	testhelper.Mux.HandleFunc("/servers/ef079b0c-e610-4dfb-b1aa-b49f07ac48e5/action", func(w http.ResponseWriter, r *http.Request) {
+		testhelper.TestMethod(t, r, "POST")
+		testhelper.TestHeader(t, r, "X-Auth-Token", client.TokenID)
+		testhelper.TestJSONRequest(t, r, `{ "os-getConsoleOutput": {} }`)
 
 		w.WriteHeader(http.StatusOK)
 		w.Header().Add("Content-Type", "application/json")
