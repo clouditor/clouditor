@@ -40,14 +40,20 @@ var (
 	ErrMetricConfigurationTargetValueMissing = errors.New("target value in metric data is missing")
 )
 
+const (
+	DefaultNonCompliantMessage = "The result of the metric indicates that the resource contains properties that are not compliant with the target value."
+	DefaultCompliantMessage    = "The result of the metric shows that the evidence is compliant to the target value."
+	AdditionalDetailsMessage   = "Additional details can be found in the comparison below."
+)
+
 const AssessmentToolId = "Clouditor Assessment"
 
 func (req *AssessEvidenceRequest) GetPayload() proto.Message {
 	return req.Evidence
 }
 
-// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns the certification target ID of the inner
+// GetTargetOfEvaluationId is a shortcut to implement TargetOfEvaluationRequest. It returns the target of evaluation ID of the inner
 // object.
-func (req *AssessEvidenceRequest) GetCertificationTargetId() string {
-	return req.GetEvidence().GetCertificationTargetId()
+func (req *AssessEvidenceRequest) GetTargetOfEvaluationId() string {
+	return req.GetEvidence().GetTargetOfEvaluationId()
 }

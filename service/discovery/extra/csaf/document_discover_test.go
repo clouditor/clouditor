@@ -9,13 +9,13 @@ import (
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/crypto/openpgp"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"github.com/csaf-poc/csaf_distribution/v3/csaf"
+	"github.com/gocsaf/csaf/v3/csaf"
 )
 
 func Test_csafDiscovery_handleAdvisory(t *testing.T) {
 	type fields struct {
 		domain string
-		csID   string
+		ctID   string
 		client *http.Client
 	}
 	type args struct {
@@ -35,7 +35,7 @@ func Test_csafDiscovery_handleAdvisory(t *testing.T) {
 			name: "happy path",
 			fields: fields{
 				domain: goodProvider.Domain(),
-				csID:   config.DefaultCertificationTargetID,
+				ctID:   config.DefaultTargetOfEvaluationID,
 				client: goodProvider.Client(),
 			},
 			args: args{
@@ -56,7 +56,7 @@ func Test_csafDiscovery_handleAdvisory(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &csafDiscovery{
 				domain: tt.fields.domain,
-				csID:   tt.fields.csID,
+				ctID:   tt.fields.ctID,
 				client: tt.fields.client,
 			}
 			gotDoc, err := d.handleAdvisory(tt.args.label, tt.args.file, tt.args.keyring, tt.args.parentId)
@@ -72,7 +72,7 @@ func Test_csafDiscovery_handleAdvisory(t *testing.T) {
 func Test_csafDiscovery_discoverSecurityAdvisories(t *testing.T) {
 	type fields struct {
 		domain string
-		csID   string
+		ctID   string
 		client *http.Client
 	}
 	type args struct {
@@ -91,7 +91,7 @@ func Test_csafDiscovery_discoverSecurityAdvisories(t *testing.T) {
 			name: "happy path",
 			fields: fields{
 				domain: goodProvider.Domain(),
-				csID:   config.DefaultCertificationTargetID,
+				ctID:   config.DefaultTargetOfEvaluationID,
 				client: goodProvider.Client(),
 			},
 			args: args{
@@ -109,7 +109,7 @@ func Test_csafDiscovery_discoverSecurityAdvisories(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &csafDiscovery{
 				domain: tt.fields.domain,
-				csID:   tt.fields.csID,
+				ctID:   tt.fields.ctID,
 				client: tt.fields.client,
 			}
 			gotDocuments, err := d.discoverSecurityAdvisories(tt.args.md, tt.args.keyring, tt.args.parentId)

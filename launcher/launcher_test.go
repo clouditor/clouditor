@@ -65,6 +65,7 @@ func TestLauncher_initStorage(t *testing.T) {
 			},
 			fields: fields{
 				name: "component",
+				log:  logrus.NewEntry(logrus.New()),
 			},
 			wantErr: func(t *testing.T, err error) bool {
 				return assert.ErrorContains(t, err, "could not create storage")
@@ -77,6 +78,7 @@ func TestLauncher_initStorage(t *testing.T) {
 			},
 			fields: fields{
 				name: "component",
+				log:  logrus.NewEntry(logrus.New()),
 			},
 			wantErr: assert.Nil[error],
 		},

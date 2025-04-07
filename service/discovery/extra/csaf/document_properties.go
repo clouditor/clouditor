@@ -18,7 +18,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/constants"
 	"clouditor.io/clouditor/v2/internal/crypto/openpgp"
 
-	"github.com/csaf-poc/csaf_distribution/v3/csaf"
+	"github.com/gocsaf/csaf/v3/csaf"
 )
 
 func documentValidationErrors(messages []string) (errs []*ontology.Error) {

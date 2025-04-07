@@ -54,7 +54,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -248,7 +247,7 @@ func (svc *Service) Init() {}
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
 func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
 	var (
-		resourceId string
+		resource ontology.IsResource
 	)
 
 	// Validate request
@@ -258,14 +257,19 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 		return nil, err
 	}
 
-	// Check if certification_target_id in the service is within allowed or one can access *all* the certification targets
+	// Check if target_of_evaluation_id in the service is within allowed or one can access *all* the target of evaluations
 	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
 		log.Error(service.ErrPermissionDenied)
 		return nil, service.ErrPermissionDenied
 	}
 
-	// TODO: This is really bad, because we will also unmarshal the resource as part of handleEvidence
-	resourceId = req.Evidence.GetResourceId()
+	// Retrieve the ontology resource
+	resource = req.Evidence.GetOntologyResource()
+	if resource == nil {
+		err = discovery.ErrNotOntologyResource
+		log.Error(err)
+		return nil, err
+	}
 
 	// Check, if we can immediately handle this evidence; we assume so at first
 	var (
@@ -293,15 +297,15 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 	}
 
 	// Update our resourceID to evidence cache
-	svc.evidenceResourceMap[resourceId] = req.Evidence
+	svc.evidenceResourceMap[resource.GetId()] = req.Evidence
 	svc.em.Unlock()
 
 	// Inform any other left over evidences that might be waiting
-	go svc.informWaitingRequests(resourceId)
+	go svc.informWaitingRequests(resource.GetId())
 
 	if canHandle {
 		// Assess evidence. This also validates the embedded resource and returns a gRPC error if validation fails.
-		_, err = svc.handleEvidence(ctx, req.Evidence, related)
+		_, err = svc.handleEvidence(ctx, req.Evidence, resource, related)
 		if err != nil {
 			log.Error(err)
 			return nil, err
@@ -319,7 +323,7 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 		l := waitingRequest{
 			started:      time.Now(),
 			waitingFor:   waitingFor,
-			resourceId:   resourceId,
+			resourceId:   resource.GetId(),
 			Evidence:     req.Evidence,
 			s:            svc,
 			newResources: make(chan string, 1000),
@@ -402,26 +406,17 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences. This will
 // also validate the resource embedded into the evidence and return an error if validation fails. In order to
 // distinguish between internal errors and validation errors, this function already returns a gRPC error.
-func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, related map[string]ontology.IsResource) (results []*assessment.AssessmentResult, err error) {
+func (svc *Service) handleEvidence(
+	ctx context.Context,
+	ev *evidence.Evidence,
+	resource ontology.IsResource,
+	related map[string]ontology.IsResource,
+) (results []*assessment.AssessmentResult, err error) {
 	var (
-		types    []string
-		m        proto.Message
-		resource ontology.IsResource
+		types []string
 	)
 
-	// First, try to extract the resource out of the evidence and validate it
-	m, err = ev.Resource.UnmarshalNew()
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not unmarshal resource proto message: %v", err)
-	}
-
-	err = api.Validate(m)
-	if err != nil {
-		return nil, err
-	}
-
-	resource, ok := m.(ontology.IsResource)
-	if !ok {
+	if resource == nil {
 		return nil, status.Errorf(codes.Internal, "invalid embedded resource: %v", discovery.ErrNotOntologyResource)
 	}
 
@@ -475,25 +470,18 @@ func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, r
 		types = ontology.ResourceTypes(resource)
 
 		result := &assessment.AssessmentResult{
-			Id:                    uuid.NewString(),
-			Timestamp:             timestamppb.Now(),
-			CertificationTargetId: ev.GetCertificationTargetId(),
-			MetricId:              metricID,
-			MetricConfiguration:   data.Config,
-			Compliant:             data.Compliant,
-			EvidenceId:            ev.GetId(),
-			ResourceId:            resource.GetId(),
-			ResourceTypes:         types,
-			NonComplianceComments: "No comments so far",
-			ToolId:                util.Ref(assessment.AssessmentToolId),
-		}
-
-		// Some (newer) metrics have non-compliance details, so we can also fill them
-		for _, comparison := range data.ComparisonResult {
-			// For now we are only interested in failing results
-			if !comparison.Success {
-				result.NonComplianceDetails = append(result.NonComplianceDetails, comparison)
-			}
+			Id:                   uuid.NewString(),
+			Timestamp:            timestamppb.Now(),
+			TargetOfEvaluationId: ev.GetTargetOfEvaluationId(),
+			MetricId:             metricID,
+			MetricConfiguration:  data.Config,
+			Compliant:            data.Compliant,
+			EvidenceId:           ev.GetId(),
+			ResourceId:           resource.GetId(),
+			ResourceTypes:        types,
+			ComplianceComment:    data.Message,
+			ComplianceDetails:    data.ComparisonResult,
+			ToolId:               util.Ref(assessment.AssessmentToolId),
 		}
 
 		// Inform hooks about new assessment result
@@ -605,8 +593,8 @@ func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_La
 }
 
 // MetricConfiguration implements MetricsSource by getting the corresponding metric configuration for the
-// default target certification target
-func (svc *Service) MetricConfiguration(CertificationTargetID string, metric *assessment.Metric) (config *assessment.MetricConfiguration, err error) {
+// default target target of evaluation
+func (svc *Service) MetricConfiguration(TargetOfEvaluationID string, metric *assessment.Metric) (config *assessment.MetricConfiguration, err error) {
 	var (
 		ok    bool
 		cache cachedConfiguration
@@ -614,7 +602,7 @@ func (svc *Service) MetricConfiguration(CertificationTargetID string, metric *as
 	)
 
 	// Calculate the cache key
-	key = fmt.Sprintf("%s-%s", CertificationTargetID, metric.Id)
+	key = fmt.Sprintf("%s-%s", TargetOfEvaluationID, metric.Id)
 
 	// Retrieve our cached entry
 	svc.confMutex.Lock()
@@ -624,8 +612,8 @@ func (svc *Service) MetricConfiguration(CertificationTargetID string, metric *as
 	// Check if entry is not there or is expired
 	if !ok || cache.cachedAt.After(time.Now().Add(EvictionTime)) {
 		config, err = svc.orchestrator.Client.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{
-			CertificationTargetId: CertificationTargetID,
-			MetricId:              metric.Id,
+			TargetOfEvaluationId: TargetOfEvaluationID,
+			MetricId:             metric.Id,
 		})
 
 		if err != nil {
@@ -685,7 +673,7 @@ func (svc *Service) handleMetricEvent(event *orchestrator.MetricChangeEvent) {
 		svc.confMutex.Lock()
 
 		// Calculate the cache key
-		key = fmt.Sprintf("%s-%s", event.CertificationTargetId, event.MetricId)
+		key = fmt.Sprintf("%s-%s", event.TargetOfEvaluationId, event.MetricId)
 
 		delete(svc.cachedConfigurations, key)
 		svc.confMutex.Unlock()

@@ -1,4 +1,3 @@
 [submodule "ui"]
 	path = ui
-	url = https://github.com/clouditor/ui
-	branch = main
+	url = git@github.com:confirmate/ui.git

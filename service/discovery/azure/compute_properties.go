@@ -140,21 +140,6 @@ func getVirtualNetworkSubnetId(site *armappservice.Site) []string {
 	return ni
 }
 
-// getInternetAccessibleEndpoint returns the public access status for webApp and function
-func getInternetAccessibleEndpoint(site *armappservice.Site) bool {
-	// Check if a mandatory field is empty
-	if site == nil {
-		return false
-	}
-
-	// Check if resource is public available
-	if util.Deref(site.Properties.PublicNetworkAccess) == "Enabled" {
-		return true
-	}
-
-	return false
-}
-
 // getResourceLoggingWebApps determines if logging is activated for given web app or function by checking the respective app setting
 func (d *azureDiscovery) getResourceLoggingWebApps(site *armappservice.Site) (rl *ontology.ResourceLogging) {
 	rl = &ontology.ResourceLogging{}

@@ -86,7 +86,7 @@ func Test_CreateCertificate(t *testing.T) {
 			name: "authorization error - permission denied",
 			fields: fields{
 				svc: NewService(WithAuthorizationStrategy(
-					servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID2))),
+					servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID2))),
 			},
 			args: args{
 				context.Background(),
@@ -124,13 +124,13 @@ func Test_CreateCertificate(t *testing.T) {
 			name: "happy path - valid certificate",
 			fields: fields{
 				svc: NewService(WithAuthorizationStrategy(
-					// Only allow certificates belonging to MockCertificationTargetID
-					servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1))),
+					// Only allow certificates belonging to MockTargetOfEvaluationID
+					servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1))),
 			},
 			args: args{
 				context.Background(),
 				&orchestrator.CreateCertificateRequest{
-					// mockCertificate's corresponding certification target ID is MockCertificationTargetID (authorization succeeds)
+					// mockCertificate's corresponding target of evaluation ID is MockTargetOfEvaluationID (authorization succeeds)
 					Certificate: mockCertificate,
 				},
 			},
@@ -218,12 +218,12 @@ func Test_GetCertificate(t *testing.T) {
 					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
 					})),
-					// Only authorized for MockCertificationTargetID
+					// Only authorized for MockTargetOfEvaluationID
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
-						false, testdata.MockCertificationTargetID2)),
+						false, testdata.MockTargetOfEvaluationID2)),
 				),
 			},
-			// Only authorized for MockAnotherCertificationTargetID (=2222-2...) and not MockCertificationTargetID (=1111-1...)
+			// Only authorized for MockAnotherTargetOfEvaluationID (=2222-2...) and not MockTargetOfEvaluationID (=1111-1...)
 			req:     &orchestrator.GetCertificateRequest{CertificateId: testdata.MockCertificateID},
 			wantRes: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -311,7 +311,7 @@ func Test_ListCertificates(t *testing.T) {
 			},
 		},
 		{
-			name: "Happy path - all certification targets are allowed",
+			name: "Happy path - all target of evaluations are allowed",
 			fields: fields{
 				svc: &Service{
 					storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
@@ -331,14 +331,14 @@ func Test_ListCertificates(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Happy path - one certification targets is allowed",
+			name: "Happy path - one target of evaluations is allowed",
 			fields: fields{
 				svc: &Service{
 					storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate2()))
 					}),
-					authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1, testdata.MockCertificationTargetID2),
+					authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1, testdata.MockTargetOfEvaluationID2),
 				},
 			},
 			args: args{
@@ -366,7 +366,7 @@ func Test_ListCertificates(t *testing.T) {
 func TestService_ListPublicCertificates(t *testing.T) {
 	type fields struct {
 		UnimplementedOrchestratorServer orchestrator.UnimplementedOrchestratorServer
-		CertificationTargetHooks        []orchestrator.CertificationTargetHookFunc
+		TargetOfEvaluationHooks         []orchestrator.TargetOfEvaluationHookFunc
 		auditScopeHooks                 []orchestrator.AuditScopeHookFunc
 		AssessmentResultHooks           []assessment.ResultHookFunc
 		storage                         persistence.Storage
@@ -411,7 +411,7 @@ func TestService_ListPublicCertificates(t *testing.T) {
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.Internal, status.Code(err))
-				return assert.ErrorContains(t, err, "database error")
+				return assert.ErrorContains(t, err, persistence.ErrDatabase.Error())
 			},
 		},
 		{
@@ -428,15 +428,15 @@ func TestService_ListPublicCertificates(t *testing.T) {
 			wantRes: &orchestrator.ListPublicCertificatesResponse{
 				Certificates: []*orchestrator.Certificate{
 					{
-						Id:                    testdata.MockCertificateID,
-						Name:                  testdata.MockCertificateName,
-						CertificationTargetId: testdata.MockCertificationTargetID1,
-						IssueDate:             time.Date(2006, 7, 1, 0, 0, 0, 0, time.UTC).String(),
-						ExpirationDate:        time.Date(2016, 7, 1, 0, 0, 0, 0, time.UTC).String(),
-						Standard:              testdata.MockCertificateName,
-						AssuranceLevel:        testdata.AssuranceLevelHigh,
-						Cab:                   testdata.MockCertificateCab,
-						Description:           testdata.MockCertificateDescription,
+						Id:                   testdata.MockCertificateID,
+						Name:                 testdata.MockCertificateName,
+						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+						IssueDate:            time.Date(2006, 7, 1, 0, 0, 0, 0, time.UTC).String(),
+						ExpirationDate:       time.Date(2016, 7, 1, 0, 0, 0, 0, time.UTC).String(),
+						Standard:             testdata.MockCertificateName,
+						AssuranceLevel:       testdata.AssuranceLevelHigh,
+						Cab:                  testdata.MockCertificateCab,
+						Description:          testdata.MockCertificateDescription,
 					},
 				},
 			},
@@ -447,7 +447,7 @@ func TestService_ListPublicCertificates(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
 				UnimplementedOrchestratorServer: tt.fields.UnimplementedOrchestratorServer,
-				CertificationTargetHooks:        tt.fields.CertificationTargetHooks,
+				TargetOfEvaluationHooks:         tt.fields.TargetOfEvaluationHooks,
 				auditScopeHooks:                 tt.fields.auditScopeHooks,
 				AssessmentResultHooks:           tt.fields.AssessmentResultHooks,
 				storage:                         tt.fields.storage,
@@ -534,7 +534,7 @@ func Test_UpdateCertificate(t *testing.T) {
 			name: "Permission Denied Error - not authorized",
 			fields: fields{
 				svc: NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
-					false, testdata.MockCertificationTargetID2))),
+					false, testdata.MockTargetOfEvaluationID2))),
 			},
 			args: args{
 				ctx: nil,
@@ -721,7 +721,7 @@ func Test_RemoveCertificate(t *testing.T) {
 			fields: fields{
 				svc: NewService(
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
-						false, testdata.MockCertificationTargetID2)),
+						false, testdata.MockTargetOfEvaluationID2)),
 					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
 					}))),
@@ -765,11 +765,11 @@ func Test_RemoveCertificate(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Happy path - with authorization for one certain certification target",
+			name: "Happy path - with authorization for one certain target of evaluation",
 			fields: fields{
 				svc: NewService(
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
-						false, testdata.MockCertificationTargetID1)),
+						false, testdata.MockTargetOfEvaluationID1)),
 					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate2()))
@@ -824,7 +824,7 @@ func TestService_checkAuthorization(t *testing.T) {
 				svc: NewService(
 					// Just to make it clear. Nilling it would also result in this strategy since it is the default
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
-						false, testdata.MockCertificationTargetID1)),
+						false, testdata.MockTargetOfEvaluationID1)),
 					WithStorage(&testutil.StorageWithError{CountErr: gorm.ErrInvalidDB})),
 			},
 			args: args{
@@ -841,7 +841,7 @@ func TestService_checkAuthorization(t *testing.T) {
 			fields: fields{
 				svc: NewService(
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
-						false, testdata.MockCertificationTargetID2)),
+						false, testdata.MockTargetOfEvaluationID2)),
 					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
 					}))),
@@ -873,11 +873,11 @@ func TestService_checkAuthorization(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Happy path - with authorization for one certain certification target",
+			name: "Happy path - with authorization for one certain target of evaluation",
 			fields: fields{
 				svc: NewService(
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
-						false, testdata.MockCertificationTargetID1)),
+						false, testdata.MockTargetOfEvaluationID1)),
 					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate2()))
@@ -892,7 +892,7 @@ func TestService_checkAuthorization(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.wantErr(t, tt.fields.svc.checkAuthorization(tt.args.ctx, tt.args.req),
+			tt.wantErr(t, tt.fields.svc.checkCertificateAuthorization(tt.args.ctx, tt.args.req),
 				fmt.Sprintf("checkAuthorization(%v, %v)", tt.args.ctx, tt.args.req))
 		})
 	}
@@ -917,7 +917,7 @@ func TestService_checkExistence(t *testing.T) {
 				svc: NewService(
 					// Just to make it clear. Nilling it would also result in this strategy since it is the default
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
-						false, testdata.MockCertificationTargetID1)),
+						false, testdata.MockTargetOfEvaluationID1)),
 					WithStorage(&testutil.StorageWithError{CountErr: gorm.ErrInvalidDB})),
 			},
 			args: args{
@@ -950,7 +950,7 @@ func TestService_checkExistence(t *testing.T) {
 			fields: fields{
 				svc: NewService(
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
-						false, testdata.MockCertificationTargetID1)),
+						false, testdata.MockTargetOfEvaluationID1)),
 					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate2()))
@@ -964,8 +964,8 @@ func TestService_checkExistence(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.wantErr(t, tt.fields.svc.checkExistence(tt.args.req),
-				fmt.Sprintf("checkExistence(%v)", tt.args.req))
+			tt.wantErr(t, tt.fields.svc.checkCertificateExistence(tt.args.req),
+				fmt.Sprintf("checkCertificateExistence(%v)", tt.args.req))
 		})
 	}
 }

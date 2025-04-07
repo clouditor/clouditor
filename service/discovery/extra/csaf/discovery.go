@@ -43,27 +43,27 @@ func init() {
 
 type csafDiscovery struct {
 	domain string
-	csID   string
+	ctID   string
 	client *http.Client
 }
 
-type DiscoveryOption func(a *csafDiscovery)
+type DiscoveryOption func(d *csafDiscovery)
 
 func WithProviderDomain(domain string) DiscoveryOption {
-	return func(a *csafDiscovery) {
-		a.domain = domain
+	return func(d *csafDiscovery) {
+		d.domain = domain
 	}
 }
 
-func WithCertificationTargetID(csID string) DiscoveryOption {
+func WithTargetOfEvaluationID(ctID string) DiscoveryOption {
 	return func(a *csafDiscovery) {
-		a.csID = csID
+		a.ctID = ctID
 	}
 }
 
 func NewTrustedProviderDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &csafDiscovery{
-		csID:   config.DefaultCertificationTargetID,
+		ctID:   config.DefaultTargetOfEvaluationID,
 		domain: "clouditor.io",
 		client: http.DefaultClient,
 	}
@@ -84,8 +84,8 @@ func (*csafDiscovery) Description() string {
 	return "Discovery CSAF documents from a CSAF trusted provider"
 }
 
-func (d *csafDiscovery) CertificationTargetID() string {
-	return d.csID
+func (d *csafDiscovery) TargetOfEvaluationID() string {
+	return d.ctID
 }
 
 func (d *csafDiscovery) List() (list []ontology.IsResource, err error) {

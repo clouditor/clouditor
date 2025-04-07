@@ -126,48 +126,48 @@ service Orchestrator {
     option (google.api.http) = {delete: "/v1/orchestrator/metrics/{metric_id}"};
   }
 
-  // Registers a new target certification target
-  rpc RegisterCertificationTarget(RegisterCertificationTargetRequest) returns (CertificationTarget) {
+  // Registers a new target of evaluation
+  rpc CreateTargetOfEvaluation(CreateTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      post: "/v1/orchestrator/certification_targets"
-      body: "certification_target"
+      post: "/v1/orchestrator/targets_of_evaluation"
+      body: "target_of_evaluation"
     };
   }
 
-  // Registers a new target certification target
-  rpc UpdateCertificationTarget(UpdateCertificationTargetRequest) returns (CertificationTarget) {
+  // Registers a new target of evaluation
+  rpc UpdateTargetOfEvaluation(UpdateTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      put: "/v1/orchestrator/certification_targets/{certification_target.id}"
-      body: "certification_target"
+      put: "/v1/orchestrator/targets_of_evaluation/{target_of_evaluation.id}"
+      body: "target_of_evaluation"
     };
   }
 
-  // Retrieves a target certification target
-  rpc GetCertificationTarget(GetCertificationTargetRequest) returns (CertificationTarget) {
-    option (google.api.http) = {get: "/v1/orchestrator/certification_targets/{certification_target_id}"};
+  // Retrieves a target of evaluation
+  rpc GetTargetOfEvaluation(GetTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
+    option (google.api.http) = {get: "/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}"};
   }
 
-  // Lists all target certification targets
-  rpc ListCertificationTargets(ListCertificationTargetsRequest) returns (ListCertificationTargetsResponse) {
-    option (google.api.http) = {get: "/v1/orchestrator/certification_targets"};
+  // Lists all targets of evaluations
+  rpc ListTargetsOfEvaluation(ListTargetsOfEvaluationRequest) returns (ListTargetsOfEvaluationResponse) {
+    option (google.api.http) = {get: "/v1/orchestrator/targets_of_evaluation"};
   }
 
-  // Removes a target certification target
-  rpc RemoveCertificationTarget(RemoveCertificationTargetRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {delete: "/v1/orchestrator/certification_targets/{certification_target_id}"};
+  // Removes a target of evaluation
+  rpc RemoveTargetOfEvaluation(RemoveTargetOfEvaluationRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}"};
   }
 
-  // Retrieves target certification target statistics
-  rpc GetCertificationTargetStatistics(GetCertificationTargetStatisticsRequest) returns (GetCertificationTargetStatisticsResponse) {
-    option (google.api.http) = {get: "/v1/orchestrator/certification_targets/statistics"};
+  // Retrieves target of evaluation statistics
+  rpc GetTargetOfEvaluationStatistics(GetTargetOfEvaluationStatisticsRequest) returns (GetTargetOfEvaluationStatisticsResponse) {
+    option (google.api.http) = {get: "/v1/orchestrator/targets_of_evaluation/statistics"};
   }
 
   // Updates a metric configuration (target value and operator) for a specific
-  // certification target and metric ID
+  // target of evaluation and metric ID
   rpc UpdateMetricConfiguration(UpdateMetricConfigurationRequest) returns (clouditor.assessment.v1.MetricConfiguration) {
     option (google.api.http) = {
       put:
-        "/v1/orchestrator/certification_targets/{certification_target_id}/"
+        "/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}/"
         "metric_configurations/"
         "{metric_id}"
       body: "configuration"
@@ -175,20 +175,20 @@ service Orchestrator {
   }
 
   // Retrieves a metric configuration (target value and operator) for a specific
-  // certification target and metric ID.
+  // target of evaluation and metric ID.
   rpc GetMetricConfiguration(GetMetricConfigurationRequest) returns (clouditor.assessment.v1.MetricConfiguration) {
     option (google.api.http) = {get:
-        "/v1/orchestrator/certification_targets/{certification_target_id}/"
+        "/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}/"
         "metric_configurations/"
         "{metric_id}"
 };
   }
 
   // Lists all metric configurations (target value and operator) for a
-  // specific certification target ID
+  // specific target of evaluation ID
   rpc ListMetricConfigurations(ListMetricConfigurationRequest) returns (ListMetricConfigurationResponse) {
     option (google.api.http) = {get:
-        "/v1/orchestrator/certification_targets/{certification_target_id}/"
+        "/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}/"
         "metric_configurations"
 };
   }
@@ -292,6 +292,7 @@ service Orchestrator {
   rpc ListControls(ListControlsRequest) returns (ListControlsResponse) {
     option (google.api.http) = {
       get: "/v1/orchestrator/controls"
+      additional_bindings: {get: "/v1/orchestrator/catalogs/{catalog_id}/controls"}
       additional_bindings: {get: "/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/controls"}
     };
   }
@@ -312,34 +313,30 @@ service Orchestrator {
     };
   }
 
-  // Retrieves a Audit Scope
+  // Retrieves an Audit Scope
   rpc GetAuditScope(GetAuditScopeRequest) returns (AuditScope) {
-    option (google.api.http) = {get: "/v1/orchestrator/certification_targets/{certification_target_id}/audit_scopes/{catalog_id}"};
+    option (google.api.http) = {get: "/v1/orchestrator/audit_scopes/{audit_scope_id}"};
   }
 
   // Lists all Audit Scopes
   rpc ListAuditScopes(ListAuditScopesRequest) returns (ListAuditScopesResponse) {
-    option (google.api.http) = {
-      get: "/v1/orchestrator/audit_scopes"
-      additional_bindings: {get: "/v1/orchestrator/certification_targets/{certification_target_id}/audit_scopes"}
-      additional_bindings: {get: "/v1/orchestrator/catalogs/{catalog_id}/audit_scopes"}
-    };
+    option (google.api.http) = {get: "/v1/orchestrator/audit_scopes"};
   }
 
   // Updates an existing Audit Scope
   rpc UpdateAuditScope(UpdateAuditScopeRequest) returns (AuditScope) {
     option (google.api.http) = {
       put:
-        "/v1/orchestrator/certification_targets/"
-        "{audit_scope.certification_target_id}/audit_scopes/"
+        "/v1/orchestrator/targets_of_evaluation/"
+        "{audit_scope.target_of_evaluation_id}/audit_scopes/"
         "{audit_scope.catalog_id}"
       body: "audit_scope"
     };
   }
 
-  // Removes a Audit Scope
+  // Removes an Audit Scope
   rpc RemoveAuditScope(RemoveAuditScopeRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {delete: "/v1/orchestrator/certification_targets/{certification_target_id}/audit_scopes/{catalog_id}"};
+    option (google.api.http) = {delete: "/v1/orchestrator/audit_scopes/{audit_scope_id}"};
   }
 
   // Get Runtime Information
@@ -459,72 +456,72 @@ message ListMetricsResponse {
   string next_page_token = 2;
 }
 
-message GetCertificationTargetRequest {
-  string certification_target_id = 1 [
+message GetTargetOfEvaluationRequest {
+  string target_of_evaluation_id = 1 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
 }
 
-message RegisterCertificationTargetRequest {
-  CertificationTarget certification_target = 1 [
+message CreateTargetOfEvaluationRequest {
+  TargetOfEvaluation target_of_evaluation = 1 [
     (buf.validate.field).required = true,
     (google.api.field_behavior) = REQUIRED
   ];
 }
 
-message UpdateCertificationTargetRequest {
-  CertificationTarget certification_target = 1 [
+message UpdateTargetOfEvaluationRequest {
+  TargetOfEvaluation target_of_evaluation = 1 [
     (buf.validate.field).required = true,
     (google.api.field_behavior) = REQUIRED
   ];
 }
 
-message RemoveCertificationTargetRequest {
-  string certification_target_id = 1 [
+message RemoveTargetOfEvaluationRequest {
+  string target_of_evaluation_id = 1 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
 }
 
-message ListCertificationTargetsRequest {
+message ListTargetsOfEvaluationRequest {
   int32 page_size = 10;
   string page_token = 11;
   string order_by = 12;
   bool asc = 13;
 }
 
-message ListCertificationTargetsResponse {
-  repeated CertificationTarget targets = 1 [
+message ListTargetsOfEvaluationResponse {
+  repeated TargetOfEvaluation targets = 1 [
     (google.api.field_behavior) = REQUIRED,
     (google.api.field_behavior) = REQUIRED
   ];
   string next_page_token = 2;
 }
 
-message GetCertificationTargetStatisticsRequest {
-  string certification_target_id = 1 [
+message GetTargetOfEvaluationStatisticsRequest {
+  string target_of_evaluation_id = 1 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
 }
 
-message GetCertificationTargetStatisticsResponse {
-  // number of discovered resources per certification target
+message GetTargetOfEvaluationStatisticsResponse {
+  // number of discovered resources per target of evaluation
   int64 number_of_discovered_resources = 1;
 
-  // number of assessment results per certification target
+  // number of assessment results per target of evaluation
   int64 number_of_assessment_results = 2;
 
-  // number of evidences per certification target
+  // number of evidences per target of evaluation
   int64 number_of_evidences = 3;
 
-  // number of selected catalogs per certification target
+  // number of selected catalogs per target of evaluation
   int64 number_of_selected_catalogs = 4;
 }
 
 message UpdateMetricConfigurationRequest {
-  string certification_target_id = 1 [
+  string target_of_evaluation_id = 1 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -541,7 +538,7 @@ message UpdateMetricConfigurationRequest {
 }
 
 message GetMetricConfigurationRequest {
-  string certification_target_id = 1 [
+  string target_of_evaluation_id = 1 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -553,7 +550,7 @@ message GetMetricConfigurationRequest {
 }
 
 message ListMetricConfigurationRequest {
-  string certification_target_id = 10 [
+  string target_of_evaluation_id = 10 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -601,9 +598,9 @@ message MetricChangeEvent {
     (google.api.field_behavior) = REQUIRED
   ];
 
-  // The certification target id that is affected by this change. Primarily
+  // The target of evaluation id that is affected by this change. Primarily
   // concerns metric configuration changes.
-  string certification_target_id = 3 [
+  string target_of_evaluation_id = 3 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -612,10 +609,7 @@ message MetricChangeEvent {
 // Represents an external tool or service that offers assessments according to
 // certain metrics.
 message AssessmentTool {
-  string id = 1 [
-    (buf.validate.field).string = {uuid: true},
-    (buf.validate.field).ignore_empty = true
-  ];
+  string id = 1 [(buf.validate.field).string = {uuid: true}];
 
   string name = 2 [
     (buf.validate.field).string.min_len = 1,
@@ -631,10 +625,9 @@ message AssessmentTool {
   ];
 }
 
-message CertificationTarget {
+message TargetOfEvaluation {
   string id = 1 [
     (buf.validate.field).string = {uuid: true},
-    (buf.validate.field).ignore_empty = true,
     (google.api.field_behavior) = REQUIRED
   ];
 
@@ -644,12 +637,6 @@ message CertificationTarget {
   ];
 
   string description = 3;
-
-  repeated Catalog catalogs_in_scope = 4 [
-    (tagger.tags) = "gorm:\"many2many:audit_scopes\"",
-    (buf.validate.field).repeated.items.required = true,
-    (google.api.field_behavior) = REQUIRED
-  ];
 
   repeated clouditor.assessment.v1.Metric configured_metrics = 5 [
     (tagger.tags) = "gorm:\"many2many:metric_configurations\"",
@@ -661,20 +648,20 @@ message CertificationTarget {
     // a map of key/value pairs, e.g., env:prod
     map<string, string> labels = 1;
 
-    // an icon for the certification target used by the UI
+    // an icon for the target of evaluation used by the UI
     optional string icon = 2;
   }
 
-  // creation time of the certification_target
+  // creation time of the target_of_evaluation
   optional google.protobuf.Timestamp created_at = 6 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
 
-  // last update time of the certification_target
+  // last update time of the target_of_evaluation
   optional google.protobuf.Timestamp updated_at = 7 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
 
-  // additional metadata of the certification target, mostly used for the UI
+  // additional metadata of the target of evaluation, mostly used for the UI
   optional Metadata metadata = 10 [(tagger.tags) = "gorm:\"serializer:json\""];
 
-  // TargetType represents the type of the certification target.
+  // TargetType represents the type of the target of evaluation.
   enum TargetType {
     TARGET_TYPE_UNSPECIFIED = 0;
 
@@ -722,7 +709,7 @@ message Catalog {
   string short_name = 9 [(google.api.field_behavior) = REQUIRED];
 
   message Metadata {
-    // a color for the certification target used by the UI
+    // a color for the target of evaluation used by the UI
     optional string color = 3;
   }
 
@@ -749,8 +736,7 @@ message Category {
   repeated Control controls = 4 [
     (tagger.tags) =
       "gorm:\"foreignKey:category_name,category_"
-      "catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE\""
-,
+      "catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE\"",
     (buf.validate.field).repeated.items.required = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -794,8 +780,7 @@ message Control {
     (tagger.tags) =
       "gorm:\"foreignKey:parent_control_id,parent_control_"
       "category_name,parent_control_category_catalog_id;"
-      "references=id,category_name;category_catalog_id\""
-,
+      "references=id,category_name;category_catalog_id\"",
     (buf.validate.field).repeated.items.required = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -819,20 +804,23 @@ message Control {
   optional string assurance_level = 11;
 }
 
-// A Audit Scope binds a certification target to a catalog, so the certification target is
+// A Audit Scope binds a target of evaluation to a catalog, so the target of evaluation is
 // evaluated regarding this catalog's controls
 message AuditScope {
-  string certification_target_id = 1 [
+  // Audit Scope ID
+  string id = 4 [
     (tagger.tags) = "gorm:\"primaryKey\"",
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
+  string target_of_evaluation_id = 1 [
+    (buf.validate.field).string.uuid = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
   string catalog_id = 2 [
-    (tagger.tags) = "gorm:\"primaryKey\"",
     (buf.validate.field).string.min_len = 1,
     (google.api.field_behavior) = REQUIRED
   ];
-
   // an assurance level is not offered by every catalog, therefore it is
   // optional
   optional string assurance_level = 3;
@@ -844,8 +832,8 @@ message GetAssessmentResultRequest {
 
 message ListAssessmentResultsRequest {
   message Filter {
-    // Optional. List only assessment results of a specific certification target.
-    optional string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
+    // Optional. List only assessment results of a specific target of evaluation.
+    optional string target_of_evaluation_id = 1 [(buf.validate.field).string.uuid = true];
     // Optional. List only compliant assessment results.
     optional bool compliant = 2;
     // Optional. List only assessment results of a specific metric id.
@@ -853,6 +841,8 @@ message ListAssessmentResultsRequest {
     optional string metric_id = 4 [(buf.validate.field).string.min_len = 1];
     // Optional. List only assessment result from a specific assessment tool.
     optional string tool_id = 5 [(buf.validate.field).string.min_len = 1];
+    // Optional. List only assessment result from a specific list of IDs.
+    repeated string assessment_result_ids = 6 [(buf.validate.field).repeated.items.string.min_len = 1];
   }
   optional Filter filter = 1;
   // Optional. Latest results grouped by resource_id and metric_id.
@@ -877,36 +867,30 @@ message CreateAuditScopeRequest {
 }
 
 message RemoveAuditScopeRequest {
-  string certification_target_id = 1 [
+  string audit_scope_id = 1 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
-  string catalog_id = 2 [
-    (buf.validate.field).string.min_len = 1,
-    (google.api.field_behavior) = REQUIRED
-  ];
+
+  bool remove_evaluation_results = 2;
 }
 
 message GetAuditScopeRequest {
-  string certification_target_id = 1 [
+  string audit_scope_id = 1 [
     (buf.validate.field).string.uuid = true,
-    (google.api.field_behavior) = REQUIRED
-  ];
-  string catalog_id = 2 [
-    (buf.validate.field).string.min_len = 1,
     (google.api.field_behavior) = REQUIRED
   ];
 }
 
 message ListAuditScopesRequest {
-  // We cannot create additional bindings when the parameter is optional so we
-  // check for != "" in the method to see if it is set when the certification target is
-  // specified, return all Audit Scopes that evaluate the given certification target
-  // for any catalog
-  string certification_target_id = 1;
-  // when the catalog is specified, return all Audit Scopes that
-  // evaluate the given catalog for any certificationtarget
-  string catalog_id = 2;
+  message Filter {
+    // Optional. List only audit scopes of a specific target of evaluation
+    optional string target_of_evaluation_id = 1;
+    // Optional. List only audit scopes that evaluate the given catalog for any target of evaluation
+    optional string catalog_id = 2;
+  }
+
+  optional Filter filter = 1;
 
   int32 page_size = 10;
   string page_token = 11;
@@ -1076,7 +1060,7 @@ message Certificate {
     (buf.validate.field).string.min_len = 1,
     (google.api.field_behavior) = REQUIRED
   ];
-  string certification_target_id = 3 [
+  string target_of_evaluation_id = 3 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -1101,7 +1085,7 @@ message State {
   string certificate_id = 5;
 }
 
-// AuditScopeChangeEvent represents a change of either a Audit Scope
+// AuditScopeChangeEvent represents a change of either an Audit Scope
 // or Control Monitoring Status and the AuditScope hook
 // function can be informed about the reason of its call.
 message AuditScopeChangeEvent {

@@ -62,13 +62,9 @@ func resourceID(id *string) string {
 	return strings.ToLower(*id)
 }
 
-func resourceID2(id *string) *string {
-	if id == nil {
-		return nil
-	}
-
-	s := strings.ToLower(*id)
-	return &s
+// resourceIDPointer makes sure that the Azure ID we get is lowercase, because Azure sometimes has weird notions that things are uppercase. Their documentation says that comparison of IDs is case-insensitive, so we lowercase everything.
+func resourceIDPointer(id *string) *string {
+	return util.Ref(resourceID(id))
 }
 
 // accountName return the ID's account name
@@ -263,6 +259,21 @@ func location(region *string) *ontology.GeoLocation {
 	return &ontology.GeoLocation{
 		Region: util.Deref(region),
 	}
+}
+
+// publicNetworkAccessStatus returns the public access status of the resource
+func publicNetworkAccessStatus(status *string) bool {
+	// Check if a mandatory field is empty
+	if status == nil {
+		return false
+	}
+
+	// Check if resource is public available
+	if util.Deref(status) == "Enabled" {
+		return true
+	}
+
+	return false
 }
 
 // discoverDiagnosticSettings discovers the diagnostic setting for the given resource URI and returns the information of the needed information of the log properties as ontology.ActivityLogging object and the Azure response.

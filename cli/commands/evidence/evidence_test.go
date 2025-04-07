@@ -37,7 +37,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
-	"clouditor.io/clouditor/v2/internal/testutil/prototest"
 	"clouditor.io/clouditor/v2/server"
 	service_evidence "clouditor.io/clouditor/v2/service/evidence"
 
@@ -54,11 +53,11 @@ func TestMain(m *testing.M) {
 	svc = service_evidence.NewService()
 
 	_, err = svc.StoreEvidence(context.TODO(), &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-		Id:                    testdata.MockCertificationTargetID1,
-		CertificationTargetId: testdata.MockCertificationTargetID1,
-		ToolId:                testdata.MockEvidenceToolID1,
-		Timestamp:             timestamppb.Now(),
-		Resource:              prototest.NewAnyWithPanic(&ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+		Id:                   testdata.MockTargetOfEvaluationID1,
+		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+		ToolId:               testdata.MockEvidenceToolID1,
+		Timestamp:            timestamppb.Now(),
+		Resource:             ontology.ProtoResource(&ontology.VirtualMachine{Id: testdata.MockResourceID1, Name: "my name"}),
 	}})
 	if err != nil {
 		panic(err)

@@ -7,10 +7,10 @@ default applicable = false
 
 default compliant = false
 
-applicable {
+applicable if {
 	am
 }
 
-compliant {
+compliant if {
 	compare(data.operator, data.target_value, am.enabled)
 }

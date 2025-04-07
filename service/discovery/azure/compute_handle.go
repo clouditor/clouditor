@@ -85,7 +85,7 @@ func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (o
 		Labels:              labels(vm.Tags),
 		ParentId:            resourceGroupID(vm.ID),
 		Raw:                 discovery.Raw(vm),
-		NetworkInterfaceIds: []string{},
+		NetworkInterfaceIds: []string{}, // TODO(all): Discover network interface IDs
 		BlockStorageIds:     []string{},
 		MalwareProtection:   &ontology.MalwareProtection{},
 		BootLogging: &ontology.BootLogging{
@@ -159,7 +159,7 @@ func (d *azureDiscovery) handleBlockStorage(disk *armcompute.Disk) (*ontology.Bl
 		CreationTime:     creationTime(disk.Properties.TimeCreated),
 		GeoLocation:      location(disk.Location),
 		Labels:           labels(disk.Tags),
-		ParentId:         resourceGroupID(disk.ID),
+		ParentId:         resourceGroupID(disk.ManagedBy),
 		Raw:              discovery.Raw(disk, rawKeyUrl),
 		AtRestEncryption: enc,
 		Backups:          backups,
@@ -224,7 +224,7 @@ func (d *azureDiscovery) handleFunction(function *armappservice.Site, config arm
 		/*HttpEndpoint: &ontology.HttpEndpoint{
 			TransportEncryption: getTransportEncryption(function.Properties, config),
 		},*/
-		InternetAccessibleEndpoint: getInternetAccessibleEndpoint(function),
+		InternetAccessibleEndpoint: publicNetworkAccessStatus(function.Properties.PublicNetworkAccess),
 		Redundancies:               getRedundancies(function),
 	}
 }
@@ -251,7 +251,7 @@ func (d *azureDiscovery) handleWebApp(webApp *armappservice.Site, config armapps
 		/*HttpEndpoint: &ontology.HttpEndpoint{
 			TransportEncryption: getTransportEncryption(webApp.Properties, config),
 		},*/
-		InternetAccessibleEndpoint: getInternetAccessibleEndpoint(webApp),
+		InternetAccessibleEndpoint: publicNetworkAccessStatus(webApp.Properties.PublicNetworkAccess),
 		Redundancies:               getRedundancies(webApp),
 	}
 }

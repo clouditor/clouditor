@@ -8,11 +8,11 @@ default compliant = false
 
 enabled := input.accessRestriction.enabled
 
-applicable {
+applicable if {
 	enabled != null
 	compare("isIn",  "NetworkInterface", input.type)
 }
 
-compliant {
+compliant if {
 	compare(data.operator, data.target_value, enabled)
 }

@@ -8,8 +8,8 @@ import (
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
 
-	"github.com/csaf-poc/csaf_distribution/v3/csaf"
-	csafutil "github.com/csaf-poc/csaf_distribution/v3/util"
+	"github.com/gocsaf/csaf/v3/csaf"
+	csafutil "github.com/gocsaf/csaf/v3/util"
 )
 
 func (d *csafDiscovery) discoverProviders() (providers []ontology.IsResource, err error) {
@@ -52,9 +52,9 @@ func (d *csafDiscovery) handleProvider(lpmd *csaf.LoadedProviderMetadata) (resou
 		Filetype: "JSON",
 		Id:       lpmd.URL,
 		Name:     filepath.Base(lpmd.URL),
-		DocumentLocation: &ontology.DocumentLocation{
-			Type: &ontology.DocumentLocation_RemoteDocumentLocation{
-				RemoteDocumentLocation: &ontology.RemoteDocumentLocation{
+		DataLocation: &ontology.DataLocation{
+			Type: &ontology.DataLocation_RemoteDataLocation{
+				RemoteDataLocation: &ontology.RemoteDataLocation{
 					Path:                lpmd.URL,
 					TransportEncryption: d.providerTransportEncryption(lpmd.URL),
 				},
@@ -91,7 +91,7 @@ func (d *csafDiscovery) handleProvider(lpmd *csaf.LoadedProviderMetadata) (resou
 			},
 		},
 		ServiceMetadataDocumentId: util.Ref(serviceMetadata.Id),
-		TransportEncryption:       serviceMetadata.DocumentLocation.GetRemoteDocumentLocation().GetTransportEncryption(),
+		TransportEncryption:       serviceMetadata.DataLocation.GetRemoteDataLocation().GetTransportEncryption(),
 		KeyIds:                    getIDsOf(keys),
 		Raw:                       discovery.Raw(lpmd),
 	}

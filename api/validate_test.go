@@ -30,6 +30,8 @@ import (
 
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
+
+	"github.com/google/uuid"
 )
 
 func TestValidate(t *testing.T) {
@@ -43,15 +45,6 @@ func TestValidate(t *testing.T) {
 		args    args
 		wantErr assert.ErrorAssertionFunc
 	}{
-		{
-			name: "Missing request",
-			args: args{
-				req: nil,
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrEmptyRequest.Error())
-			},
-		},
 		{
 			name: "Missing request",
 			args: args{
@@ -75,8 +68,9 @@ func TestValidate(t *testing.T) {
 			args: args{
 				req: &orchestrator.CreateAuditScopeRequest{
 					AuditScope: &orchestrator.AuditScope{
-						CertificationTargetId: "11111111-1111-1111-1111-111111111111",
-						CatalogId:             "0000",
+						Id:                   uuid.NewString(),
+						TargetOfEvaluationId: "11111111-1111-1111-1111-111111111111",
+						CatalogId:            "0000",
 					},
 				},
 			},

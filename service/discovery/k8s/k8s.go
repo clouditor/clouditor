@@ -44,11 +44,11 @@ func init() {
 
 type k8sDiscovery struct {
 	intf kubernetes.Interface
-	csID string
+	ctID string
 }
 
-func (d *k8sDiscovery) CertificationTargetID() string {
-	return d.csID
+func (d *k8sDiscovery) TargetOfEvaluationID() string {
+	return d.ctID
 }
 
 func AuthFromKubeConfig() (intf kubernetes.Interface, err error) {

@@ -38,8 +38,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest/csaf/providertest"
 	"clouditor.io/clouditor/v2/internal/util"
-
-	"github.com/csaf-poc/csaf_distribution/v3/csaf"
+	"github.com/gocsaf/csaf/v3/csaf"
 )
 
 // validAdvisory contains the structure of a valid CSAF Advisory that validates against the JSON schema
@@ -127,18 +126,18 @@ func TestNewTrustedProviderDiscovery(t *testing.T) {
 			name: "Happy path",
 			args: args{},
 			want: &csafDiscovery{
-				csID:   config.DefaultCertificationTargetID,
+				ctID:   config.DefaultTargetOfEvaluationID,
 				domain: "clouditor.io",
 				client: http.DefaultClient,
 			},
 		},
 		{
-			name: "Happy path: with certification target id",
+			name: "Happy path: with target of evaluation id",
 			args: args{
-				opts: []DiscoveryOption{WithCertificationTargetID(testdata.MockCertificationTargetID1)},
+				opts: []DiscoveryOption{WithTargetOfEvaluationID(testdata.MockTargetOfEvaluationID1)},
 			},
 			want: &csafDiscovery{
-				csID:   testdata.MockCertificationTargetID1,
+				ctID:   testdata.MockTargetOfEvaluationID1,
 				domain: "clouditor.io",
 				client: http.DefaultClient,
 			},
@@ -149,7 +148,7 @@ func TestNewTrustedProviderDiscovery(t *testing.T) {
 				opts: []DiscoveryOption{WithProviderDomain("mock")},
 			},
 			want: &csafDiscovery{
-				csID:   config.DefaultCertificationTargetID,
+				ctID:   config.DefaultTargetOfEvaluationID,
 				client: http.DefaultClient,
 				domain: "mock",
 			},
@@ -166,7 +165,7 @@ func TestNewTrustedProviderDiscovery(t *testing.T) {
 func Test_csafDiscovery_List(t *testing.T) {
 	type fields struct {
 		domain string
-		csID   string
+		ctID   string
 		client *http.Client
 	}
 	tests := []struct {
@@ -180,7 +179,7 @@ func Test_csafDiscovery_List(t *testing.T) {
 			fields: fields{
 				domain: "localhost:1234",
 				client: http.DefaultClient,
-				csID:   config.DefaultCertificationTargetID,
+				ctID:   config.DefaultTargetOfEvaluationID,
 			},
 			wantErr: func(t *testing.T, err error) bool {
 				return assert.ErrorContains(t, err, "could not load provider-metadata.json")
@@ -192,7 +191,7 @@ func Test_csafDiscovery_List(t *testing.T) {
 			fields: fields{
 				domain: goodProvider.Domain(),
 				client: goodProvider.Client(),
-				csID:   config.DefaultCertificationTargetID,
+				ctID:   config.DefaultTargetOfEvaluationID,
 			},
 			wantErr: func(t *testing.T, err error) bool {
 				return assert.NoError(t, err)
@@ -207,11 +206,44 @@ func Test_csafDiscovery_List(t *testing.T) {
 			d := &csafDiscovery{
 				domain: tt.fields.domain,
 				client: tt.fields.client,
-				csID:   tt.fields.csID,
+				ctID:   tt.fields.ctID,
 			}
 			gotList, err := d.List()
 			tt.wantErr(t, err)
 			tt.wantList(t, gotList)
+		})
+	}
+}
+
+func Test_csafDiscovery_TargetOfEvaluationID(t *testing.T) {
+	type fields struct {
+		domain string
+		ctID   string
+		client *http.Client
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				ctID: testdata.MockTargetOfEvaluationID1,
+			},
+			want: testdata.MockTargetOfEvaluationID1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &csafDiscovery{
+				domain: tt.fields.domain,
+				ctID:   tt.fields.ctID,
+				client: tt.fields.client,
+			}
+			if got := d.TargetOfEvaluationID(); got != tt.want {
+				t.Errorf("csafDiscovery.TargetOfEvaluationID() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

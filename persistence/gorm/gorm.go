@@ -70,7 +70,7 @@ var DefaultTypes = []any{
 	&assessment.AssessmentResult{},
 	&discovery.Resource{},
 	&evidence.Evidence{},
-	&orchestrator.CertificationTarget{},
+	&orchestrator.TargetOfEvaluation{},
 	&orchestrator.Certificate{},
 	&orchestrator.State{},
 	&orchestrator.Catalog{},
@@ -124,7 +124,7 @@ func init() {
 
 // NewStorage creates a new storage using GORM (which DB to use depends on the StorageOption)
 func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
-	log.Println("Creating storage")
+	log.Info("Creating storage")
 	// Create storage with default gorm config
 	g := &storage{
 		// We ignore Deepsource issue GO-W1004 (SkipDefaultTransaction of config is "false"): skipcq: GO-W1004
@@ -162,12 +162,7 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	schema.RegisterSerializer("valuepb", &ValueSerializer{})
 	schema.RegisterSerializer("anypb", &AnySerializer{})
 
-	if err = g.db.SetupJoinTable(&orchestrator.CertificationTarget{}, "CatalogsInScope", &orchestrator.AuditScope{}); err != nil {
-		err = fmt.Errorf("error during join-table: %w", err)
-		return
-	}
-
-	if err = g.db.SetupJoinTable(orchestrator.CertificationTarget{}, "ConfiguredMetrics", assessment.MetricConfiguration{}); err != nil {
+	if err = g.db.SetupJoinTable(orchestrator.TargetOfEvaluation{}, "ConfiguredMetrics", assessment.MetricConfiguration{}); err != nil {
 		err = fmt.Errorf("error during join-table: %w", err)
 		return
 	}

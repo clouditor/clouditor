@@ -49,7 +49,7 @@ type awsS3Discovery struct {
 	storageAPI    S3API
 	isDiscovering bool
 	awsConfig     *Client
-	csID          string
+	ctID          string
 }
 
 // bucket contains metadata about a S3 bucket
@@ -168,8 +168,8 @@ func (d *awsS3Discovery) List() (resources []ontology.IsResource, err error) {
 	return
 }
 
-func (d *awsS3Discovery) CertificationTargetID() string {
-	return d.csID
+func (d *awsS3Discovery) TargetOfEvaluationID() string {
+	return d.ctID
 }
 
 func (b *bucket) String() string {
@@ -177,12 +177,12 @@ func (b *bucket) String() string {
 }
 
 // NewAwsStorageDiscovery constructs a new awsS3Discovery initializing the s3-api and isDiscovering with true
-func NewAwsStorageDiscovery(client *Client, CertificationTargetID string) discovery.Discoverer {
+func NewAwsStorageDiscovery(client *Client, TargetOfEvaluationID string) discovery.Discoverer {
 	return &awsS3Discovery{
 		storageAPI:    s3.NewFromConfig(client.cfg),
 		isDiscovering: true,
 		awsConfig:     client,
-		csID:          CertificationTargetID,
+		ctID:          TargetOfEvaluationID,
 	}
 }
 

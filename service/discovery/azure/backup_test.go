@@ -163,7 +163,7 @@ func Test_azureDiscovery_discoverBackupInstances(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "error getting next page: GET")
+				return assert.ErrorContains(t, err, "could not get next page: GET")
 			},
 		},
 		{
@@ -232,7 +232,7 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 		clientOptions       arm.ClientOptions
 		discovererComponent string
 		clients             clients
-		csID                string
+		ctID                string
 		backupMap           map[string]*backup
 	}
 	type args struct {
@@ -255,7 +255,7 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 		{
 			name: "Happy path: ObjectStorage",
 			fields: fields{
-				csID: testdata.MockCertificationTargetID1,
+				ctID: testdata.MockTargetOfEvaluationID1,
 			},
 			args: args{
 				vault: &armdataprotection.BackupVaultResource{
@@ -289,7 +289,7 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 		{
 			name: "Happy path: BlockStorage",
 			fields: fields{
-				csID: testdata.MockCertificationTargetID1,
+				ctID: testdata.MockTargetOfEvaluationID1,
 			},
 			args: args{
 				vault: &armdataprotection.BackupVaultResource{
@@ -331,7 +331,7 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 				clientOptions:       tt.fields.clientOptions,
 				discovererComponent: tt.fields.discovererComponent,
 				clients:             tt.fields.clients,
-				csID:                tt.fields.csID,
+				ctID:                tt.fields.ctID,
 				backupMap:           tt.fields.backupMap,
 			}
 			gotResource, err := d.handleInstances(tt.args.vault, tt.args.instance)

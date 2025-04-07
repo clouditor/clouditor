@@ -49,7 +49,7 @@ type computeDiscovery struct {
 	functionAPI       LambdaAPI
 	isDiscovering     bool
 	awsConfig         *Client
-	csID              string
+	ctID              string
 }
 
 // EC2API describes the EC2 api interface which is implemented by the official AWS client and mock clients in tests
@@ -80,13 +80,13 @@ var newFromConfigEC2 = ec2.NewFromConfig
 var newFromConfigLambda = lambda.NewFromConfig
 
 // NewAwsComputeDiscovery constructs a new awsS3Discovery initializing the s3-virtualMachineAPI and isDiscovering with true
-func NewAwsComputeDiscovery(client *Client, CertificationTargetID string) discovery.Discoverer {
+func NewAwsComputeDiscovery(client *Client, TargetOfEvaluationID string) discovery.Discoverer {
 	return &computeDiscovery{
 		virtualMachineAPI: newFromConfigEC2(client.cfg),
 		functionAPI:       newFromConfigLambda(client.cfg),
 		isDiscovering:     true,
 		awsConfig:         client,
-		csID:              CertificationTargetID,
+		ctID:              TargetOfEvaluationID,
 	}
 }
 
@@ -136,8 +136,8 @@ func (d *computeDiscovery) List() (resources []ontology.IsResource, err error) {
 	return
 }
 
-func (d *computeDiscovery) CertificationTargetID() string {
-	return d.csID
+func (d *computeDiscovery) TargetOfEvaluationID() string {
+	return d.ctID
 }
 
 // discoverVolumes discovers all volumes (in the current region)

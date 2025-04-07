@@ -9,10 +9,10 @@ default compliant = false
 
 metricConfiguration := data.target_value
 
-applicable {
+applicable if {
 	logging
 }
 
-compliant {
+compliant if {
 	compare(data.operator, data.target_value, count(logging.loggingServiceIds))
 }

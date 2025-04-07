@@ -27,6 +27,7 @@ syntax = "proto3";
 
 package clouditor.evidence.v1;
 
+import "api/ontology/ontology.proto";
 import "buf/validate/validate.proto";
 import "google/protobuf/any.proto";
 import "google/protobuf/timestamp.proto";
@@ -45,22 +46,15 @@ message Evidence {
     (buf.validate.field).required = true
   ];
 
-  // Reference to a certification target (e.g., service, organization) this evidence was gathered from
-  string certification_target_id = 3 [(buf.validate.field).string.uuid = true];
+  // Reference to a target of evaluation (e.g., service, organization) this evidence was gathered from
+  string target_of_evaluation_id = 3 [(buf.validate.field).string.uuid = true];
 
   // Reference to the tool which provided the evidence
   string tool_id = 4 [(buf.validate.field).string.min_len = 1];
 
-  // Optional. Contains the evidence in its original form without following a
-  // defined schema, e.g. the raw JSON
-  optional string raw = 5 [(buf.validate.field).string.min_len = 1];
-
   // Semantic representation of the Cloud resource according to our defined
   // ontology
-  google.protobuf.Any resource = 6 [
-    (tagger.tags) = "gorm:\"serializer:anypb;type:json\"",
-    (buf.validate.field).required = true
-  ];
+  clouditor.ontology.v1.Resource resource = 6 [(tagger.tags) = "gorm:\"serializer:json\""];
 
   // Very experimental property. Use at own risk. This property will be deleted again.
   //

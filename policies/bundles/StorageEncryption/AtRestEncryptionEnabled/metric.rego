@@ -8,10 +8,10 @@ default applicable = false
 
 default compliant = false
 
-applicable {
+applicable if {
 	enc
 }
 
-compliant {
+compliant if {
 	compare(data.operator, data.target_value, enc[_].enabled)
 }

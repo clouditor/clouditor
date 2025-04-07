@@ -639,6 +639,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 							"type":                "EncryptionAtRestWithPlatformKey",
 						},
 					},
+					"managedBy": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
 				},
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
@@ -652,6 +653,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 							"type":                "EncryptionAtRestWithCustomerKey",
 						},
 					},
+					"managedBy": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
 				},
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
@@ -665,6 +667,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 							"type":                "EncryptionAtRestWithPlatformKey",
 						},
 					},
+					"managedBy": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
 				},
 			},
 		}, 200)
@@ -909,6 +912,56 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 						"properties": map[string]interface{}{
 							"access":          "Deny",
 							"sourcePortRange": "*",
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.MachineLearningServices/workspaces" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace",
+					"name":     "mlWorkspace",
+					"location": "westus",
+					"properties": map[string]interface{}{
+						"keyVault":            "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.Keyvault/vaults/keyVault1",
+						"applicationInsights": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.insights/components/appInsights1",
+						"encryption": map[string]interface{}{
+							"status": "Enabled",
+							"keyVaultProperties": map[string]interface{}{
+								"keyVaultArmId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.Keyvault/vaults/keyVault1",
+							},
+						},
+					},
+					"systemData": map[string]interface{}{
+						"createdAt": "2017-05-24T13:28:53.004540398Z",
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace/computes" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace/computes/compute1",
+					"name":     "compute1",
+					"location": "westus",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{
+						"computeType": "VirtualMachine",
+						"properties": map[string]interface{}{
+							"computeLocation": "westus",
+							"scaleSettings": map[string]interface{}{
+								"minNodeCount":                0,
+								"maxNodeCount":                10,
+								"nodeIdleTimeBeforeScaleDown": "PT120S",
+							},
+							"vmPriority": "LowPriority",
+							"vmSize":     "STANDARD_D2_V2",
 						},
 					},
 				},
@@ -1168,18 +1221,18 @@ func TestNewAzureDiscovery(t *testing.T) {
 			name: "Happy path",
 			args: args{},
 			want: &azureDiscovery{
-				csID:               config.DefaultCertificationTargetID,
+				ctID:               config.DefaultTargetOfEvaluationID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
 		},
 		{
-			name: "Happy path: with certification target id",
+			name: "Happy path: with target of evaluation id",
 			args: args{
-				opts: []DiscoveryOption{WithCertificationTargetID(testdata.MockCertificationTargetID1)},
+				opts: []DiscoveryOption{WithTargetOfEvaluationID(testdata.MockTargetOfEvaluationID1)},
 			},
 			want: &azureDiscovery{
-				csID:               testdata.MockCertificationTargetID1,
+				ctID:               testdata.MockTargetOfEvaluationID1,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1191,7 +1244,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 			},
 			want: &azureDiscovery{
 				rg:                 util.Ref(testdata.MockResourceGroup),
-				csID:               config.DefaultCertificationTargetID,
+				ctID:               config.DefaultTargetOfEvaluationID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1207,7 +1260,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 						Transport: mockSender{},
 					},
 				},
-				csID:               config.DefaultCertificationTargetID,
+				ctID:               config.DefaultTargetOfEvaluationID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1219,7 +1272,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 			},
 			want: &azureDiscovery{
 				cred:               &mockAuthorizer{},
-				csID:               config.DefaultCertificationTargetID,
+				ctID:               config.DefaultTargetOfEvaluationID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1276,7 +1329,7 @@ func Test_azureDiscovery_List(t *testing.T) {
 	}
 }
 
-func Test_azureDiscovery_CertificationTargetID(t *testing.T) {
+func Test_azureDiscovery_TargetOfEvaluationID(t *testing.T) {
 	type fields struct {
 		isAuthorized        bool
 		sub                 *armsubscription.Subscription
@@ -1285,7 +1338,7 @@ func Test_azureDiscovery_CertificationTargetID(t *testing.T) {
 		clientOptions       arm.ClientOptions
 		discovererComponent string
 		clients             clients
-		csID                string
+		ctID                string
 		backupMap           map[string]*backup
 		defenderProperties  map[string]*defenderProperties
 	}
@@ -1297,9 +1350,9 @@ func Test_azureDiscovery_CertificationTargetID(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				csID: testdata.MockCertificationTargetID1,
+				ctID: testdata.MockTargetOfEvaluationID1,
 			},
-			want: testdata.MockCertificationTargetID1,
+			want: testdata.MockTargetOfEvaluationID1,
 		},
 	}
 	for _, tt := range tests {
@@ -1312,12 +1365,12 @@ func Test_azureDiscovery_CertificationTargetID(t *testing.T) {
 				clientOptions:       tt.fields.clientOptions,
 				discovererComponent: tt.fields.discovererComponent,
 				clients:             tt.fields.clients,
-				csID:                tt.fields.csID,
+				ctID:                tt.fields.ctID,
 				backupMap:           tt.fields.backupMap,
 				defenderProperties:  tt.fields.defenderProperties,
 			}
-			if got := a.CertificationTargetID(); got != tt.want {
-				t.Errorf("azureDiscovery.CertificationTargetID() = %v, want %v", got, tt.want)
+			if got := a.TargetOfEvaluationID(); got != tt.want {
+				t.Errorf("azureDiscovery.TargetOfEvaluationID() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -1513,7 +1566,7 @@ func Test_labels(t *testing.T) {
 	}
 }
 
-func Test_initClient(t *testing.T) {
+func Test_initClientWithSubID(t *testing.T) {
 	var (
 		subID      = "00000000-0000-0000-0000-000000000000"
 		someError  = errors.New("some error")
@@ -1523,7 +1576,7 @@ func Test_initClient(t *testing.T) {
 	type args struct {
 		existingClient *armstorage.AccountsClient
 		d              *azureDiscovery
-		fun            ClientCreateFunc[armstorage.AccountsClient]
+		fun            ClientCreateFuncWithSubID[armstorage.AccountsClient]
 	}
 	tests := []struct {
 		name       string
@@ -1601,7 +1654,92 @@ func Test_initClient(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotClient, err := initClient(tt.args.existingClient, tt.args.d, tt.args.fun)
+			gotClient, err := initClientWithSubID(tt.args.existingClient, tt.args.d, tt.args.fun)
+			tt.wantErr(t, err)
+			tt.wantClient(t, gotClient)
+		})
+	}
+}
+
+func Test_initClientWithoutSubID(t *testing.T) {
+	var (
+		someError  = errors.New("some error")
+		someClient = &armsecurity.PricingsClient{}
+	)
+
+	type args struct {
+		existingClient *armsecurity.PricingsClient
+		d              *azureDiscovery
+		fun            ClientCreateFuncWithoutSubID[armsecurity.PricingsClient]
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantClient assert.Want[*armsecurity.PricingsClient]
+		wantErr    assert.ErrorAssertionFunc
+	}{
+		{
+			name: "No error, client does not exist",
+			args: args{
+				existingClient: nil,
+				d: &azureDiscovery{
+					cred: &mockAuthorizer{},
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockSender{},
+						},
+					},
+				},
+				fun: armsecurity.NewPricingsClient,
+			},
+			wantClient: assert.NotNil[*armsecurity.PricingsClient],
+			wantErr:    assert.NoError,
+		},
+		{
+			name: "Some error, client does not exist",
+			args: args{
+				existingClient: nil,
+				d: &azureDiscovery{
+					cred: &mockAuthorizer{},
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockSender{},
+						},
+					},
+				},
+				fun: func(credential azcore.TokenCredential, options *arm.ClientOptions) (*armsecurity.PricingsClient, error) {
+					return nil, someError
+				},
+			},
+			wantClient: assert.Nil[*armsecurity.PricingsClient],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, someError)
+			},
+		},
+		{
+			name: "No error, client already exists",
+			args: args{
+				existingClient: someClient,
+				d: &azureDiscovery{
+					cred: &mockAuthorizer{},
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockSender{},
+						},
+					},
+				},
+				fun: armsecurity.NewPricingsClient,
+			},
+			wantClient: func(t *testing.T, got *armsecurity.PricingsClient) bool {
+				return assert.Same(t, someClient, got)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotClient, err := initClientWithoutSubID(tt.args.existingClient, tt.args.d, tt.args.fun)
 			tt.wantErr(t, err)
 			tt.wantClient(t, gotClient)
 		})
@@ -1616,7 +1754,7 @@ func Test_initClientWithoutSubscriptionID(t *testing.T) {
 	type args struct {
 		existingClient *armmonitor.DiagnosticSettingsClient
 		d              *azureDiscovery
-		fun            ClientCreateFuncWithoutSubscriptionID[armmonitor.DiagnosticSettingsClient]
+		fun            ClientCreateFuncWithoutSubID[armmonitor.DiagnosticSettingsClient]
 	}
 	tests := []struct {
 		name       string
@@ -1685,7 +1823,7 @@ func Test_initClientWithoutSubscriptionID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotClient, err := initClientWithoutSubscriptionID(tt.args.existingClient, tt.args.d, tt.args.fun)
+			gotClient, err := initClientWithoutSubID(tt.args.existingClient, tt.args.d, tt.args.fun)
 			tt.wantErr(t, err)
 			tt.wantClient(t, gotClient)
 		})
@@ -1694,15 +1832,15 @@ func Test_initClientWithoutSubscriptionID(t *testing.T) {
 
 // WithDefenderProperties is a [DiscoveryOption] that adds the defender properties for our tests.
 func WithDefenderProperties(dp map[string]*defenderProperties) DiscoveryOption {
-	return func(a *azureDiscovery) {
-		a.defenderProperties = dp
+	return func(d *azureDiscovery) {
+		d.defenderProperties = dp
 	}
 }
 
 // WithSubscription is a [DiscoveryOption] that adds the subscription to the discoverer for our tests.
 func WithSubscription(sub *armsubscription.Subscription) DiscoveryOption {
-	return func(a *azureDiscovery) {
-		a.sub = sub
+	return func(d *azureDiscovery) {
+		d.sub = sub
 	}
 }
 
@@ -1720,7 +1858,7 @@ func NewMockAzureDiscovery(transport policy.Transporter, opts ...DiscoveryOption
 				Transport: transport,
 			},
 		},
-		csID:      testdata.MockCertificationTargetID1,
+		ctID:      testdata.MockTargetOfEvaluationID1,
 		backupMap: make(map[string]*backup),
 	}
 

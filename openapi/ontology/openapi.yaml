@@ -65,6 +65,10 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -219,11 +223,38 @@ components:
                 interval:
                     pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
                     type: string
+                    description: The interval refers to the update interval in days.
                 securityOnly:
                     type: boolean
             description: |-
                 AutomaticUpdates is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  This feature is, e.g., available on some VM services to automatically update their software. It ensures that a resource is protected from tampering with its state.
+        AwarenessTraining:
+            type: object
+            properties:
+                annualUpdateCompleted:
+                    type: boolean
+                creationTime:
+                    type: string
+                    format: date-time
+                description:
+                    type: string
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                successfullyCompletedPercentage:
+                    type: boolean
+                parentId:
+                    type: string
+            description: AwarenessTraining is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Backup:
             type: object
             properties:
@@ -232,6 +263,7 @@ components:
                 interval:
                     pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
                     type: string
+                    description: The interval refers to the update interval in days.
                 retentionPeriod:
                     pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
                     type: string
@@ -275,6 +307,10 @@ components:
                     $ref: '#/components/schemas/GeoLocation'
                 immutability:
                     $ref: '#/components/schemas/Immutability'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -338,6 +374,10 @@ components:
                     $ref: '#/components/schemas/GeoLocation'
                 infrastructureId:
                     type: string
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -370,38 +410,6 @@ components:
                     type: string
                     description: 'naming schema: AES-128-GCM'
             description: CipherSuite is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
-        CodeModule:
-            type: object
-            properties:
-                creationTime:
-                    type: string
-                    format: date-time
-                description:
-                    type: string
-                id:
-                    type: string
-                labels:
-                    type: object
-                    additionalProperties:
-                        type: string
-                name:
-                    type: string
-                raw:
-                    type: string
-                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
-                codeModuleIds:
-                    type: array
-                    items:
-                        type: string
-                codeRepositoryId:
-                    type: string
-                functionalities:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/Functionality'
-                parentId:
-                    type: string
-            description: CodeModule is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         CodeRegion:
             type: object
             properties:
@@ -445,6 +453,10 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -481,6 +493,10 @@ components:
                     $ref: '#/components/schemas/GeoLocation'
                 imageId:
                     type: string
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 networkInterfaceIds:
                     type: array
                     items:
@@ -523,6 +539,10 @@ components:
                     type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -561,6 +581,10 @@ components:
                         type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -595,6 +619,10 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -628,6 +656,16 @@ components:
             type: object
             properties: {}
             description: DDoSProtection is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        DataLocation:
+            type: object
+            properties:
+                localDataLocation:
+                    $ref: '#/components/schemas/LocalDataLocation'
+                remoteDataLocation:
+                    $ref: '#/components/schemas/RemoteDataLocation'
+            description: |-
+                DataLocation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+                 path: Describes either local path or path in URL format
         DatabaseConnect:
             type: object
             properties:
@@ -695,6 +733,10 @@ components:
                     $ref: '#/components/schemas/GeoLocation'
                 immutability:
                     $ref: '#/components/schemas/Immutability'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -739,6 +781,10 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -796,12 +842,18 @@ components:
                         $ref: '#/components/schemas/AnomalyDetection'
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 httpEndpoint:
                     $ref: '#/components/schemas/HttpEndpoint'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 malwareProtection:
                     $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
@@ -821,14 +873,6 @@ components:
                 usageStatistics:
                     $ref: '#/components/schemas/UsageStatistics'
             description: DocumentDatabaseService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
-        DocumentLocation:
-            type: object
-            properties:
-                localDocumentLocation:
-                    $ref: '#/components/schemas/LocalDocumentLocation'
-                remoteDocumentLocation:
-                    $ref: '#/components/schemas/RemoteDocumentLocation'
-            description: DocumentLocation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
         DocumentSignature:
             type: object
             properties:
@@ -859,6 +903,10 @@ components:
                 message:
                     type: string
             description: Error is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        ExplainableResults:
+            type: object
+            properties: {}
+            description: ExplainableResults is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         FileStorage:
             type: object
             properties:
@@ -894,6 +942,10 @@ components:
                     $ref: '#/components/schemas/GeoLocation'
                 immutability:
                     $ref: '#/components/schemas/Immutability'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -939,12 +991,18 @@ components:
                     $ref: '#/components/schemas/ActivityLogging'
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 httpEndpoint:
                     $ref: '#/components/schemas/HttpEndpoint'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -993,6 +1051,10 @@ components:
                     $ref: '#/components/schemas/EncryptionInUse'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 networkInterfaceIds:
                     type: array
                     items:
@@ -1042,14 +1104,20 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 functionIds:
                     type: array
                     items:
                         type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -1070,10 +1138,10 @@ components:
                     $ref: '#/components/schemas/CipherSuite'
                 codeRegion:
                     $ref: '#/components/schemas/CodeRegion'
-                localDocumentLocation:
-                    $ref: '#/components/schemas/LocalDocumentLocation'
-                remoteDocumentLocation:
-                    $ref: '#/components/schemas/RemoteDocumentLocation'
+                localDataLocation:
+                    $ref: '#/components/schemas/LocalDataLocation'
+                remoteDataLocation:
+                    $ref: '#/components/schemas/RemoteDataLocation'
                 error:
                     $ref: '#/components/schemas/Error'
                 httpEndpoint:
@@ -1124,12 +1192,12 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                dataLocation:
+                    $ref: '#/components/schemas/DataLocation'
                 documentChecksums:
                     type: array
                     items:
                         $ref: '#/components/schemas/DocumentChecksum'
-                documentLocation:
-                    $ref: '#/components/schemas/DocumentLocation'
                 documentSignatures:
                     type: array
                     items:
@@ -1177,10 +1245,16 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -1303,6 +1377,10 @@ components:
                     $ref: '#/components/schemas/Authorization'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -1341,6 +1419,10 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -1390,6 +1472,10 @@ components:
                     $ref: '#/components/schemas/GeoLocation'
                 infrastructureId:
                     type: string
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -1437,12 +1523,18 @@ components:
                         $ref: '#/components/schemas/AnomalyDetection'
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 httpEndpoint:
                     $ref: '#/components/schemas/HttpEndpoint'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 malwareProtection:
                     $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
@@ -1489,6 +1581,10 @@ components:
                         type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -1584,14 +1680,20 @@ components:
                     $ref: '#/components/schemas/AccessRestriction'
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 httpEndpoints:
                     type: array
                     items:
                         $ref: '#/components/schemas/HttpEndpoint'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 networkServiceIds:
                     type: array
                     items:
@@ -1617,14 +1719,16 @@ components:
                 enabled:
                     type: boolean
             description: LocalAttestation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
-        LocalDocumentLocation:
+        LocalDataLocation:
             type: object
             properties:
                 path:
                     type: string
                 atRestEncryption:
                     $ref: '#/components/schemas/AtRestEncryption'
-            description: LocalDocumentLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                storageId:
+                    type: string
+            description: LocalDataLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         LocalRedundancy:
             type: object
             properties:
@@ -1693,10 +1797,16 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -1716,7 +1826,78 @@ components:
             description: |-
                 LoggingService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  A logging-as-a-service offering, e.g. for analyzing logs; has a Storage resource that stores the logs
-        MLWorkspace:
+        MachineLearningDataset:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                description:
+                    type: string
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                size:
+                    type: integer
+                    format: int32
+                type:
+                    type: string
+                dataLocation:
+                    $ref: '#/components/schemas/DataLocation'
+                parentId:
+                    type: string
+            description: MachineLearningDataset is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        MachineLearningModel:
+            type: object
+            properties:
+                advRobustness:
+                    type: number
+                    format: float
+                creationTime:
+                    type: string
+                    format: date-time
+                description:
+                    type: string
+                explainability:
+                    type: number
+                    format: float
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                poisonLevel:
+                    type: number
+                    format: float
+                privacyLabel:
+                    type: number
+                    format: float
+                privacyLevel:
+                    type: number
+                    format: float
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                robustness:
+                    type: number
+                    format: float
+                dataLocation:
+                    $ref: '#/components/schemas/DataLocation'
+                parentId:
+                    type: string
+            description: MachineLearningModel is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        MachineLearningService:
             type: object
             properties:
                 creationTime:
@@ -1728,38 +1909,57 @@ components:
                     type: string
                 internetAccessibleEndpoint:
                     type: boolean
+                ips:
+                    type: array
+                    items:
+                        type: string
                 labels:
                     type: object
                     additionalProperties:
                         type: string
                 name:
                     type: string
+                ports:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
-                atRestEncryption:
-                    $ref: '#/components/schemas/AtRestEncryption'
+                authenticity:
+                    $ref: '#/components/schemas/Authenticity'
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
+                machineLearningIds:
+                    type: array
+                    items:
+                        type: string
                 redundancies:
                     type: array
                     items:
                         $ref: '#/components/schemas/Redundancy'
                 parentId:
                     type: string
-                resourceLogging:
-                    $ref: '#/components/schemas/ResourceLogging'
+                serviceMetadataDocumentId:
+                    type: string
                 storageIds:
                     type: array
                     items:
                         type: string
+                transportEncryption:
+                    $ref: '#/components/schemas/TransportEncryption'
                 usageStatistics:
                     $ref: '#/components/schemas/UsageStatistics'
-                virtualMachineIds:
-                    type: array
-                    items:
-                        type: string
-            description: MLWorkspace is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+            description: MachineLearningService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         MalwareProtection:
             type: object
             properties:
@@ -1809,6 +2009,10 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -1866,12 +2070,18 @@ components:
                         $ref: '#/components/schemas/AnomalyDetection'
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 httpEndpoint:
                     $ref: '#/components/schemas/HttpEndpoint'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 malwareProtection:
                     $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
@@ -1918,6 +2128,10 @@ components:
                     $ref: '#/components/schemas/AccessRestriction'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 networkServiceId:
                     type: string
                 redundancies:
@@ -1952,6 +2166,10 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -2027,6 +2245,10 @@ components:
                     $ref: '#/components/schemas/GeoLocation'
                 immutability:
                     $ref: '#/components/schemas/Immutability'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -2084,12 +2306,18 @@ components:
                     $ref: '#/components/schemas/ActivityLogging'
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 httpEndpoint:
                     $ref: '#/components/schemas/HttpEndpoint'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -2140,6 +2368,10 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -2149,6 +2381,46 @@ components:
                 usageStatistics:
                     $ref: '#/components/schemas/UsageStatistics'
             description: PasswordPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        PolicyDocument:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                description:
+                    type: string
+                filetype:
+                    type: string
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                dataLocation:
+                    $ref: '#/components/schemas/DataLocation'
+                documentChecksums:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DocumentChecksum'
+                documentSignatures:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DocumentSignature'
+                parentId:
+                    type: string
+                schemaValidation:
+                    $ref: '#/components/schemas/SchemaValidation'
+                securityFeatures:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SecurityFeature'
+            description: PolicyDocument is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         RBAC:
             type: object
             properties:
@@ -2209,12 +2481,18 @@ components:
                         $ref: '#/components/schemas/AnomalyDetection'
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 httpEndpoint:
                     $ref: '#/components/schemas/HttpEndpoint'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 malwareProtection:
                     $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
@@ -2245,16 +2523,18 @@ components:
                 status:
                     type: boolean
             description: RemoteAttestation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
-        RemoteDocumentLocation:
+        RemoteDataLocation:
             type: object
             properties:
                 path:
                     type: string
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
+                storageId:
+                    type: string
                 transportEncryption:
                     $ref: '#/components/schemas/TransportEncryption'
-            description: RemoteDocumentLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+            description: RemoteDataLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Resource:
             type: object
             properties:
@@ -2296,8 +2576,6 @@ components:
                     $ref: '#/components/schemas/MessagingHub'
                 keyVault:
                     $ref: '#/components/schemas/KeyVault'
-                mlWorkspace:
-                    $ref: '#/components/schemas/MLWorkspace'
                 networkInterface:
                     $ref: '#/components/schemas/NetworkInterface'
                 networkSecurityGroup:
@@ -2310,6 +2588,8 @@ components:
                     $ref: '#/components/schemas/LoadBalancer'
                 loggingService:
                     $ref: '#/components/schemas/LoggingService'
+                machineLearningService:
+                    $ref: '#/components/schemas/MachineLearningService'
                 securityAdvisoryService:
                     $ref: '#/components/schemas/SecurityAdvisoryService'
                 documentDatabaseService:
@@ -2340,18 +2620,28 @@ components:
                     $ref: '#/components/schemas/FileStorage'
                 objectStorage:
                     $ref: '#/components/schemas/ObjectStorage'
-                application:
-                    $ref: '#/components/schemas/Application'
-                library:
-                    $ref: '#/components/schemas/Library'
-                codeModule:
-                    $ref: '#/components/schemas/CodeModule'
                 genericDocument:
                     $ref: '#/components/schemas/GenericDocument'
+                policyDocument:
+                    $ref: '#/components/schemas/PolicyDocument'
                 securityAdvisoryDocument:
                     $ref: '#/components/schemas/SecurityAdvisoryDocument'
                 serviceMetadataDocument:
                     $ref: '#/components/schemas/ServiceMetadataDocument'
+                machineLearningDataset:
+                    $ref: '#/components/schemas/MachineLearningDataset'
+                machineLearningModel:
+                    $ref: '#/components/schemas/MachineLearningModel'
+                awarenessTraining:
+                    $ref: '#/components/schemas/AwarenessTraining'
+                securityTraining:
+                    $ref: '#/components/schemas/SecurityTraining'
+                application:
+                    $ref: '#/components/schemas/Application'
+                library:
+                    $ref: '#/components/schemas/Library'
+                sourceCodeFile:
+                    $ref: '#/components/schemas/SourceCodeFile'
             description: Resource is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
         ResourceGroup:
             type: object
@@ -2376,6 +2666,10 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -2402,6 +2696,10 @@ components:
                     items:
                         type: string
             description: ResourceLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        RobustnessScore:
+            type: object
+            properties: {}
+            description: RobustnessScore is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         RoleAssignment:
             type: object
             properties:
@@ -2431,6 +2729,10 @@ components:
                     $ref: '#/components/schemas/Authorization'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -2487,6 +2789,10 @@ components:
                     $ref: '#/components/schemas/GeoLocation'
                 infrastructureId:
                     type: string
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -2517,12 +2823,12 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                dataLocation:
+                    $ref: '#/components/schemas/DataLocation'
                 documentChecksums:
                     type: array
                     items:
                         $ref: '#/components/schemas/DocumentChecksum'
-                documentLocation:
-                    $ref: '#/components/schemas/DocumentLocation'
                 documentSignatures:
                     type: array
                     items:
@@ -2580,14 +2886,20 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
-                computeId:
-                    type: string
+                computeIds:
+                    type: array
+                    items:
+                        type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 keyIds:
                     type: array
                     items:
                         type: string
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -2680,7 +2992,37 @@ components:
                     $ref: '#/components/schemas/Immutability'
                 documentSignature:
                     $ref: '#/components/schemas/DocumentSignature'
+                explainableResults:
+                    $ref: '#/components/schemas/ExplainableResults'
+                robustnessScore:
+                    $ref: '#/components/schemas/RobustnessScore'
             description: SecurityFeature is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+        SecurityTraining:
+            type: object
+            properties:
+                annualUpdateCompleted:
+                    type: boolean
+                creationTime:
+                    type: string
+                    format: date-time
+                description:
+                    type: string
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                successfullyCompletedPercentage:
+                    type: boolean
+                parentId:
+                    type: string
+            description: SecurityTraining is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         ServiceMetadataDocument:
             type: object
             properties:
@@ -2702,12 +3044,12 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                dataLocation:
+                    $ref: '#/components/schemas/DataLocation'
                 documentChecksums:
                     type: array
                     items:
                         $ref: '#/components/schemas/DocumentChecksum'
-                documentLocation:
-                    $ref: '#/components/schemas/DocumentLocation'
                 documentSignatures:
                     type: array
                     items:
@@ -2729,6 +3071,38 @@ components:
                 enabled:
                     type: boolean
             description: SingleSignOn is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        SourceCodeFile:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                description:
+                    type: string
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                codeModuleIds:
+                    type: array
+                    items:
+                        type: string
+                codeRepositoryId:
+                    type: string
+                functionalities:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Functionality'
+                parentId:
+                    type: string
+            description: SourceCodeFile is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Status:
             type: object
             properties:
@@ -2806,6 +3180,10 @@ components:
                     type: string
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -2850,6 +3228,10 @@ components:
                     $ref: '#/components/schemas/EncryptionInUse'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 malwareProtection:
                     $ref: '#/components/schemas/MalwareProtection'
                 networkInterfaceIds:
@@ -2894,6 +3276,10 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -2926,6 +3312,10 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:
@@ -2985,6 +3375,10 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
                 redundancies:
                     type: array
                     items:

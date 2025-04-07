@@ -38,18 +38,18 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-// NewRegisterCertificationTargetCommand returns a cobra command for the `discover` subcommand
-func NewRegisterCertificationTargetCommand() *cobra.Command {
+// NewCreateTargetOfEvaluationCommand returns a cobra command for the `discover` subcommand
+func NewCreateTargetOfEvaluationCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "register [name]",
-		Short: "Registers a new target certification target",
+		Short: "Registers a new target target of evaluation",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
-				res     *orchestrator.CertificationTarget
+				res     *orchestrator.TargetOfEvaluation
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -61,8 +61,8 @@ func NewRegisterCertificationTargetCommand() *cobra.Command {
 
 			name := args[0]
 
-			res, err = client.RegisterCertificationTarget(context.Background(), &orchestrator.RegisterCertificationTargetRequest{
-				CertificationTarget: &orchestrator.CertificationTarget{
+			res, err = client.CreateTargetOfEvaluation(context.Background(), &orchestrator.CreateTargetOfEvaluationRequest{
+				TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 					Name: name,
 				},
 			})
@@ -77,18 +77,18 @@ func NewRegisterCertificationTargetCommand() *cobra.Command {
 	return cmd
 }
 
-// NewListCertificationTargetsCommand returns a cobra command for the `list` subcommand
-func NewListCertificationTargetsCommand() *cobra.Command {
+// NewListTargetsOfEvaluationCommand returns a cobra command for the `list` subcommand
+func NewListTargetsOfEvaluationCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "Lists all target certification targets",
+		Short: "Lists all target target of evaluations",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
-				res     *orchestrator.ListCertificationTargetsResponse
-				target  []*orchestrator.CertificationTarget
+				res     *orchestrator.ListTargetsOfEvaluationResponse
+				target  []*orchestrator.TargetOfEvaluation
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -98,12 +98,12 @@ func NewListCertificationTargetsCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			target, err = api.ListAllPaginated(&orchestrator.ListCertificationTargetsRequest{}, client.ListCertificationTargets, func(res *orchestrator.ListCertificationTargetsResponse) []*orchestrator.CertificationTarget {
+			target, err = api.ListAllPaginated(&orchestrator.ListTargetsOfEvaluationRequest{}, client.ListTargetsOfEvaluation, func(res *orchestrator.ListTargetsOfEvaluationResponse) []*orchestrator.TargetOfEvaluation {
 				return res.Targets
 			})
 
-			// Build a response with all certification targets
-			res = &orchestrator.ListCertificationTargetsResponse{
+			// Build a response with all target of evaluations
+			res = &orchestrator.ListTargetsOfEvaluationResponse{
 				Targets: target,
 			}
 
@@ -117,18 +117,18 @@ func NewListCertificationTargetsCommand() *cobra.Command {
 	return cmd
 }
 
-// NewGetCertificationTargetCommand returns a cobra command for the `get` subcommand
-func NewGetCertificationTargetCommand() *cobra.Command {
+// NewGetTargetOfEvaluationCommand returns a cobra command for the `get` subcommand
+func NewGetTargetOfEvaluationCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get [id]",
-		Short: "Retrieves a target certification target by its ID",
+		Short: "Retrieves a target target of evaluation by its ID",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
-				res     *orchestrator.CertificationTarget
+				res     *orchestrator.TargetOfEvaluation
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -140,7 +140,7 @@ func NewGetCertificationTargetCommand() *cobra.Command {
 
 			targetID := args[0]
 
-			res, err = client.GetCertificationTarget(context.Background(), &orchestrator.GetCertificationTargetRequest{CertificationTargetId: targetID})
+			res, err = client.GetTargetOfEvaluation(context.Background(), &orchestrator.GetTargetOfEvaluationRequest{TargetOfEvaluationId: targetID})
 
 			return session.HandleResponse(res, err)
 		},
@@ -150,11 +150,11 @@ func NewGetCertificationTargetCommand() *cobra.Command {
 	return cmd
 }
 
-// NewRemoveCertificationTargetComand returns a cobra command for the `get` subcommand
-func NewRemoveCertificationTargetComand() *cobra.Command {
+// NewRemoveTargetOfEvaluationComand returns a cobra command for the `get` subcommand
+func NewRemoveTargetOfEvaluationComand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "remove [id]",
-		Short: "Removes a target certification target by its ID",
+		Short: "Removes a target target of evaluation by its ID",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
@@ -173,7 +173,7 @@ func NewRemoveCertificationTargetComand() *cobra.Command {
 
 			targetID := args[0]
 
-			res, err = client.RemoveCertificationTarget(context.Background(), &orchestrator.RemoveCertificationTargetRequest{CertificationTargetId: targetID})
+			res, err = client.RemoveTargetOfEvaluation(context.Background(), &orchestrator.RemoveTargetOfEvaluationRequest{TargetOfEvaluationId: targetID})
 
 			return session.HandleResponse(res, err)
 		},
@@ -183,17 +183,17 @@ func NewRemoveCertificationTargetComand() *cobra.Command {
 	return cmd
 }
 
-// NewUpdateCertificationTargetCommand returns a cobra command for the `update` subcommand
-func NewUpdateCertificationTargetCommand() *cobra.Command {
+// NewUpdateTargetOfEvaluationCommand returns a cobra command for the `update` subcommand
+func NewUpdateTargetOfEvaluationCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update",
-		Short: "Updates a target certification target",
+		Short: "Updates a target target of evaluation",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
-				res     *orchestrator.CertificationTarget
+				res     *orchestrator.TargetOfEvaluation
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -203,8 +203,8 @@ func NewUpdateCertificationTargetCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			res, err = client.UpdateCertificationTarget(context.Background(), &orchestrator.UpdateCertificationTargetRequest{
-				CertificationTarget: &orchestrator.CertificationTarget{
+			res, err = client.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
+				TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 					Id:          viper.GetString("id"),
 					Name:        viper.GetString("name"),
 					Description: viper.GetString("description"),
@@ -216,8 +216,8 @@ func NewUpdateCertificationTargetCommand() *cobra.Command {
 		ValidArgsFunction: cli.DefaultArgsShellComp,
 	}
 
-	cmd.PersistentFlags().String("id", "", "the certification target id to update")
-	cmd.PersistentFlags().StringP("name", "n", "", "the name of the certification target")
+	cmd.PersistentFlags().String("id", "", "the target of evaluation id to update")
+	cmd.PersistentFlags().StringP("name", "n", "", "the name of the target of evaluation")
 	cmd.PersistentFlags().StringP("description", "d", "", "an optional description")
 
 	_ = cmd.MarkPersistentFlagRequired("id")
@@ -227,7 +227,7 @@ func NewUpdateCertificationTargetCommand() *cobra.Command {
 	_ = viper.BindPFlag("description", cmd.PersistentFlags().Lookup("description"))
 	_ = viper.BindPFlag("control-ids", cmd.PersistentFlags().Lookup("control-ids"))
 
-	_ = cmd.RegisterFlagCompletionFunc("id", cli.ValidArgsGetCertificationTargets)
+	_ = cmd.RegisterFlagCompletionFunc("id", cli.ValidArgsGetTargetOfEvaluation)
 	_ = cmd.RegisterFlagCompletionFunc("name", cli.DefaultArgsShellComp)
 	_ = cmd.RegisterFlagCompletionFunc("description", cli.DefaultArgsShellComp)
 
@@ -239,7 +239,7 @@ func NewUpdateCertificationTargetCommand() *cobra.Command {
 func NewGetMetricConfigurationCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get-metric-configuration",
-		Short: "Retrieves a metric configuration for a specific certification target",
+		Short: "Retrieves a metric configuration for a specific target of evaluation",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
@@ -259,7 +259,7 @@ func NewGetMetricConfigurationCommand() *cobra.Command {
 			targetID := args[0]
 			metricID := args[1]
 
-			res, err = client.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{CertificationTargetId: targetID, MetricId: metricID})
+			res, err = client.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{TargetOfEvaluationId: targetID, MetricId: metricID})
 
 			return session.HandleResponse(res, err)
 		},
@@ -275,7 +275,7 @@ func NewGetMetricConfigurationCommand() *cobra.Command {
 func NewCloudCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "cloud",
-		Short: "Target certification targets commands",
+		Short: "Target target of evaluations commands",
 	}
 
 	AddCommands(cmd)
@@ -286,11 +286,11 @@ func NewCloudCommand() *cobra.Command {
 // AddCommands adds all subcommands
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
-		NewRegisterCertificationTargetCommand(),
-		NewListCertificationTargetsCommand(),
-		NewGetCertificationTargetCommand(),
-		NewUpdateCertificationTargetCommand(),
-		NewRemoveCertificationTargetComand(),
+		NewCreateTargetOfEvaluationCommand(),
+		NewListTargetsOfEvaluationCommand(),
+		NewGetTargetOfEvaluationCommand(),
+		NewUpdateTargetOfEvaluationCommand(),
+		NewRemoveTargetOfEvaluationComand(),
 		NewGetMetricConfigurationCommand(),
 	)
 }

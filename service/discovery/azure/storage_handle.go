@@ -223,8 +223,8 @@ func (d *azureDiscovery) handleFileStorage(account *armstorage.Account, fileshar
 		CreationTime: creationTime(account.Properties.CreationTime), // We only have the creation time of the storage account the file storage belongs to
 		GeoLocation:  location(account.Location),                    // The location is the same as the storage account
 		Labels:       labels(account.Tags),                          // The storage account labels the file storage belongs to
-		ParentId:     resourceID2(account.ID),                       // the storage account is our parent
-		Raw:          discovery.Raw(account, fileshare, rawActivityLogging),
+		ParentId:     resourceIDPointer(account.ID),                 // the storage account is our parent
+		Raw:          discovery.Raw(account, fileshare),
 		ResourceLogging: &ontology.ResourceLogging{
 			MonitoringLogDataEnabled: monitoringLogDataEnabled,
 			SecurityAlertsEnabled:    securityAlertsEnabled,
@@ -271,7 +271,7 @@ func (d *azureDiscovery) handleObjectStorage(account *armstorage.Account, contai
 		CreationTime:     creationTime(account.Properties.CreationTime), // We only have the creation time of the storage account the file storage belongs to
 		GeoLocation:      location(account.Location),                    // The location is the same as the storage account
 		Labels:           labels(account.Tags),                          // The storage account labels the file storage belongs to
-		ParentId:         resourceID2(account.ID),                       // the storage account is our parent
+		ParentId:         resourceIDPointer(account.ID),                 // the storage account is our parent
 		Raw:              discovery.Raw(account, container),
 		AtRestEncryption: enc,
 		Immutability: &ontology.Immutability{

@@ -396,25 +396,25 @@ func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrato
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}
 
 	res = new(assessment.MetricConfiguration)
 
-	err = svc.storage.Get(res, gorm.WithoutPreload(), "certification_target_id = ? AND metric_id = ?", req.CertificationTargetId, req.MetricId)
+	err = svc.storage.Get(res, gorm.WithoutPreload(), "target_of_evaluation_id = ? AND metric_id = ?", req.TargetOfEvaluationId, req.MetricId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		// Otherwise, fall back to our default configuration
 		if config, ok := defaultMetricConfigurations[req.MetricId]; ok {
-			// Copy the metric configuration and set the certification target id
+			// Copy the metric configuration and set the target of evaluation id
 			newConfig := &assessment.MetricConfiguration{
-				Operator:              config.GetOperator(),
-				TargetValue:           config.GetTargetValue(),
-				IsDefault:             config.GetIsDefault(),
-				UpdatedAt:             config.GetUpdatedAt(),
-				MetricId:              config.GetMetricId(),
-				CertificationTargetId: req.GetCertificationTargetId(),
+				Operator:             config.GetOperator(),
+				TargetValue:          config.GetTargetValue(),
+				IsDefault:            config.GetIsDefault(),
+				UpdatedAt:            config.GetUpdatedAt(),
+				MetricId:             config.GetMetricId(),
+				TargetOfEvaluationId: req.GetTargetOfEvaluationId(),
 			}
 
 			return newConfig, nil
@@ -436,7 +436,7 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -445,7 +445,7 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 	req.Configuration.UpdatedAt = timestamppb.Now()
 	req.Configuration.IsDefault = false
 
-	err = svc.storage.Save(&req.Configuration, "metric_id = ? AND certification_target_id = ?", req.GetMetricId(), req.GetCertificationTargetId())
+	err = svc.storage.Save(&req.Configuration, "metric_id = ? AND target_of_evaluation_id = ?", req.GetMetricId(), req.GetTargetOfEvaluationId())
 	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
 		return nil, status.Errorf(codes.NotFound, "metric or service does not exist")
 	} else if err != nil {
@@ -455,9 +455,9 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 	// Notify event listeners
 	go func() {
 		svc.events <- &orchestrator.MetricChangeEvent{
-			Type:                  orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED,
-			CertificationTargetId: req.CertificationTargetId,
-			MetricId:              req.MetricId,
+			Type:                 orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED,
+			TargetOfEvaluationId: req.TargetOfEvaluationId,
+			MetricId:             req.MetricId,
 		}
 	}()
 
@@ -470,7 +470,7 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 }
 
 // ListMetricConfigurations retrieves a list of MetricConfiguration objects for a particular target
-// certification target specified in req.
+// target of evaluation specified in req.
 //
 // The list MUST include a configuration for each known metric. If the user did not specify a custom
 // configuration for a particular metric within the service, the default metric configuration is
@@ -482,7 +482,7 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -499,7 +499,7 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 
 	// TODO(oxisto): This is not very efficient, we should do this once at startup so that we can just return the map
 	for _, metric := range metrics {
-		config, err := svc.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{CertificationTargetId: req.CertificationTargetId, MetricId: metric.Id})
+		config, err := svc.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{TargetOfEvaluationId: req.TargetOfEvaluationId, MetricId: metric.Id})
 		if err == nil {
 			response.Configurations[metric.Id] = config
 		}

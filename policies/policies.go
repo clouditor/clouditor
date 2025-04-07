@@ -68,10 +68,13 @@ type CombinedResult struct {
 
 	// ComparisonResult is an optional feature to get more infos about the comparisons
 	ComparisonResult []*assessment.ComparisonResult
+
+	// Message contains an optional string that the metric can supply to provide a human readable representation of the result
+	Message string
 }
 
 // MetricsSource is used to retrieve a list of metrics and to retrieve a metric
-// configuration as well as implementation for a particular metric (and certification target)
+// configuration as well as implementation for a particular metric (and target of evaluation)
 type MetricsSource interface {
 	Metrics() ([]*assessment.Metric, error)
 	MetricConfiguration(targetID string, metric *assessment.Metric) (*assessment.MetricConfiguration, error)

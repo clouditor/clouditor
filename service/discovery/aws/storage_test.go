@@ -35,6 +35,7 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
 
@@ -500,7 +501,7 @@ func TestAwsS3Discovery_List(t *testing.T) {
 	assert.Equal(t, expectedResourceNames[0], resources[0].GetName())
 	log.Println("Testing type of resource", 1)
 	assert.True(t, ontology.HasType(resources[0], "ObjectStorage"))
-	expectedRaw := "{\"**s3.GetBucketEncryptionOutput\":[{\"ServerSideEncryptionConfiguration\":{\"Rules\":[{\"ApplyServerSideEncryptionByDefault\":{\"SSEAlgorithm\":\"AES256\",\"KMSMasterKeyID\":null},\"BucketKeyEnabled\":false}]},\"ResultMetadata\":{}}],\"**s3.GetBucketPolicyOutput\":[{\"Policy\":\"{\\\"id\\\":\\\"Mock BucketPolicy ID 1234\\\",\\\"Version\\\":\\\"2012-10-17\\\",\\\"Statement\\\":[{\\\"Action\\\":\\\"s3:*\\\",\\\"Effect\\\":\\\"Deny\\\",\\\"Resource\\\":\\\"*\\\",\\\"Condition\\\":{\\\"aws:SecureTransport\\\":false}}]}\",\"ResultMetadata\":{}}],\"*[]interface {}\":[[{\"CreationDate\":\"2012-11-01T22:08:41Z\",\"Name\":\"mockbucket1\"},{\"LocationConstraint\":\"eu-central-1\",\"ResultMetadata\":{}}]],\"*aws.bucket\":[{}]}"
+	expectedRaw := "{\"**s3.GetBucketEncryptionOutput\":[{\"ServerSideEncryptionConfiguration\":{\"Rules\":[{\"ApplyServerSideEncryptionByDefault\":{\"SSEAlgorithm\":\"AES256\",\"KMSMasterKeyID\":null},\"BucketKeyEnabled\":false}]},\"ResultMetadata\":{}}],\"**s3.GetBucketPolicyOutput\":[{\"Policy\":\"{\\\"id\\\":\\\"Mock BucketPolicy ID 1234\\\",\\\"Version\\\":\\\"2012-10-17\\\",\\\"Statement\\\":[{\\\"Action\\\":\\\"s3:*\\\",\\\"Effect\\\":\\\"Deny\\\",\\\"Resource\\\":\\\"*\\\",\\\"Condition\\\":{\\\"aws:SecureTransport\\\":false}}]}\",\"ResultMetadata\":{}}],\"*[]interface {}\":[[{\"BucketRegion\":null,\"CreationDate\":\"2012-11-01T22:08:41Z\",\"Name\":\"mockbucket1\"},{\"LocationConstraint\":\"eu-central-1\",\"ResultMetadata\":{}}]],\"*aws.bucket\":[{}]}"
 	assert.Equal(t, expectedRaw, resources[0].GetRaw())
 
 	// Check second element: voc.ObjectStorageService
@@ -508,4 +509,39 @@ func TestAwsS3Discovery_List(t *testing.T) {
 	assert.Equal(t, expectedResourceNames[0], resources[1].GetName())
 	log.Println("Testing type of resource", 2)
 	assert.True(t, ontology.HasType(resources[1], "ObjectStorageService"))
+}
+
+func Test_awsS3Discovery_TargetOfEvaluationID(t *testing.T) {
+	type fields struct {
+		storageAPI    S3API
+		isDiscovering bool
+		awsConfig     *Client
+		ctID          string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				ctID: testdata.MockTargetOfEvaluationID1,
+			},
+			want: testdata.MockTargetOfEvaluationID1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &awsS3Discovery{
+				storageAPI:    tt.fields.storageAPI,
+				isDiscovering: tt.fields.isDiscovering,
+				awsConfig:     tt.fields.awsConfig,
+				ctID:          tt.fields.ctID,
+			}
+			if got := d.TargetOfEvaluationID(); got != tt.want {
+				t.Errorf("awsS3Discovery.TargetOfEvaluationID() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

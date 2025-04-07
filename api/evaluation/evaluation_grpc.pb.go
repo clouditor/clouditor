@@ -56,7 +56,7 @@ const (
 //
 // Manages the evaluation of Clouditor's assessment results
 type EvaluationClient interface {
-	// Evaluates periodically all assessment results of a certification target id based
+	// Evaluates periodically all assessment results of a target of evaluation id based
 	// on the given catalog id. Part of the public API, also exposed as REST.
 	StartEvaluation(ctx context.Context, in *StartEvaluationRequest, opts ...grpc.CallOption) (*StartEvaluationResponse, error)
 	// StopEvaluation stops the evaluation for the given audit scope.
@@ -124,7 +124,7 @@ func (c *evaluationClient) CreateEvaluationResult(ctx context.Context, in *Creat
 //
 // Manages the evaluation of Clouditor's assessment results
 type EvaluationServer interface {
-	// Evaluates periodically all assessment results of a certification target id based
+	// Evaluates periodically all assessment results of a target of evaluation id based
 	// on the given catalog id. Part of the public API, also exposed as REST.
 	StartEvaluation(context.Context, *StartEvaluationRequest) (*StartEvaluationResponse, error)
 	// StopEvaluation stops the evaluation for the given audit scope.

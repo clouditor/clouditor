@@ -29,13 +29,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
+	"strings"
 
 	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/api/evaluation"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/logging"
 	"clouditor.io/clouditor/v2/persistence"
-	"clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -43,24 +46,28 @@ import (
 )
 
 func (svc *Service) CreateAuditScope(ctx context.Context, req *orchestrator.CreateAuditScopeRequest) (res *orchestrator.AuditScope, err error) {
+	if req.AuditScope == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "%s", api.ErrEmptyRequest)
+	}
+
+	// We want to add the UUID without retrieving it from the request, so we need to include it first and then perform the validation check.
+	req.AuditScope.Id = uuid.NewString()
+
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req) {
 		return nil, service.ErrPermissionDenied
 	}
 
 	// Create the Audit Scope
 	err = svc.storage.Create(&req.AuditScope)
-	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid catalog or certification target")
-	}
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
 
 	go svc.informToeHooks(ctx, &orchestrator.AuditScopeChangeEvent{Type: orchestrator.AuditScopeChangeEvent_TYPE_AUDIT_SCOPE_CREATED, AuditScope: req.AuditScope}, nil)
@@ -72,32 +79,36 @@ func (svc *Service) CreateAuditScope(ctx context.Context, req *orchestrator.Crea
 	return
 }
 
-// GetAuditScope implements method for getting a AuditScope, e.g. to show its state in the UI
-func (svc *Service) GetAuditScope(ctx context.Context, req *orchestrator.GetAuditScopeRequest) (response *orchestrator.AuditScope, err error) {
+// GetAuditScope implements method for getting an Audit Scope, e.g. to show its state in the UI
+func (svc *Service) GetAuditScope(ctx context.Context, req *orchestrator.GetAuditScopeRequest) (res *orchestrator.AuditScope, err error) {
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
-		return nil, service.ErrPermissionDenied
+	res = new(orchestrator.AuditScope)
+	err = svc.storage.Get(res, "id = ?", req.GetAuditScopeId())
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "%v", api.ErrAuditScopeNotFound)
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
 
-	response = new(orchestrator.AuditScope)
-	err = svc.storage.Get(response, gorm.WithoutPreload(), "certification_target_id = ? AND catalog_id = ?", req.CertificationTargetId, req.CatalogId)
-	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, "Audit Scope not found")
-	} else if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	// Check if client is allowed to access the audit scope
+	all, allowed := svc.authz.AllowedTargetOfEvaluations(ctx)
+	if !all && !slices.Contains(allowed, res.TargetOfEvaluationId) {
+		// Important to nil the response since it is set already
+		return nil, status.Error(codes.PermissionDenied, service.ErrPermissionDenied.Error())
 	}
-	return response, nil
+
+	return res, nil
 }
 
-// ListAuditScopes implements method for getting a AuditScope
+// ListAuditScopes implements a method for listing the Audit Scopes
 func (svc *Service) ListAuditScopes(ctx context.Context, req *orchestrator.ListAuditScopesRequest) (res *orchestrator.ListAuditScopesResponse, err error) {
-	var conds = []any{gorm.WithoutPreload()}
+	var allowed []string
+	var all bool
 
 	// Validate request
 	err = api.Validate(req)
@@ -105,22 +116,52 @@ func (svc *Service) ListAuditScopes(ctx context.Context, req *orchestrator.ListA
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+	// Retrieve a list of allowed target of evaluations according to our
+	// authorization strategy. No need to specify any conditions to our storage
+	// request, if we are allowed to see all target of evaluations.
+	all, allowed = svc.authz.AllowedTargetOfEvaluations(ctx)
+
+	// The content of the filtered target of evaluation ID must be in the list of allowed target of evaluation IDs,
+	// unless one can access *all* the target of evaluations.
+	if !all && req.Filter != nil && req.Filter.TargetOfEvaluationId != nil && !slices.Contains(allowed, req.Filter.GetTargetOfEvaluationId()) {
 		return nil, service.ErrPermissionDenied
 	}
 
-	// Either the certification_target_id or the catalog_id is set and the conds are added accordingly.
-	if req.GetCertificationTargetId() != "" {
-		conds = append(conds, "certification_target_id = ?", req.CertificationTargetId)
-	} else if req.GetCatalogId() != "" {
-		conds = append(conds, "catalog_id = ?", req.CatalogId)
+	var query []string
+	var args []any
+
+	// Filtering the audit scopes by
+	// * target of evaluation ID
+	// * catalog ID
+	if req.Filter != nil {
+		if req.Filter.TargetOfEvaluationId != nil {
+			query = append(query, "target_of_evaluation_id = ?")
+			args = append(args, req.Filter.GetTargetOfEvaluationId())
+			// conds = append(conds, "target_of_evaluation_id = ?", req.TargetOfEvaluationId)
+		}
+		if req.Filter.CatalogId != nil {
+			query = append(query, "catalog_id = ?")
+			args = append(args, req.Filter.GetCatalogId())
+			// conds = append(conds, "catalog_id = ?", req.CatalogId)
+		}
 	}
 
 	res = new(orchestrator.ListAuditScopesResponse)
-	res.AuditScopes, res.NextPageToken, err = service.PaginateStorage[*orchestrator.AuditScope](req, svc.storage, service.DefaultPaginationOpts, conds...)
+
+	// In any case, we need to make sure that we only select audit scopes that we
+	// have access to (if we do not have access to all)
+	if !all {
+		query = append(query, "target_of_evaluation_id IN ?")
+		args = append(args, allowed)
+	}
+
+	// Join query with AND and prepend the query
+	args = append([]any{strings.Join(query, " AND ")}, args...)
+
+	// Paginate the audit scopes according to the request
+	res.AuditScopes, res.NextPageToken, err = service.PaginateStorage[*orchestrator.AuditScope](req, svc.storage, service.DefaultPaginationOpts, args...)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+		return nil, status.Errorf(codes.Internal, "could not paginate audit scopes: %v", err)
 	}
 	return
 }
@@ -133,21 +174,20 @@ func (svc *Service) UpdateAuditScope(ctx context.Context, req *orchestrator.Upda
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
 		return nil, service.ErrPermissionDenied
 	}
 
 	res = req.AuditScope
 
-	err = svc.storage.Update(res, "certification_target_id = ? AND catalog_id = ?", req.AuditScope.GetCertificationTargetId(), req.AuditScope.GetCatalogId())
-
+	err = svc.storage.Update(res, "Id = ?", req.AuditScope.GetId())
 	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Error(codes.NotFound, "Audit Scope not found")
+		return nil, status.Errorf(codes.NotFound, "%v", api.ErrAuditScopeNotFound)
 	} else if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
-		return nil, status.Error(codes.NotFound, "Audit Scope not found")
+		return nil, status.Errorf(codes.NotFound, "%v", persistence.ErrConstraintFailed)
 	} else if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
 
 	go svc.informToeHooks(ctx, &orchestrator.AuditScopeChangeEvent{Type: orchestrator.AuditScopeChangeEvent_TYPE_AUDIT_SCOPE_UPDATED, AuditScope: req.AuditScope}, nil)
@@ -157,7 +197,7 @@ func (svc *Service) UpdateAuditScope(ctx context.Context, req *orchestrator.Upda
 	return
 }
 
-// RemoveAuditScope implements method for removing a AuditScope
+// RemoveAuditScope implements method for removing an Audit Scope
 func (svc *Service) RemoveAuditScope(ctx context.Context, req *orchestrator.RemoveAuditScopeRequest) (response *emptypb.Empty, err error) {
 	// Validate request
 	err = api.Validate(req)
@@ -165,26 +205,35 @@ func (svc *Service) RemoveAuditScope(ctx context.Context, req *orchestrator.Remo
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessDelete, req) {
+	// Get audit scope
+	auditScope, err := svc.GetAuditScope(context.Background(), &orchestrator.GetAuditScopeRequest{
+		AuditScopeId: req.GetAuditScopeId(),
+	})
+	if err != nil {
+		// the GetAuditScope method already checks the errors and we can return the error as it is
+		return nil, err
+	}
+
+	// TODO(all): Currently we do not need that check as it is already done when getting the audit scope. But we will need it if we will check the request type as well.
+	// Check, if this request has access to the target of evaluation according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessDelete, auditScope) {
 		return nil, service.ErrPermissionDenied
 	}
 
-	err = svc.storage.Delete(&orchestrator.AuditScope{}, "certification_target_id = ? AND catalog_id = ?", req.CertificationTargetId, req.CatalogId)
-	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, "Audit Scope not found")
-	} else if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	// Delete entry
+	err = svc.storage.Delete(&orchestrator.AuditScope{}, "Id = ?", req.GetAuditScopeId())
+	if err != nil { // Only internal errors left since others (Permission and NotFound) are already covered
+		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
 
-	// Since we don't have a AuditScope object, we create one to be able to inform the hook about the deleted AuditScope.
-	auditScope := &orchestrator.AuditScope{
-		CertificationTargetId: req.GetCertificationTargetId(),
-		CatalogId:             req.GetCatalogId(),
-	}
 	go svc.informToeHooks(ctx, &orchestrator.AuditScopeChangeEvent{Type: orchestrator.AuditScopeChangeEvent_TYPE_AUDIT_SCOPE_REMOVED, AuditScope: auditScope}, nil)
 
-	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req, fmt.Sprintf("and Catalog '%s'", req.GetCatalogId()))
+	if req.RemoveEvaluationResults {
+		err := svc.storage.Delete(&evaluation.EvaluationResult{}, "audit_scope_id = ?", req.AuditScopeId)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "database error: %v", err)
+		}
+	}
 
 	return &emptypb.Empty{}, nil
 }
