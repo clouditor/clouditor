@@ -1,6 +1,7 @@
 module clouditor.io/clouditor/v2
 
 go 1.24.0
+
 // runtime dependencies (assessment)
 require (
 	github.com/agnivade/levenshtein v1.2.1 // indirect
@@ -30,7 +31,7 @@ require (
 	go.opentelemetry.io/otel/sdk v1.35.0 // indirect
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
-	golang.org/x/sync v0.12.0
+	golang.org/x/sync v0.13.0
 )
 
 // runtime dependencies (logging)
