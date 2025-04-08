@@ -456,6 +456,11 @@ func (svc *Service) handleEvidence(
 		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 
+	if len(evaluations) == 0 {
+		log.Debugf("No policy evaluation for evidence %s (%s) collected by %s.", ev.Id, resource.GetId(), ev.ToolId)
+		return results, nil
+	}
+
 	for _, data := range evaluations {
 		// That there is an empty (nil) evaluation should be caught beforehand, but you never know.
 		if data == nil {
