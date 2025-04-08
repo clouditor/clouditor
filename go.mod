@@ -62,6 +62,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.1
 	github.com/stoewer/go-strcase v1.3.0 // indirect
+	go.opentelemetry.io/otel/sdk/metric v1.35.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250218202821-56aae31c358a
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250218202821-56aae31c358a // indirect
 	google.golang.org/grpc v1.71.0
@@ -94,6 +95,7 @@ require (
 require (
 	github.com/alecthomas/kong v0.9.0 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
+	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
@@ -126,6 +128,9 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql v1.2.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage v1.7.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription v1.2.0
+	github.com/AzureAD/microsoft-authentication-library-for-go v1.4.2 // indirect
+	github.com/kylelemons/godebug v1.1.0 // indirect
+	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	golang.org/x/net v0.38.0 // indirect
 )
 
@@ -221,15 +226,4 @@ require (
 	github.com/lyft/protoc-gen-star v0.6.1 // indirect
 	github.com/oxisto/owl2proto v0.2.2
 	github.com/srikrsna/protoc-gen-gotag v1.0.0
-)
-
-require (
-	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
-	go.opentelemetry.io/otel/sdk/metric v1.35.0 // indirect
-)
-
-require (
-	github.com/AzureAD/microsoft-authentication-library-for-go v1.4.2 // indirect
-	github.com/kylelemons/godebug v1.1.0 // indirect
-	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 )
