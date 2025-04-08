@@ -26,14 +26,18 @@
 package azure
 
 import (
+	"context"
+	"fmt"
 	"slices"
 	"strconv"
 	"strings"
 	"time"
 
+	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -270,4 +274,49 @@ func publicNetworkAccessStatus(status *string) bool {
 	}
 
 	return false
+}
+
+// discoverDiagnosticSettings discovers the diagnostic setting for the given resource URI and returns the information of the needed information of the log properties as ontology.ActivityLogging object and the Azure response.
+func (d *azureDiscovery) discoverDiagnosticSettings(resourceURI string) (*ontology.ActivityLogging, string, error) {
+	var (
+		al           *ontology.ActivityLogging
+		workspaceIDs []string
+		raw          string
+	)
+
+	if err := d.initDiagnosticsSettingsClient(); err != nil {
+		return nil, "", err
+	}
+
+	// List all diagnostic settings for the storage account
+	listPager := d.clients.diagnosticSettingsClient.NewListPager(resourceURI, &armmonitor.DiagnosticSettingsClientListOptions{})
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return nil, "", err
+		}
+
+		for _, value := range pageResponse.Value {
+			// Check if data is sent to a log analytics workspace
+			if value.Properties.WorkspaceID == nil {
+				log.Debugf("diagnostic setting '%s' does not send data to a Log Analytics Workspace", util.Deref(value.Name))
+				continue
+			}
+
+			// Add Log Analytics WorkspaceIDs to slice
+			workspaceIDs = append(workspaceIDs, util.Deref(value.Properties.WorkspaceID))
+		}
+
+		raw = discovery.Raw(pageResponse)
+	}
+
+	if len(workspaceIDs) > 0 {
+		al = &ontology.ActivityLogging{
+			Enabled:           true,
+			LoggingServiceIds: workspaceIDs, // TODO(all): Each diagnostic setting has also a retention period, maybe we should add that information as well
+		}
+	}
+
+	return al, raw, nil
 }
