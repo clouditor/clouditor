@@ -492,10 +492,7 @@ message ListTargetsOfEvaluationRequest {
 }
 
 message ListTargetsOfEvaluationResponse {
-  repeated TargetOfEvaluation targets = 1 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.field_behavior) = REQUIRED
-  ];
+  repeated TargetOfEvaluation targets = 1 [(google.api.field_behavior) = REQUIRED];
   string next_page_token = 2;
 }
 

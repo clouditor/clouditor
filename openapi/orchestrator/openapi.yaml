@@ -1952,7 +1952,6 @@ components:
         ListTargetsOfEvaluationResponse:
             required:
                 - targets
-                - targets
             type: object
             properties:
                 targets:
