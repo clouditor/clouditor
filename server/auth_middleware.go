@@ -103,7 +103,6 @@ type AuthContextKeyType string
 const AuthContextKey = AuthContextKeyType("token")
 
 // AuthFunc returns a [grpc_auth.AuthFunc] that authenticates incoming gRPC requests based on the configuration
-// properties.
 func (config *AuthConfig) AuthFunc() grpc_auth.AuthFunc {
 	return func(ctx context.Context) (newCtx context.Context, err error) {
 		// Lazy loading of JWKS
