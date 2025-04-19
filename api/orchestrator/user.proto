@@ -85,13 +85,50 @@ message CreateUserRequest {
 message User {
   string id = 1 [
     (buf.validate.field).string.min_len = 1,
-    (google.api.field_behavior) = REQUIRED
+    (google.api.field_behavior) = REQUIRED,
+    (tagger.tags) = "gorm:\"primaryKey\""
   ];
   string first_name = 2;
   string last_name = 3;
   string email = 4;
-  // target_of_certification_ids defines the scope of the user
-  repeated clouditor.orchestrator.v1.TargetOfEvaluation target_of_evaluation_ids = 5 [(tagger.tags) = "gorm:\"many2many:user_certification_target;\""];
+
+  repeated clouditor.orchestrator.v1.TargetOfEvaluation permissions = 5 [
+    (tagger.tags) = "gorm:\"many2many:user_permission\"",
+    (buf.validate.field).repeated.items.required = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+enum PermissionType {
+  // The user has no permission
+  PERMISSION_TYPE_UNSPECIFIED = 0;
+  // The user can create the resource
+  CREATE = 1;
+  // The user can read the resource
+  READ = 2;
+  // The user can write to the resource
+  UPDATE = 3;
+  // The user can delete the resource
+  DELETE = 4;
+}
+
+message UserPermission {
+  // UserId is the user this permission belongs to
+  string user_id = 1 [
+    (tagger.tags) = "gorm:\"primaryKey\"",
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
+
+  // TargetOfEvaluationId is the target of evaluation this permission belongs to
+  string target_of_evaluation_id = 2 [
+    (tagger.tags) = "gorm:\"primaryKey\"",
+    (buf.validate.field).string.uuid = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
+
+  // PermissionType is the type of permission this user has on the target of evaluation
+  PermissionType permission_type = 3 [(google.api.field_behavior) = REQUIRED];
 }
 
 message DeleteUserRequest {

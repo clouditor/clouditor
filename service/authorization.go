@@ -32,6 +32,7 @@ import (
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/persistence"
+	"clouditor.io/clouditor/v2/server/auth"
 	"github.com/golang-jwt/jwt/v5"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"google.golang.org/grpc/codes"
@@ -70,68 +71,69 @@ type AuthorizationStrategyStorage struct {
 
 // CheckAccess checks whether the current request can be fulfilled using the current access strategy.
 func (a *AuthorizationStrategyStorage) CheckAccess(ctx context.Context, _ RequestType, req api.TargetOfEvaluationRequest) bool {
-	var (
-		err    error
-		token  string
-		claims jwt.MapClaims
-		user   orchestrator.User
-	)
-
-	// Check, if the context is nil
-	if ctx == nil {
-		log.Debugf("Retrieving allowed target of evaluations failed because of an empty context")
-		return false
-	}
-
-	// Retrieve the raw token from the context
-	token, err = grpc_auth.AuthFromMD(ctx, "bearer")
-	if err != nil {
-		log.Debugf("Retrieving allowed target of evaluations from token failed: %v", err)
-		return false
-	}
-
-	// We need to re-parse the already validated claim to get a specific key from the claims map.
-	parser := jwt.NewParser()
-	_, _, err = parser.ParseUnverified(token, &claims)
-	if err != nil {
-		log.Debugf("Retrieving allowed target of evaluations from token failed: %v", err)
-		return false
-	}
-
-	// Check if the user is already present in the storage backend
-	userID, ok := claims["sub"].(string)
-	if !ok {
-		log.Debugf("Retrieving allowed target of evaluations from token failed: user ID not found in claims")
-		return false
-	}
-
-	err = a.DB.Get(&user, "id = ?", userID)
-	if err != nil {
-		if err == persistence.ErrRecordNotFound {
-			// User is not present in the storage backend, so we need to add it
-			user = orchestrator.User{
-				Id: userID,
-			}
-			err = a.DB.Create(&user)
-			if err != nil {
-				log.Debugf("Adding user to storage backend failed: %v", err)
-				return false
-			}
-		} else {
-			// Some other error occurred, so we cannot fulfill the request
-			log.Debugf("Retrieving user failed: %v", err)
-			return false
-		}
-	}
-
-	log.Debugf("User %s is present in the storage backend", user.Id)
 
 	return true
 }
 
 // AllowedTargetOfEvaluations retrieves a list of allowed target of evaluation IDs according to the current access strategy.
 func (a *AuthorizationStrategyStorage) AllowedTargetOfEvaluations(ctx context.Context) (all bool, list []string) {
-	return true, nil
+	var (
+		ok     bool
+		claims *auth.OpenIDConnectClaim
+		user   *orchestrator.User
+	)
+
+	// Check, if the context is nil
+	if ctx == nil {
+		log.Debugf("Retrieving allowed target of evaluations failed because of an empty context")
+		return false, nil
+	}
+
+	// Retrieve the raw token from the context
+	claims, ok = ctx.Value(auth.AuthTokenContextKey).(*auth.OpenIDConnectClaim)
+	if !ok {
+		log.Debugf("Retrieving claims from context failed")
+		return false, nil
+	}
+
+	user = a.findUser(claims)
+
+	log.Debugf("User %s is present in the storage backend", user.Id)
+
+	for _, permission := range user.Permissions {
+		list = append(list, permission.Id)
+	}
+
+	return false, list
+}
+
+func (a *AuthorizationStrategyStorage) findUser(claims *auth.OpenIDConnectClaim) (user *orchestrator.User) {
+	var (
+		err error
+	)
+
+	err = a.DB.Get(&user, "id = ?", claims.Subject /*, gorm.WithPreload("Permissions")*/)
+	if err != nil {
+		if err == persistence.ErrRecordNotFound {
+			// User is not present in the storage backend, so we need to add it
+			user = &orchestrator.User{
+				Id:        claims.Subject,
+				FirstName: claims.GivenName,
+				LastName:  claims.FamilyName,
+			}
+			err = a.DB.Create(&user)
+			if err != nil {
+				log.Debugf("Adding user to storage backend failed: %v", err)
+				return nil
+			}
+		} else {
+			// Some other error occurred, so we cannot fulfill the request
+			log.Debugf("Retrieving user failed: %v", err)
+			return nil
+		}
+	}
+
+	return user
 }
 
 // AuthorizationStrategyJWT is an AuthorizationStrategy that expects a list of target of evaluation IDs to be in a specific JWT

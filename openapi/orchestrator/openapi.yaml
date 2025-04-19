@@ -2420,6 +2420,7 @@ components:
         User:
             required:
                 - id
+                - permissions
             type: object
             properties:
                 id:
@@ -2430,11 +2431,10 @@ components:
                     type: string
                 email:
                     type: string
-                targetOfEvaluationIds:
+                permissions:
                     type: array
                     items:
                         $ref: '#/components/schemas/TargetOfEvaluation'
-                    description: target_of_certification_ids defines the scope of the user
             description: |-
                 A user resource
                  TODO(lebogg): Think about adding more fields to the user resource (creation time, expiration time, etc.)

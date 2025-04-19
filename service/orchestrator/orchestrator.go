@@ -193,6 +193,9 @@ func NewService(opts ...service.Option[*Service]) *Service {
 		}
 	}
 
+	// Make sure that the system user exists
+	s.createSystemUser()
+
 	// Default to an allow-all authorization strategy
 	if s.authz == nil {
 		s.authz = &service.AuthorizationStrategyAllowAll{}

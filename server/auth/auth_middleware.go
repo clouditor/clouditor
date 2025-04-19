@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package server
+package auth
 
 import (
 	"context"
@@ -31,6 +31,7 @@ import (
 	"fmt"
 	"time"
 
+	"clouditor.io/clouditor/v2/persistence"
 	"github.com/MicahParks/keyfunc/v2"
 	"github.com/golang-jwt/jwt/v5"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
@@ -63,52 +64,39 @@ type OpenIDConnectClaim struct {
 
 // AuthConfig contains all necessary parameters that are needed to configure an authentication middleware.
 type AuthConfig struct {
-	jwksURL string
-	useJWKS bool
+	DB      persistence.Storage
+	JwksURL string
+	UseJWKS bool
 
 	// jwks contains a JSON Web Key Set, that is used if JWKS support is enabled. Otherwise a
 	// stored public key will be used
-	jwks *keyfunc.JWKS
+	Jwks *keyfunc.JWKS
 
 	// publicKey will be used to validate API tokens, if JWKS is not enabled
-	publicKey *ecdsa.PublicKey
+	PublicKey *ecdsa.PublicKey
 }
 
-// DefaultJWKSURL is the default JWKS url pointing to a local authentication server.
-const DefaultJWKSURL = "http://localhost:8080/v1/auth/certs"
-
-// WithJWKS is an option to provide a URL that contains a JSON Web Key Set (JWKS). The JWKS will be used
-// to validate tokens coming from RPC clients against public keys contains in the JWKS.
-func WithJWKS(url string) StartGRPCServerOption {
-	return func(c *config) {
-		c.ac.jwksURL = url
-		c.ac.useJWKS = true
-	}
-}
-
-// WithPublicKey is an option to directly provide a ECDSA public key which is used to verify tokens coming from RPC clients.
-func WithPublicKey(publicKey *ecdsa.PublicKey) StartGRPCServerOption {
-	return func(c *config) {
-		c.ac.publicKey = publicKey
-	}
-}
-
-// AuthContextKeyType is a key type that is used in context.WithValue to store the token info in the RPC context.
+// AuthTokenContextKeyType is a key type that is used in context.WithValue to store the token info in the RPC context.
 // It should exclusively be used with the value of AuthContextKey.
-//
-// Why is this needed? To avoid conflicts, the string type should not be used directly but they should be type-aliased.
-type AuthContextKeyType string
+type AuthTokenContextKeyType struct{}
 
-// AuthContextKey is a key used in RPC context to retrieve the token info with using context.Value.
-const AuthContextKey = AuthContextKeyType("token")
+// AuthUserContextKey is a key used in RPC context to retrieve the user info using [context.WithValue].
+// It should be used with the value of AuthContextKey.
+type AuthUserContextKeyType struct{}
 
-// AuthFunc returns a [grpc_auth.AuthFunc] that authenticates incoming gRPC requests based on the configuration
+// AuthTokenContextKey is a key used in RPC context to retrieve the token info using [context.WithValue].
+var AuthTokenContextKey = AuthTokenContextKeyType{}
+
+// AuthUserContextKey is a key used in RPC context to retrieve the user info using [context.WithValue].
+var AuthUserContextKey = AuthUserContextKeyType{}
+
+// AuthFunc returns a [grpc_auth.AuthFunc] that authenticates incoming gRPC requests based on the configuration.
 func (config *AuthConfig) AuthFunc() grpc_auth.AuthFunc {
 	return func(ctx context.Context) (newCtx context.Context, err error) {
 		// Lazy loading of JWKS
-		if config.jwks == nil && config.useJWKS {
-			log.Debugf("Trying to retrieve JWKS from %s", config.jwksURL)
-			config.jwks, err = keyfunc.Get(config.jwksURL, keyfunc.Options{
+		if config.Jwks == nil && config.UseJWKS {
+			log.Debugf("Trying to retrieve JWKS from %s", config.JwksURL)
+			config.Jwks, err = keyfunc.Get(config.JwksURL, keyfunc.Options{
 				RefreshInterval: time.Hour,
 			})
 			if err != nil {
@@ -135,7 +123,7 @@ func (config *AuthConfig) AuthFunc() grpc_auth.AuthFunc {
 			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token")
 		}
 
-		newCtx = context.WithValue(ctx, AuthContextKey, tokenInfo)
+		newCtx = context.WithValue(ctx, AuthTokenContextKey, tokenInfo)
 
 		return newCtx, nil
 	}
@@ -146,12 +134,12 @@ func parseToken(token string, authConfig *AuthConfig) (jwt.Claims, error) {
 	var err error
 
 	// Use JWKS, if enabled
-	if authConfig.useJWKS {
-		parsedToken, err = jwt.ParseWithClaims(token, &OpenIDConnectClaim{}, authConfig.jwks.Keyfunc)
+	if authConfig.UseJWKS {
+		parsedToken, err = jwt.ParseWithClaims(token, &OpenIDConnectClaim{}, authConfig.Jwks.Keyfunc)
 	} else {
 		// Otherwise, we will use the supplied public key
 		parsedToken, err = jwt.ParseWithClaims(token, &OpenIDConnectClaim{}, func(t *jwt.Token) (interface{}, error) {
-			return authConfig.publicKey, nil
+			return authConfig.PublicKey, nil
 		})
 	}
 

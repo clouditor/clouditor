@@ -672,6 +672,10 @@ message TargetOfEvaluation {
     (buf.validate.field).enum.defined_only = true,
     (google.api.field_behavior) = REQUIRED
   ];
+
+  /*
+     string owner_id = 12;
+     User owner = 13 [(tagger.tags) = "gorm:\"foreignKey:owner_id;references:id\""];*/
 }
 
 message Catalog {

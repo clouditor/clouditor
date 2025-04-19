@@ -50,6 +50,66 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type PermissionType int32
+
+const (
+	// The user has no permission
+	PermissionType_PERMISSION_TYPE_UNSPECIFIED PermissionType = 0
+	// The user can create the resource
+	PermissionType_CREATE PermissionType = 1
+	// The user can read the resource
+	PermissionType_READ PermissionType = 2
+	// The user can write to the resource
+	PermissionType_UPDATE PermissionType = 3
+	// The user can delete the resource
+	PermissionType_DELETE PermissionType = 4
+)
+
+// Enum value maps for PermissionType.
+var (
+	PermissionType_name = map[int32]string{
+		0: "PERMISSION_TYPE_UNSPECIFIED",
+		1: "CREATE",
+		2: "READ",
+		3: "UPDATE",
+		4: "DELETE",
+	}
+	PermissionType_value = map[string]int32{
+		"PERMISSION_TYPE_UNSPECIFIED": 0,
+		"CREATE":                      1,
+		"READ":                        2,
+		"UPDATE":                      3,
+		"DELETE":                      4,
+	}
+)
+
+func (x PermissionType) Enum() *PermissionType {
+	p := new(PermissionType)
+	*p = x
+	return p
+}
+
+func (x PermissionType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (PermissionType) Descriptor() protoreflect.EnumDescriptor {
+	return file_api_orchestrator_user_proto_enumTypes[0].Descriptor()
+}
+
+func (PermissionType) Type() protoreflect.EnumType {
+	return &file_api_orchestrator_user_proto_enumTypes[0]
+}
+
+func (x PermissionType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use PermissionType.Descriptor instead.
+func (PermissionType) EnumDescriptor() ([]byte, []int) {
+	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{0}
+}
+
 type CreateUserRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The user to create
@@ -98,15 +158,14 @@ func (x *CreateUserRequest) GetUser() *User {
 // A user resource
 // TODO(lebogg): Think about adding more fields to the user resource (creation time, expiration time, etc.)
 type User struct {
-	state     protoimpl.MessageState `protogen:"open.v1"`
-	Id        string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	FirstName string                 `protobuf:"bytes,2,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty"`
-	LastName  string                 `protobuf:"bytes,3,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
-	Email     string                 `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
-	// target_of_certification_ids defines the scope of the user
-	TargetOfEvaluationIds []*TargetOfEvaluation `protobuf:"bytes,5,rep,name=target_of_evaluation_ids,json=targetOfEvaluationIds,proto3" json:"target_of_evaluation_ids,omitempty" gorm:"many2many:user_certification_target;"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty" gorm:"primaryKey"`
+	FirstName     string                 `protobuf:"bytes,2,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty"`
+	LastName      string                 `protobuf:"bytes,3,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
+	Email         string                 `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
+	Permissions   []*TargetOfEvaluation  `protobuf:"bytes,5,rep,name=permissions,proto3" json:"permissions,omitempty" gorm:"many2many:user_permission"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *User) Reset() {
@@ -167,11 +226,74 @@ func (x *User) GetEmail() string {
 	return ""
 }
 
-func (x *User) GetTargetOfEvaluationIds() []*TargetOfEvaluation {
+func (x *User) GetPermissions() []*TargetOfEvaluation {
 	if x != nil {
-		return x.TargetOfEvaluationIds
+		return x.Permissions
 	}
 	return nil
+}
+
+type UserPermission struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// UserId is the user this permission belongs to
+	UserId string `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty" gorm:"primaryKey"`
+	// TargetOfEvaluationId is the target of evaluation this permission belongs to
+	TargetOfEvaluationId string `protobuf:"bytes,2,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty" gorm:"primaryKey"`
+	// PermissionType is the type of permission this user has on the target of evaluation
+	PermissionType PermissionType `protobuf:"varint,3,opt,name=permission_type,json=permissionType,proto3,enum=clouditor.orchestrator.v1.PermissionType" json:"permission_type,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *UserPermission) Reset() {
+	*x = UserPermission{}
+	mi := &file_api_orchestrator_user_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserPermission) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserPermission) ProtoMessage() {}
+
+func (x *UserPermission) ProtoReflect() protoreflect.Message {
+	mi := &file_api_orchestrator_user_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserPermission.ProtoReflect.Descriptor instead.
+func (*UserPermission) Descriptor() ([]byte, []int) {
+	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *UserPermission) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *UserPermission) GetTargetOfEvaluationId() string {
+	if x != nil {
+		return x.TargetOfEvaluationId
+	}
+	return ""
+}
+
+func (x *UserPermission) GetPermissionType() PermissionType {
+	if x != nil {
+		return x.PermissionType
+	}
+	return PermissionType_PERMISSION_TYPE_UNSPECIFIED
 }
 
 type DeleteUserRequest struct {
@@ -183,7 +305,7 @@ type DeleteUserRequest struct {
 
 func (x *DeleteUserRequest) Reset() {
 	*x = DeleteUserRequest{}
-	mi := &file_api_orchestrator_user_proto_msgTypes[2]
+	mi := &file_api_orchestrator_user_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -195,7 +317,7 @@ func (x *DeleteUserRequest) String() string {
 func (*DeleteUserRequest) ProtoMessage() {}
 
 func (x *DeleteUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_orchestrator_user_proto_msgTypes[2]
+	mi := &file_api_orchestrator_user_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -208,7 +330,7 @@ func (x *DeleteUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteUserRequest.ProtoReflect.Descriptor instead.
 func (*DeleteUserRequest) Descriptor() ([]byte, []int) {
-	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{2}
+	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *DeleteUserRequest) GetId() string {
@@ -227,7 +349,7 @@ type UpdateUserRequest struct {
 
 func (x *UpdateUserRequest) Reset() {
 	*x = UpdateUserRequest{}
-	mi := &file_api_orchestrator_user_proto_msgTypes[3]
+	mi := &file_api_orchestrator_user_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -239,7 +361,7 @@ func (x *UpdateUserRequest) String() string {
 func (*UpdateUserRequest) ProtoMessage() {}
 
 func (x *UpdateUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_orchestrator_user_proto_msgTypes[3]
+	mi := &file_api_orchestrator_user_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -252,7 +374,7 @@ func (x *UpdateUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateUserRequest.ProtoReflect.Descriptor instead.
 func (*UpdateUserRequest) Descriptor() ([]byte, []int) {
-	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{3}
+	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *UpdateUserRequest) GetUser() *User {
@@ -271,7 +393,7 @@ type GetUserRequest struct {
 
 func (x *GetUserRequest) Reset() {
 	*x = GetUserRequest{}
-	mi := &file_api_orchestrator_user_proto_msgTypes[4]
+	mi := &file_api_orchestrator_user_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -283,7 +405,7 @@ func (x *GetUserRequest) String() string {
 func (*GetUserRequest) ProtoMessage() {}
 
 func (x *GetUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_orchestrator_user_proto_msgTypes[4]
+	mi := &file_api_orchestrator_user_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -296,7 +418,7 @@ func (x *GetUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserRequest.ProtoReflect.Descriptor instead.
 func (*GetUserRequest) Descriptor() ([]byte, []int) {
-	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{4}
+	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetUserRequest) GetId() string {
@@ -318,7 +440,7 @@ type ListUsersRequest struct {
 
 func (x *ListUsersRequest) Reset() {
 	*x = ListUsersRequest{}
-	mi := &file_api_orchestrator_user_proto_msgTypes[5]
+	mi := &file_api_orchestrator_user_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -330,7 +452,7 @@ func (x *ListUsersRequest) String() string {
 func (*ListUsersRequest) ProtoMessage() {}
 
 func (x *ListUsersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_orchestrator_user_proto_msgTypes[5]
+	mi := &file_api_orchestrator_user_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -343,7 +465,7 @@ func (x *ListUsersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListUsersRequest.ProtoReflect.Descriptor instead.
 func (*ListUsersRequest) Descriptor() ([]byte, []int) {
-	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{5}
+	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ListUsersRequest) GetPageSize() int32 {
@@ -385,7 +507,7 @@ type ListUsersResponse struct {
 
 func (x *ListUsersResponse) Reset() {
 	*x = ListUsersResponse{}
-	mi := &file_api_orchestrator_user_proto_msgTypes[6]
+	mi := &file_api_orchestrator_user_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -397,7 +519,7 @@ func (x *ListUsersResponse) String() string {
 func (*ListUsersResponse) ProtoMessage() {}
 
 func (x *ListUsersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_orchestrator_user_proto_msgTypes[6]
+	mi := &file_api_orchestrator_user_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -410,7 +532,7 @@ func (x *ListUsersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListUsersResponse.ProtoReflect.Descriptor instead.
 func (*ListUsersResponse) Descriptor() ([]byte, []int) {
-	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{6}
+	return file_api_orchestrator_user_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ListUsersResponse) GetUsers() []*User {
@@ -433,15 +555,18 @@ const file_api_orchestrator_user_proto_rawDesc = "" +
 	"\n" +
 	"\x1bapi/orchestrator/user.proto\x12\x19clouditor.orchestrator.v1\x1a#api/orchestrator/orchestrator.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x13tagger/tagger.proto\"S\n" +
 	"\x11CreateUserRequest\x12>\n" +
-	"\x04user\x18\x01 \x01(\v2\x1f.clouditor.orchestrator.v1.UserB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x04user\"\x8f\x02\n" +
-	"\x04User\x12\x1a\n" +
-	"\x02id\x18\x01 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\x12\x1d\n" +
+	"\x04user\x18\x01 \x01(\v2\x1f.clouditor.orchestrator.v1.UserB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x04user\"\x91\x02\n" +
+	"\x04User\x120\n" +
+	"\x02id\x18\x01 \x01(\tB \xe0A\x02\xbaH\x04r\x02\x10\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\x02id\x12\x1d\n" +
 	"\n" +
 	"first_name\x18\x02 \x01(\tR\tfirstName\x12\x1b\n" +
 	"\tlast_name\x18\x03 \x01(\tR\blastName\x12\x14\n" +
-	"\x05email\x18\x04 \x01(\tR\x05email\x12\x98\x01\n" +
-	"\x18target_of_evaluation_ids\x18\x05 \x03(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB0\x9a\x84\x9e\x03+gorm:\"many2many:user_certification_target;\"R\x15targetOfEvaluationIds\"/\n" +
+	"\x05email\x18\x04 \x01(\tR\x05email\x12\x84\x01\n" +
+	"\vpermissions\x18\x05 \x03(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB3\xe0A\x02\xbaH\b\x92\x01\x05\"\x03\xc8\x01\x01\x9a\x84\x9e\x03 gorm:\"many2many:user_permission\"R\vpermissions\"\xfe\x01\n" +
+	"\x0eUserPermission\x129\n" +
+	"\auser_id\x18\x01 \x01(\tB \xe0A\x02\xbaH\x04r\x02\x10\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\x06userId\x12X\n" +
+	"\x17target_of_evaluation_id\x18\x02 \x01(\tB!\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\x14targetOfEvaluationId\x12W\n" +
+	"\x0fpermission_type\x18\x03 \x01(\x0e2).clouditor.orchestrator.v1.PermissionTypeB\x03\xe0A\x02R\x0epermissionType\"/\n" +
 	"\x11DeleteUserRequest\x12\x1a\n" +
 	"\x02id\x18\x01 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\"S\n" +
@@ -459,7 +584,16 @@ const file_api_orchestrator_user_proto_rawDesc = "" +
 	"\x03asc\x18\r \x01(\bR\x03asc\"|\n" +
 	"\x11ListUsersResponse\x12?\n" +
 	"\x05users\x18\x01 \x03(\v2\x1f.clouditor.orchestrator.v1.UserB\b\xbaH\x05\x92\x01\x02\b\x00R\x05users\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken2\x98\x05\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken*_\n" +
+	"\x0ePermissionType\x12\x1f\n" +
+	"\x1bPERMISSION_TYPE_UNSPECIFIED\x10\x00\x12\n" +
+	"\n" +
+	"\x06CREATE\x10\x01\x12\b\n" +
+	"\x04READ\x10\x02\x12\n" +
+	"\n" +
+	"\x06UPDATE\x10\x03\x12\n" +
+	"\n" +
+	"\x06DELETE\x10\x042\x98\x05\n" +
 	"\vUserService\x12\x80\x01\n" +
 	"\n" +
 	"CreateUser\x12,.clouditor.orchestrator.v1.CreateUserRequest\x1a\x1f.clouditor.orchestrator.v1.User\"#\x82\xd3\xe4\x93\x02\x1d:\x04user\"\x15/v1/orchestrator/user\x12v\n" +
@@ -482,38 +616,42 @@ func file_api_orchestrator_user_proto_rawDescGZIP() []byte {
 	return file_api_orchestrator_user_proto_rawDescData
 }
 
-var file_api_orchestrator_user_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_api_orchestrator_user_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_api_orchestrator_user_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_api_orchestrator_user_proto_goTypes = []any{
-	(*CreateUserRequest)(nil),  // 0: clouditor.orchestrator.v1.CreateUserRequest
-	(*User)(nil),               // 1: clouditor.orchestrator.v1.User
-	(*DeleteUserRequest)(nil),  // 2: clouditor.orchestrator.v1.DeleteUserRequest
-	(*UpdateUserRequest)(nil),  // 3: clouditor.orchestrator.v1.UpdateUserRequest
-	(*GetUserRequest)(nil),     // 4: clouditor.orchestrator.v1.GetUserRequest
-	(*ListUsersRequest)(nil),   // 5: clouditor.orchestrator.v1.ListUsersRequest
-	(*ListUsersResponse)(nil),  // 6: clouditor.orchestrator.v1.ListUsersResponse
-	(*TargetOfEvaluation)(nil), // 7: clouditor.orchestrator.v1.TargetOfEvaluation
-	(*emptypb.Empty)(nil),      // 8: google.protobuf.Empty
+	(PermissionType)(0),        // 0: clouditor.orchestrator.v1.PermissionType
+	(*CreateUserRequest)(nil),  // 1: clouditor.orchestrator.v1.CreateUserRequest
+	(*User)(nil),               // 2: clouditor.orchestrator.v1.User
+	(*UserPermission)(nil),     // 3: clouditor.orchestrator.v1.UserPermission
+	(*DeleteUserRequest)(nil),  // 4: clouditor.orchestrator.v1.DeleteUserRequest
+	(*UpdateUserRequest)(nil),  // 5: clouditor.orchestrator.v1.UpdateUserRequest
+	(*GetUserRequest)(nil),     // 6: clouditor.orchestrator.v1.GetUserRequest
+	(*ListUsersRequest)(nil),   // 7: clouditor.orchestrator.v1.ListUsersRequest
+	(*ListUsersResponse)(nil),  // 8: clouditor.orchestrator.v1.ListUsersResponse
+	(*TargetOfEvaluation)(nil), // 9: clouditor.orchestrator.v1.TargetOfEvaluation
+	(*emptypb.Empty)(nil),      // 10: google.protobuf.Empty
 }
 var file_api_orchestrator_user_proto_depIdxs = []int32{
-	1, // 0: clouditor.orchestrator.v1.CreateUserRequest.user:type_name -> clouditor.orchestrator.v1.User
-	7, // 1: clouditor.orchestrator.v1.User.target_of_evaluation_ids:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
-	1, // 2: clouditor.orchestrator.v1.UpdateUserRequest.user:type_name -> clouditor.orchestrator.v1.User
-	1, // 3: clouditor.orchestrator.v1.ListUsersResponse.users:type_name -> clouditor.orchestrator.v1.User
-	0, // 4: clouditor.orchestrator.v1.UserService.CreateUser:input_type -> clouditor.orchestrator.v1.CreateUserRequest
-	2, // 5: clouditor.orchestrator.v1.UserService.DeleteUser:input_type -> clouditor.orchestrator.v1.DeleteUserRequest
-	3, // 6: clouditor.orchestrator.v1.UserService.UpdateUser:input_type -> clouditor.orchestrator.v1.UpdateUserRequest
-	4, // 7: clouditor.orchestrator.v1.UserService.getUser:input_type -> clouditor.orchestrator.v1.GetUserRequest
-	5, // 8: clouditor.orchestrator.v1.UserService.listUsers:input_type -> clouditor.orchestrator.v1.ListUsersRequest
-	1, // 9: clouditor.orchestrator.v1.UserService.CreateUser:output_type -> clouditor.orchestrator.v1.User
-	8, // 10: clouditor.orchestrator.v1.UserService.DeleteUser:output_type -> google.protobuf.Empty
-	1, // 11: clouditor.orchestrator.v1.UserService.UpdateUser:output_type -> clouditor.orchestrator.v1.User
-	1, // 12: clouditor.orchestrator.v1.UserService.getUser:output_type -> clouditor.orchestrator.v1.User
-	6, // 13: clouditor.orchestrator.v1.UserService.listUsers:output_type -> clouditor.orchestrator.v1.ListUsersResponse
-	9, // [9:14] is the sub-list for method output_type
-	4, // [4:9] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	2,  // 0: clouditor.orchestrator.v1.CreateUserRequest.user:type_name -> clouditor.orchestrator.v1.User
+	9,  // 1: clouditor.orchestrator.v1.User.permissions:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
+	0,  // 2: clouditor.orchestrator.v1.UserPermission.permission_type:type_name -> clouditor.orchestrator.v1.PermissionType
+	2,  // 3: clouditor.orchestrator.v1.UpdateUserRequest.user:type_name -> clouditor.orchestrator.v1.User
+	2,  // 4: clouditor.orchestrator.v1.ListUsersResponse.users:type_name -> clouditor.orchestrator.v1.User
+	1,  // 5: clouditor.orchestrator.v1.UserService.CreateUser:input_type -> clouditor.orchestrator.v1.CreateUserRequest
+	4,  // 6: clouditor.orchestrator.v1.UserService.DeleteUser:input_type -> clouditor.orchestrator.v1.DeleteUserRequest
+	5,  // 7: clouditor.orchestrator.v1.UserService.UpdateUser:input_type -> clouditor.orchestrator.v1.UpdateUserRequest
+	6,  // 8: clouditor.orchestrator.v1.UserService.getUser:input_type -> clouditor.orchestrator.v1.GetUserRequest
+	7,  // 9: clouditor.orchestrator.v1.UserService.listUsers:input_type -> clouditor.orchestrator.v1.ListUsersRequest
+	2,  // 10: clouditor.orchestrator.v1.UserService.CreateUser:output_type -> clouditor.orchestrator.v1.User
+	10, // 11: clouditor.orchestrator.v1.UserService.DeleteUser:output_type -> google.protobuf.Empty
+	2,  // 12: clouditor.orchestrator.v1.UserService.UpdateUser:output_type -> clouditor.orchestrator.v1.User
+	2,  // 13: clouditor.orchestrator.v1.UserService.getUser:output_type -> clouditor.orchestrator.v1.User
+	8,  // 14: clouditor.orchestrator.v1.UserService.listUsers:output_type -> clouditor.orchestrator.v1.ListUsersResponse
+	10, // [10:15] is the sub-list for method output_type
+	5,  // [5:10] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_api_orchestrator_user_proto_init() }
@@ -527,13 +665,14 @@ func file_api_orchestrator_user_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_orchestrator_user_proto_rawDesc), len(file_api_orchestrator_user_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   7,
+			NumEnums:      1,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_api_orchestrator_user_proto_goTypes,
 		DependencyIndexes: file_api_orchestrator_user_proto_depIdxs,
+		EnumInfos:         file_api_orchestrator_user_proto_enumTypes,
 		MessageInfos:      file_api_orchestrator_user_proto_msgTypes,
 	}.Build()
 	File_api_orchestrator_user_proto = out.File
