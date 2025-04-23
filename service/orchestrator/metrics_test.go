@@ -67,6 +67,13 @@ var (
 		TargetValue:          testdata.MockMetricConfigurationTargetValueString,
 	}
 
+	MockMetricConfiguration2 = &assessment.MetricConfiguration{
+		MetricId:             testdata.MockMetricID2,
+		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
+		Operator:             "==",
+		TargetValue:          testdata.MockMetricConfigurationTargetValueString,
+	}
+
 	MockMetric1 = &assessment.Metric{
 		Id:            testdata.MockMetricID1,
 		Description:   testdata.MockMetricDescription1,
@@ -240,7 +247,7 @@ func TestService_CreateMetric(t *testing.T) {
 						Description:   testdata.MockMetricDescription1,
 						Version:       "1.0",
 						Comments:      "Test comments",
-						Configuration: []*assessment.MetricConfiguration{MockMetricConfiguration1},
+						Configuration: []*assessment.MetricConfiguration{},
 					},
 				},
 			},
@@ -249,7 +256,7 @@ func TestService_CreateMetric(t *testing.T) {
 				Description:   testdata.MockMetricDescription1,
 				Version:       "1.0",
 				Comments:      "Test comments",
-				Configuration: []*assessment.MetricConfiguration{MockMetricConfiguration1},
+				Configuration: []*assessment.MetricConfiguration{},
 			},
 			wantErr: assert.NoError,
 		},
@@ -398,6 +405,7 @@ func TestService_UpdateMetric(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(&assessment.Metric{Id: "TransportEncryptionEnabled"})
+					_ = s.Create(&orchestrator.TargetOfEvaluation{Id: testdata.MockTargetOfEvaluationID1})
 				}),
 			},
 			args: args{
@@ -563,6 +571,7 @@ func TestService_GetMetric(t *testing.T) {
 			name: "Get existing metric",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(&orchestrator.TargetOfEvaluation{Id: testdata.MockTargetOfEvaluationID1})
 					_ = s.Create(&assessment.Metric{
 						Id:            "TransportEncryptionEnabled",
 						Description:   "This metric describes, whether transport encryption is turned on or not",
@@ -625,7 +634,7 @@ func TestService_ListMetrics(t *testing.T) {
 		auditScopeHooks         []orchestrator.AuditScopeHookFunc
 		AssessmentResultHooks   []assessment.ResultHookFunc
 		storage                 persistence.Storage
-		loadMetricsFunc         func() ([]*assessment.Metric, error)
+		loadMetricsFunc         func(...string) ([]*assessment.Metric, error)
 		catalogsFolder          string
 		loadCatalogsFunc        func() ([]*orchestrator.Catalog, error)
 		events                  chan *orchestrator.MetricChangeEvent
@@ -653,6 +662,7 @@ func TestService_ListMetrics(t *testing.T) {
 			name: "Happy path: all active metrics",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(&orchestrator.TargetOfEvaluation{Id: testdata.MockTargetOfEvaluationID1})
 					_ = s.Create(&assessment.Metric{
 						Id:            testdata.MockMetricID1,
 						Description:   testdata.MockMetricDescription1,
@@ -665,7 +675,7 @@ func TestService_ListMetrics(t *testing.T) {
 						Description:     testdata.MockMetricDescription2,
 						Version:         "1.0",
 						Comments:        "Test comments",
-						Configuration:   []*assessment.MetricConfiguration{MockMetricConfiguration1},
+						Configuration:   []*assessment.MetricConfiguration{MockMetricConfiguration2},
 						DeprecatedSince: timestamp,
 					})
 				}),
@@ -682,6 +692,8 @@ func TestService_ListMetrics(t *testing.T) {
 			name: "Happy path: including deprecated metrics",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(&orchestrator.TargetOfEvaluation{Id: testdata.MockTargetOfEvaluationID1})
+					_ = s.Create(&orchestrator.TargetOfEvaluation{Id: testdata.MockTargetOfEvaluationID2})
 					_ = s.Create(&assessment.Metric{
 						Id:            testdata.MockMetricID1,
 						Description:   testdata.MockMetricDescription1,
@@ -694,7 +706,7 @@ func TestService_ListMetrics(t *testing.T) {
 						Description:     testdata.MockMetricDescription2,
 						Version:         "1.0",
 						Comments:        "Test comments",
-						Configuration:   []*assessment.MetricConfiguration{MockMetricConfiguration1},
+						Configuration:   []*assessment.MetricConfiguration{MockMetricConfiguration2},
 						DeprecatedSince: timestamp,
 					})
 				}),
@@ -720,7 +732,7 @@ func TestService_ListMetrics(t *testing.T) {
 						Description:     testdata.MockMetricDescription2,
 						Version:         "1.0",
 						Comments:        "Test comments",
-						Configuration:   []*assessment.MetricConfiguration{MockMetricConfiguration1},
+						Configuration:   []*assessment.MetricConfiguration{MockMetricConfiguration2},
 						DeprecatedSince: timestamp,
 					},
 				},
@@ -734,6 +746,7 @@ func TestService_ListMetrics(t *testing.T) {
 				TargetOfEvaluationHooks: tt.fields.TargetOfEvaluationHooks,
 				auditScopeHooks:         tt.fields.auditScopeHooks,
 				AssessmentResultHooks:   tt.fields.AssessmentResultHooks,
+				loadMetricsFunc:         tt.fields.loadMetricsFunc,
 				storage:                 tt.fields.storage,
 				catalogsFolder:          tt.fields.catalogsFolder,
 				loadCatalogsFunc:        tt.fields.loadCatalogsFunc,
@@ -1715,6 +1728,7 @@ func TestService_RemoveMetric(t *testing.T) {
 			name: "Happy path: metric already removed in the past",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(&orchestrator.TargetOfEvaluation{Id: testdata.MockTargetOfEvaluationID1})
 					_ = s.Create(&assessment.Metric{
 						Id:              testdata.MockMetricID1,
 						Description:     testdata.MockMetricDescription1,
