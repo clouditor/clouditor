@@ -420,15 +420,14 @@ func TestService_ListTargetsOfEvaluation(t *testing.T) {
 
 func TestService_GetTargetOfEvaluationStatistics(t *testing.T) {
 	type fields struct {
-		CertificationTargetHooks []orchestrator.CertificationTargetHookFunc
-		auditScopeHooks          []orchestrator.AuditScopeHookFunc
-		AssessmentResultHooks    []assessment.ResultHookFunc
-		storage                  persistence.Storage
-		loadMetricsFunc          func() ([]*assessment.Metric, error)
-		catalogsFolder           string
-		loadCatalogsFunc         func() ([]*orchestrator.Catalog, error)
-		events                   chan *orchestrator.MetricChangeEvent
-		authz                    service.AuthorizationStrategy
+		auditScopeHooks       []orchestrator.AuditScopeHookFunc
+		AssessmentResultHooks []assessment.ResultHookFunc
+		storage               persistence.Storage
+		loadMetricsFunc       func() ([]*assessment.Metric, error)
+		catalogsFolder        string
+		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
+		events                chan *orchestrator.MetricChangeEvent
+		authz                 service.AuthorizationStrategy
 	}
 	type args struct {
 		ctx context.Context
@@ -555,14 +554,13 @@ func TestService_GetTargetOfEvaluationStatistics(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				CertificationTargetHooks: tt.fields.CertificationTargetHooks,
-				auditScopeHooks:          tt.fields.auditScopeHooks,
-				AssessmentResultHooks:    tt.fields.AssessmentResultHooks,
-				storage:                  tt.fields.storage,
-				catalogsFolder:           tt.fields.catalogsFolder,
-				loadCatalogsFunc:         tt.fields.loadCatalogsFunc,
-				events:                   tt.fields.events,
-				authz:                    tt.fields.authz,
+				auditScopeHooks:       tt.fields.auditScopeHooks,
+				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
+				storage:               tt.fields.storage,
+				catalogsFolder:        tt.fields.catalogsFolder,
+				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
+				events:                tt.fields.events,
+				authz:                 tt.fields.authz,
 			}
 			gotRes, err := s.GetTargetOfEvaluationStatistics(tt.args.ctx, tt.args.req)
 			tt.wantErr(t, err)

@@ -59,14 +59,14 @@ func TestService_CreateAuditScope(t *testing.T) {
 	catalogWithoutAssuranceLevelList.AssuranceLevels = []string{}
 
 	type fields struct {
-		CertificationTargetHooks []orchestrator.CertificationTargetHookFunc
-		AssessmentResultHooks    []assessment.ResultHookFunc
-		storage                  persistence.Storage
-		loadMetricsFunc          func() ([]*assessment.Metric, error)
-		catalogsFolder           string
-		loadCatalogsFunc         func() ([]*orchestrator.Catalog, error)
-		events                   chan *orchestrator.MetricChangeEvent
-		authz                    service.AuthorizationStrategy
+		TargetOfEvaluationHooks []orchestrator.TargetOfEvaluationHookFunc
+		AssessmentResultHooks   []assessment.ResultHookFunc
+		storage                 persistence.Storage
+		loadMetricsFunc         func() ([]*assessment.Metric, error)
+		catalogsFolder          string
+		loadCatalogsFunc        func() ([]*orchestrator.Catalog, error)
+		events                  chan *orchestrator.MetricChangeEvent
+		authz                   service.AuthorizationStrategy
 	}
 	type args struct {
 		ctx context.Context
@@ -223,25 +223,13 @@ func TestService_CreateAuditScope(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-<<<<<<< HEAD
 				TargetOfEvaluationHooks: tt.fields.TargetOfEvaluationHooks,
 				AssessmentResultHooks:   tt.fields.AssessmentResultHooks,
 				storage:                 tt.fields.storage,
-				metricsFile:             tt.fields.metricsFile,
-				loadMetricsFunc:         tt.fields.loadMetricsFunc,
 				catalogsFolder:          tt.fields.catalogsFolder,
 				loadCatalogsFunc:        tt.fields.loadCatalogsFunc,
 				events:                  tt.fields.events,
 				authz:                   tt.fields.authz,
-=======
-				CertificationTargetHooks: tt.fields.CertificationTargetHooks,
-				AssessmentResultHooks:    tt.fields.AssessmentResultHooks,
-				storage:                  tt.fields.storage,
-				catalogsFolder:           tt.fields.catalogsFolder,
-				loadCatalogsFunc:         tt.fields.loadCatalogsFunc,
-				events:                   tt.fields.events,
-				authz:                    tt.fields.authz,
->>>>>>> 0989fb89 (use multiple metric repos, remove metric category)
 			}
 
 			gotRes, err := svc.CreateAuditScope(tt.args.ctx, tt.args.req)

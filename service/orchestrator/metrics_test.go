@@ -621,15 +621,15 @@ func TestService_ListMetrics(t *testing.T) {
 	timestamp := timestamppb.Now()
 
 	type fields struct {
-		CertificationTargetHooks []orchestrator.CertificationTargetHookFunc
-		auditScopeHooks          []orchestrator.AuditScopeHookFunc
-		AssessmentResultHooks    []assessment.ResultHookFunc
-		storage                  persistence.Storage
-		loadMetricsFunc          func() ([]*assessment.Metric, error)
-		catalogsFolder           string
-		loadCatalogsFunc         func() ([]*orchestrator.Catalog, error)
-		events                   chan *orchestrator.MetricChangeEvent
-		authz                    service.AuthorizationStrategy
+		TargetOfEvaluationHooks []orchestrator.TargetOfEvaluationHookFunc
+		auditScopeHooks         []orchestrator.AuditScopeHookFunc
+		AssessmentResultHooks   []assessment.ResultHookFunc
+		storage                 persistence.Storage
+		loadMetricsFunc         func() ([]*assessment.Metric, error)
+		catalogsFolder          string
+		loadCatalogsFunc        func() ([]*orchestrator.Catalog, error)
+		events                  chan *orchestrator.MetricChangeEvent
+		authz                   service.AuthorizationStrategy
 	}
 	type args struct {
 		in0 context.Context
@@ -731,14 +731,14 @@ func TestService_ListMetrics(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				CertificationTargetHooks: tt.fields.CertificationTargetHooks,
-				auditScopeHooks:          tt.fields.auditScopeHooks,
-				AssessmentResultHooks:    tt.fields.AssessmentResultHooks,
-				storage:                  tt.fields.storage,
-				catalogsFolder:           tt.fields.catalogsFolder,
-				loadCatalogsFunc:         tt.fields.loadCatalogsFunc,
-				events:                   tt.fields.events,
-				authz:                    tt.fields.authz,
+				TargetOfEvaluationHooks: tt.fields.TargetOfEvaluationHooks,
+				auditScopeHooks:         tt.fields.auditScopeHooks,
+				AssessmentResultHooks:   tt.fields.AssessmentResultHooks,
+				storage:                 tt.fields.storage,
+				catalogsFolder:          tt.fields.catalogsFolder,
+				loadCatalogsFunc:        tt.fields.loadCatalogsFunc,
+				events:                  tt.fields.events,
+				authz:                   tt.fields.authz,
 			}
 			gotRes, err := svc.ListMetrics(tt.args.in0, tt.args.req)
 			tt.wantErr(t, err)
@@ -1216,7 +1216,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 	type fields struct {
 		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
-		loadMetricsFunc       func() ([]*assessment.Metric, error)
+		loadMetricsFunc       func(...string) ([]*assessment.Metric, error)
 		catalogsFolder        string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
