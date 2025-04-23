@@ -29,6 +29,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -223,7 +225,7 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 		prefix string
 	)
 
-	// We need to check, if the metric configuration has been changed.
+	// We need to check if the metric configuration has been changed.
 	config, err := src.MetricConfiguration(targetID, metric)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch metric configuration for metric %s: %w", metric.Id, err)
@@ -242,7 +244,11 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 		)
 
 		// Create paths for bundle directory and utility functions file
-		bundle := fmt.Sprintf("%s/policies/metrics/metrics/%s/%s/", baseDir, metric.Category, metric.Id)
+		bundle, err := findMetricDir(fmt.Sprintf("%s/policies/metrics/metrics", baseDir), metric.Id)
+		if err != nil {
+			return nil, fmt.Errorf("could not find metric: %w", err)
+		}
+
 		operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
 
 		// The contents of the data map is available as the data variable within the Rego evaluation
@@ -364,6 +370,40 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 	} else {
 		return result, nil
 	}
+}
+
+// The metrics directory is structured by metric categories (policies/metrics/metrics/<category>/<metric>/), so findMetricFile traverses through the categories to find the given metric.
+func findMetricDir(root string, metric string) (string, error) {
+	var metricDirPath string
+
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// Check if the current path is a directory
+		if info.IsDir() {
+			return nil
+		}
+
+		// Check if the path contains the desired metric
+		if strings.Contains(path, metric) {
+			metricDirPath = filepath.Dir(path) // Get the directory of the found file
+			return filepath.SkipDir            // Stop traversing further
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	if metricDirPath == "" {
+		return "", fmt.Errorf("metric directory not found for %s", metric)
+	}
+
+	return metricDirPath, nil
 }
 
 func newQueryCache() *queryCache {

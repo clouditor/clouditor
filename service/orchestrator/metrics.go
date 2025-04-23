@@ -57,18 +57,29 @@ var ErrMetricNotFound = status.Error(codes.NotFound, "metric not found")
 // well as the default metric implementations from the Rego files.
 func (svc *Service) loadMetrics() (err error) {
 	var (
-		metrics []*assessment.Metric
+		metrics    []*assessment.Metric
+		extMetrics []*assessment.Metric
 	)
 
-	// Default to loading metrics from our embedded file system
-	if svc.loadMetricsFunc == nil {
+	// Default to loading metrics from our standard metrics repository
+	if svc.loadMetricsFunc == nil && svc.loadExtMetricsFunc == nil {
 		svc.loadMetricsFunc = svc.loadMetricsFromMetricsRepository
 	}
 
-	// Execute our metric loading function
-	metrics, err = svc.loadMetricsFunc()
-	if err != nil {
-		return fmt.Errorf("could not load metrics: %w", err)
+	// Execute the metric loading functions if they are set
+	if svc.loadMetricsFunc != nil {
+		metrics, err = svc.loadMetricsFunc()
+		if err != nil {
+			return fmt.Errorf("could not load metrics: %w", err)
+		}
+	}
+
+	if svc.loadExtMetricsFunc != nil {
+		extMetrics, err = svc.loadExtMetricsFunc()
+		if err != nil {
+			return fmt.Errorf("could not load metrics: %w", err)
+		}
+		metrics = append(metrics, extMetrics...)
 	}
 
 	defaultMetricConfigurations = make(map[string]*assessment.MetricConfiguration)
@@ -110,21 +121,28 @@ func (svc *Service) loadMetrics() (err error) {
 // metric and storing them into the service.
 func prepareMetric(m *assessment.Metric) (err error) {
 	var (
-		config *assessment.MetricConfiguration
+		config  *assessment.MetricConfiguration
+		baseDir string
 	)
 
+	baseDir = "."
+
 	// Load the Rego file
-	file := fmt.Sprintf("policies/metrics/metrics/%s/%s/metric.rego", m.Category, m.Id)
-	m.Implementation, err = loadMetricImplementation(m.Id, file)
+	metricPath, err := findMetricFile(fmt.Sprintf("%s/policies/metrics/metrics", baseDir), m.Id)
+	if err != nil {
+		return fmt.Errorf("could not find metric: %w", err)
+	}
+
+	m.Implementation, err = loadMetricImplementation(m.Id, metricPath)
 	if err != nil {
 		return fmt.Errorf("could not load metric implementation: %w", err)
 	}
 
-	// Look for the data.json to include default metric configurations
-	fileName := fmt.Sprintf("policies/metrics/metrics/%s/%s/data.json", m.Category, m.Id)
+	// Take the data.json to include default metric configurations
+	dataJsonPath := strings.Replace(metricPath, "metric.rego", "data.json", 1)
 
 	// Load the default configuration file
-	b, err := os.ReadFile(fileName)
+	b, err := os.ReadFile(dataJsonPath)
 	if err != nil {
 		return fmt.Errorf("could not retrieve default configuration for metric %s: %w", m.Id, err)
 	}
@@ -142,60 +160,87 @@ func prepareMetric(m *assessment.Metric) (err error) {
 	return
 }
 
-// loadEmbeddedMetrics loads the metric definitions from the embedded file system using the path specified in
-// the service's metricsFile.
-func (svc *Service) loadEmbeddedMetrics() (metrics []*assessment.Metric, err error) {
-	var b []byte
+// The metrics directory is structured by metric categories (policies/metrics/metrics/<category>/<metric>/), so findMetricFile traverses through the categories to find the given metric.
+func findMetricFile(root string, metric string) (string, error) {
+	var metricFilePath string
 
-	b, err = f.ReadFile(svc.metricsFile)
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// Check if the current path is a directory
+		if info.IsDir() {
+			return nil
+		}
+
+		// Check if the file name matches the desired metric
+		if strings.Contains(path, metric) && strings.HasSuffix(path, "metric.rego") {
+			metricFilePath = path
+			return filepath.SkipDir // Stop traversing further
+		}
+
+		return nil
+	})
+
 	if err != nil {
-		return nil, fmt.Errorf("error while loading %s: %w", svc.metricsFile, err)
+		return "", err
 	}
 
-	err = json.Unmarshal(b, &metrics)
-	if err != nil {
-		return nil, fmt.Errorf("error in JSON marshal: %w", err)
+	if metricFilePath == "" {
+		return "", fmt.Errorf("metric file not found for %s", metric)
 	}
 
-	return
+	return metricFilePath, nil
 }
 
 // loadEmbeddedMetrics loads metric definitions by walking through YAML files
 // in the policies/metrics/metrics directory.
-func (svc *Service) loadMetricsFromMetricsRepository() (metrics []*assessment.Metric, err error) {
-	metricsPath := "policies/metrics/metrics"
+// use path ...string --> load default metrics + each given path (or only if given?)
+func (svc *Service) loadMetricsFromMetricsRepository(path ...string) (metrics []*assessment.Metric, err error) {
+	var (
+		baseDir string
+	)
+
+	baseDir = "."
+	defaultMetricsPath := fmt.Sprintf("%s/policies/metrics/metrics", baseDir)
+
 	metrics = make([]*assessment.Metric, 0)
 
-	err = filepath.Walk(metricsPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return fmt.Errorf("error accessing path %s: %w", path, err)
-		}
+	// If no paths are provided, use the default path "policies/metrics/metrics"
+	if len(path) == 0 {
+		path = append(path, defaultMetricsPath)
+	}
 
-		// Skip directories and non-yaml files
-		if info.IsDir() || (!strings.HasSuffix(info.Name(), ".yaml") && !strings.HasSuffix(info.Name(), ".yml")) {
+	// Walk through the provided paths
+	for _, p := range path {
+		err = filepath.Walk(p, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return fmt.Errorf("error accessing path %s: %w", path, err)
+			}
+
+			// Skip directories and non-yaml files
+			if info.IsDir() || (!strings.HasSuffix(info.Name(), ".yaml") && !strings.HasSuffix(info.Name(), ".yml")) {
+				return nil
+			}
+
+			// Read the YAML file
+			b, err := os.ReadFile(path)
+			if err != nil {
+				return fmt.Errorf("error reading file %s: %w", path, err)
+			}
+
+			var metric assessment.Metric
+
+			// Parse YAML into a metric
+			if err := yaml.Unmarshal(b, &metric); err != nil {
+				return fmt.Errorf("error parsing YAML in %s: %w", path, err)
+			}
+
+			metrics = append(metrics, &metric)
 			return nil
-		}
-
-		// Read the YAML file
-		b, err := os.ReadFile(path)
-		if err != nil {
-			return fmt.Errorf("error reading file %s: %w", path, err)
-		}
-
-		var metric assessment.Metric
-
-		// Parse YAML into a metric
-		if err := yaml.Unmarshal(b, &metric); err != nil {
-			return fmt.Errorf("error parsing YAML in %s: %w", path, err)
-		}
-
-		// Set the category based on the directory name
-		// TODO test
-		metric.Category = filepath.Base(filepath.Dir(filepath.Dir(path)))
-
-		metrics = append(metrics, &metric)
-		return nil
-	})
+		})
+	}
 
 	if err != nil {
 		return nil, fmt.Errorf("error walking through metrics directory: %w", err)

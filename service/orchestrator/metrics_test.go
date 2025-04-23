@@ -109,7 +109,6 @@ properties:
 				{
 					Id:          "TestMetric",
 					Description: "Test Metric 1",
-					Category:    "TestCategory",
 					Version:     "1.0",
 					Comments:    "Test comments",
 					Configuration: []*assessment.MetricConfiguration{
@@ -127,7 +126,8 @@ properties:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotMetrics, err := loadMetricsFromMetricsRepository(tempDir)
+			svc := &Service{}
+			gotMetrics, err := svc.loadMetricsFromMetricsRepository(tempDir)
 			fmt.Println(gotMetrics)
 			assert.True(t, len(gotMetrics) > 0)
 
@@ -180,14 +180,13 @@ default applicable = false
 default compliant = false
 
 applicable if {
-	# we are only interested in some kind of privileged user    
-	identity.privileged
+    # we are only interested in some kind of privileged user
+    identity.privileged
 }
 
 compliant if {
 	compare(data.operator, data.target_value, identity.enforceMFA)
-}
-`,
+}`,
 			},
 			wantErr: assert.NoError,
 		},
@@ -239,7 +238,6 @@ func TestService_CreateMetric(t *testing.T) {
 					Metric: &assessment.Metric{
 						Id:            testdata.MockMetricID1,
 						Description:   testdata.MockMetricDescription1,
-						Category:      "TestCategory",
 						Version:       "1.0",
 						Comments:      "Test comments",
 						Configuration: []*assessment.MetricConfiguration{MockMetricConfiguration1},
@@ -249,7 +247,6 @@ func TestService_CreateMetric(t *testing.T) {
 			wantMetric: &assessment.Metric{
 				Id:            testdata.MockMetricID1,
 				Description:   testdata.MockMetricDescription1,
-				Category:      "TestCategory",
 				Version:       "1.0",
 				Comments:      "Test comments",
 				Configuration: []*assessment.MetricConfiguration{MockMetricConfiguration1},
@@ -283,7 +280,6 @@ func TestService_CreateMetric(t *testing.T) {
 					Metric: &assessment.Metric{
 						Id:              "TLSVersion",
 						Description:     testdata.MockMetricDescription1,
-						Category:        "TestCategory",
 						Version:         "1.0",
 						Comments:        "Test comments",
 						Configuration:   []*assessment.MetricConfiguration{MockMetricConfiguration1},
@@ -309,7 +305,6 @@ func TestService_CreateMetric(t *testing.T) {
 					Metric: &assessment.Metric{
 						Id:            "TLSVersion",
 						Description:   testdata.MockMetricDescription1,
-						Category:      "TestCategory",
 						Version:       "1.0",
 						Comments:      "Test comments",
 						Configuration: []*assessment.MetricConfiguration{MockMetricConfiguration1},
@@ -332,7 +327,6 @@ func TestService_CreateMetric(t *testing.T) {
 					Metric: &assessment.Metric{
 						Id:            testdata.MockMetricName1,
 						Description:   testdata.MockMetricDescription1,
-						Category:      "TestCategory",
 						Version:       "1.0",
 						Comments:      "Test comments",
 						Configuration: []*assessment.MetricConfiguration{MockMetricConfiguration1},
@@ -355,7 +349,6 @@ func TestService_CreateMetric(t *testing.T) {
 					Metric: &assessment.Metric{
 						Id:            testdata.MockMetricName1,
 						Description:   testdata.MockMetricDescription1,
-						Category:      "TestCategory",
 						Version:       "1.0",
 						Comments:      "Test comments",
 						Configuration: []*assessment.MetricConfiguration{MockMetricConfiguration1},
@@ -413,7 +406,6 @@ func TestService_UpdateMetric(t *testing.T) {
 					Metric: &assessment.Metric{
 						Id:              "TransportEncryptionEnabled",
 						Description:     testdata.MockMetricDescription1,
-						Category:        "TestCategory",
 						Version:         "1.0",
 						Comments:        "Test comments",
 						Configuration:   []*assessment.MetricConfiguration{MockMetricConfiguration1},
@@ -424,7 +416,6 @@ func TestService_UpdateMetric(t *testing.T) {
 			wantMetric: &assessment.Metric{
 				Id:              "TransportEncryptionEnabled",
 				Description:     testdata.MockMetricDescription1,
-				Category:        "TestCategory",
 				Version:         "1.0",
 				Comments:        "Test comments",
 				Configuration:   []*assessment.MetricConfiguration{MockMetricConfiguration1},
@@ -443,7 +434,6 @@ func TestService_UpdateMetric(t *testing.T) {
 					Metric: &assessment.Metric{
 						Id:              "TransportEncryptionEnabled",
 						Description:     testdata.MockMetricDescription1,
-						Category:        "TestCategory",
 						Version:         "1.0",
 						Comments:        "Test comments",
 						Configuration:   []*assessment.MetricConfiguration{MockMetricConfiguration1},
@@ -465,7 +455,6 @@ func TestService_UpdateMetric(t *testing.T) {
 					Metric: &assessment.Metric{
 						Id:              "TransportEncryptionEnabled",
 						Description:     testdata.MockMetricDescription1,
-						Category:        "TestCategory",
 						Version:         "1.0",
 						Comments:        "Test comments",
 						Configuration:   []*assessment.MetricConfiguration{MockMetricConfiguration1},
@@ -487,7 +476,6 @@ func TestService_UpdateMetric(t *testing.T) {
 					Metric: &assessment.Metric{
 						Id:              "DoesProbablyNotExist",
 						Description:     testdata.MockMetricDescription1,
-						Category:        "TestCategory",
 						Version:         "1.0",
 						Comments:        "Test comments",
 						Configuration:   []*assessment.MetricConfiguration{MockMetricConfiguration1},
@@ -578,7 +566,6 @@ func TestService_GetMetric(t *testing.T) {
 					_ = s.Create(&assessment.Metric{
 						Id:            "TransportEncryptionEnabled",
 						Description:   "This metric describes, whether transport encryption is turned on or not",
-						Category:      "TestCategory",
 						Version:       "1.0",
 						Comments:      "Test comments",
 						Configuration: []*assessment.MetricConfiguration{MockMetricConfiguration1},
@@ -594,7 +581,6 @@ func TestService_GetMetric(t *testing.T) {
 			wantMetric: &assessment.Metric{
 				Id:            "TransportEncryptionEnabled",
 				Description:   "This metric describes, whether transport encryption is turned on or not",
-				Category:      "TestCategory",
 				Version:       "1.0",
 				Comments:      "Test comments",
 				Configuration: []*assessment.MetricConfiguration{MockMetricConfiguration1},
@@ -699,7 +685,6 @@ func TestService_ListMetrics(t *testing.T) {
 					_ = s.Create(&assessment.Metric{
 						Id:            testdata.MockMetricID1,
 						Description:   testdata.MockMetricDescription1,
-						Category:      "TestCategory",
 						Version:       "1.0",
 						Comments:      "Test comments",
 						Configuration: []*assessment.MetricConfiguration{MockMetricConfiguration1},
@@ -707,7 +692,6 @@ func TestService_ListMetrics(t *testing.T) {
 					_ = s.Create(&assessment.Metric{
 						Id:              testdata.MockMetricID2,
 						Description:     testdata.MockMetricDescription2,
-						Category:        "TestCategory",
 						Version:         "1.0",
 						Comments:        "Test comments",
 						Configuration:   []*assessment.MetricConfiguration{MockMetricConfiguration1},
@@ -727,7 +711,6 @@ func TestService_ListMetrics(t *testing.T) {
 					{
 						Id:            testdata.MockMetricID1,
 						Description:   testdata.MockMetricDescription1,
-						Category:      "TestCategory",
 						Version:       "1.0",
 						Comments:      "Test comments",
 						Configuration: []*assessment.MetricConfiguration{MockMetricConfiguration1},
@@ -735,7 +718,6 @@ func TestService_ListMetrics(t *testing.T) {
 					{
 						Id:              testdata.MockMetricID2,
 						Description:     testdata.MockMetricDescription2,
-						Category:        "TestCategory",
 						Version:         "1.0",
 						Comments:        "Test comments",
 						Configuration:   []*assessment.MetricConfiguration{MockMetricConfiguration1},
@@ -753,7 +735,6 @@ func TestService_ListMetrics(t *testing.T) {
 				auditScopeHooks:          tt.fields.auditScopeHooks,
 				AssessmentResultHooks:    tt.fields.AssessmentResultHooks,
 				storage:                  tt.fields.storage,
-				loadMetricsFunc:          tt.fields.loadMetricsFunc,
 				catalogsFolder:           tt.fields.catalogsFolder,
 				loadCatalogsFunc:         tt.fields.loadCatalogsFunc,
 				events:                   tt.fields.events,
@@ -774,7 +755,6 @@ func TestService_GetMetricImplementation(t *testing.T) {
 	type fields struct {
 		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
-		metricsFile           string
 		events                chan *orchestrator.MetricChangeEvent
 		catalogsFolder        string
 	}
@@ -869,7 +849,6 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 	type fields struct {
 		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
-		metricsFile           string
 		catalogsFolder        string
 		events                chan *orchestrator.MetricChangeEvent
 	}
@@ -887,8 +866,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 		{
 			name: "Invalid input",
 			fields: fields{
-				storage:     testutil.NewInMemoryStorage(t),
-				metricsFile: "metrics.json",
+				storage: testutil.NewInMemoryStorage(t),
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricImplementationRequest{
@@ -955,7 +933,6 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(&assessment.Metric{Id: "TransportEncryptionEnabled"})
 				}),
-				metricsFile: "metrics.json",
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricImplementationRequest{
@@ -997,7 +974,6 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 	type fields struct {
 		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
-		metricsFile           string
 		catalogsFolder        string
 		events                chan *orchestrator.MetricChangeEvent
 		authz                 service.AuthorizationStrategy
@@ -1136,7 +1112,6 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 	type fields struct {
 		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
-		metricsFile           string
 		catalogsFolder        string
 		events                chan *orchestrator.MetricChangeEvent
 		authz                 service.AuthorizationStrategy

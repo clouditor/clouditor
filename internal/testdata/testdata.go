@@ -1,7 +1,6 @@
 package testdata
 
 import (
-	"clouditor.io/clouditor/v2/api/assessment"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -139,14 +138,5 @@ var (
 		Kind: &structpb.Value_StringValue{
 			StringValue: "MockTargetValue",
 		},
-	}
-
-	MockMetricConfiguration = &assessment.MetricConfiguration{
-		Operator:    "==",
-		TargetValue: MockMetricConfigurationTargetValueString,
-	}
-
-	MockMetricConfigurations = []*assessment.MetricConfiguration{
-		MockMetricConfiguration,
 	}
 )

@@ -264,7 +264,6 @@ var (
 				ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID1),
 				Metrics: []*assessment.Metric{{
 					Id:          testdata.MockMetricID1,
-					Category:    testdata.MockMetricCategory1,
 					Description: testdata.MockMetricDescription1,
 				}}},
 		}}
@@ -280,7 +279,6 @@ var (
 		ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID1),
 		Metrics: []*assessment.Metric{{
 			Id:            testdata.MockMetricID1,
-			Category:      testdata.MockMetricCategory1,
 			Description:   testdata.MockMetricDescription1,
 			Version:       "1.0",
 			Comments:      "This is a comment",
@@ -306,7 +304,6 @@ var (
 				ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID1),
 				Metrics: []*assessment.Metric{{
 					Id:            testdata.MockMetricID1,
-					Category:      testdata.MockMetricCategory1,
 					Description:   testdata.MockMetricDescription1,
 					Version:       "1.0",
 					Comments:      "This is a comment",
@@ -343,7 +340,6 @@ var (
 		AssuranceLevel:    &testdata.AssuranceLevelHigh,
 		Metrics: []*assessment.Metric{{
 			Id:            testdata.MockMetricID1,
-			Category:      testdata.MockMetricCategory1,
 			Description:   testdata.MockMetricDescription1,
 			Version:       "1.0",
 			Comments:      "This is a comment",
@@ -359,7 +355,6 @@ var (
 		AssuranceLevel:    nil,
 		Metrics: []*assessment.Metric{{
 			Id:            testdata.MockMetricID1,
-			Category:      testdata.MockMetricCategory1,
 			Description:   testdata.MockMetricDescription1,
 			Version:       "1.0",
 			Comments:      "This is a comment",
@@ -380,7 +375,6 @@ var (
 func NewMetric() *assessment.Metric {
 	return &assessment.Metric{
 		Id:            testdata.MockMetricID1,
-		Category:      testdata.MockMetricCategory1,
 		Description:   testdata.MockMetricDescription1,
 		Version:       "1.0",
 		Comments:      "This is a comment",

@@ -370,7 +370,6 @@ func TestService_ListPublicCertificates(t *testing.T) {
 		auditScopeHooks                 []orchestrator.AuditScopeHookFunc
 		AssessmentResultHooks           []assessment.ResultHookFunc
 		storage                         persistence.Storage
-		metricsFile                     string
 		loadMetricsFunc                 func() ([]*assessment.Metric, error)
 		catalogsFolder                  string
 		loadCatalogsFunc                func() ([]*orchestrator.Catalog, error)
@@ -451,8 +450,6 @@ func TestService_ListPublicCertificates(t *testing.T) {
 				auditScopeHooks:                 tt.fields.auditScopeHooks,
 				AssessmentResultHooks:           tt.fields.AssessmentResultHooks,
 				storage:                         tt.fields.storage,
-				metricsFile:                     tt.fields.metricsFile,
-				loadMetricsFunc:                 tt.fields.loadMetricsFunc,
 				catalogsFolder:                  tt.fields.catalogsFolder,
 				loadCatalogsFunc:                tt.fields.loadCatalogsFunc,
 				events:                          tt.fields.events,

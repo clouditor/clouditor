@@ -47,24 +47,21 @@ message Metric {
   // The description of the metric
   string description = 2;
 
-  // The category of the metric, specified by the directory it is stored in
-  string category = 3;
-
   // The version of this metric
-  string version = 4 [(buf.validate.field).string.min_len = 1];
+  string version = 3 [(buf.validate.field).string.min_len = 1];
 
   // Optional comments that describe the purpose of this metric. They may also describe a scenario in which the metric can be useful.
-  string comments = 5;
+  string comments = 4;
 
-  repeated MetricConfiguration configuration = 6;
+  repeated MetricConfiguration configuration = 5;
 
   // The implementation of this metric. This ensures that we are modelling an
   // association between a Metric and its MetricImplementation.
-  optional MetricImplementation implementation = 7;
+  optional MetricImplementation implementation = 6;
 
   // Optional, but required if the metric is removed. The metric is not deleted
   // for backward compatibility and the timestamp is set to the time of removal.
-  optional google.protobuf.Timestamp deprecated_since = 8 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
+  optional google.protobuf.Timestamp deprecated_since = 7 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
 }
 
 // Defines the operator and a target value for an individual metric
