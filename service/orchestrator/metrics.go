@@ -26,13 +26,6 @@
 package orchestrator
 
 import (
-	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
-	"io"
-	"os"
-
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/orchestrator"
@@ -40,7 +33,16 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -60,7 +62,7 @@ func (svc *Service) loadMetrics() (err error) {
 
 	// Default to loading metrics from our embedded file system
 	if svc.loadMetricsFunc == nil {
-		svc.loadMetricsFunc = svc.loadEmbeddedMetrics
+		svc.loadMetricsFunc = svc.loadMetricsFromMetricsRepository
 	}
 
 	// Execute our metric loading function
@@ -112,14 +114,14 @@ func prepareMetric(m *assessment.Metric) (err error) {
 	)
 
 	// Load the Rego file
-	file := fmt.Sprintf("policies/bundles/%s/%s/metric.rego", m.CategoryID(), m.Id)
+	file := fmt.Sprintf("policies/metrics/metrics/%s/%s/metric.rego", m.Category, m.Id)
 	m.Implementation, err = loadMetricImplementation(m.Id, file)
 	if err != nil {
 		return fmt.Errorf("could not load metric implementation: %w", err)
 	}
 
 	// Look for the data.json to include default metric configurations
-	fileName := fmt.Sprintf("policies/bundles/%s/%s/data.json", m.CategoryID(), m.Id)
+	fileName := fmt.Sprintf("policies/metrics/metrics/%s/%s/data.json", m.Category, m.Id)
 
 	// Load the default configuration file
 	b, err := os.ReadFile(fileName)
@@ -156,6 +158,50 @@ func (svc *Service) loadEmbeddedMetrics() (metrics []*assessment.Metric, err err
 	}
 
 	return
+}
+
+// loadEmbeddedMetrics loads metric definitions by walking through YAML files
+// in the policies/metrics/metrics directory.
+func (svc *Service) loadMetricsFromMetricsRepository() (metrics []*assessment.Metric, err error) {
+	metricsPath := "policies/metrics/metrics"
+	metrics = make([]*assessment.Metric, 0)
+
+	err = filepath.Walk(metricsPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return fmt.Errorf("error accessing path %s: %w", path, err)
+		}
+
+		// Skip directories and non-yaml files
+		if info.IsDir() || (!strings.HasSuffix(info.Name(), ".yaml") && !strings.HasSuffix(info.Name(), ".yml")) {
+			return nil
+		}
+
+		// Read the YAML file
+		b, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("error reading file %s: %w", path, err)
+		}
+
+		var metric assessment.Metric
+
+		// Parse YAML into a metric
+		if err := yaml.Unmarshal(b, &metric); err != nil {
+			return fmt.Errorf("error parsing YAML in %s: %w", path, err)
+		}
+
+		// Set the category based on the directory name
+		// TODO test
+		metric.Category = filepath.Base(filepath.Dir(filepath.Dir(path)))
+
+		metrics = append(metrics, &metric)
+		return nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error walking through metrics directory: %w", err)
+	}
+
+	return metrics, nil
 }
 
 // loadMetricImplementation loads a metric implementation from a Rego file on a filesystem.
@@ -241,13 +287,8 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 	}
 
 	// Update metric
-	metric.Name = req.Metric.Name
-	metric.Description = req.Metric.Description
-	metric.Category = req.Metric.Category
-	metric.Range = req.Metric.Range
-	metric.Scale = req.Metric.Scale
-	metric.DeprecatedSince = req.Metric.DeprecatedSince
-
+	metric = req.Metric
+	// TODO Save or Update?
 	err = svc.storage.Save(metric, "id = ? ", metric.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)

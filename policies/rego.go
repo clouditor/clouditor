@@ -242,7 +242,7 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 		)
 
 		// Create paths for bundle directory and utility functions file
-		bundle := fmt.Sprintf("%s/policies/bundles/%s/%s/", baseDir, metric.CategoryID(), metric.Id)
+		bundle := fmt.Sprintf("%s/policies/metrics/metrics/%s/%s/", baseDir, metric.Category, metric.Id)
 		operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
 
 		// The contents of the data map is available as the data variable within the Rego evaluation

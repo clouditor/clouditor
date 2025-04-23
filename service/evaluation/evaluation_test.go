@@ -1021,21 +1021,12 @@ func TestService_getAllMetricsFromControl(t *testing.T) {
 			},
 			wantMetrics: []*assessment.Metric{
 				{
-					Id:          testdata.MockMetricID1,
-					Category:    testdata.MockMetricCategory1,
-					Name:        testdata.MockMetricName1,
-					Description: testdata.MockMetricDescription1,
-					Scale:       assessment.Metric_ORDINAL,
-					Range: &assessment.Range{
-						Range: &assessment.Range_AllowedValues{
-							AllowedValues: &assessment.AllowedValues{
-								Values: []*structpb.Value{
-									structpb.NewBoolValue(false),
-									structpb.NewBoolValue(true),
-								},
-							},
-						},
-					},
+					Id:            testdata.MockMetricID1,
+					Category:      testdata.MockMetricCategory1,
+					Description:   testdata.MockMetricDescription1,
+					Version:       testdata.MockMetricDescription1,
+					Comments:      testdata.MockMetricComments1,
+					Configuration: testdata.MockMetricConfigurations,
 				},
 			},
 			wantErr: assert.NoError,

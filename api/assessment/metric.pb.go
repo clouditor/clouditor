@@ -37,7 +37,7 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	durationpb "google.golang.org/protobuf/types/known/durationpb"
+	_ "google.golang.org/protobuf/types/known/durationpb"
 	structpb "google.golang.org/protobuf/types/known/structpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
@@ -51,59 +51,6 @@ const (
 	// Verify that runtime/protoimpl is sufficiently up-to-date.
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
-
-// The values a Scale accepts
-type Metric_Scale int32
-
-const (
-	Metric_SCALE_UNSPECIFIED Metric_Scale = 0
-	Metric_NOMINAL           Metric_Scale = 1
-	Metric_ORDINAL           Metric_Scale = 2
-	Metric_METRIC            Metric_Scale = 3
-)
-
-// Enum value maps for Metric_Scale.
-var (
-	Metric_Scale_name = map[int32]string{
-		0: "SCALE_UNSPECIFIED",
-		1: "NOMINAL",
-		2: "ORDINAL",
-		3: "METRIC",
-	}
-	Metric_Scale_value = map[string]int32{
-		"SCALE_UNSPECIFIED": 0,
-		"NOMINAL":           1,
-		"ORDINAL":           2,
-		"METRIC":            3,
-	}
-)
-
-func (x Metric_Scale) Enum() *Metric_Scale {
-	p := new(Metric_Scale)
-	*p = x
-	return p
-}
-
-func (x Metric_Scale) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (Metric_Scale) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_assessment_metric_proto_enumTypes[0].Descriptor()
-}
-
-func (Metric_Scale) Type() protoreflect.EnumType {
-	return &file_api_assessment_metric_proto_enumTypes[0]
-}
-
-func (x Metric_Scale) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use Metric_Scale.Descriptor instead.
-func (Metric_Scale) EnumDescriptor() ([]byte, []int) {
-	return file_api_assessment_metric_proto_rawDescGZIP(), []int{0, 0}
-}
 
 type MetricImplementation_Language int32
 
@@ -135,11 +82,11 @@ func (x MetricImplementation_Language) String() string {
 }
 
 func (MetricImplementation_Language) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_assessment_metric_proto_enumTypes[1].Descriptor()
+	return file_api_assessment_metric_proto_enumTypes[0].Descriptor()
 }
 
 func (MetricImplementation_Language) Type() protoreflect.EnumType {
-	return &file_api_assessment_metric_proto_enumTypes[1]
+	return &file_api_assessment_metric_proto_enumTypes[0]
 }
 
 func (x MetricImplementation_Language) Number() protoreflect.EnumNumber {
@@ -148,7 +95,7 @@ func (x MetricImplementation_Language) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use MetricImplementation_Language.Descriptor instead.
 func (MetricImplementation_Language) EnumDescriptor() ([]byte, []int) {
-	return file_api_assessment_metric_proto_rawDescGZIP(), []int{6, 0}
+	return file_api_assessment_metric_proto_rawDescGZIP(), []int{2, 0}
 }
 
 // A metric resource
@@ -156,25 +103,21 @@ type Metric struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Required. The unique identifier of the metric.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// Required. The human readable name of the metric.
-	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	// The description of the metric
-	Description string `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	// The reference to control catalog category or domain
-	Category string `protobuf:"bytes,4,opt,name=category,proto3" json:"category,omitempty"`
-	// The scale of this metric, e.g. categories, ranked data or metric values.
-	Scale Metric_Scale `protobuf:"varint,5,opt,name=scale,proto3,enum=clouditor.assessment.v1.Metric_Scale" json:"scale,omitempty"`
-	// The range of this metric. Depending on the scale.
-	Range *Range `protobuf:"bytes,6,opt,name=range,proto3" json:"range,omitempty"`
-	// The interval in seconds the evidences must be collected for the respective
-	// metric.
-	Interval *durationpb.Duration `protobuf:"bytes,7,opt,name=interval,proto3" json:"interval,omitempty" gorm:"serializer:durationpb;type:interval"`
+	Description string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	// The category of the metric, specified by the directory it is stored in
+	Category string `protobuf:"bytes,3,opt,name=category,proto3" json:"category,omitempty"`
+	// The version of this metric
+	Version string `protobuf:"bytes,4,opt,name=version,proto3" json:"version,omitempty"`
+	// Optional comments that describe the purpose of this metric. They may also describe a scenario in which the metric can be useful.
+	Comments      string                 `protobuf:"bytes,5,opt,name=comments,proto3" json:"comments,omitempty"`
+	Configuration []*MetricConfiguration `protobuf:"bytes,6,rep,name=configuration,proto3" json:"configuration,omitempty"`
 	// The implementation of this metric. This ensures that we are modelling an
 	// association between a Metric and its MetricImplementation.
-	Implementation *MetricImplementation `protobuf:"bytes,8,opt,name=implementation,proto3,oneof" json:"implementation,omitempty"`
+	Implementation *MetricImplementation `protobuf:"bytes,7,opt,name=implementation,proto3,oneof" json:"implementation,omitempty"`
 	// Optional, but required if the metric is removed. The metric is not deleted
 	// for backward compatibility and the timestamp is set to the time of removal.
-	DeprecatedSince *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=deprecated_since,json=deprecatedSince,proto3,oneof" json:"deprecated_since,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
+	DeprecatedSince *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=deprecated_since,json=deprecatedSince,proto3,oneof" json:"deprecated_since,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -216,13 +159,6 @@ func (x *Metric) GetId() string {
 	return ""
 }
 
-func (x *Metric) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
 func (x *Metric) GetDescription() string {
 	if x != nil {
 		return x.Description
@@ -237,23 +173,23 @@ func (x *Metric) GetCategory() string {
 	return ""
 }
 
-func (x *Metric) GetScale() Metric_Scale {
+func (x *Metric) GetVersion() string {
 	if x != nil {
-		return x.Scale
+		return x.Version
 	}
-	return Metric_SCALE_UNSPECIFIED
+	return ""
 }
 
-func (x *Metric) GetRange() *Range {
+func (x *Metric) GetComments() string {
 	if x != nil {
-		return x.Range
+		return x.Comments
 	}
-	return nil
+	return ""
 }
 
-func (x *Metric) GetInterval() *durationpb.Duration {
+func (x *Metric) GetConfiguration() []*MetricConfiguration {
 	if x != nil {
-		return x.Interval
+		return x.Configuration
 	}
 	return nil
 }
@@ -268,256 +204,6 @@ func (x *Metric) GetImplementation() *MetricImplementation {
 func (x *Metric) GetDeprecatedSince() *timestamppb.Timestamp {
 	if x != nil {
 		return x.DeprecatedSince
-	}
-	return nil
-}
-
-// A range resource representing the range of values
-type Range struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Required.
-	//
-	// Types that are valid to be assigned to Range:
-	//
-	//	*Range_AllowedValues
-	//	*Range_Order
-	//	*Range_MinMax
-	Range         isRange_Range `protobuf_oneof:"range"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Range) Reset() {
-	*x = Range{}
-	mi := &file_api_assessment_metric_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Range) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Range) ProtoMessage() {}
-
-func (x *Range) ProtoReflect() protoreflect.Message {
-	mi := &file_api_assessment_metric_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Range.ProtoReflect.Descriptor instead.
-func (*Range) Descriptor() ([]byte, []int) {
-	return file_api_assessment_metric_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *Range) GetRange() isRange_Range {
-	if x != nil {
-		return x.Range
-	}
-	return nil
-}
-
-func (x *Range) GetAllowedValues() *AllowedValues {
-	if x != nil {
-		if x, ok := x.Range.(*Range_AllowedValues); ok {
-			return x.AllowedValues
-		}
-	}
-	return nil
-}
-
-func (x *Range) GetOrder() *Order {
-	if x != nil {
-		if x, ok := x.Range.(*Range_Order); ok {
-			return x.Order
-		}
-	}
-	return nil
-}
-
-func (x *Range) GetMinMax() *MinMax {
-	if x != nil {
-		if x, ok := x.Range.(*Range_MinMax); ok {
-			return x.MinMax
-		}
-	}
-	return nil
-}
-
-type isRange_Range interface {
-	isRange_Range()
-}
-
-type Range_AllowedValues struct {
-	// used for nominal scale
-	AllowedValues *AllowedValues `protobuf:"bytes,1,opt,name=allowed_values,json=allowedValues,proto3,oneof"`
-}
-
-type Range_Order struct {
-	// used for ordinal scale
-	Order *Order `protobuf:"bytes,2,opt,name=order,proto3,oneof"`
-}
-
-type Range_MinMax struct {
-	// used for metric scale
-	MinMax *MinMax `protobuf:"bytes,3,opt,name=min_max,json=minMax,proto3,oneof"`
-}
-
-func (*Range_AllowedValues) isRange_Range() {}
-
-func (*Range_Order) isRange_Range() {}
-
-func (*Range_MinMax) isRange_Range() {}
-
-// Defines a range of values through a (inclusive) minimum and a maximum
-type MinMax struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Required.
-	Min int64 `protobuf:"varint,1,opt,name=min,proto3" json:"min,omitempty"`
-	// Required.
-	Max           int64 `protobuf:"varint,2,opt,name=max,proto3" json:"max,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *MinMax) Reset() {
-	*x = MinMax{}
-	mi := &file_api_assessment_metric_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *MinMax) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*MinMax) ProtoMessage() {}
-
-func (x *MinMax) ProtoReflect() protoreflect.Message {
-	mi := &file_api_assessment_metric_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use MinMax.ProtoReflect.Descriptor instead.
-func (*MinMax) Descriptor() ([]byte, []int) {
-	return file_api_assessment_metric_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *MinMax) GetMin() int64 {
-	if x != nil {
-		return x.Min
-	}
-	return 0
-}
-
-func (x *MinMax) GetMax() int64 {
-	if x != nil {
-		return x.Max
-	}
-	return 0
-}
-
-// Defines a range
-type AllowedValues struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Values        []*structpb.Value      `protobuf:"bytes,1,rep,name=values,proto3" json:"values,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AllowedValues) Reset() {
-	*x = AllowedValues{}
-	mi := &file_api_assessment_metric_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AllowedValues) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AllowedValues) ProtoMessage() {}
-
-func (x *AllowedValues) ProtoReflect() protoreflect.Message {
-	mi := &file_api_assessment_metric_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AllowedValues.ProtoReflect.Descriptor instead.
-func (*AllowedValues) Descriptor() ([]byte, []int) {
-	return file_api_assessment_metric_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *AllowedValues) GetValues() []*structpb.Value {
-	if x != nil {
-		return x.Values
-	}
-	return nil
-}
-
-// Defines a range of values in a pre-defined order from the lowest to the
-// highest.
-type Order struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Values        []*structpb.Value      `protobuf:"bytes,1,rep,name=values,proto3" json:"values,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Order) Reset() {
-	*x = Order{}
-	mi := &file_api_assessment_metric_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Order) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Order) ProtoMessage() {}
-
-func (x *Order) ProtoReflect() protoreflect.Message {
-	mi := &file_api_assessment_metric_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Order.ProtoReflect.Descriptor instead.
-func (*Order) Descriptor() ([]byte, []int) {
-	return file_api_assessment_metric_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *Order) GetValues() []*structpb.Value {
-	if x != nil {
-		return x.Values
 	}
 	return nil
 }
@@ -543,7 +229,7 @@ type MetricConfiguration struct {
 
 func (x *MetricConfiguration) Reset() {
 	*x = MetricConfiguration{}
-	mi := &file_api_assessment_metric_proto_msgTypes[5]
+	mi := &file_api_assessment_metric_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -555,7 +241,7 @@ func (x *MetricConfiguration) String() string {
 func (*MetricConfiguration) ProtoMessage() {}
 
 func (x *MetricConfiguration) ProtoReflect() protoreflect.Message {
-	mi := &file_api_assessment_metric_proto_msgTypes[5]
+	mi := &file_api_assessment_metric_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -568,7 +254,7 @@ func (x *MetricConfiguration) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MetricConfiguration.ProtoReflect.Descriptor instead.
 func (*MetricConfiguration) Descriptor() ([]byte, []int) {
-	return file_api_assessment_metric_proto_rawDescGZIP(), []int{5}
+	return file_api_assessment_metric_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *MetricConfiguration) GetOperator() string {
@@ -630,7 +316,7 @@ type MetricImplementation struct {
 
 func (x *MetricImplementation) Reset() {
 	*x = MetricImplementation{}
-	mi := &file_api_assessment_metric_proto_msgTypes[6]
+	mi := &file_api_assessment_metric_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -642,7 +328,7 @@ func (x *MetricImplementation) String() string {
 func (*MetricImplementation) ProtoMessage() {}
 
 func (x *MetricImplementation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_assessment_metric_proto_msgTypes[6]
+	mi := &file_api_assessment_metric_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -655,7 +341,7 @@ func (x *MetricImplementation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MetricImplementation.ProtoReflect.Descriptor instead.
 func (*MetricImplementation) Descriptor() ([]byte, []int) {
-	return file_api_assessment_metric_proto_rawDescGZIP(), []int{6}
+	return file_api_assessment_metric_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *MetricImplementation) GetMetricId() string {
@@ -690,40 +376,19 @@ var File_api_assessment_metric_proto protoreflect.FileDescriptor
 
 const file_api_assessment_metric_proto_rawDesc = "" +
 	"\n" +
-	"\x1bapi/assessment/metric.proto\x12\x17clouditor.assessment.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\xc1\x05\n" +
+	"\x1bapi/assessment/metric.proto\x12\x17clouditor.assessment.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\xf8\x03\n" +
 	"\x06Metric\x12\x1a\n" +
 	"\x02id\x18\x01 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\x12\x1e\n" +
-	"\x04name\x18\x02 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x04name\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12#\n" +
-	"\bcategory\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\bcategory\x12E\n" +
-	"\x05scale\x18\x05 \x01(\x0e2%.clouditor.assessment.v1.Metric.ScaleB\b\xbaH\x05\x82\x01\x02\x10\x01R\x05scale\x12<\n" +
-	"\x05range\x18\x06 \x01(\v2\x1e.clouditor.assessment.v1.RangeB\x06\xbaH\x03\xc8\x01\x01R\x05range\x12f\n" +
-	"\binterval\x18\a \x01(\v2\x19.google.protobuf.DurationB/\x9a\x84\x9e\x03*gorm:\"serializer:durationpb;type:interval\"R\binterval\x12Z\n" +
-	"\x0eimplementation\x18\b \x01(\v2-.clouditor.assessment.v1.MetricImplementationH\x00R\x0eimplementation\x88\x01\x01\x12}\n" +
-	"\x10deprecated_since\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampB1\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"H\x01R\x0fdeprecatedSince\x88\x01\x01\"D\n" +
-	"\x05Scale\x12\x15\n" +
-	"\x11SCALE_UNSPECIFIED\x10\x00\x12\v\n" +
-	"\aNOMINAL\x10\x01\x12\v\n" +
-	"\aORDINAL\x10\x02\x12\n" +
-	"\n" +
-	"\x06METRIC\x10\x03B\x11\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\x12 \n" +
+	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x1a\n" +
+	"\bcategory\x18\x03 \x01(\tR\bcategory\x12!\n" +
+	"\aversion\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\aversion\x12\x1a\n" +
+	"\bcomments\x18\x05 \x01(\tR\bcomments\x12R\n" +
+	"\rconfiguration\x18\x06 \x03(\v2,.clouditor.assessment.v1.MetricConfigurationR\rconfiguration\x12Z\n" +
+	"\x0eimplementation\x18\a \x01(\v2-.clouditor.assessment.v1.MetricImplementationH\x00R\x0eimplementation\x88\x01\x01\x12}\n" +
+	"\x10deprecated_since\x18\b \x01(\v2\x1a.google.protobuf.TimestampB1\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"H\x01R\x0fdeprecatedSince\x88\x01\x01B\x11\n" +
 	"\x0f_implementationB\x13\n" +
-	"\x11_deprecated_since\"\xd5\x01\n" +
-	"\x05Range\x12O\n" +
-	"\x0eallowed_values\x18\x01 \x01(\v2&.clouditor.assessment.v1.AllowedValuesH\x00R\rallowedValues\x126\n" +
-	"\x05order\x18\x02 \x01(\v2\x1e.clouditor.assessment.v1.OrderH\x00R\x05order\x12:\n" +
-	"\amin_max\x18\x03 \x01(\v2\x1f.clouditor.assessment.v1.MinMaxH\x00R\x06minMaxB\a\n" +
-	"\x05range\",\n" +
-	"\x06MinMax\x12\x10\n" +
-	"\x03min\x18\x01 \x01(\x03R\x03min\x12\x10\n" +
-	"\x03max\x18\x02 \x01(\x03R\x03max\"?\n" +
-	"\rAllowedValues\x12.\n" +
-	"\x06values\x18\x01 \x03(\v2\x16.google.protobuf.ValueR\x06values\"7\n" +
-	"\x05Order\x12.\n" +
-	"\x06values\x18\x01 \x03(\v2\x16.google.protobuf.ValueR\x06values\"\xe4\x03\n" +
+	"\x11_deprecated_since\"\xe4\x03\n" +
 	"\x13MetricConfiguration\x12A\n" +
 	"\boperator\x18\x01 \x01(\tB%\xe0A\x02\xbaH\x1fr\x1d2\x1b^(<|>|<=|>=|==|isIn|allIn)$R\boperator\x12_\n" +
 	"\ftarget_value\x18\x02 \x01(\v2\x16.google.protobuf.ValueB$\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\vtargetValue\x12\"\n" +
@@ -756,42 +421,29 @@ func file_api_assessment_metric_proto_rawDescGZIP() []byte {
 	return file_api_assessment_metric_proto_rawDescData
 }
 
-var file_api_assessment_metric_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_api_assessment_metric_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_api_assessment_metric_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_api_assessment_metric_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_api_assessment_metric_proto_goTypes = []any{
-	(Metric_Scale)(0),                  // 0: clouditor.assessment.v1.Metric.Scale
-	(MetricImplementation_Language)(0), // 1: clouditor.assessment.v1.MetricImplementation.Language
-	(*Metric)(nil),                     // 2: clouditor.assessment.v1.Metric
-	(*Range)(nil),                      // 3: clouditor.assessment.v1.Range
-	(*MinMax)(nil),                     // 4: clouditor.assessment.v1.MinMax
-	(*AllowedValues)(nil),              // 5: clouditor.assessment.v1.AllowedValues
-	(*Order)(nil),                      // 6: clouditor.assessment.v1.Order
-	(*MetricConfiguration)(nil),        // 7: clouditor.assessment.v1.MetricConfiguration
-	(*MetricImplementation)(nil),       // 8: clouditor.assessment.v1.MetricImplementation
-	(*durationpb.Duration)(nil),        // 9: google.protobuf.Duration
-	(*timestamppb.Timestamp)(nil),      // 10: google.protobuf.Timestamp
-	(*structpb.Value)(nil),             // 11: google.protobuf.Value
+	(MetricImplementation_Language)(0), // 0: clouditor.assessment.v1.MetricImplementation.Language
+	(*Metric)(nil),                     // 1: clouditor.assessment.v1.Metric
+	(*MetricConfiguration)(nil),        // 2: clouditor.assessment.v1.MetricConfiguration
+	(*MetricImplementation)(nil),       // 3: clouditor.assessment.v1.MetricImplementation
+	(*timestamppb.Timestamp)(nil),      // 4: google.protobuf.Timestamp
+	(*structpb.Value)(nil),             // 5: google.protobuf.Value
 }
 var file_api_assessment_metric_proto_depIdxs = []int32{
-	0,  // 0: clouditor.assessment.v1.Metric.scale:type_name -> clouditor.assessment.v1.Metric.Scale
-	3,  // 1: clouditor.assessment.v1.Metric.range:type_name -> clouditor.assessment.v1.Range
-	9,  // 2: clouditor.assessment.v1.Metric.interval:type_name -> google.protobuf.Duration
-	8,  // 3: clouditor.assessment.v1.Metric.implementation:type_name -> clouditor.assessment.v1.MetricImplementation
-	10, // 4: clouditor.assessment.v1.Metric.deprecated_since:type_name -> google.protobuf.Timestamp
-	5,  // 5: clouditor.assessment.v1.Range.allowed_values:type_name -> clouditor.assessment.v1.AllowedValues
-	6,  // 6: clouditor.assessment.v1.Range.order:type_name -> clouditor.assessment.v1.Order
-	4,  // 7: clouditor.assessment.v1.Range.min_max:type_name -> clouditor.assessment.v1.MinMax
-	11, // 8: clouditor.assessment.v1.AllowedValues.values:type_name -> google.protobuf.Value
-	11, // 9: clouditor.assessment.v1.Order.values:type_name -> google.protobuf.Value
-	11, // 10: clouditor.assessment.v1.MetricConfiguration.target_value:type_name -> google.protobuf.Value
-	10, // 11: clouditor.assessment.v1.MetricConfiguration.updated_at:type_name -> google.protobuf.Timestamp
-	1,  // 12: clouditor.assessment.v1.MetricImplementation.lang:type_name -> clouditor.assessment.v1.MetricImplementation.Language
-	10, // 13: clouditor.assessment.v1.MetricImplementation.updated_at:type_name -> google.protobuf.Timestamp
-	14, // [14:14] is the sub-list for method output_type
-	14, // [14:14] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	2, // 0: clouditor.assessment.v1.Metric.configuration:type_name -> clouditor.assessment.v1.MetricConfiguration
+	3, // 1: clouditor.assessment.v1.Metric.implementation:type_name -> clouditor.assessment.v1.MetricImplementation
+	4, // 2: clouditor.assessment.v1.Metric.deprecated_since:type_name -> google.protobuf.Timestamp
+	5, // 3: clouditor.assessment.v1.MetricConfiguration.target_value:type_name -> google.protobuf.Value
+	4, // 4: clouditor.assessment.v1.MetricConfiguration.updated_at:type_name -> google.protobuf.Timestamp
+	0, // 5: clouditor.assessment.v1.MetricImplementation.lang:type_name -> clouditor.assessment.v1.MetricImplementation.Language
+	4, // 6: clouditor.assessment.v1.MetricImplementation.updated_at:type_name -> google.protobuf.Timestamp
+	7, // [7:7] is the sub-list for method output_type
+	7, // [7:7] is the sub-list for method input_type
+	7, // [7:7] is the sub-list for extension type_name
+	7, // [7:7] is the sub-list for extension extendee
+	0, // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_api_assessment_metric_proto_init() }
@@ -800,18 +452,13 @@ func file_api_assessment_metric_proto_init() {
 		return
 	}
 	file_api_assessment_metric_proto_msgTypes[0].OneofWrappers = []any{}
-	file_api_assessment_metric_proto_msgTypes[1].OneofWrappers = []any{
-		(*Range_AllowedValues)(nil),
-		(*Range_Order)(nil),
-		(*Range_MinMax)(nil),
-	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_assessment_metric_proto_rawDesc), len(file_api_assessment_metric_proto_rawDesc)),
-			NumEnums:      2,
-			NumMessages:   7,
+			NumEnums:      1,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

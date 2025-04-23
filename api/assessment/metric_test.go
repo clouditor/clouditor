@@ -26,13 +26,11 @@
 package assessment
 
 import (
-	"database/sql/driver"
 	"testing"
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"clouditor.io/clouditor/v2/persistence"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -86,223 +84,6 @@ func TestMetricConfiguration_Validate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			c := tt.fields.MetricConfiguration
 			tt.wantErr(t, api.Validate(c))
-		})
-	}
-}
-
-func TestRange_GormDataType(t *testing.T) {
-	tests := []struct {
-		name string
-		want string
-	}{
-		{
-			name: "Works correctly",
-			want: "jsonb",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := &Range{}
-			if got := r.GormDataType(); got != tt.want {
-				t.Errorf("Range.GormDataType() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestRange_Value(t *testing.T) {
-	type fields struct {
-		Range *Range
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		want    driver.Value
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "Error in Range",
-			fields: fields{
-				Range: &Range{},
-			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not marshal JSON")
-			},
-		},
-		{
-			name: "Range is empty",
-			fields: fields{
-				Range: nil,
-			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.NoError(t, err)
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := tt.fields.Range
-			got, err := r.Value()
-			tt.wantErr(t, err)
-			if err == nil {
-				assert.Equal(t, got, tt.want)
-			}
-		})
-	}
-}
-
-func TestRange_Scan(t *testing.T) {
-	type fields struct {
-		Range *Range
-	}
-	type args struct {
-		value interface{}
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "Value of wrong type",
-			fields: fields{
-				Range: &Range{},
-			},
-			args: args{
-				value: "wrongType",
-			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, persistence.ErrUnsupportedType.Error())
-			},
-		},
-		{
-			name: "Error at unmarshalling",
-			fields: fields{
-				Range: &Range{},
-			},
-			args: args{
-				value: []byte{},
-			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not unmarshal JSON")
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := tt.fields.Range
-			err := r.Scan(tt.args.value)
-			tt.wantErr(t, err)
-		})
-	}
-}
-
-func TestRange_MarshalJSON(t *testing.T) {
-	type fields struct {
-		Range *Range
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "Unknown range type",
-			fields: fields{
-				Range: &Range{},
-			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, persistence.ErrUnsupportedType.Error())
-			},
-		},
-		{
-			name: "Correct range type Range_AllowedValues",
-			fields: fields{
-				Range: &Range{
-					Range: &Range_AllowedValues{},
-				},
-			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.NoError(t, err)
-			},
-		},
-		{
-			name: "Correct range type Range_MinMax",
-			fields: fields{
-				Range: &Range{
-					Range: &Range_MinMax{},
-				},
-			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.NoError(t, err)
-			},
-		},
-		{
-			name: "Correct range type Range_Order",
-			fields: fields{
-				Range: &Range{
-					Range: &Range_Order{},
-				},
-			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.NoError(t, err)
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := tt.fields.Range
-			_, err := r.MarshalJSON()
-			tt.wantErr(t, err)
-		})
-	}
-}
-
-func TestRange_UnmarshalJSON(t *testing.T) {
-	type fields struct {
-		Range *Range
-	}
-	type args struct {
-		b []byte
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "Empty input",
-			fields: fields{
-				Range: &Range{},
-			},
-			args: args{
-				b: []byte{},
-			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "unexpected end of JSON input")
-			},
-		},
-		{
-			name: "Invalid input",
-			fields: fields{
-				Range: &Range{
-					Range: &Range_AllowedValues{},
-				},
-			},
-			args: args{
-				b: []byte("Error"),
-			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid character")
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := tt.fields.Range
-			tt.wantErr(t, r.UnmarshalJSON(tt.args.b))
 		})
 	}
 }
@@ -376,7 +157,7 @@ func TestMetric_CategoryID(t *testing.T) {
 			c := &Metric{
 				Category: tt.fields.Category,
 			}
-			if gotID := c.CategoryID(); gotID != tt.wantID {
+			if gotID := c.Category; gotID != tt.wantID {
 				t.Errorf("Metric.CategoryID() = %v, want %v", gotID, tt.wantID)
 			}
 		})

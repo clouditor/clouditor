@@ -44,77 +44,27 @@ message Metric {
     (google.api.field_behavior) = REQUIRED
   ];
 
-  // Required. The human readable name of the metric.
-  string name = 2 [
-    (buf.validate.field).string.min_len = 1,
-    (google.api.field_behavior) = REQUIRED
-  ];
-
   // The description of the metric
-  string description = 3;
+  string description = 2;
 
-  // The reference to control catalog category or domain
-  string category = 4 [(buf.validate.field).string.min_len = 1];
+  // The category of the metric, specified by the directory it is stored in
+  string category = 3;
 
-  // The scale of this metric, e.g. categories, ranked data or metric values.
-  Scale scale = 5 [(buf.validate.field).enum.defined_only = true];
+  // The version of this metric
+  string version = 4 [(buf.validate.field).string.min_len = 1];
 
-  // The range of this metric. Depending on the scale.
-  Range range = 6 [(buf.validate.field).required = true];
+  // Optional comments that describe the purpose of this metric. They may also describe a scenario in which the metric can be useful.
+  string comments = 5;
 
-  // The values a Scale accepts
-  enum Scale {
-    SCALE_UNSPECIFIED = 0;
-    NOMINAL = 1;
-    ORDINAL = 2;
-    METRIC = 3;
-  }
-
-  // The interval in seconds the evidences must be collected for the respective
-  // metric.
-  google.protobuf.Duration interval = 7 [(tagger.tags) = "gorm:\"serializer:durationpb;type:interval\""];
+  repeated MetricConfiguration configuration = 6;
 
   // The implementation of this metric. This ensures that we are modelling an
   // association between a Metric and its MetricImplementation.
-  optional MetricImplementation implementation = 8;
+  optional MetricImplementation implementation = 7;
 
   // Optional, but required if the metric is removed. The metric is not deleted
   // for backward compatibility and the timestamp is set to the time of removal.
-  optional google.protobuf.Timestamp deprecated_since = 10 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
-}
-
-// A range resource representing the range of values
-message Range {
-  // Required.
-  oneof range {
-    // used for nominal scale
-    AllowedValues allowed_values = 1;
-
-    // used for ordinal scale
-    Order order = 2;
-
-    // used for metric scale
-    MinMax min_max = 3;
-  }
-}
-
-// Defines a range of values through a (inclusive) minimum and a maximum
-message MinMax {
-  // Required.
-  int64 min = 1;
-  // Required.
-  int64 max = 2;
-}
-
-// Defines a range
-message AllowedValues {
-  repeated google.protobuf.Value values = 1;
-}
-
-// Defines a range of values in a pre-defined order from the lowest to the
-// highest.
-message Order {
-  repeated google.protobuf.Value values = 1;
+  optional google.protobuf.Timestamp deprecated_since = 8 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
 }
 
 // Defines the operator and a target value for an individual metric
