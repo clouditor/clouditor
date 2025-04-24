@@ -53,7 +53,7 @@ func TestService_CreateCatalog(t *testing.T) {
 	}
 	mockCatalogWithoutID := orchestratortest.NewCatalog()
 	mockCatalogWithoutID.Id = ""
-
+	
 	type args struct {
 		in0 context.Context
 		req *orchestrator.CreateCatalogRequest
