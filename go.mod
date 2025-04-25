@@ -227,3 +227,5 @@ require (
 	github.com/oxisto/owl2proto v0.2.2
 	github.com/srikrsna/protoc-gen-gotag v1.0.0
 )
+
+require github.com/goccy/go-yaml v1.17.1 // indirect

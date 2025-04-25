@@ -448,7 +448,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 				targetID: testdata.MockTargetOfEvaluationID1,
 				metric: &assessment.Metric{
 					Id:       "AutomaticUpdatesEnabled",
-					Category: "Endpoint Security",
+					Category: "EndpointSecurity",
 					Version:  "1.0",
 					Comments: "Test comments",
 				},

@@ -45,7 +45,7 @@ import (
 )
 
 // DefaultRegoPackage is the default package name for the Rego files
-const DefaultRegoPackage = "metrics"
+const DefaultRegoPackage = "cch.metrics"
 
 type regoEval struct {
 	// qc contains cached Rego queries
@@ -247,8 +247,7 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 			return nil, fmt.Errorf("could not find metric: %w", err)
 		}
 
-		// TODO(immqu): Move operators.rego to the metrics repo
-		operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
+		operators := fmt.Sprintf("%s/policies/security-metrics/operators.rego", baseDir)
 
 		// The contents of the data map is available as the data variable within the Rego evaluation
 		data := map[string]interface{}{
@@ -272,6 +271,8 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 		// Convert camelCase metric in under_score_style for package name
 		pkg = util.CamelCaseToSnakeCase(metric.Id)
 
+		fmt.Println(pkg, prefix)
+
 		// Fetch the metric implementation, i.e., the Rego code from the metric source
 		impl, err = src.MetricImplementation(assessment.MetricImplementation_LANGUAGE_REGO, metric)
 		if err != nil {
@@ -290,9 +291,9 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 			output = data.%s.%s;
 			applicable = data.%s.%s.applicable;
 			compliant = data.%s.%s.compliant;
-			operator = data.clouditor.operator;
-			target_value = data.clouditor.target_value;
-			config = data.clouditor.config`, prefix, pkg, prefix, pkg, prefix, pkg)),
+			operator = data.cch.operator;
+			target_value = data.cch.target_value;
+			config = data.cch.config`, prefix, pkg, prefix, pkg, prefix, pkg)),
 			rego.Package(prefix),
 			rego.Store(store),
 			rego.Transaction(tx),
