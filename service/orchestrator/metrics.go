@@ -26,6 +26,7 @@
 package orchestrator
 
 import (
+	"bytes"
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/orchestrator"
@@ -121,17 +122,11 @@ func (svc *Service) loadMetrics() (err error) {
 // metric and storing them into the service.
 func prepareMetric(m *assessment.Metric) (err error) {
 	var (
-		config  *assessment.MetricConfiguration
-		baseDir string
+		config *assessment.MetricConfiguration
 	)
 
-	baseDir = "."
-
 	// Load the Rego file
-	metricPath, err := findMetricFile(fmt.Sprintf("%s/policies/metrics/metrics", baseDir), m.Id)
-	if err != nil {
-		return fmt.Errorf("could not find metric: %w", err)
-	}
+	metricPath := fmt.Sprintf("policies/bundles/%s/%s/metric.rego", m.Category, m.Id)
 
 	m.Implementation, err = loadMetricImplementation(m.Id, metricPath)
 	if err != nil {
@@ -140,6 +135,7 @@ func prepareMetric(m *assessment.Metric) (err error) {
 
 	// Take the data.json to include default metric configurations
 	dataJsonPath := strings.Replace(metricPath, "metric.rego", "data.json", 1)
+	fmt.Println("dataJsonPath", dataJsonPath)
 
 	// Load the default configuration file
 	b, err := os.ReadFile(dataJsonPath)
@@ -158,40 +154,6 @@ func prepareMetric(m *assessment.Metric) (err error) {
 	defaultMetricConfigurations[m.Id] = config
 
 	return
-}
-
-// The metrics directory is structured by metric categories (policies/metrics/metrics/<category>/<metric>/), so findMetricFile traverses through the categories to find the given metric.
-func findMetricFile(root string, metric string) (string, error) {
-	var metricFilePath string
-
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// Check if the current path is a directory
-		if info.IsDir() {
-			return nil
-		}
-
-		// Check if the file name matches the desired metric
-		if strings.Contains(path, metric) && strings.HasSuffix(path, "metric.rego") {
-			metricFilePath = path
-			return filepath.SkipDir // Stop traversing further
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return "", err
-	}
-
-	if metricFilePath == "" {
-		return "", fmt.Errorf("metric file not found for %s", metric)
-	}
-
-	return metricFilePath, nil
 }
 
 // loadEmbeddedMetrics loads metric definitions by walking through YAML files
@@ -232,10 +194,13 @@ func (svc *Service) loadMetricsFromMetricsRepository(path ...string) (metrics []
 
 			var metric assessment.Metric
 
-			// Parse YAML into a metric
-			if err := yaml.Unmarshal(b, &metric); err != nil {
-				return fmt.Errorf("error parsing YAML in %s: %w", path, err)
+			dec := yaml.NewDecoder(bytes.NewReader(b))
+
+			for dec.Decode(&metric) == nil {
+				// do nothing
 			}
+			// Set the category automatically, since it is not included in the yaml definition
+			metric.Category = filepath.Base(filepath.Dir(path))
 
 			metrics = append(metrics, &metric)
 			return nil

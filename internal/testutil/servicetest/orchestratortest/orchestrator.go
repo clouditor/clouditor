@@ -263,8 +263,11 @@ var (
 				ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
 				ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID1),
 				Metrics: []*assessment.Metric{{
-					Id:          testdata.MockMetricID1,
-					Description: testdata.MockMetricDescription1,
+					Id:            testdata.MockMetricID1,
+					Description:   testdata.MockMetricDescription1,
+					Version:       "1.0",
+					Comments:      "Test comments",
+					Configuration: []*assessment.MetricConfiguration{},
 				}}},
 		}}
 	MockControl11 = &orchestrator.Control{

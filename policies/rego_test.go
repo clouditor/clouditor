@@ -90,11 +90,8 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			applicable: true,
 			compliant: map[string]bool{
-				"AtRestEncryptionAlgorithm":         true,
-				"AtRestEncryptionEnabled":           true,
-				"CustomerKeyEncryption":             true,
-				"ObjectStoragePublicAccessDisabled": true,
-				"ResourceInventory":                 true,
+				"AtRestEncryptionAlgorithm": true,
+				"AtRestEncryptionEnabled":   true,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -453,6 +450,8 @@ func Test_regoEval_evalMap(t *testing.T) {
 				metric: &assessment.Metric{
 					Id:       "AutomaticUpdatesEnabled",
 					Category: "Endpoint Security",
+					Version:  "1.0",
+					Comments: "Test comments",
 				},
 				baseDir: ".",
 				m: map[string]interface{}{

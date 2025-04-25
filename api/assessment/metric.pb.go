@@ -105,12 +105,11 @@ type Metric struct {
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// The description of the metric
 	Description string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	// The category of the metric, specified by the directory it is stored in
-	Category string `protobuf:"bytes,3,opt,name=category,proto3" json:"category,omitempty"`
 	// The version of this metric
-	Version string `protobuf:"bytes,4,opt,name=version,proto3" json:"version,omitempty"`
+	Version string `protobuf:"bytes,3,opt,name=version,proto3" json:"version,omitempty"`
 	// Optional comments that describe the purpose of this metric. They may also describe a scenario in which the metric can be useful.
-	Comments      string                 `protobuf:"bytes,5,opt,name=comments,proto3" json:"comments,omitempty"`
+	Comments      string                 `protobuf:"bytes,4,opt,name=comments,proto3" json:"comments,omitempty"`
+	Category      string                 `protobuf:"bytes,5,opt,name=category,proto3" json:"category,omitempty"`
 	Configuration []*MetricConfiguration `protobuf:"bytes,6,rep,name=configuration,proto3" json:"configuration,omitempty"`
 	// The implementation of this metric. This ensures that we are modelling an
 	// association between a Metric and its MetricImplementation.
@@ -166,13 +165,6 @@ func (x *Metric) GetDescription() string {
 	return ""
 }
 
-func (x *Metric) GetCategory() string {
-	if x != nil {
-		return x.Category
-	}
-	return ""
-}
-
 func (x *Metric) GetVersion() string {
 	if x != nil {
 		return x.Version
@@ -183,6 +175,13 @@ func (x *Metric) GetVersion() string {
 func (x *Metric) GetComments() string {
 	if x != nil {
 		return x.Comments
+	}
+	return ""
+}
+
+func (x *Metric) GetCategory() string {
+	if x != nil {
+		return x.Category
 	}
 	return ""
 }
@@ -380,10 +379,10 @@ const file_api_assessment_metric_proto_rawDesc = "" +
 	"\x06Metric\x12\x1a\n" +
 	"\x02id\x18\x01 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\x12 \n" +
-	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x1a\n" +
-	"\bcategory\x18\x03 \x01(\tR\bcategory\x12!\n" +
-	"\aversion\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\aversion\x12\x1a\n" +
-	"\bcomments\x18\x05 \x01(\tR\bcomments\x12R\n" +
+	"\vdescription\x18\x02 \x01(\tR\vdescription\x12!\n" +
+	"\aversion\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\aversion\x12\x1a\n" +
+	"\bcomments\x18\x04 \x01(\tR\bcomments\x12\x1a\n" +
+	"\bcategory\x18\x05 \x01(\tR\bcategory\x12R\n" +
 	"\rconfiguration\x18\x06 \x03(\v2,.clouditor.assessment.v1.MetricConfigurationR\rconfiguration\x12Z\n" +
 	"\x0eimplementation\x18\a \x01(\v2-.clouditor.assessment.v1.MetricImplementationH\x00R\x0eimplementation\x88\x01\x01\x12}\n" +
 	"\x10deprecated_since\x18\b \x01(\v2\x1a.google.protobuf.TimestampB1\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"H\x01R\x0fdeprecatedSince\x88\x01\x01B\x11\n" +

@@ -53,15 +53,17 @@ message Metric {
   // Optional comments that describe the purpose of this metric. They may also describe a scenario in which the metric can be useful.
   string comments = 4;
 
-  repeated MetricConfiguration configuration = 5;
+  string category = 5;
+
+  repeated MetricConfiguration configuration = 6;
 
   // The implementation of this metric. This ensures that we are modelling an
   // association between a Metric and its MetricImplementation.
-  optional MetricImplementation implementation = 6;
+  optional MetricImplementation implementation = 7;
 
   // Optional, but required if the metric is removed. The metric is not deleted
   // for backward compatibility and the timestamp is set to the time of removal.
-  optional google.protobuf.Timestamp deprecated_since = 7 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
+  optional google.protobuf.Timestamp deprecated_since = 8 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
 }
 
 // Defines the operator and a target value for an individual metric

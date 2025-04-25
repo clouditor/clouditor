@@ -29,8 +29,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 
@@ -47,7 +45,7 @@ import (
 )
 
 // DefaultRegoPackage is the default package name for the Rego files
-const DefaultRegoPackage = "clouditor.metrics"
+const DefaultRegoPackage = "metrics"
 
 type regoEval struct {
 	// qc contains cached Rego queries
@@ -244,7 +242,7 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 		)
 
 		// Create paths for bundle directory and utility functions file
-		bundle, err := findMetricDir(fmt.Sprintf("%s/policies/metrics/metrics", baseDir), metric.Id)
+		bundle := fmt.Sprintf("%s/policies/bundles/%s/%s/", baseDir, metric.Category, metric.Id)
 		if err != nil {
 			return nil, fmt.Errorf("could not find metric: %w", err)
 		}
@@ -370,40 +368,6 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 	} else {
 		return result, nil
 	}
-}
-
-// The metrics directory is structured by metric categories (policies/metrics/metrics/<category>/<metric>/), so findMetricFile traverses through the categories to find the given metric.
-func findMetricDir(root string, metric string) (string, error) {
-	var metricDirPath string
-
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// Check if the current path is a directory
-		if info.IsDir() {
-			return nil
-		}
-
-		// Check if the path contains the desired metric
-		if strings.Contains(path, metric) {
-			metricDirPath = filepath.Dir(path) // Get the directory of the found file
-			return filepath.SkipDir            // Stop traversing further
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return "", err
-	}
-
-	if metricDirPath == "" {
-		return "", fmt.Errorf("metric directory not found for %s", metric)
-	}
-
-	return metricDirPath, nil
 }
 
 func newQueryCache() *queryCache {

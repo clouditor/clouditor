@@ -1985,15 +1985,14 @@ components:
                 description:
                     type: string
                     description: The description of the metric
-                category:
-                    type: string
-                    description: The category of the metric, specified by the directory it is stored in
                 version:
                     type: string
                     description: The version of this metric
                 comments:
                     type: string
                     description: Optional comments that describe the purpose of this metric. They may also describe a scenario in which the metric can be useful.
+                category:
+                    type: string
                 configuration:
                     type: array
                     items:
