@@ -1,0 +1,11 @@
+# Metadata
+id: WebApplicationFirewallEnabled
+description: This rule assesses whether an [LoadBalancer] that offers the property [webApplicationFirewall], has [p1:enabled] configured correctly.
+version: 1.0 
+comments: The Web Application Firewall (WAF) protects web applications by filtering and monitoring HTTP traffic. It defends against threats like SQL injection and cross-site scripting, enhancing overall application security.
+--- 
+# Configuration data
+configuration:
+  p1:
+    operator: ==
+    targetValue: true

@@ -1,0 +1,11 @@
+# Metadata
+id: OSLoggingOutput
+description: This rule assesses whether an [VirtualMachine] has the [OSLogging][p1:loggingService] property set correctly.
+version: 1.0 
+comments: A resource should have operating system logging output stored in a separate location to provide detailed records of operating system events, facilitating effective monitoring and troubleshooting. This output helps identify performance issues and security threats, ensuring a stable and secure operating environment.
+--- 
+# Configuration data
+configuration:
+  p1:
+    operator: >
+    targetValue: 0

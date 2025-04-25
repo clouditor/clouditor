@@ -1,0 +1,4 @@
+{
+    "operator": "allIn",
+    "target_value": ["SHA-256", "SHA-3", "BLAKE2"]
+}

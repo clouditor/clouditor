@@ -1,0 +1,11 @@
+# Metadata
+id: StrongCryptographicHash
+description: This rule assesses whether an [Application] that offers the property [Functionalities.CryptographicHash], has [p1:algorithm] set correctly.
+version: 1.0 
+comments: Using strong cryptographic hashes (e.g., SHA-256 or better) ensures data integrity and security against collisions and pre-image attacks.
+--- 
+# Configuration data
+configuration:
+  p1:
+    operator: allIn
+    targetValue: ["SHA-256", "SHA-3", "BLAKE2"]

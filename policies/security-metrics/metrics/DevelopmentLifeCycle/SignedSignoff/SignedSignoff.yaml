@@ -1,0 +1,11 @@
+# Metadata
+id: SignedSignoff
+description: This rule assesses whether an [CodeRepository] has the property [p1:signedSignoff] set correctly.
+version: 1.0 
+comments: After review, the code must receive a cryptographic signature to confirm its authenticity and integrity. Signed signoff ensures that the changes were made by a verified developer and have remained unaltered. This process bolsters security and provides a reliable record of contributions. The property contains information on whether the commit has been signed, affirming the legitimacy of the changes made.
+--- 
+# Configuration data
+configuration:
+  p1:
+    operator: ==
+    targetValue: True

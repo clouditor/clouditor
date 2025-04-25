@@ -126,7 +126,7 @@ func prepareMetric(m *assessment.Metric) (err error) {
 	)
 
 	// Load the Rego file
-	metricPath := fmt.Sprintf("policies/bundles/%s/%s/metric.rego", m.Category, m.Id)
+	metricPath := fmt.Sprintf("policies/security-metrics/metrics/%s/%s/metric.rego", m.Category, m.Id)
 
 	m.Implementation, err = loadMetricImplementation(m.Id, metricPath)
 	if err != nil {
@@ -156,7 +156,7 @@ func prepareMetric(m *assessment.Metric) (err error) {
 }
 
 // loadEmbeddedMetrics loads metric definitions by walking through YAML files
-// in the policies/metrics/metrics directory.
+// in the policies/security-metrics/metrics directory.
 // use path ...string --> load default metrics + each given path (or only if given?)
 func (svc *Service) loadMetricsFromMetricsRepository(path ...string) (metrics []*assessment.Metric, err error) {
 	var (
@@ -164,11 +164,11 @@ func (svc *Service) loadMetricsFromMetricsRepository(path ...string) (metrics []
 	)
 
 	baseDir = "."
-	defaultMetricsPath := fmt.Sprintf("%s/policies/metrics/metrics", baseDir)
+	defaultMetricsPath := fmt.Sprintf("%s/policies/security-metrics/metrics", baseDir)
 
 	metrics = make([]*assessment.Metric, 0)
 
-	// If no paths are provided, use the default path "policies/metrics/metrics"
+	// If no paths are provided, use the default path "policies/security-metrics/metrics"
 	if len(path) == 0 {
 		path = append(path, defaultMetricsPath)
 	}

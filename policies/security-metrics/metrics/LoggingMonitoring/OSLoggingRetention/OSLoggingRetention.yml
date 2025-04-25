@@ -1,0 +1,11 @@
+# Metadata
+id: OSLoggingRetention
+description: This rule assesses whether an [VirtualMachine] has the [OSLogging][p1:retentionPeriod] property set correctly.
+version: 1.0 
+comments:A resource should have operating system logging retention to preserve historical logs for a specified duration, facilitating effective troubleshooting and compliance. However, the retention period should not be too long to efficiently manage storage and minimize the risk of data leaks or unauthorized access to sensitive information.
+--- 
+# Configuration data
+configuration:
+  p1:
+    operator: '>='
+    targetValue: 35

@@ -1,0 +1,11 @@
+# Metadata
+id: IdentityInactiveDuration
+description: This rule assesses whether an [Identity]'s property [lastActivity] is below an allowed time [p1:window].
+version: 1.0 
+comments: Users should be active regularly. If a user has not been active for a long time the account should be suspended since it could be forgotten and used later by an attacker.
+--- 
+# Configuration data
+configuration:
+  p1:
+    operator: <=
+    targetValue: 90

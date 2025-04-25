@@ -1,0 +1,11 @@
+# Metadata
+id: BootLoggingOutput
+description: This rule assesses whether an [VirtualMachine] has the [BootLogging][p1:loggingService] property set correctly.
+version: 1.0 
+comments: A resource should have boot logging output stored in a separate location to provide detailed records of the boot process, aiding in diagnosing startup issues. This output enhances system monitoring and helps ensure optimal performance and reliability by tracking any anomalies during startup.
+--- 
+# Configuration data
+configuration:
+  p1:
+    operator: >
+    targetValue: 0

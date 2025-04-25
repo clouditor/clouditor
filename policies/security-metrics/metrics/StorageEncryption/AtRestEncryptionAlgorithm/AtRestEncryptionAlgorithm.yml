@@ -1,0 +1,11 @@
+# Metadata
+id: AtRestEncryptionAlgorithm
+description: This rule assesses whether a [Storage] has its [AtRestEncryption] [p1:algorithm] correctly configured.
+version: 1.0
+comments: A state of the art encryption algorithm is essential in keeping sensitive data confidential.
+--- 
+# Configuration data
+configuration:
+  p1:
+    operator: ==
+    targetValue: AES256

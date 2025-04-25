@@ -48,7 +48,7 @@ import (
 //go:embed *.json
 var f embed.FS
 
-// TODO(immqu): When the catalogs are moved to the policies/metrics/catalogs folder, we need to change the path here
+// TODO(immqu): When the catalogs are moved to the policies/security-metrics/catalogs folder, we need to change the path here
 var DefaultCatalogsFolder = "catalogs"
 
 var (

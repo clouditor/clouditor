@@ -1,0 +1,11 @@
+# Metadata
+id: PHPRuntime
+description: This rule assesses whether a [Function] that has the property [runtimeLanguage] set to PHP, also has the property [p1:runtimeVersion] correctly configured.
+version: 1.0 
+comments: This check ensures that the runtime language and version are properly set, mitigating potential security risks and ensuring application reliability.
+--- 
+# Configuration data
+configuration:
+  p1:
+    operator: ">="
+    targetValue: 21

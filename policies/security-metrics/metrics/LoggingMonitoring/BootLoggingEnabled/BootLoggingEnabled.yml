@@ -1,0 +1,11 @@
+# Metadata
+id: BootLoggingEnabled
+description: This rule assesses whether an [VirtualMachine] has its [BootLogging][p1:enabled] property set correctly.
+version: 1.0 
+comments: Enabling boot logging captures detailed information about the boot process, helping to identify issues and troubleshoot startup problems. It provides insights into system performance and stability, ensuring a reliable and efficient resource operation.
+--- 
+# Configuration data
+configuration:
+  p1:
+    operator: ==
+    targetValue: True

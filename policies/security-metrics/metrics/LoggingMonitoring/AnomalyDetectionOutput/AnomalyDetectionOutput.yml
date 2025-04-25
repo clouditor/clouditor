@@ -1,0 +1,11 @@
+# Metadata
+id: AnomalyDetectionOutput
+description: This rule assesses whether an [DatabaseService] has the [AnomalyDetection][p1:loggingService] property set correctly.
+version: 1.0 
+comments: Having logging output for resource anomaly detection captures and records detected unusual patterns in activity, including those of Network Services and their components. This enables better monitoring, timely responses to potential issues, and supports overall security and operational efficiency.
+--- 
+# Configuration data
+configuration:
+  p1:
+    operator: >
+    targetValue: 0

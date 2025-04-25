@@ -1,0 +1,51 @@
+[
+    {
+        "id": "DemoCatalog",
+        "name": "Clouditor Demo Catalog",
+        "description": "A catalog for demonstration purposes",
+        "metadata": {
+            "color": "#007FC3"
+        },
+        "short_name": "CD",
+        "assurance_levels": [
+            "substantial",
+            "high"
+        ],
+        "all_in_scope": true,
+        "categories": [
+            {
+                "name": "Cryptography",
+                "description": "Use state of the art cryptography to encrypt data at rest and in transit.",
+                "controls": [
+                    {
+                        "id": "AtRestEncryption-01",
+                        "name": "Encrypt at rest",
+                        "description": "Data at rest must be encrypted with state-of-the art techniques.",
+                        "controls": [
+                            {
+                                "id": "AtRestEncryption-01.1",
+                                "description": "At rest encryption must be enabled on all storage resources.",
+                                "metrics": [
+                                    {
+                                        "id": "AtRestEncryptionEnabled"
+                                    }
+                                ],
+                                "assurance_level": "substantial"
+                            },
+                            {
+                                "id": "AtRestEncryption-01.2",
+                                "description": "At rest encryption must use state of the art encryption algorithms.",
+                                "metrics": [
+                                    {
+                                        "id": "AtRestEncryptionAlgorithm"
+                                    }
+                                ],
+                                "assurance_level": "substantial"
+                            }
+                        ]
+                    }
+                ]
+            },
+        ]
+    }
+]

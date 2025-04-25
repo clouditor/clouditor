@@ -242,7 +242,7 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 		)
 
 		// Create paths for bundle directory and utility functions file
-		bundle := fmt.Sprintf("%s/policies/metrics/metrics/%s/%s/", baseDir, metric.Category, metric.Id)
+		bundle := fmt.Sprintf("%s/policies/security-metrics/metrics/%s/%s/", baseDir, metric.Category, metric.Id)
 		if err != nil {
 			return nil, fmt.Errorf("could not find metric: %w", err)
 		}

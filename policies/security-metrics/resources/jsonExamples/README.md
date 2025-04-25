@@ -1,0 +1,1 @@
+This folder contains JSON examples for the resources from the [Ontology](https://github.com/clouditor/clouditor/blob/main/api/ontology/ontology.proto) used in the metrics, which are utilized in this repository. The JSON structure serves as input for the rego validation  in the [Clouditor Assessment](https://github.com/clouditor/clouditor/tree/main/api/assessment).
