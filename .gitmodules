@@ -1,3 +1,9 @@
 [submodule "ui"]
 	path = ui
 	url = git@github.com:confirmate/ui.git
+[submodule "security-metrics"]
+	path = policies/security-metrics
+	url = git@github.com:Cybersecurity-Certification-Hub/security-metrics.git
+[submodule "policies/security-metrics"]
+	path = policies/security-metrics
+	url = git@github.com:Cybersecurity-Certification-Hub/security-metrics.git
