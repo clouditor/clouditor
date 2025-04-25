@@ -135,7 +135,6 @@ func prepareMetric(m *assessment.Metric) (err error) {
 
 	// Take the data.json to include default metric configurations
 	dataJsonPath := strings.Replace(metricPath, "metric.rego", "data.json", 1)
-	fmt.Println("dataJsonPath", dataJsonPath)
 
 	// Load the default configuration file
 	b, err := os.ReadFile(dataJsonPath)
@@ -195,10 +194,8 @@ func (svc *Service) loadMetricsFromMetricsRepository(path ...string) (metrics []
 			var metric assessment.Metric
 
 			dec := yaml.NewDecoder(bytes.NewReader(b))
+			dec.Decode(&metric)
 
-			for dec.Decode(&metric) == nil {
-				// do nothing
-			}
 			// Set the category automatically, since it is not included in the yaml definition
 			metric.Category = filepath.Base(filepath.Dir(path))
 

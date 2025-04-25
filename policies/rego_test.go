@@ -88,7 +88,6 @@ func Test_regoEval_Eval(t *testing.T) {
 				evidenceID: mockObjStorage1EvidenceID,
 				src:        &mockMetricsSource{t: t},
 			},
-			applicable: true,
 			compliant: map[string]bool{
 				"AtRestEncryptionAlgorithm": true,
 				"AtRestEncryptionEnabled":   true,

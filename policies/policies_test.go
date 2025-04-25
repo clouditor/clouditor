@@ -26,6 +26,7 @@
 package policies
 
 import (
+	"bytes"
 	"fmt"
 	"gopkg.in/yaml.v3"
 	"os"
@@ -88,12 +89,10 @@ func (*mockMetricsSource) Metrics() (metrics []*assessment.Metric, err error) {
 
 		var metric assessment.Metric
 
-		// Parse YAML into a metric
-		if err := yaml.Unmarshal(b, &metric); err != nil {
-			return fmt.Errorf("error parsing YAML in %s: %w", path, err)
-		}
+		dec := yaml.NewDecoder(bytes.NewReader(b))
+		dec.Decode(&metric)
 
-		// Set the category based on the directory name
+		// Set the category automatically, since it is not included in the yaml definition
 		metric.Category = filepath.Base(filepath.Dir(filepath.Dir(path)))
 
 		metrics = append(metrics, &metric)
@@ -101,7 +100,7 @@ func (*mockMetricsSource) Metrics() (metrics []*assessment.Metric, err error) {
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("error walking through metrics directory: %w", err)
+		return nil, fmt.Errorf("(mockMetrics) error walking through metrics directory: %w", err)
 	}
 
 	return metrics, nil
@@ -127,6 +126,7 @@ func (m *mockMetricsSource) MetricConfiguration(targetID string, metric *assessm
 
 func (m *mockMetricsSource) MetricImplementation(_ assessment.MetricImplementation_Language, metric *assessment.Metric) (*assessment.MetricImplementation, error) {
 	// Fetch the metric implementation directly from our file
+	// TODO
 	bundle := fmt.Sprintf("policies/metrics/metrics/%s/%s/metric.rego", metric.Category, metric.Id)
 
 	b, err := os.ReadFile(bundle)

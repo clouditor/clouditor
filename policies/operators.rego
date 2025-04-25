@@ -1,4 +1,4 @@
-package clouditor
+package metrics
 import rego.v1
 
 # operator and target_value are declared here to add them to the output of each single policy (so assessment can use it)
