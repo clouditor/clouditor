@@ -247,7 +247,7 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 			return nil, fmt.Errorf("could not find metric: %w", err)
 		}
 
-		operators := fmt.Sprintf("%s/policies/security-metrics/operators.rego", baseDir)
+		operators := fmt.Sprintf("%s/policies/security-metrics/metrics/operators.rego", baseDir)
 
 		// The contents of the data map is available as the data variable within the Rego evaluation
 		data := map[string]interface{}{
@@ -270,8 +270,6 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 
 		// Convert camelCase metric in under_score_style for package name
 		pkg = util.CamelCaseToSnakeCase(metric.Id)
-
-		fmt.Println(pkg, prefix)
 
 		// Fetch the metric implementation, i.e., the Rego code from the metric source
 		impl, err = src.MetricImplementation(assessment.MetricImplementation_LANGUAGE_REGO, metric)
