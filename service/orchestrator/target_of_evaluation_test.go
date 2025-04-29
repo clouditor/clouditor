@@ -283,7 +283,6 @@ func TestService_ListTargetsOfEvaluation(t *testing.T) {
 	type fields struct {
 		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
-		loadMetricsFunc       func() ([]*assessment.Metric, error)
 		catalogsFolder        string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent

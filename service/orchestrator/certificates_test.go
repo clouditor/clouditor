@@ -370,7 +370,6 @@ func TestService_ListPublicCertificates(t *testing.T) {
 		auditScopeHooks                 []orchestrator.AuditScopeHookFunc
 		AssessmentResultHooks           []assessment.ResultHookFunc
 		storage                         persistence.Storage
-		loadMetricsFunc                 func() ([]*assessment.Metric, error)
 		catalogsFolder                  string
 		loadCatalogsFunc                func() ([]*orchestrator.Catalog, error)
 		events                          chan *orchestrator.MetricChangeEvent
