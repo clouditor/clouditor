@@ -197,7 +197,7 @@ func (svc *Service) loadMetricsFromMetricsRepository(path ...string) (metrics []
 			dec.Decode(&metric)
 
 			// Set the category automatically, since it is not included in the yaml definition
-			metric.Category = filepath.Base(filepath.Dir(path))
+			metric.Category = filepath.Base(filepath.Dir(filepath.Dir(path)))
 
 			metrics = append(metrics, &metric)
 			return nil

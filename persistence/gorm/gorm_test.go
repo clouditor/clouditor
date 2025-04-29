@@ -119,6 +119,7 @@ func Test_storage_Create(t *testing.T) {
 		err    error
 		s      persistence.Storage
 		metric *assessment.Metric
+		target *orchestrator.TargetOfEvaluation
 	)
 
 	metric = &assessment.Metric{
@@ -127,7 +128,7 @@ func Test_storage_Create(t *testing.T) {
 		Description:   testdata.MockMetricDescription1,
 		Version:       testdata.MockMetricVersion1,
 		Comments:      testdata.MockMetricComments1,
-		Configuration: testdata.MockMetricConfigurations,
+		Configuration: []*assessment.MetricConfiguration{testdata.MockMetricConfiguration1},
 	}
 	// Check if metric has all necessary fields
 	assert.NoError(t, api.Validate(metric))
@@ -136,6 +137,8 @@ func Test_storage_Create(t *testing.T) {
 	s, err = NewStorage()
 	assert.NoError(t, err)
 
+	target = &orchestrator.TargetOfEvaluation{Id: testdata.MockTargetOfEvaluationID1, Name: testdata.MockTargetOfEvaluationName1}
+	err = s.Create(target)
 	err = s.Create(metric)
 	assert.NoError(t, err)
 
@@ -190,7 +193,7 @@ func Test_storage_Get(t *testing.T) {
 		Description:   testdata.MockMetricDescription1,
 		Version:       testdata.MockMetricVersion1,
 		Comments:      testdata.MockMetricComments1,
-		Configuration: testdata.MockMetricConfigurations,
+		Configuration: []*assessment.MetricConfiguration{testdata.MockMetricConfiguration1},
 	}
 	// Check if metric has all necessary fields
 	assert.NoError(t, api.Validate(metric))
@@ -422,7 +425,7 @@ func Test_storage_Update(t *testing.T) {
 				Description:   testdata.MockMetricDescription1,
 				Version:       testdata.MockMetricVersion1,
 				Comments:      testdata.MockMetricComments1,
-				Configuration: testdata.MockMetricConfigurations,
+				Configuration: []*assessment.MetricConfiguration{testdata.MockMetricConfiguration1},
 			},
 		},
 	}

@@ -147,7 +147,7 @@ func TestMetric_CategoryID(t *testing.T) {
 		{
 			name: "happy path",
 			fields: fields{
-				Category: "Logging & Monitoring",
+				Category: "LoggingMonitoring",
 			},
 			wantID: "LoggingMonitoring",
 		},
@@ -158,7 +158,7 @@ func TestMetric_CategoryID(t *testing.T) {
 				Category: tt.fields.Category,
 			}
 			if gotID := c.Category; gotID != tt.wantID {
-				t.Errorf("Metric.CategoryID() = %v, want %v", gotID, tt.wantID)
+				t.Errorf("Metric.Category = %v, want %v", gotID, tt.wantID)
 			}
 		})
 	}

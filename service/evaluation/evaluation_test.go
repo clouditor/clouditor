@@ -54,7 +54,6 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/testing/protocmp"
-	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 )
@@ -1024,9 +1023,9 @@ func TestService_getAllMetricsFromControl(t *testing.T) {
 					Id:            testdata.MockMetricID1,
 					Category:      testdata.MockMetricCategory1,
 					Description:   testdata.MockMetricDescription1,
-					Version:       testdata.MockMetricDescription1,
+					Version:       testdata.MockMetricVersion1,
 					Comments:      testdata.MockMetricComments1,
-					Configuration: testdata.MockMetricConfigurations,
+					Configuration: []*assessment.MetricConfiguration{},
 				},
 			},
 			wantErr: assert.NoError,

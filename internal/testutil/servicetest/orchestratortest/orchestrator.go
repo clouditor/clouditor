@@ -265,8 +265,9 @@ var (
 				Metrics: []*assessment.Metric{{
 					Id:            testdata.MockMetricID1,
 					Description:   testdata.MockMetricDescription1,
+					Category:      testdata.MockMetricCategory1,
 					Version:       "1.0",
-					Comments:      "Test comments",
+					Comments:      testdata.MockMetricComments1,
 					Configuration: []*assessment.MetricConfiguration{},
 				}}},
 		}}
@@ -283,8 +284,9 @@ var (
 		Metrics: []*assessment.Metric{{
 			Id:            testdata.MockMetricID1,
 			Description:   testdata.MockMetricDescription1,
+			Category:      testdata.MockMetricCategory1,
 			Version:       "1.0",
-			Comments:      "This is a comment",
+			Comments:      testdata.MockMetricComments1,
 			Configuration: []*assessment.MetricConfiguration{},
 		},
 		}}
