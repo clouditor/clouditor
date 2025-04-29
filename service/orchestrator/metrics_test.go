@@ -28,7 +28,6 @@ package orchestrator
 import (
 	"context"
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -85,13 +84,13 @@ var (
 
 func Test_loadMetricsFromRepository(t *testing.T) {
 	// Create a temporary directory structure for test files
-	tempDir := t.TempDir()
-	metricsDir := filepath.Join(tempDir, "policies", "metrics", "metrics", "TestCategory", "TestMetric")
-	err := os.MkdirAll(metricsDir, 0755)
+	tempDir1 := t.TempDir()
+	metricsDir1 := filepath.Join(tempDir1, "policies", "metrics", "metrics", "TestCategory", "TestMetric")
+	err := os.MkdirAll(metricsDir1, 0755)
 	assert.NoError(t, err)
 
 	// Create test YAML files
-	validYaml := `
+	validYaml1 := `
 id: TestMetric
 description: Test Metric 1
 version: "1.0"
@@ -102,7 +101,27 @@ properties:
     targetValue: "123"
 `
 
-	err = os.WriteFile(filepath.Join(metricsDir, "valid.yaml"), []byte(validYaml), 0644)
+	err = os.WriteFile(filepath.Join(metricsDir1, "valid.yaml"), []byte(validYaml1), 0644)
+	assert.NoError(t, err)
+
+	// Create a second temporary directory structure for test files
+	tempDir2 := t.TempDir()
+	metricsDir2 := filepath.Join(tempDir2, "policies", "metrics", "metrics", "TestCategory", "TestMetric")
+	err = os.MkdirAll(metricsDir2, 0755)
+	assert.NoError(t, err)
+
+	// Create test YAML files
+	validYaml2 := `
+id: TestMetric
+description: Test Metric 2
+version: "1.0"
+comments: Test comments
+properties:
+  prop1:
+    operator: "=="
+    targetValue: "123"
+`
+	err = os.WriteFile(filepath.Join(metricsDir2, "valid.yaml"), []byte(validYaml2), 0644)
 	assert.NoError(t, err)
 
 	tests := []struct {
@@ -126,6 +145,19 @@ properties:
 						},
 					},
 				},
+				{
+					Id:          "TestMetric",
+					Description: "Test Metric 2",
+					Version:     "1.0",
+					Comments:    "Test comments",
+					Configuration: []*assessment.MetricConfiguration{
+						{
+							MetricId:    "TestMetric",
+							Operator:    "==",
+							TargetValue: structpb.NewStringValue("123"),
+						},
+					},
+				},
 			},
 			wantErr: assert.NoError,
 		},
@@ -134,12 +166,12 @@ properties:
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{}
-			gotMetrics, err := svc.loadMetricsFromMetricsRepository(tempDir)
-			fmt.Println(gotMetrics)
+			gotMetrics, err := svc.loadMetricsFromMetricsRepository(tempDir1, tempDir2)
 			assert.True(t, len(gotMetrics) > 0)
 
 			if tt.wantErr(t, err) && err == nil {
 				assert.NoError(t, api.Validate(gotMetrics[0]))
+				assert.NoError(t, api.Validate(gotMetrics[1]))
 			}
 		})
 	}

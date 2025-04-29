@@ -43,6 +43,15 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+var MockMetricConfiguration1 = &assessment.MetricConfiguration{
+	MetricId:             testdata.MockMetricID1,
+	TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+	Operator:             "==",
+	TargetValue:          testdata.MockMetricConfigurationTargetValueString,
+	IsDefault:            true,
+	UpdatedAt:            nil,
+}
+
 func TestStorageOptions(t *testing.T) {
 	type args struct {
 		opts []StorageOption
@@ -128,7 +137,7 @@ func Test_storage_Create(t *testing.T) {
 		Description:   testdata.MockMetricDescription1,
 		Version:       testdata.MockMetricVersion1,
 		Comments:      testdata.MockMetricComments1,
-		Configuration: []*assessment.MetricConfiguration{testdata.MockMetricConfiguration1},
+		Configuration: []*assessment.MetricConfiguration{MockMetricConfiguration1},
 	}
 	// Check if metric has all necessary fields
 	assert.NoError(t, api.Validate(metric))
@@ -193,7 +202,7 @@ func Test_storage_Get(t *testing.T) {
 		Description:   testdata.MockMetricDescription1,
 		Version:       testdata.MockMetricVersion1,
 		Comments:      testdata.MockMetricComments1,
-		Configuration: []*assessment.MetricConfiguration{testdata.MockMetricConfiguration1},
+		Configuration: []*assessment.MetricConfiguration{MockMetricConfiguration1},
 	}
 	// Check if metric has all necessary fields
 	assert.NoError(t, api.Validate(metric))
@@ -425,7 +434,7 @@ func Test_storage_Update(t *testing.T) {
 				Description:   testdata.MockMetricDescription1,
 				Version:       testdata.MockMetricVersion1,
 				Comments:      testdata.MockMetricComments1,
-				Configuration: []*assessment.MetricConfiguration{testdata.MockMetricConfiguration1},
+				Configuration: []*assessment.MetricConfiguration{MockMetricConfiguration1},
 			},
 		},
 	}
