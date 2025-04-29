@@ -148,6 +148,7 @@ func Test_storage_Create(t *testing.T) {
 
 	target = &orchestrator.TargetOfEvaluation{Id: testdata.MockTargetOfEvaluationID1, Name: testdata.MockTargetOfEvaluationName1}
 	err = s.Create(target)
+	assert.NoError(t, err)
 	err = s.Create(metric)
 	assert.NoError(t, err)
 

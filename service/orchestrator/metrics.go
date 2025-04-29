@@ -159,11 +159,7 @@ func prepareMetric(m *assessment.Metric) (err error) {
 // in the policies/security-metrics/metrics directory.
 // use path ...string --> load default metrics + each given path (or only if given?)
 func (svc *Service) loadMetricsFromMetricsRepository(path ...string) (metrics []*assessment.Metric, err error) {
-	var (
-		baseDir string
-	)
-
-	baseDir = "."
+	var baseDir = "."
 	defaultMetricsPath := fmt.Sprintf("%s/policies/security-metrics/metrics", baseDir)
 
 	metrics = make([]*assessment.Metric, 0)
@@ -194,7 +190,10 @@ func (svc *Service) loadMetricsFromMetricsRepository(path ...string) (metrics []
 			var metric assessment.Metric
 
 			dec := yaml.NewDecoder(bytes.NewReader(b))
-			dec.Decode(&metric)
+			err = dec.Decode(&metric)
+			if err != nil {
+				return fmt.Errorf("error decoding unmarshalling metric %s: %w", path, err)
+			}
 
 			// Set the category automatically, since it is not included in the yaml definition
 			metric.Category = filepath.Base(filepath.Dir(filepath.Dir(path)))

@@ -62,7 +62,6 @@ func TestService_CreateAuditScope(t *testing.T) {
 		TargetOfEvaluationHooks []orchestrator.TargetOfEvaluationHookFunc
 		AssessmentResultHooks   []assessment.ResultHookFunc
 		storage                 persistence.Storage
-		loadMetricsFunc         func() ([]*assessment.Metric, error)
 		catalogsFolder          string
 		loadCatalogsFunc        func() ([]*orchestrator.Catalog, error)
 		events                  chan *orchestrator.MetricChangeEvent

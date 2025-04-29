@@ -90,7 +90,10 @@ func (*mockMetricsSource) Metrics() (metrics []*assessment.Metric, err error) {
 		var metric assessment.Metric
 
 		dec := yaml.NewDecoder(bytes.NewReader(b))
-		dec.Decode(&metric)
+		err = dec.Decode(&metric)
+		if err != nil {
+			return fmt.Errorf("error decoding unmarshalling metric %s: %w", path, err)
+		}
 
 		// Set the category automatically, since it is not included in the yaml definition
 		metric.Category = filepath.Base(filepath.Dir(filepath.Dir(path)))

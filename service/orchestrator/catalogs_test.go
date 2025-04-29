@@ -53,7 +53,7 @@ func TestService_CreateCatalog(t *testing.T) {
 	}
 	mockCatalogWithoutID := orchestratortest.NewCatalog()
 	mockCatalogWithoutID.Id = ""
-	
+
 	type args struct {
 		in0 context.Context
 		req *orchestrator.CreateCatalogRequest
@@ -320,7 +320,6 @@ func TestService_GetCategory(t *testing.T) {
 		TargetOfEvaluationHooks []orchestrator.TargetOfEvaluationHookFunc
 		AssessmentResultHooks   []assessment.ResultHookFunc
 		storage                 persistence.Storage
-		loadMetricsFunc         func() ([]*assessment.Metric, error)
 		catalogsFile            string
 		loadCatalogsFunc        func() ([]*orchestrator.Catalog, error)
 		events                  chan *orchestrator.MetricChangeEvent
@@ -412,7 +411,6 @@ func TestService_GetControl(t *testing.T) {
 		TargetOfEvaluationHooks []orchestrator.TargetOfEvaluationHookFunc
 		AssessmentResultHooks   []assessment.ResultHookFunc
 		storage                 persistence.Storage
-		loadMetricsFunc         func() ([]*assessment.Metric, error)
 		catalogsFolder          string
 		loadCatalogsFunc        func() ([]*orchestrator.Catalog, error)
 	}

@@ -227,5 +227,4 @@ require (
 	github.com/srikrsna/protoc-gen-gotag v1.0.0
 )
 
-require github.com/goccy/go-yaml v1.17.1 // indirect
 require sigs.k8s.io/randfill v1.0.0 // indirect
