@@ -422,7 +422,6 @@ func TestService_GetTargetOfEvaluationStatistics(t *testing.T) {
 		auditScopeHooks       []orchestrator.AuditScopeHookFunc
 		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
-		loadMetricsFunc       func() ([]*assessment.Metric, error)
 		catalogsFolder        string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
@@ -575,7 +574,6 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 		auditScopeHooks                 []orchestrator.AuditScopeHookFunc
 		AssessmentResultHooks           []assessment.ResultHookFunc
 		storage                         persistence.Storage
-		loadMetricsFunc                 func() ([]*assessment.Metric, error)
 		catalogsFolder                  string
 		loadCatalogsFunc                func() ([]*orchestrator.Catalog, error)
 		events                          chan *orchestrator.MetricChangeEvent

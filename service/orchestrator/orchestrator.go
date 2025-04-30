@@ -27,7 +27,6 @@ package orchestrator
 
 import (
 	"context"
-	"embed"
 	"fmt"
 	"sync"
 
@@ -44,9 +43,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
-
-//go:embed *.json
-var f embed.FS
 
 // TODO(immqu): When the catalogs are moved to the policies/security-metrics/catalogs folder, we need to change the path here
 var DefaultCatalogsFolder = "catalogs"
