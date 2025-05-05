@@ -100,6 +100,7 @@ message AssessEvidencesResponse {
 message AssessmentResult {
   // Assessment result id
   string id = 1 [
+    (tagger.tags) = "gorm:\"primaryKey\"",
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -166,6 +167,24 @@ message AssessmentResult {
     (buf.validate.field).string.min_len = 1,
     (google.api.field_behavior) = REQUIRED
   ];
+
+  google.protobuf.Timestamp updated_at = 22 [
+    (tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\"",
+    (buf.validate.field).required = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
+
+  // Stores the history of evidence IDs and timestamps for evidence that have the same content as the evidence used for this assessment result.
+  repeated Record history = 23 [
+    (tagger.tags) = "gorm:\"serializer:json;constraint:OnDelete:CASCADE\"",
+    (buf.validate.field).required = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message Record {
+  string evidence_id = 1;
+  google.protobuf.Timestamp timestamp = 2 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
 }
 
 // An optional structure containing more details how a comparison inside an assessment result was done and if it was successful.

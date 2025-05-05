@@ -37,6 +37,8 @@ import (
 )
 
 func Test_ValidateAssessmentResult(t *testing.T) {
+	timestamp := timestamppb.Now()
+
 	type args struct {
 		AssessmentResult *AssessmentResult
 	}
@@ -247,7 +249,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			args: args{
 				&AssessmentResult{
 					Id:        testdata.MockAssessmentResultID,
-					Timestamp: timestamppb.Now(),
+					Timestamp: timestamp,
 					MetricId:  testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
 						Operator:             "==",
@@ -262,6 +264,13 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					ResourceTypes:        []string{"Resource"},
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 					ToolId:               util.Ref(AssessmentToolId),
+					UpdatedAt:            timestamp,
+					History: []*Record{
+						{
+							Timestamp:  timestamp,
+							EvidenceId: testdata.MockEvidenceID1,
+						},
+					},
 				},
 			},
 			wantResp: "",

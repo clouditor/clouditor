@@ -184,7 +184,14 @@ var (
 			MetricId:             testdata.MockMetricID1,
 			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 		},
-		ToolId: util.Ref(assessment.AssessmentToolId),
+		ToolId:    util.Ref(assessment.AssessmentToolId),
+		UpdatedAt: timestamppb.New(time.Unix(1, 0)),
+		History: []*assessment.Record{
+			{
+				Timestamp:  timestamppb.New(time.Unix(1, 0)),
+				EvidenceId: testdata.MockEvidenceID1,
+			},
+		},
 	}
 	MockAssessmentResult2 = &assessment.AssessmentResult{
 		Id:                   testdata.MockAssessmentResult2ID,
@@ -203,7 +210,14 @@ var (
 			MetricId:             testdata.MockMetricID1,
 			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 		},
-		ToolId: util.Ref(assessment.AssessmentToolId),
+		ToolId:    util.Ref(assessment.AssessmentToolId),
+		UpdatedAt: timestamppb.New(time.Unix(1, 0)),
+		History: []*assessment.Record{
+			{
+				Timestamp:  timestamppb.New(time.Unix(1, 0)),
+				EvidenceId: testdata.MockEvidenceID1,
+			},
+		},
 	}
 	MockAssessmentResult3 = &assessment.AssessmentResult{
 		Id:                   testdata.MockAssessmentResult3ID,
@@ -222,7 +236,14 @@ var (
 			MetricId:             testdata.MockMetricID2,
 			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 		},
-		ToolId: util.Ref(assessment.AssessmentToolId),
+		ToolId:    util.Ref(assessment.AssessmentToolId),
+		UpdatedAt: timestamppb.New(time.Unix(1, 0)),
+		History: []*assessment.Record{
+			{
+				Timestamp:  timestamppb.New(time.Unix(1, 0)),
+				EvidenceId: testdata.MockEvidenceID1,
+			},
+		},
 	}
 	MockAssessmentResult4 = &assessment.AssessmentResult{
 		Id:                   testdata.MockAssessmentResult4ID,
@@ -241,7 +262,14 @@ var (
 			MetricId:             testdata.MockMetricID2,
 			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 		},
-		ToolId: util.Ref(testdata.MockAssessmentResultToolID),
+		ToolId:    util.Ref(testdata.MockAssessmentResultToolID),
+		UpdatedAt: timestamppb.New(time.Unix(1, 0)),
+		History: []*assessment.Record{
+			{
+				Timestamp:  timestamppb.New(time.Unix(1, 0)),
+				EvidenceId: testdata.MockEvidenceID1,
+			},
+		},
 	}
 	MockAssessmentResults = []*assessment.AssessmentResult{MockAssessmentResult1, MockAssessmentResult2, MockAssessmentResult3, MockAssessmentResult4}
 

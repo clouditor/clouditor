@@ -49,8 +49,9 @@ import (
 
 func TestMain(m *testing.M) {
 	var (
-		svc *service_orchestrator.Service
-		err error
+		svc       *service_orchestrator.Service
+		err       error
+		timestamp = timestamppb.Now()
 	)
 
 	clitest.AutoChdir()
@@ -64,7 +65,7 @@ func TestMain(m *testing.M) {
 			MetricId:             testdata.MockMetricID1,
 			EvidenceId:           testdata.MockTargetOfEvaluationID1,
 			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-			Timestamp:            timestamppb.Now(),
+			Timestamp:            timestamp,
 			ResourceId:           "myResource",
 			ResourceTypes:        []string{"ResourceType"},
 			ComplianceComment:    "Something",
@@ -76,7 +77,14 @@ func TestMain(m *testing.M) {
 				IsDefault:            true,
 				TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 			},
-			ToolId: util.Ref(assessment.AssessmentToolId),
+			ToolId:    util.Ref(assessment.AssessmentToolId),
+			UpdatedAt: timestamp,
+			History: []*assessment.Record{
+				{
+					Timestamp:  timestamp,
+					EvidenceId: testdata.MockEvidenceID1,
+				},
+			},
 		}})
 	if err != nil {
 		panic(err)

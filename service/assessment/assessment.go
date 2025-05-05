@@ -487,6 +487,11 @@ func (svc *Service) handleEvidence(
 			ComplianceComment:    data.Message,
 			ComplianceDetails:    data.ComparisonResult,
 			ToolId:               util.Ref(assessment.AssessmentToolId),
+			UpdatedAt:            timestamppb.Now(),
+			History: []*assessment.Record{{
+				EvidenceId: ev.GetId(),
+				Timestamp:  timestamppb.Now(),
+			}},
 		}
 
 		// Inform hooks about new assessment result
