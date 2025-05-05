@@ -12,6 +12,12 @@
     <Prefix name="xsd" IRI="http://www.w3.org/2001/XMLSchema#"/>
     <Prefix name="rdfs" IRI="http://www.w3.org/2000/01/rdf-schema#"/>
     <Declaration>
+        <Class IRI="http://webprotege.stanford.edu/R85ripFyJGet52JTSSX6C7"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="http://webprotege.stanford.edu/R8KdvdsrOl22Sv6D0uEl6E2"/>
+    </Declaration>
+    <Declaration>
         <Class IRI="https://ontology.emerald-he.eu/classes/ABAC"/>
     </Declaration>
     <Declaration>
@@ -570,7 +576,22 @@
         <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/to"/>
     </Declaration>
     <Declaration>
+        <DataProperty IRI="http://webprotege.stanford.edu/R7owL3dPEOR1xtqO8jAqMGV"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="http://webprotege.stanford.edu/R8MGY6RcHjzO0JTH5eflkTC"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="http://webprotege.stanford.edu/RBiQOlfJqbN9UgURTqH7cS3"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="http://webprotege.stanford.edu/RBibnAAJPattgNgGxxTNeVM"/>
+    </Declaration>
+    <Declaration>
         <DataProperty IRI="https://ontology.emerald-he.eu/classes/adv_robustness"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="https://ontology.emerald-he.eu/classes/annualUpdateCompleted"/>
     </Declaration>
     <Declaration>
         <DataProperty IRI="https://ontology.emerald-he.eu/classes/apiHitsPerMonth"/>
@@ -702,7 +723,16 @@
         <DataProperty IRI="https://ontology.emerald-he.eu/classes/overridePasswordPolicy"/>
     </Declaration>
     <Declaration>
+        <DataProperty IRI="https://ontology.emerald-he.eu/classes/poisonLevel"/>
+    </Declaration>
+    <Declaration>
         <DataProperty IRI="https://ontology.emerald-he.eu/classes/poison_level"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="https://ontology.emerald-he.eu/classes/privacyLabel"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="https://ontology.emerald-he.eu/classes/privacyLevel"/>
     </Declaration>
     <Declaration>
         <DataProperty IRI="https://ontology.emerald-he.eu/classes/privacy_level"/>
@@ -738,6 +768,9 @@
         <DataProperty IRI="https://ontology.emerald-he.eu/classes/retentionPeriod"/>
     </Declaration>
     <Declaration>
+        <DataProperty IRI="https://ontology.emerald-he.eu/classes/robustness"/>
+    </Declaration>
+    <Declaration>
         <DataProperty IRI="https://ontology.emerald-he.eu/classes/runtimeLanguage"/>
     </Declaration>
     <Declaration>
@@ -759,6 +792,9 @@
         <DataProperty IRI="https://ontology.emerald-he.eu/classes/sessionCipher"/>
     </Declaration>
     <Declaration>
+        <DataProperty IRI="https://ontology.emerald-he.eu/classes/size"/>
+    </Declaration>
+    <Declaration>
         <DataProperty IRI="https://ontology.emerald-he.eu/classes/startColumn"/>
     </Declaration>
     <Declaration>
@@ -766,6 +802,12 @@
     </Declaration>
     <Declaration>
         <DataProperty IRI="https://ontology.emerald-he.eu/classes/status"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="https://ontology.emerald-he.eu/classes/successfullyCompletedPercentage"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="https://ontology.emerald-he.eu/classes/type"/>
     </Declaration>
     <Declaration>
         <DataProperty IRI="https://ontology.emerald-he.eu/classes/usesSalt"/>
@@ -1058,30 +1100,6 @@
     <Declaration>
         <Datatype abbreviatedIRI="xsd:listString"/>
     </Declaration>
-    <Declaration>
-        <DataProperty IRI="https://ontology.emerald-he.eu/classes/privacyLabel"/>
-    </Declaration>
-    <Declaration>
-        <DataProperty IRI="https://ontology.emerald-he.eu/classes/robustness"/>
-    </Declaration>
-    <Declaration>
-        <DataProperty IRI="https://ontology.emerald-he.eu/classes/type"/>
-    </Declaration>
-    <Declaration>
-        <DataProperty IRI="https://ontology.emerald-he.eu/classes/successfullyCompletedPercentage"/>
-    </Declaration>
-    <Declaration>
-        <DataProperty IRI="https://ontology.emerald-he.eu/classes/size"/>
-    </Declaration>
-    <Declaration>
-        <DataProperty IRI="https://ontology.emerald-he.eu/classes/privacyLevel"/>
-    </Declaration>
-    <Declaration>
-        <DataProperty IRI="https://ontology.emerald-he.eu/classes/poisonLevel"/>
-    </Declaration>
-    <Declaration>
-        <DataProperty IRI="https://ontology.emerald-he.eu/classes/annualUpdateCompleted"/>
-    </Declaration>
     <EquivalentClasses>
         <Class IRI="https://ontology.emerald-he.eu/classes/ResourceType"/>
         <ObjectOneOf>
@@ -1089,6 +1107,49 @@
             <NamedIndividual IRI="https://ontology.emerald-he.eu/classes/Specification"/>
         </ObjectOneOf>
     </EquivalentClasses>
+    <SubClassOf>
+        <Class IRI="http://webprotege.stanford.edu/R85ripFyJGet52JTSSX6C7"/>
+        <Class IRI="https://ontology.emerald-he.eu/classes/Document"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://webprotege.stanford.edu/R85ripFyJGet52JTSSX6C7"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/hasMultiple"/>
+            <Class IRI="https://ontology.emerald-he.eu/classes/SoftwareResource"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://webprotege.stanford.edu/R8KdvdsrOl22Sv6D0uEl6E2"/>
+        <Class IRI="https://ontology.emerald-he.eu/classes/Compute"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://webprotege.stanford.edu/R8KdvdsrOl22Sv6D0uEl6E2"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="http://webprotege.stanford.edu/R7owL3dPEOR1xtqO8jAqMGV"/>
+            <Datatype abbreviatedIRI="xsd:boolean"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://webprotege.stanford.edu/R8KdvdsrOl22Sv6D0uEl6E2"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="http://webprotege.stanford.edu/R8MGY6RcHjzO0JTH5eflkTC"/>
+            <Datatype abbreviatedIRI="xsd:float"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://webprotege.stanford.edu/R8KdvdsrOl22Sv6D0uEl6E2"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="http://webprotege.stanford.edu/RBiQOlfJqbN9UgURTqH7cS3"/>
+            <Datatype abbreviatedIRI="xsd:float"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://webprotege.stanford.edu/R8KdvdsrOl22Sv6D0uEl6E2"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="http://webprotege.stanford.edu/RBibnAAJPattgNgGxxTNeVM"/>
+            <Datatype abbreviatedIRI="xsd:float"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
     <SubClassOf>
         <Class IRI="https://ontology.emerald-he.eu/classes/ABAC"/>
         <Class IRI="https://ontology.emerald-he.eu/classes/Authorization"/>
@@ -2378,6 +2439,13 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearningModel"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="https://ontology.emerald-he.eu/properties/hasMultiple"/>
+            <Class IRI="https://ontology.emerald-he.eu/classes/Vulnerability"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="https://ontology.emerald-he.eu/classes/MachineLearningModel"/>
         <DataSomeValuesFrom>
             <DataProperty IRI="https://ontology.emerald-he.eu/classes/adv_robustness"/>
             <Datatype abbreviatedIRI="xsd:float"/>
@@ -3589,6 +3657,36 @@ name = metadata.name</Literal>
         <DataProperty IRI="https://ontology.emerald-he.eu/properties/enabled"/>
         <Datatype abbreviatedIRI="xsd:boolean"/>
     </DataPropertyRange>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://webprotege.stanford.edu/R7owL3dPEOR1xtqO8jAqMGV</IRI>
+        <Literal>errorCorrectionEnabled</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://webprotege.stanford.edu/R85ripFyJGet52JTSSX6C7</IRI>
+        <Literal>CodeNotebook</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://webprotege.stanford.edu/R8KdvdsrOl22Sv6D0uEl6E2</IRI>
+        <Literal>QPU</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://webprotege.stanford.edu/R8MGY6RcHjzO0JTH5eflkTC</IRI>
+        <Literal>spamErrorRate</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://webprotege.stanford.edu/RBiQOlfJqbN9UgURTqH7cS3</IRI>
+        <Literal>twoQubitGateErrorRate</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://webprotege.stanford.edu/RBibnAAJPattgNgGxxTNeVM</IRI>
+        <Literal>oneQubitGateErrorRate</Literal>
+    </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>xsd:de.fraunhofer.aisec.cpg.graph.Node</AbbreviatedIRI>
@@ -5398,4 +5496,5 @@ name = metadata.name</Literal>
 
 
 
-<!-- Generated by the OWL API (version 4.5.29.2024-05-13T12:11:03Z) https://github.com/owlcs/owlapi -->
+<!-- Generated by the OWL API (version 4.5.13) https://github.com/owlcs/owlapi -->
+

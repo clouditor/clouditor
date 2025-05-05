@@ -489,6 +489,50 @@ components:
                     type: string
                     description: 'naming schema: AES-128-GCM'
             description: CipherSuite is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        CodeNotebook:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                description:
+                    type: string
+                filetype:
+                    type: string
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                codeIds:
+                    type: array
+                    items:
+                        type: string
+                dataLocation:
+                    $ref: '#/components/schemas/DataLocation'
+                documentChecksums:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DocumentChecksum'
+                documentSignatures:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DocumentSignature'
+                parentId:
+                    type: string
+                schemaValidation:
+                    $ref: '#/components/schemas/SchemaValidation'
+                securityFeatures:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SecurityFeature'
+            description: CodeNotebook is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         CodeRegion:
             type: object
             properties:
@@ -2017,6 +2061,10 @@ components:
                     $ref: '#/components/schemas/DataLocation'
                 parentId:
                     type: string
+                vulnerabilities:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Vulnerability'
             description: MachineLearningModel is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         MachineLearningService:
             type: object
@@ -2542,6 +2590,63 @@ components:
                     items:
                         $ref: '#/components/schemas/SecurityFeature'
             description: PolicyDocument is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        QPU:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                description:
+                    type: string
+                errorCorrectionEnabled:
+                    type: boolean
+                id:
+                    type: string
+                internetAccessibleEndpoint:
+                    type: boolean
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                oneQubitGateErrorRate:
+                    type: number
+                    format: float
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                spamErrorRate:
+                    type: number
+                    format: float
+                twoQubitGateErrorRate:
+                    type: number
+                    format: float
+                encryptionInUse:
+                    $ref: '#/components/schemas/EncryptionInUse'
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
+                networkInterfaceIds:
+                    type: array
+                    items:
+                        type: string
+                redundancies:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Redundancy'
+                remoteAttestation:
+                    $ref: '#/components/schemas/RemoteAttestation'
+                parentId:
+                    type: string
+                resourceLogging:
+                    $ref: '#/components/schemas/ResourceLogging'
+                usageStatistics:
+                    $ref: '#/components/schemas/UsageStatistics'
+            description: QPU is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         RBAC:
             type: object
             properties:
@@ -2667,6 +2772,8 @@ components:
                     $ref: '#/components/schemas/Workflow'
                 codeRepository:
                     $ref: '#/components/schemas/CodeRepository'
+                qpu:
+                    $ref: '#/components/schemas/QPU'
                 container:
                     $ref: '#/components/schemas/Container'
                 function:
@@ -2741,6 +2848,8 @@ components:
                     $ref: '#/components/schemas/FileStorage'
                 objectStorage:
                     $ref: '#/components/schemas/ObjectStorage'
+                codeNotebook:
+                    $ref: '#/components/schemas/CodeNotebook'
                 genericDocument:
                     $ref: '#/components/schemas/GenericDocument'
                 policyDocument:
