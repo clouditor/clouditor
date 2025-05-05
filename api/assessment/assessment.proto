@@ -100,7 +100,6 @@ message AssessEvidencesResponse {
 message AssessmentResult {
   // Assessment result id
   string id = 1 [
-    (tagger.tags) = "gorm:\"primaryKey\"",
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];

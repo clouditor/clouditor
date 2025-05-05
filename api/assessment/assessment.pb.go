@@ -373,7 +373,7 @@ func (x *AssessEvidencesResponse) GetStatusMessage() string {
 type AssessmentResult struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Assessment result id
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty" gorm:"primaryKey"`
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// Time of assessment
 	Timestamp *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
 	// Reference to the metric the assessment was based on
@@ -681,9 +681,9 @@ const file_api_assessment_assessment_proto_rawDesc = "" +
 	"\x06status\x18\x01 \x01(\x0e2).clouditor.assessment.v1.AssessmentStatusR\x06status\"\x83\x01\n" +
 	"\x17AssessEvidencesResponse\x12A\n" +
 	"\x06status\x18\x01 \x01(\x0e2).clouditor.assessment.v1.AssessmentStatusR\x06status\x12%\n" +
-	"\x0estatus_message\x18\x02 \x01(\tR\rstatusMessage\"\xd4\b\n" +
-	"\x10AssessmentResult\x121\n" +
-	"\x02id\x18\x01 \x01(\tB!\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\x02id\x12t\n" +
+	"\x0estatus_message\x18\x02 \x01(\tR\rstatusMessage\"\xbe\b\n" +
+	"\x10AssessmentResult\x12\x1b\n" +
+	"\x02id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12t\n" +
 	"\ttimestamp\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB:\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\ttimestamp\x12'\n" +
 	"\tmetric_id\x18\x03 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\x12\x85\x01\n" +
