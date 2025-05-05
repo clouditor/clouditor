@@ -51,6 +51,9 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+var baseDir = "."
+var defaultMetricsPath = fmt.Sprintf("%s/policies/security-metrics/metrics", baseDir)
+
 // ErrMetricNotFound indicates the certification was not found
 var ErrMetricNotFound = status.Error(codes.NotFound, "metric not found")
 
@@ -63,22 +66,22 @@ func (svc *Service) loadMetrics() (err error) {
 	)
 
 	// Default to loading metrics from our standard metrics repository
-	if svc.loadMetricsFunc == nil && svc.loadExtMetricsFunc == nil {
-		svc.loadMetricsFunc = svc.loadMetricsFromMetricsRepository
+	if svc.loadInternalMetricsFunc == nil && svc.loadExternalMetricsFunc == nil {
+		svc.loadInternalMetricsFunc = svc.loadMetricsFromMetricsRepository
 	}
 
 	// Execute the metric loading functions if they are set
-	if svc.loadMetricsFunc != nil {
-		metrics, err = svc.loadMetricsFunc()
+	if svc.loadInternalMetricsFunc != nil {
+		metrics, err = svc.loadInternalMetricsFunc()
 		if err != nil {
 			return fmt.Errorf("could not load metrics: %w", err)
 		}
 	}
 
-	if svc.loadExtMetricsFunc != nil {
-		extMetrics, err = svc.loadExtMetricsFunc()
+	if svc.loadExternalMetricsFunc != nil {
+		extMetrics, err = svc.loadExternalMetricsFunc()
 		if err != nil {
-			return fmt.Errorf("could not load metrics: %w", err)
+			return fmt.Errorf("could not load external metrics: %w", err)
 		}
 		metrics = append(metrics, extMetrics...)
 	}
@@ -126,7 +129,7 @@ func prepareMetric(m *assessment.Metric) (err error) {
 	)
 
 	// Load the Rego file
-	metricPath := fmt.Sprintf("policies/security-metrics/metrics/%s/%s/metric.rego", m.Category, m.Id)
+	metricPath := fmt.Sprintf("%s/%s/%s/metric.rego", defaultMetricsPath, m.Category, m.Id)
 
 	m.Implementation, err = loadMetricImplementation(m.Id, metricPath)
 	if err != nil {
@@ -155,13 +158,10 @@ func prepareMetric(m *assessment.Metric) (err error) {
 	return
 }
 
-// loadEmbeddedMetrics loads metric definitions by walking through YAML files
+// loadMetricsFromMetricsRepository loads metric definitions by walking through YAML files
 // in the policies/security-metrics/metrics directory.
-// use path ...string --> load default metrics + each given path (or only if given?)
+// it uses all given paths or the default path if none are provided.
 func (svc *Service) loadMetricsFromMetricsRepository(path ...string) (metrics []*assessment.Metric, err error) {
-	var baseDir = "."
-	defaultMetricsPath := fmt.Sprintf("%s/policies/security-metrics/metrics", baseDir)
-
 	metrics = make([]*assessment.Metric, 0)
 
 	// If no paths are provided, use the default path "policies/security-metrics/metrics"
@@ -169,7 +169,7 @@ func (svc *Service) loadMetricsFromMetricsRepository(path ...string) (metrics []
 		path = append(path, defaultMetricsPath)
 	}
 
-	// Walk through the provided paths
+	// Walk through the provided paths and import metrics
 	for _, p := range path {
 		err = filepath.Walk(p, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -192,7 +192,7 @@ func (svc *Service) loadMetricsFromMetricsRepository(path ...string) (metrics []
 			dec := yaml.NewDecoder(bytes.NewReader(b))
 			err = dec.Decode(&metric)
 			if err != nil {
-				return fmt.Errorf("error decoding unmarshalling metric %s: %w", path, err)
+				return fmt.Errorf("error decoding metric %s: %w", path, err)
 			}
 
 			// Set the category automatically, since it is not included in the yaml definition
@@ -204,7 +204,7 @@ func (svc *Service) loadMetricsFromMetricsRepository(path ...string) (metrics []
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("error walking through metrics directory: %w", err)
+		return nil, fmt.Errorf("error reading metrics directory: %w", err)
 	}
 
 	return metrics, nil

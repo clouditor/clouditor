@@ -263,12 +263,11 @@ var (
 				ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
 				ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID1),
 				Metrics: []*assessment.Metric{{
-					Id:            testdata.MockMetricID1,
-					Description:   testdata.MockMetricDescription1,
-					Category:      testdata.MockMetricCategory1,
-					Version:       "1.0",
-					Comments:      testdata.MockMetricComments1,
-					Configuration: []*assessment.MetricConfiguration{},
+					Id:          testdata.MockMetricID1,
+					Description: testdata.MockMetricDescription1,
+					Category:    testdata.MockMetricCategory1,
+					Version:     "1.0",
+					Comments:    testdata.MockMetricComments1,
 				}}},
 		}}
 	MockControl11 = &orchestrator.Control{
@@ -282,12 +281,11 @@ var (
 		ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
 		ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID1),
 		Metrics: []*assessment.Metric{{
-			Id:            testdata.MockMetricID1,
-			Description:   testdata.MockMetricDescription1,
-			Category:      testdata.MockMetricCategory1,
-			Version:       "1.0",
-			Comments:      testdata.MockMetricComments1,
-			Configuration: []*assessment.MetricConfiguration{},
+			Id:          testdata.MockMetricID1,
+			Description: testdata.MockMetricDescription1,
+			Category:    testdata.MockMetricCategory1,
+			Version:     "1.0",
+			Comments:    testdata.MockMetricComments1,
 		},
 		}}
 	MockControl2 = &orchestrator.Control{
@@ -308,11 +306,11 @@ var (
 				ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
 				ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID1),
 				Metrics: []*assessment.Metric{{
-					Id:            testdata.MockMetricID1,
-					Description:   testdata.MockMetricDescription1,
-					Version:       "1.0",
-					Comments:      "This is a comment",
-					Configuration: []*assessment.MetricConfiguration{},
+					Id:          testdata.MockMetricID1,
+					Description: testdata.MockMetricDescription1,
+					Category:    testdata.MockMetricCategory1,
+					Version:     "1.0",
+					Comments:    "This is a comment",
 				}},
 			},
 		},
@@ -344,11 +342,11 @@ var (
 		Description:       testdata.MockControlDescription,
 		AssuranceLevel:    &testdata.AssuranceLevelHigh,
 		Metrics: []*assessment.Metric{{
-			Id:            testdata.MockMetricID1,
-			Description:   testdata.MockMetricDescription1,
-			Version:       "1.0",
-			Comments:      "This is a comment",
-			Configuration: []*assessment.MetricConfiguration{},
+			Id:          testdata.MockMetricID1,
+			Description: testdata.MockMetricDescription1,
+			Category:    testdata.MockMetricCategory1,
+			Version:     "1.0",
+			Comments:    "This is a comment",
 		}},
 	}
 	MockControl5 = &orchestrator.Control{
@@ -359,11 +357,11 @@ var (
 		Description:       testdata.MockControlDescription,
 		AssuranceLevel:    nil,
 		Metrics: []*assessment.Metric{{
-			Id:            testdata.MockMetricID1,
-			Description:   testdata.MockMetricDescription1,
-			Version:       "1.0",
-			Comments:      "This is a comment",
-			Configuration: []*assessment.MetricConfiguration{},
+			Id:          testdata.MockMetricID1,
+			Description: testdata.MockMetricDescription1,
+			Category:    testdata.MockMetricCategory1,
+			Version:     "1.0",
+			Comments:    "This is a comment",
 		}},
 	}
 	// Control without sub-control
@@ -379,11 +377,10 @@ var (
 
 func NewMetric() *assessment.Metric {
 	return &assessment.Metric{
-		Id:            testdata.MockMetricID1,
-		Description:   testdata.MockMetricDescription1,
-		Version:       "1.0",
-		Comments:      "This is a comment",
-		Configuration: []*assessment.MetricConfiguration{},
+		Id:          testdata.MockMetricID1,
+		Description: testdata.MockMetricDescription1,
+		Version:     "1.0",
+		Comments:    "This is a comment",
 	}
 
 }

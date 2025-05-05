@@ -2,6 +2,8 @@ package testdata
 
 import (
 	"google.golang.org/protobuf/types/known/structpb"
+	"os"
+	"path/filepath"
 )
 
 const (
@@ -126,6 +128,48 @@ const (
 	MockEvaluationResult9ID  = "99999999-9999-9999-9999-999999999999"
 	MockEvaluationResult10ID = "11111111-1111-1111-1111-111111111110"
 )
+
+func MockMetricsDirectory1() (string, error) {
+	tempDir1, err := os.MkdirTemp("", "")
+	metricsDir1 := filepath.Join(tempDir1, "policies", "metrics", "metrics", "TestCategory", "TestMetric")
+	err = os.MkdirAll(metricsDir1, 0755)
+
+	// Create test YAML files
+	validYaml := `
+id: TestMetric
+description: Test Metric 1
+version: "1.0"
+comments: Test comments
+properties:
+  prop1:
+    operator: "=="
+    targetValue: "123"
+`
+	err = os.WriteFile(filepath.Join(metricsDir1, "valid.yaml"), []byte(validYaml), 0644)
+
+	return tempDir1, err
+}
+
+func MockMetricsDirectory2() (string, error) {
+	tempDir2, err := os.MkdirTemp("", "")
+	metricsDir2 := filepath.Join(tempDir2, "policies", "metrics", "metrics", "TestCategory", "TestMetric")
+	err = os.MkdirAll(metricsDir2, 0755)
+
+	// Create test YAML files
+	validYaml := `
+id: TestMetric
+description: Test Metric 1
+version: "1.0"
+comments: Test comments
+properties:
+  prop1:
+    operator: "=="
+    targetValue: "123"
+`
+	err = os.WriteFile(filepath.Join(metricsDir2, "valid.yaml"), []byte(validYaml), 0644)
+
+	return tempDir2, err
+}
 
 var (
 	// Catalog

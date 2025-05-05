@@ -662,8 +662,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
 		wg              sync.WaitGroup
-		//TODO(immqu): this value changes based on how many metrics are applicable to the evidence; we should make this test independent from the metrics that we have
-		hookCounts = 20
+		hookCounts      = 20
 	)
 
 	wg.Add(hookCounts)

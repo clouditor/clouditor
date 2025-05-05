@@ -132,12 +132,11 @@ func Test_storage_Create(t *testing.T) {
 	)
 
 	metric = &assessment.Metric{
-		Id:            testdata.MockMetricID1,
-		Category:      testdata.MockMetricCategory1,
-		Description:   testdata.MockMetricDescription1,
-		Version:       testdata.MockMetricVersion1,
-		Comments:      testdata.MockMetricComments1,
-		Configuration: []*assessment.MetricConfiguration{MockMetricConfiguration1},
+		Id:          testdata.MockMetricID1,
+		Category:    testdata.MockMetricCategory1,
+		Description: testdata.MockMetricDescription1,
+		Version:     testdata.MockMetricVersion1,
+		Comments:    testdata.MockMetricComments1,
 	}
 	// Check if metric has all necessary fields
 	assert.NoError(t, api.Validate(metric))
@@ -198,12 +197,11 @@ func Test_storage_Get(t *testing.T) {
 	assert.Equal(t, target, gotTarget3)
 
 	var metric = &assessment.Metric{
-		Id:            testdata.MockMetricID1,
-		Category:      testdata.MockMetricCategory1,
-		Description:   testdata.MockMetricDescription1,
-		Version:       testdata.MockMetricVersion1,
-		Comments:      testdata.MockMetricComments1,
-		Configuration: []*assessment.MetricConfiguration{MockMetricConfiguration1},
+		Id:          testdata.MockMetricID1,
+		Category:    testdata.MockMetricCategory1,
+		Description: testdata.MockMetricDescription1,
+		Version:     testdata.MockMetricVersion1,
+		Comments:    testdata.MockMetricComments1,
 	}
 	// Check if metric has all necessary fields
 	assert.NoError(t, api.Validate(metric))
@@ -431,11 +429,10 @@ func Test_storage_Update(t *testing.T) {
 		Description: testdata.MockTargetOfEvaluationDescription1,
 		ConfiguredMetrics: []*assessment.Metric{
 			{
-				Id:            testdata.MockMetricID1,
-				Description:   testdata.MockMetricDescription1,
-				Version:       testdata.MockMetricVersion1,
-				Comments:      testdata.MockMetricComments1,
-				Configuration: []*assessment.MetricConfiguration{MockMetricConfiguration1},
+				Id:          testdata.MockMetricID1,
+				Description: testdata.MockMetricDescription1,
+				Version:     testdata.MockMetricVersion1,
+				Comments:    testdata.MockMetricComments1,
 			},
 		},
 	}

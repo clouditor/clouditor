@@ -56,12 +56,11 @@ func Test_regoEval_Eval(t *testing.T) {
 		src        MetricsSource
 	}
 	tests := []struct {
-		name       string
-		fields     fields
-		args       args
-		applicable bool
-		compliant  map[string]bool
-		wantErr    assert.WantErr
+		name      string
+		fields    fields
+		args      args
+		compliant map[string]bool
+		wantErr   assert.WantErr
 	}{
 		{
 			name: "ObjectStorage: Compliant Case",
@@ -240,7 +239,6 @@ func Test_regoEval_Eval(t *testing.T) {
 				evidenceID: mockVM2EvidenceID,
 				src:        &mockMetricsSource{t: t},
 			},
-			applicable: true,
 			compliant: map[string]bool{
 				"AutomaticUpdatesEnabled":  false,
 				"AutomaticUpdatesInterval": false,

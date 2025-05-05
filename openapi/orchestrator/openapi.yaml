@@ -1977,6 +1977,8 @@ components:
         Metric:
             required:
                 - id
+                - description
+                - version
             type: object
             properties:
                 id:
@@ -1993,10 +1995,6 @@ components:
                     description: Optional comments that describe the purpose of this metric. They may also describe a scenario in which the metric can be useful.
                 category:
                     type: string
-                configuration:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/MetricConfiguration'
                 implementation:
                     allOf:
                         - $ref: '#/components/schemas/MetricImplementation'

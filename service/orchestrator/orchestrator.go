@@ -98,10 +98,11 @@ type Service struct {
 
 	storage persistence.Storage
 
-	// loadMetricsFunc is a function that is used to initially load metrics at the start of the orchestrator
-	loadMetricsFunc func(path ...string) ([]*assessment.Metric, error)
+	// loadInternalMetricsFunc is a function that is used to initially load metrics at the start of the orchestrator
+	loadInternalMetricsFunc func(path ...string) ([]*assessment.Metric, error)
 
-	loadExtMetricsFunc func() ([]*assessment.Metric, error)
+	// loadExternalMetricsFunc is a function that is used to initially load metrics from an external repository at the start of the orchestrator
+	loadExternalMetricsFunc func() ([]*assessment.Metric, error)
 
 	catalogsFolder string
 
@@ -122,7 +123,7 @@ func init() {
 // WithExternalMetrics can be used to load metric definitions from an external source
 func WithExternalMetrics(f func() ([]*assessment.Metric, error)) service.Option[*Service] {
 	return func(s *Service) {
-		s.loadExtMetricsFunc = f
+		s.loadExternalMetricsFunc = f
 	}
 }
 

@@ -108,15 +108,14 @@ type Metric struct {
 	// The version of this metric
 	Version string `protobuf:"bytes,3,opt,name=version,proto3" json:"version,omitempty"`
 	// Optional comments that describe the purpose of this metric. They may also describe a scenario in which the metric can be useful.
-	Comments      string                 `protobuf:"bytes,4,opt,name=comments,proto3" json:"comments,omitempty"`
-	Category      string                 `protobuf:"bytes,5,opt,name=category,proto3" json:"category,omitempty"`
-	Configuration []*MetricConfiguration `protobuf:"bytes,6,rep,name=configuration,proto3" json:"configuration,omitempty"`
+	Comments string `protobuf:"bytes,4,opt,name=comments,proto3" json:"comments,omitempty"`
+	Category string `protobuf:"bytes,5,opt,name=category,proto3" json:"category,omitempty"`
 	// The implementation of this metric. This ensures that we are modelling an
 	// association between a Metric and its MetricImplementation.
-	Implementation *MetricImplementation `protobuf:"bytes,7,opt,name=implementation,proto3,oneof" json:"implementation,omitempty"`
+	Implementation *MetricImplementation `protobuf:"bytes,6,opt,name=implementation,proto3,oneof" json:"implementation,omitempty"`
 	// Optional, but required if the metric is removed. The metric is not deleted
 	// for backward compatibility and the timestamp is set to the time of removal.
-	DeprecatedSince *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=deprecated_since,json=deprecatedSince,proto3,oneof" json:"deprecated_since,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
+	DeprecatedSince *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=deprecated_since,json=deprecatedSince,proto3,oneof" json:"deprecated_since,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -184,13 +183,6 @@ func (x *Metric) GetCategory() string {
 		return x.Category
 	}
 	return ""
-}
-
-func (x *Metric) GetConfiguration() []*MetricConfiguration {
-	if x != nil {
-		return x.Configuration
-	}
-	return nil
 }
 
 func (x *Metric) GetImplementation() *MetricImplementation {
@@ -375,17 +367,18 @@ var File_api_assessment_metric_proto protoreflect.FileDescriptor
 
 const file_api_assessment_metric_proto_rawDesc = "" +
 	"\n" +
-	"\x1bapi/assessment/metric.proto\x12\x17clouditor.assessment.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\xf8\x03\n" +
+	"\x1bapi/assessment/metric.proto\x12\x17clouditor.assessment.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\xb3\x03\n" +
 	"\x06Metric\x12\x1a\n" +
 	"\x02id\x18\x01 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\x12 \n" +
-	"\vdescription\x18\x02 \x01(\tR\vdescription\x12!\n" +
-	"\aversion\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\aversion\x12\x1a\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\x12,\n" +
+	"\vdescription\x18\x02 \x01(\tB\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\vdescription\x12$\n" +
+	"\aversion\x18\x03 \x01(\tB\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\aversion\x12\x1a\n" +
 	"\bcomments\x18\x04 \x01(\tR\bcomments\x12\x1a\n" +
-	"\bcategory\x18\x05 \x01(\tR\bcategory\x12R\n" +
-	"\rconfiguration\x18\x06 \x03(\v2,.clouditor.assessment.v1.MetricConfigurationR\rconfiguration\x12Z\n" +
-	"\x0eimplementation\x18\a \x01(\v2-.clouditor.assessment.v1.MetricImplementationH\x00R\x0eimplementation\x88\x01\x01\x12}\n" +
-	"\x10deprecated_since\x18\b \x01(\v2\x1a.google.protobuf.TimestampB1\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"H\x01R\x0fdeprecatedSince\x88\x01\x01B\x11\n" +
+	"\bcategory\x18\x05 \x01(\tR\bcategory\x12Z\n" +
+	"\x0eimplementation\x18\x06 \x01(\v2-.clouditor.assessment.v1.MetricImplementationH\x00R\x0eimplementation\x88\x01\x01\x12}\n" +
+	"\x10deprecated_since\x18\a \x01(\v2\x1a.google.protobuf.TimestampB1\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"H\x01R\x0fdeprecatedSince\x88\x01\x01B\x11\n" +
 	"\x0f_implementationB\x13\n" +
 	"\x11_deprecated_since\"\xe4\x03\n" +
 	"\x13MetricConfiguration\x12A\n" +
@@ -431,18 +424,17 @@ var file_api_assessment_metric_proto_goTypes = []any{
 	(*structpb.Value)(nil),             // 5: google.protobuf.Value
 }
 var file_api_assessment_metric_proto_depIdxs = []int32{
-	2, // 0: clouditor.assessment.v1.Metric.configuration:type_name -> clouditor.assessment.v1.MetricConfiguration
-	3, // 1: clouditor.assessment.v1.Metric.implementation:type_name -> clouditor.assessment.v1.MetricImplementation
-	4, // 2: clouditor.assessment.v1.Metric.deprecated_since:type_name -> google.protobuf.Timestamp
-	5, // 3: clouditor.assessment.v1.MetricConfiguration.target_value:type_name -> google.protobuf.Value
-	4, // 4: clouditor.assessment.v1.MetricConfiguration.updated_at:type_name -> google.protobuf.Timestamp
-	0, // 5: clouditor.assessment.v1.MetricImplementation.lang:type_name -> clouditor.assessment.v1.MetricImplementation.Language
-	4, // 6: clouditor.assessment.v1.MetricImplementation.updated_at:type_name -> google.protobuf.Timestamp
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	3, // 0: clouditor.assessment.v1.Metric.implementation:type_name -> clouditor.assessment.v1.MetricImplementation
+	4, // 1: clouditor.assessment.v1.Metric.deprecated_since:type_name -> google.protobuf.Timestamp
+	5, // 2: clouditor.assessment.v1.MetricConfiguration.target_value:type_name -> google.protobuf.Value
+	4, // 3: clouditor.assessment.v1.MetricConfiguration.updated_at:type_name -> google.protobuf.Timestamp
+	0, // 4: clouditor.assessment.v1.MetricImplementation.lang:type_name -> clouditor.assessment.v1.MetricImplementation.Language
+	4, // 5: clouditor.assessment.v1.MetricImplementation.updated_at:type_name -> google.protobuf.Timestamp
+	6, // [6:6] is the sub-list for method output_type
+	6, // [6:6] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_api_assessment_metric_proto_init() }

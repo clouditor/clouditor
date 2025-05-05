@@ -39,12 +39,6 @@ var (
 	ErrTargetOfEvaluationIDIsInvalid = errors.New("target of evaluation id is invalid")
 )
 
-// MarshalJSON is a custom implementation of JSON marshalling to correctly
-// serialize the Range type because the inner types, such as Range_AllowedValues
-// are missing json struct tags. This is needed if the Range type is marshalled
-// on its own (for example) as a single field in a database. In gRPC messages,
-// the protojson.Marshal function takes care of this.
-
 // Hash provides a simple string based hash for this metric configuration. It can be used
 // to provide a key for a map or a cache.
 func (x *MetricConfiguration) Hash() string {

@@ -103,7 +103,7 @@ func (*mockMetricsSource) Metrics() (metrics []*assessment.Metric, err error) {
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("(mockMetrics) error walking through metrics directory: %w", err)
+		return nil, fmt.Errorf("error walking through metrics directory: %w", err)
 	}
 
 	return metrics, nil
