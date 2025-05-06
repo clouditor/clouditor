@@ -646,25 +646,7 @@ func TestAssessmentResultHook(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
-					Result: &assessment.AssessmentResult{
-						Id:                   testdata.MockAssessmentResultID,
-						MetricId:             testdata.MockMetricID1,
-						EvidenceId:           testdata.MockEvidenceID1,
-						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-						Timestamp:            timestamppb.Now(),
-						MetricConfiguration: &assessment.MetricConfiguration{
-							TargetValue:          toStruct(1.0),
-							Operator:             ">=",
-							IsDefault:            true,
-							TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-							MetricId:             testdata.MockMetricID1,
-						},
-						ComplianceComment: testdata.MockAssessmentResultNonComplianceComment,
-						Compliant:         true,
-						ResourceId:        testdata.MockResourceID1,
-						ResourceTypes:     []string{"ResourceType"},
-						ToolId:            util.Ref(assessment.AssessmentToolId),
-					},
+					Result: orchestratortest.MockAssessmentResult1,
 				},
 			},
 			wantErr: assert.Nil[error],
@@ -751,25 +733,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
-					Result: &assessment.AssessmentResult{
-						Id:                   uuid.NewString(),
-						MetricId:             "assessmentResultMetricID",
-						EvidenceId:           testdata.MockEvidenceID1,
-						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-						Timestamp:            timestamppb.Now(),
-						MetricConfiguration: &assessment.MetricConfiguration{
-							TargetValue:          toStruct(1.0),
-							Operator:             "<=",
-							IsDefault:            true,
-							TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-							MetricId:             testdata.MockMetricID1,
-						},
-						ComplianceComment: testdata.MockAssessmentResultNonComplianceComment,
-						Compliant:         true,
-						ResourceId:        testdata.MockResourceID1,
-						ResourceTypes:     []string{"ResourceType"},
-						ToolId:            util.Ref(assessment.AssessmentToolId),
-					},
+					Result: orchestratortest.MockAssessmentResult1,
 				},
 			},
 			wantErr:  assert.NoError,
