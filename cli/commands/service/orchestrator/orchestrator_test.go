@@ -28,7 +28,6 @@ package orchestrator
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"os"
 	"testing"
 
@@ -43,7 +42,6 @@ import (
 	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
 	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func TestMain(m *testing.M) {
@@ -173,23 +171,4 @@ func TestNewGetControlCommand(t *testing.T) {
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response)
 	assert.Equal(t, testdata.MockControlID1, response.Id)
-}
-
-func toStruct(f float32) (s *structpb.Value) {
-	var (
-		b   []byte
-		err error
-	)
-
-	s = new(structpb.Value)
-
-	b, err = json.Marshal(f)
-	if err != nil {
-		return nil
-	}
-	if err = json.Unmarshal(b, &s); err != nil {
-		return nil
-	}
-
-	return
 }
