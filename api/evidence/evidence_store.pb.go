@@ -427,10 +427,10 @@ const file_api_evidence_evidence_store_proto_rawDesc = "" +
 	"page_token\x18\v \x01(\tR\tpageToken\x12\x19\n" +
 	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
 	"\x03asc\x18\r \x01(\bR\x03ascB\t\n" +
-	"\a_filter\"\x9e\x01\n" +
+	"\a_filter\"\x9d\x01\n" +
 	"\x06Filter\x12D\n" +
-	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x00R\x14targetOfEvaluationId\x88\x01\x01\x12&\n" +
-	"\atool_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x01R\x06toolId\x88\x01\x01B\x1a\n" +
+	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x00R\x14targetOfEvaluationId\x88\x01\x01\x12%\n" +
+	"\atool_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x01R\x06toolId\x88\x01\x01B\x1a\n" +
 	"\x18_target_of_evaluation_idB\n" +
 	"\n" +
 	"\b_tool_id\"~\n" +
