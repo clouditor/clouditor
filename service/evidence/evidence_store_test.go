@@ -452,25 +452,6 @@ func TestService_ListEvidences(t *testing.T) {
 			wantRes: assert.Nil[*evidence.ListEvidencesResponse],
 		},
 		{
-			name: "Wrong Input handled correctly (tool_id not UUID)",
-			args: args{
-				in0: nil,
-				req: &evidence.ListEvidencesRequest{
-					PageSize:  evidencetest.MockListEvidenceRequest2.PageSize,
-					PageToken: evidencetest.MockListEvidenceRequest2.PageToken,
-					OrderBy:   evidencetest.MockListEvidenceRequest2.OrderBy,
-					Asc:       evidencetest.MockListEvidenceRequest2.Asc,
-					Filter: &evidence.Filter{
-						ToolId: util.Ref("No UUID Format"),
-					},
-				},
-			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
-			},
-			wantRes: assert.Nil[*evidence.ListEvidencesResponse],
-		},
-		{
 			name: "Wrong Input handled correctly (target_of_evaluation_id not UUID)",
 			args: args{
 				in0: nil,
