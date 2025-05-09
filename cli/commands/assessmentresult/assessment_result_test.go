@@ -28,7 +28,6 @@ package assessmentresult
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"os"
 	"testing"
 
@@ -40,7 +39,6 @@ import (
 	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
 	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func TestMain(m *testing.M) {
@@ -93,23 +91,4 @@ func TestNewListResultsCommand(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Results)
-}
-
-func toStruct(f float32) (s *structpb.Value) {
-	var (
-		b   []byte
-		err error
-	)
-
-	s = new(structpb.Value)
-
-	b, err = json.Marshal(f)
-	if err != nil {
-		return nil
-	}
-	if err = json.Unmarshal(b, &s); err != nil {
-		return nil
-	}
-
-	return
 }
