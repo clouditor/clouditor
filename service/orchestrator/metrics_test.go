@@ -65,77 +65,57 @@ var (
 		TargetValue:          testdata.MockMetricConfigurationTargetValueString,
 	}
 
-	MockMetricRange1 = &assessment.Range{
-		Range: &assessment.Range_AllowedValues{
-			AllowedValues: &assessment.AllowedValues{
-				Values: []*structpb.Value{
-					structpb.NewBoolValue(false),
-					structpb.NewBoolValue(true),
-				}}}}
+	MockMetricConfiguration2 = &assessment.MetricConfiguration{
+		MetricId:             testdata.MockMetricID2,
+		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
+		Operator:             "==",
+		TargetValue:          testdata.MockMetricConfigurationTargetValueString,
+	}
 
 	MockMetric1 = &assessment.Metric{
 		Id:          testdata.MockMetricID1,
-		Category:    testdata.MockMetricCategory1,
-		Name:        testdata.MockMetricName1,
 		Description: testdata.MockMetricDescription1,
-		Scale:       assessment.Metric_ORDINAL,
-		Range:       MockMetricRange1,
+		Category:    testdata.MockCategoryName,
+		Version:     "1.0",
+		Comments:    "Test comments",
 	}
 )
 
-func TestService_loadMetrics(t *testing.T) {
-	type fields struct {
-		AssessmentResultHooks []assessment.ResultHookFunc
-		storage               persistence.Storage
-		metricsFile           string
-		loadMetricsFunc       func() ([]*assessment.Metric, error)
-		catalogsFolder        string
-		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
-		events                chan *orchestrator.MetricChangeEvent
-	}
+func Test_loadMetricsFromRepository(t *testing.T) {
+	// Create a temporary directory structure for test files
+	var tempDir1, err = testdata.MockMetricsDirectory1()
+	assert.NoError(t, err)
+
+	tempDir2, err := testdata.MockMetricsDirectory2()
+	assert.NoError(t, err)
+
 	tests := []struct {
-		name    string
-		fields  fields
-		wantErr assert.ErrorAssertionFunc
+		name       string
+		path       []string
+		wantMetric []*assessment.Metric
+		wantErr    assert.ErrorAssertionFunc
 	}{
 		{
-			name: "json not found",
-			fields: fields{
-				metricsFile: "notfound.json",
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, os.ErrNotExist)
-			},
+			name:    "Invalid path",
+			path:    []string{"doesnotexist"},
+			wantErr: assert.Error,
 		},
 		{
-			// There is a storage error for creating a single metric which is not forwarded/returned
-			name: "storage error (but not returned)",
-			fields: fields{
-				metricsFile: "metrics.json",
-				storage:     &testutil.StorageWithError{CreateErr: ErrSomeError},
-			},
-			wantErr: assert.NoError,
-		},
-		{
-			name: "custom loading function with error",
-			fields: fields{
-				loadMetricsFunc: func() ([]*assessment.Metric, error) {
-					return nil, ErrSomeError
+			name: "Happy path",
+			path: []string{tempDir1, tempDir2},
+			wantMetric: []*assessment.Metric{
+				{
+					Id:          "TestMetric",
+					Description: "Test Metric 1",
+					Version:     "1.0",
+					Comments:    "Test comments",
 				},
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrSomeError)
-			},
-		},
-		{
-			// To test more accurately, we would need, e.g. an integration test since this function only returns error
-			name: "happy path",
-			fields: fields{
-				// nil enforce the local embedded metric function to be used
-				loadMetricsFunc: nil,
-				// empty string enforces the DefaultValue to be used
-				metricsFile: DefaultMetricsFile,
-				storage:     testutil.NewInMemoryStorage(t),
+				{
+					Id:          "TestMetric",
+					Description: "Test Metric 2",
+					Version:     "1.0",
+					Comments:    "Test comments",
+				},
 			},
 			wantErr: assert.NoError,
 		},
@@ -143,18 +123,17 @@ func TestService_loadMetrics(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc := &Service{
-				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
-				storage:               tt.fields.storage,
-				metricsFile:           tt.fields.metricsFile,
-				loadMetricsFunc:       tt.fields.loadMetricsFunc,
-				catalogsFolder:        tt.fields.catalogsFolder,
-				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
-				events:                tt.fields.events,
+			svc := &Service{}
+			gotMetrics, err := svc.loadMetricsFromMetricsRepository(tt.path...)
+
+			if tt.wantMetric != nil {
+				assert.NoError(t, api.Validate(gotMetrics[0]))
+				assert.NoError(t, api.Validate(gotMetrics[1]))
 			}
 
-			err := svc.loadMetrics()
-			tt.wantErr(t, err)
+			if tt.wantErr(t, err) && err != nil {
+				assert.ErrorContains(t, err, "error accessing path")
+			}
 		})
 	}
 }
@@ -190,10 +169,10 @@ func Test_loadMetricImplementation(t *testing.T) {
 			wantImpl: &assessment.MetricImplementation{
 				MetricId: testdata.MockMetricID1,
 				Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
-				Code: `package clouditor.metrics.admin_mfa_enabled
+				Code: `package metrics.iam.admin_mfa_enabled
 
-import data.clouditor.compare
-import future.keywords.every
+import data.compare
+import rego.v1
 import input as identity
 
 default applicable = false
@@ -201,23 +180,13 @@ default applicable = false
 default compliant = false
 
 applicable if {
-	# we are only interested in some kind of privileged user    
-	identity.privileged
+    # we are only interested in some kind of privileged user
+    identity.privileged
 }
 
 compliant if {
-	# count the number of "factors"
-	compare(data.operator, data.target_value, count(identity.authenticity))
-
-	# also make sure, that we do not have any "NoAuthentication" in the factor and all are activated
-	every factor in identity.authenticity {
-		# TODO(oxisto): we do not have this type property (yet)
-		not factor.type == "NoAuthentication"
-
-		factor.activated == true
-	}
-}
-`,
+	compare(data.operator, data.target_value, identity.enforceMFA)
+}`,
 			},
 			wantErr: assert.NoError,
 		},
@@ -267,20 +236,18 @@ func TestService_CreateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:       testdata.MockMetricID1,
-						Category: testdata.MockMetricCategory1,
-						Name:     testdata.MockMetricName1,
-						Scale:    assessment.Metric_ORDINAL,
-						Range:    &assessment.Range{Range: &assessment.Range_MinMax{}},
+						Id:          testdata.MockMetricID1,
+						Description: testdata.MockMetricDescription1,
+						Version:     "1.0",
+						Comments:    "Test comments",
 					},
 				},
 			},
 			wantMetric: &assessment.Metric{
-				Id:       testdata.MockMetricID1,
-				Category: testdata.MockMetricCategory1,
-				Name:     testdata.MockMetricName1,
-				Scale:    assessment.Metric_ORDINAL,
-				Range:    &assessment.Range{Range: &assessment.Range_MinMax{}},
+				Id:          testdata.MockMetricID1,
+				Description: testdata.MockMetricDescription1,
+				Version:     "1.0",
+				Comments:    "Test comments",
 			},
 			wantErr: assert.NoError,
 		},
@@ -310,10 +277,9 @@ func TestService_CreateMetric(t *testing.T) {
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
 						Id:              "TLSVersion",
-						Category:        testdata.MockMetricCategory1,
-						Name:            "TLSMetricMockName",
-						Scale:           assessment.Metric_NOMINAL,
-						Range:           &assessment.Range{},
+						Description:     testdata.MockMetricDescription1,
+						Version:         "1.0",
+						Comments:        "Test comments",
 						DeprecatedSince: timestamppb.Now(),
 					},
 				},
@@ -334,11 +300,10 @@ func TestService_CreateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:       "TLSVersion",
-						Category: "Transport Encryption",
-						Name:     "TLSMetricMockName",
-						Scale:    assessment.Metric_NOMINAL,
-						Range:    &assessment.Range{},
+						Id:          "TLSVersion",
+						Description: testdata.MockMetricDescription1,
+						Version:     "1.0",
+						Comments:    "Test comments",
 					},
 				},
 			},
@@ -356,11 +321,10 @@ func TestService_CreateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:       testdata.MockMetricName1,
-						Category: testdata.MockMetricCategory1,
-						Name:     testdata.MockMetricName1,
-						Scale:    assessment.Metric_NOMINAL,
-						Range:    &assessment.Range{},
+						Id:          testdata.MockMetricName1,
+						Description: testdata.MockMetricDescription1,
+						Version:     "1.0",
+						Comments:    "Test comments",
 					},
 				},
 			},
@@ -378,11 +342,10 @@ func TestService_CreateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:       testdata.MockMetricID1,
-						Category: testdata.MockMetricCategory1,
-						Name:     testdata.MockMetricName1,
-						Scale:    assessment.Metric_NOMINAL,
-						Range:    &assessment.Range{},
+						Id:          testdata.MockMetricName1,
+						Description: testdata.MockMetricDescription1,
+						Version:     "1.0",
+						Comments:    "Test comments",
 					},
 				},
 			},
@@ -429,6 +392,7 @@ func TestService_UpdateMetric(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(&assessment.Metric{Id: "TransportEncryptionEnabled"})
+					_ = s.Create(&orchestrator.TargetOfEvaluation{Id: testdata.MockTargetOfEvaluationID1})
 				}),
 			},
 			args: args{
@@ -436,20 +400,18 @@ func TestService_UpdateMetric(t *testing.T) {
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
 						Id:              "TransportEncryptionEnabled",
-						Category:        "Transport Encryption",
-						Name:            "A slightly updated metric",
-						Scale:           assessment.Metric_NOMINAL,
-						Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+						Description:     testdata.MockMetricDescription1,
+						Version:         "1.0",
+						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
 					},
 				},
 			},
 			wantMetric: &assessment.Metric{
 				Id:              "TransportEncryptionEnabled",
-				Category:        "Transport Encryption",
-				Name:            "A slightly updated metric",
-				Scale:           assessment.Metric_NOMINAL,
-				Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+				Description:     testdata.MockMetricDescription1,
+				Version:         "1.0",
+				Comments:        "Test comments",
 				DeprecatedSince: timestamp,
 			},
 			wantErr: assert.NoError,
@@ -464,10 +426,9 @@ func TestService_UpdateMetric(t *testing.T) {
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
 						Id:              "TransportEncryptionEnabled",
-						Category:        "Transport Encryption",
-						Name:            "A slightly updated metric",
-						Scale:           assessment.Metric_NOMINAL,
-						Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+						Description:     testdata.MockMetricDescription1,
+						Version:         "1.0",
+						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
 					},
 				},
@@ -485,11 +446,9 @@ func TestService_UpdateMetric(t *testing.T) {
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
 						Id:              "TransportEncryptionEnabled",
-						Category:        "Transport Encryption",
-						Name:            "TransportEncryptionEnabled",
 						Description:     testdata.MockMetricDescription1,
-						Scale:           assessment.Metric_NOMINAL,
-						Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+						Version:         "1.0",
+						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
 					},
 				},
@@ -507,10 +466,9 @@ func TestService_UpdateMetric(t *testing.T) {
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
 						Id:              "DoesProbablyNotExist",
-						Category:        "Something",
-						Name:            "UpdateMetricName",
-						Scale:           assessment.Metric_NOMINAL,
-						Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+						Description:     testdata.MockMetricDescription1,
+						Version:         "1.0",
+						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
 					},
 				},
@@ -526,14 +484,14 @@ func TestService_UpdateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:       "DoesProbablyNotExist",
-						Category: "Something",
+						Id:      "DoesProbablyNotExist",
+						Version: "",
 					},
 				},
 			},
 			wantMetric: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "metric.name: value length must be at least 1 characters")
+				return assert.ErrorContains(t, err, "metric.version: value length must be at least 1 characters")
 			},
 		},
 	}
@@ -595,18 +553,12 @@ func TestService_GetMetric(t *testing.T) {
 			name: "Get existing metric",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(&orchestrator.TargetOfEvaluation{Id: testdata.MockTargetOfEvaluationID1})
 					_ = s.Create(&assessment.Metric{
 						Id:          "TransportEncryptionEnabled",
-						Category:    "Transport Encryption",
-						Name:        "Transport Encryption: Enabled",
 						Description: "This metric describes, whether transport encryption is turned on or not",
-						Scale:       assessment.Metric_ORDINAL,
-						Range: &assessment.Range{
-							Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
-								Values: []*structpb.Value{
-									structpb.NewBoolValue(false),
-									structpb.NewBoolValue(true),
-								}}}},
+						Version:     "1.0",
+						Comments:    "Test comments",
 					})
 				}),
 			},
@@ -618,16 +570,9 @@ func TestService_GetMetric(t *testing.T) {
 			},
 			wantMetric: &assessment.Metric{
 				Id:          "TransportEncryptionEnabled",
-				Category:    "Transport Encryption",
-				Name:        "Transport Encryption: Enabled",
 				Description: "This metric describes, whether transport encryption is turned on or not",
-				Scale:       assessment.Metric_ORDINAL,
-				Range: &assessment.Range{
-					Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
-						Values: []*structpb.Value{
-							structpb.NewBoolValue(false),
-							structpb.NewBoolValue(true),
-						}}}},
+				Version:     "1.0",
+				Comments:    "Test comments",
 			},
 			wantErr: assert.NoError,
 		},
@@ -669,8 +614,7 @@ func TestService_ListMetrics(t *testing.T) {
 		auditScopeHooks         []orchestrator.AuditScopeHookFunc
 		AssessmentResultHooks   []assessment.ResultHookFunc
 		storage                 persistence.Storage
-		metricsFile             string
-		loadMetricsFunc         func() ([]*assessment.Metric, error)
+		loadMetricsFunc         func(...string) ([]*assessment.Metric, error)
 		catalogsFolder          string
 		loadCatalogsFunc        func() ([]*orchestrator.Catalog, error)
 		events                  chan *orchestrator.MetricChangeEvent
@@ -700,19 +644,17 @@ func TestService_ListMetrics(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(&assessment.Metric{
 						Id:          testdata.MockMetricID1,
-						Category:    testdata.MockMetricCategory1,
-						Name:        testdata.MockMetricName1,
 						Description: testdata.MockMetricDescription1,
-						Scale:       assessment.Metric_ORDINAL,
-						Range:       MockMetricRange1,
+						Category:    testdata.MockCategoryName,
+						Version:     "1.0",
+						Comments:    "Test comments",
 					})
 					_ = s.Create(&assessment.Metric{
 						Id:              testdata.MockMetricID2,
-						Category:        testdata.MockMetricCategory2,
-						Name:            testdata.MockMetricName2,
 						Description:     testdata.MockMetricDescription2,
-						Scale:           assessment.Metric_ORDINAL,
-						Range:           MockMetricRange1,
+						Category:        testdata.MockCategoryName,
+						Version:         "1.0",
+						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
 					})
 				}),
@@ -731,19 +673,15 @@ func TestService_ListMetrics(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(&assessment.Metric{
 						Id:          testdata.MockMetricID1,
-						Category:    testdata.MockMetricCategory1,
-						Name:        testdata.MockMetricName1,
 						Description: testdata.MockMetricDescription1,
-						Scale:       assessment.Metric_ORDINAL,
-						Range:       MockMetricRange1,
+						Version:     "1.0",
+						Comments:    "Test comments",
 					})
 					_ = s.Create(&assessment.Metric{
 						Id:              testdata.MockMetricID2,
-						Category:        testdata.MockMetricCategory2,
-						Name:            testdata.MockMetricName2,
 						Description:     testdata.MockMetricDescription2,
-						Scale:           assessment.Metric_ORDINAL,
-						Range:           MockMetricRange1,
+						Version:         "1.0",
+						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
 					})
 				}),
@@ -759,19 +697,15 @@ func TestService_ListMetrics(t *testing.T) {
 				Metrics: []*assessment.Metric{
 					{
 						Id:          testdata.MockMetricID1,
-						Category:    testdata.MockMetricCategory1,
-						Name:        testdata.MockMetricName1,
 						Description: testdata.MockMetricDescription1,
-						Scale:       assessment.Metric_ORDINAL,
-						Range:       MockMetricRange1,
+						Version:     "1.0",
+						Comments:    "Test comments",
 					},
 					{
 						Id:              testdata.MockMetricID2,
-						Category:        testdata.MockMetricCategory2,
-						Name:            testdata.MockMetricName2,
 						Description:     testdata.MockMetricDescription2,
-						Scale:           assessment.Metric_ORDINAL,
-						Range:           MockMetricRange1,
+						Version:         "1.0",
+						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
 					},
 				},
@@ -785,9 +719,8 @@ func TestService_ListMetrics(t *testing.T) {
 				TargetOfEvaluationHooks: tt.fields.TargetOfEvaluationHooks,
 				auditScopeHooks:         tt.fields.auditScopeHooks,
 				AssessmentResultHooks:   tt.fields.AssessmentResultHooks,
+				loadInternalMetricsFunc: tt.fields.loadMetricsFunc,
 				storage:                 tt.fields.storage,
-				metricsFile:             tt.fields.metricsFile,
-				loadMetricsFunc:         tt.fields.loadMetricsFunc,
 				catalogsFolder:          tt.fields.catalogsFolder,
 				loadCatalogsFunc:        tt.fields.loadCatalogsFunc,
 				events:                  tt.fields.events,
@@ -808,7 +741,6 @@ func TestService_GetMetricImplementation(t *testing.T) {
 	type fields struct {
 		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
-		metricsFile           string
 		events                chan *orchestrator.MetricChangeEvent
 		catalogsFolder        string
 	}
@@ -885,7 +817,6 @@ func TestService_GetMetricImplementation(t *testing.T) {
 			svc := &Service{
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
-				metricsFile:           tt.fields.metricsFile,
 				catalogsFolder:        tt.fields.catalogsFolder,
 				events:                tt.fields.events,
 			}
@@ -904,7 +835,6 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 	type fields struct {
 		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
-		metricsFile           string
 		catalogsFolder        string
 		events                chan *orchestrator.MetricChangeEvent
 	}
@@ -922,8 +852,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 		{
 			name: "Invalid input",
 			fields: fields{
-				storage:     testutil.NewInMemoryStorage(t),
-				metricsFile: "metrics.json",
+				storage: testutil.NewInMemoryStorage(t),
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricImplementationRequest{
@@ -990,7 +919,6 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(&assessment.Metric{Id: "TransportEncryptionEnabled"})
 				}),
-				metricsFile: "metrics.json",
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricImplementationRequest{
@@ -1017,7 +945,6 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 			svc := &Service{
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
-				metricsFile:           tt.fields.metricsFile,
 				catalogsFolder:        tt.fields.catalogsFolder,
 				events:                tt.fields.events,
 			}
@@ -1033,7 +960,6 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 	type fields struct {
 		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
-		metricsFile           string
 		catalogsFolder        string
 		events                chan *orchestrator.MetricChangeEvent
 		authz                 service.AuthorizationStrategy
@@ -1154,7 +1080,6 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 			s := &Service{
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
-				metricsFile:           tt.fields.metricsFile,
 				catalogsFolder:        tt.fields.catalogsFolder,
 				events:                tt.fields.events,
 				authz:                 tt.fields.authz,
@@ -1173,7 +1098,6 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 	type fields struct {
 		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
-		metricsFile           string
 		catalogsFolder        string
 		events                chan *orchestrator.MetricChangeEvent
 		authz                 service.AuthorizationStrategy
@@ -1258,7 +1182,6 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 			svc := &Service{
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
-				metricsFile:           tt.fields.metricsFile,
 				catalogsFolder:        tt.fields.catalogsFolder,
 				events:                tt.fields.events,
 				authz:                 tt.fields.authz,
@@ -1279,8 +1202,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 	type fields struct {
 		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
-		metricsFile           string
-		loadMetricsFunc       func() ([]*assessment.Metric, error)
+		loadMetricsFunc       func(...string) ([]*assessment.Metric, error)
 		catalogsFolder        string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
@@ -1643,14 +1565,13 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
-				storage:               tt.fields.storage,
-				metricsFile:           tt.fields.metricsFile,
-				loadMetricsFunc:       tt.fields.loadMetricsFunc,
-				catalogsFolder:        tt.fields.catalogsFolder,
-				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
-				events:                tt.fields.events,
-				authz:                 tt.fields.authz,
+				AssessmentResultHooks:   tt.fields.AssessmentResultHooks,
+				storage:                 tt.fields.storage,
+				loadInternalMetricsFunc: tt.fields.loadMetricsFunc,
+				catalogsFolder:          tt.fields.catalogsFolder,
+				loadCatalogsFunc:        tt.fields.loadCatalogsFunc,
+				events:                  tt.fields.events,
+				authz:                   tt.fields.authz,
 			}
 			gotRes, err := svc.UpdateMetricConfiguration(tt.args.in0, tt.args.req)
 			tt.wantErr(t, err)
@@ -1780,21 +1701,12 @@ func TestService_RemoveMetric(t *testing.T) {
 			name: "Happy path: metric already removed in the past",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(&orchestrator.TargetOfEvaluation{Id: testdata.MockTargetOfEvaluationID1})
 					_ = s.Create(&assessment.Metric{
-						Id:          testdata.MockMetricID1,
-						Name:        testdata.MockMetricName1,
-						Description: testdata.MockMetricDescription1,
-						Scale:       assessment.Metric_ORDINAL,
-						Range: &assessment.Range{
-							Range: &assessment.Range_AllowedValues{
-								AllowedValues: &assessment.AllowedValues{
-									Values: []*structpb.Value{
-										structpb.NewBoolValue(false),
-										structpb.NewBoolValue(true),
-									},
-								},
-							},
-						},
+						Id:              testdata.MockMetricID1,
+						Description:     testdata.MockMetricDescription1,
+						Version:         "1.0",
+						Comments:        "comments",
 						DeprecatedSince: timestamp,
 					},
 					)

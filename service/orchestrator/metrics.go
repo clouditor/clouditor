@@ -26,13 +26,7 @@
 package orchestrator
 
 import (
-	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
-	"io"
-	"os"
-
+	"bytes"
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/orchestrator"
@@ -40,13 +34,25 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+var baseDir = "."
+var defaultMetricsPath = fmt.Sprintf("%s/policies/security-metrics/metrics", baseDir)
 
 // ErrMetricNotFound indicates the certification was not found
 var ErrMetricNotFound = status.Error(codes.NotFound, "metric not found")
@@ -55,18 +61,29 @@ var ErrMetricNotFound = status.Error(codes.NotFound, "metric not found")
 // well as the default metric implementations from the Rego files.
 func (svc *Service) loadMetrics() (err error) {
 	var (
-		metrics []*assessment.Metric
+		metrics    []*assessment.Metric
+		extMetrics []*assessment.Metric
 	)
 
-	// Default to loading metrics from our embedded file system
-	if svc.loadMetricsFunc == nil {
-		svc.loadMetricsFunc = svc.loadEmbeddedMetrics
+	// Default to loading metrics from our standard metrics repository
+	if svc.loadInternalMetricsFunc == nil && svc.loadExternalMetricsFunc == nil {
+		svc.loadInternalMetricsFunc = svc.loadMetricsFromMetricsRepository
 	}
 
-	// Execute our metric loading function
-	metrics, err = svc.loadMetricsFunc()
-	if err != nil {
-		return fmt.Errorf("could not load metrics: %w", err)
+	// Execute the metric loading functions if they are set
+	if svc.loadInternalMetricsFunc != nil {
+		metrics, err = svc.loadInternalMetricsFunc()
+		if err != nil {
+			return fmt.Errorf("could not load metrics: %w", err)
+		}
+	}
+
+	if svc.loadExternalMetricsFunc != nil {
+		extMetrics, err = svc.loadExternalMetricsFunc()
+		if err != nil {
+			return fmt.Errorf("could not load external metrics: %w", err)
+		}
+		metrics = append(metrics, extMetrics...)
 	}
 
 	defaultMetricConfigurations = make(map[string]*assessment.MetricConfiguration)
@@ -112,17 +129,18 @@ func prepareMetric(m *assessment.Metric) (err error) {
 	)
 
 	// Load the Rego file
-	file := fmt.Sprintf("policies/bundles/%s/%s/metric.rego", m.CategoryID(), m.Id)
-	m.Implementation, err = loadMetricImplementation(m.Id, file)
+	metricPath := fmt.Sprintf("%s/%s/%s/metric.rego", defaultMetricsPath, m.Category, m.Id)
+
+	m.Implementation, err = loadMetricImplementation(m.Id, metricPath)
 	if err != nil {
 		return fmt.Errorf("could not load metric implementation: %w", err)
 	}
 
-	// Look for the data.json to include default metric configurations
-	fileName := fmt.Sprintf("policies/bundles/%s/%s/data.json", m.CategoryID(), m.Id)
+	// Take the data.json to include default metric configurations
+	dataJsonPath := strings.Replace(metricPath, "metric.rego", "data.json", 1)
 
 	// Load the default configuration file
-	b, err := os.ReadFile(fileName)
+	b, err := os.ReadFile(dataJsonPath)
 	if err != nil {
 		return fmt.Errorf("could not retrieve default configuration for metric %s: %w", m.Id, err)
 	}
@@ -140,22 +158,56 @@ func prepareMetric(m *assessment.Metric) (err error) {
 	return
 }
 
-// loadEmbeddedMetrics loads the metric definitions from the embedded file system using the path specified in
-// the service's metricsFile.
-func (svc *Service) loadEmbeddedMetrics() (metrics []*assessment.Metric, err error) {
-	var b []byte
+// loadMetricsFromMetricsRepository loads metric definitions by walking through YAML files
+// in the policies/security-metrics/metrics directory.
+// it uses all given paths or the default path if none are provided.
+func (svc *Service) loadMetricsFromMetricsRepository(path ...string) (metrics []*assessment.Metric, err error) {
+	metrics = make([]*assessment.Metric, 0)
 
-	b, err = f.ReadFile(svc.metricsFile)
-	if err != nil {
-		return nil, fmt.Errorf("error while loading %s: %w", svc.metricsFile, err)
+	// If no paths are provided, use the default path "policies/security-metrics/metrics"
+	if len(path) == 0 {
+		path = append(path, defaultMetricsPath)
 	}
 
-	err = json.Unmarshal(b, &metrics)
-	if err != nil {
-		return nil, fmt.Errorf("error in JSON marshal: %w", err)
+	// Walk through the provided paths and import metrics
+	for _, p := range path {
+		err = filepath.Walk(p, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return fmt.Errorf("error accessing path %s: %w", path, err)
+			}
+
+			// Skip directories and non-yaml files
+			if info.IsDir() || (!strings.HasSuffix(info.Name(), ".yaml") && !strings.HasSuffix(info.Name(), ".yml")) {
+				return nil
+			}
+
+			// Read the YAML file
+			b, err := os.ReadFile(path)
+			if err != nil {
+				return fmt.Errorf("error reading file %s: %w", path, err)
+			}
+
+			var metric assessment.Metric
+
+			dec := yaml.NewDecoder(bytes.NewReader(b))
+			err = dec.Decode(&metric)
+			if err != nil {
+				return fmt.Errorf("error decoding metric %s: %w", path, err)
+			}
+
+			// Set the category automatically, since it is not included in the yaml definition
+			metric.Category = filepath.Base(filepath.Dir(filepath.Dir(path)))
+
+			metrics = append(metrics, &metric)
+			return nil
+		})
 	}
 
-	return
+	if err != nil {
+		return nil, fmt.Errorf("error reading metrics directory: %w", err)
+	}
+
+	return metrics, nil
 }
 
 // loadMetricImplementation loads a metric implementation from a Rego file on a filesystem.
@@ -241,13 +293,8 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 	}
 
 	// Update metric
-	metric.Name = req.Metric.Name
-	metric.Description = req.Metric.Description
-	metric.Category = req.Metric.Category
-	metric.Range = req.Metric.Range
-	metric.Scale = req.Metric.Scale
-	metric.DeprecatedSince = req.Metric.DeprecatedSince
-
+	metric = req.Metric
+	// TODO Save or Update?
 	err = svc.storage.Save(metric, "id = ? ", metric.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)

@@ -264,20 +264,10 @@ var (
 				ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID1),
 				Metrics: []*assessment.Metric{{
 					Id:          testdata.MockMetricID1,
-					Category:    testdata.MockMetricCategory1,
-					Name:        testdata.MockMetricName1,
 					Description: testdata.MockMetricDescription1,
-					Scale:       assessment.Metric_ORDINAL,
-					Range: &assessment.Range{
-						Range: &assessment.Range_AllowedValues{
-							AllowedValues: &assessment.AllowedValues{
-								Values: []*structpb.Value{
-									structpb.NewBoolValue(false),
-									structpb.NewBoolValue(true),
-								},
-							},
-						},
-					},
+					Category:    testdata.MockMetricCategory1,
+					Version:     "1.0",
+					Comments:    testdata.MockMetricComments1,
 				}}},
 		}}
 	MockControl11 = &orchestrator.Control{
@@ -292,20 +282,10 @@ var (
 		ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID1),
 		Metrics: []*assessment.Metric{{
 			Id:          testdata.MockMetricID1,
-			Category:    testdata.MockMetricCategory1,
-			Name:        testdata.MockMetricName1,
 			Description: testdata.MockMetricDescription1,
-			Scale:       assessment.Metric_ORDINAL,
-			Range: &assessment.Range{
-				Range: &assessment.Range_AllowedValues{
-					AllowedValues: &assessment.AllowedValues{
-						Values: []*structpb.Value{
-							structpb.NewBoolValue(false),
-							structpb.NewBoolValue(true),
-						},
-					},
-				},
-			},
+			Category:    testdata.MockMetricCategory1,
+			Version:     "1.0",
+			Comments:    testdata.MockMetricComments1,
 		},
 		}}
 	MockControl2 = &orchestrator.Control{
@@ -327,22 +307,14 @@ var (
 				ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID1),
 				Metrics: []*assessment.Metric{{
 					Id:          testdata.MockMetricID1,
-					Category:    testdata.MockMetricCategory1,
-					Name:        testdata.MockMetricName1,
 					Description: testdata.MockMetricDescription1,
-					Scale:       assessment.Metric_ORDINAL,
-					Range: &assessment.Range{
-						Range: &assessment.Range_AllowedValues{
-							AllowedValues: &assessment.AllowedValues{
-								Values: []*structpb.Value{
-									structpb.NewBoolValue(false),
-									structpb.NewBoolValue(true),
-								},
-							},
-						},
-					},
-				}}},
-		}}
+					Category:    testdata.MockMetricCategory1,
+					Version:     "1.0",
+					Comments:    "This is a comment",
+				}},
+			},
+		},
+	}
 	MockControl3 = &orchestrator.Control{
 		Id:                testdata.MockControlID3,
 		Name:              testdata.MockControlName,
@@ -371,20 +343,10 @@ var (
 		AssuranceLevel:    &testdata.AssuranceLevelHigh,
 		Metrics: []*assessment.Metric{{
 			Id:          testdata.MockMetricID1,
-			Category:    testdata.MockMetricCategory1,
-			Name:        testdata.MockMetricName1,
 			Description: testdata.MockMetricDescription1,
-			Scale:       assessment.Metric_ORDINAL,
-			Range: &assessment.Range{
-				Range: &assessment.Range_AllowedValues{
-					AllowedValues: &assessment.AllowedValues{
-						Values: []*structpb.Value{
-							structpb.NewBoolValue(false),
-							structpb.NewBoolValue(true),
-						},
-					},
-				},
-			},
+			Category:    testdata.MockMetricCategory1,
+			Version:     "1.0",
+			Comments:    "This is a comment",
 		}},
 	}
 	MockControl5 = &orchestrator.Control{
@@ -396,20 +358,10 @@ var (
 		AssuranceLevel:    nil,
 		Metrics: []*assessment.Metric{{
 			Id:          testdata.MockMetricID1,
-			Category:    testdata.MockMetricCategory1,
-			Name:        testdata.MockMetricName1,
 			Description: testdata.MockMetricDescription1,
-			Scale:       assessment.Metric_ORDINAL,
-			Range: &assessment.Range{
-				Range: &assessment.Range_AllowedValues{
-					AllowedValues: &assessment.AllowedValues{
-						Values: []*structpb.Value{
-							structpb.NewBoolValue(false),
-							structpb.NewBoolValue(true),
-						},
-					},
-				},
-			},
+			Category:    testdata.MockMetricCategory1,
+			Version:     "1.0",
+			Comments:    "This is a comment",
 		}},
 	}
 	// Control without sub-control
@@ -426,19 +378,9 @@ var (
 func NewMetric() *assessment.Metric {
 	return &assessment.Metric{
 		Id:          testdata.MockMetricID1,
-		Name:        testdata.MockMetricName1,
 		Description: testdata.MockMetricDescription1,
-		Scale:       assessment.Metric_ORDINAL,
-		Range: &assessment.Range{
-			Range: &assessment.Range_AllowedValues{
-				AllowedValues: &assessment.AllowedValues{
-					Values: []*structpb.Value{
-						structpb.NewBoolValue(false),
-						structpb.NewBoolValue(true),
-					},
-				},
-			},
-		},
+		Version:     "1.0",
+		Comments:    "This is a comment",
 	}
 
 }
