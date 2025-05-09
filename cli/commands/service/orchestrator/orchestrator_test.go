@@ -28,25 +28,20 @@ package orchestrator
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"os"
 	"testing"
 
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/server"
 
-	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/cli"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
 	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/types/known/structpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestMain(m *testing.M) {
@@ -61,25 +56,7 @@ func TestMain(m *testing.M) {
 
 	// Store an assessment result so that output of CMD 'list' is not empty
 	_, err = svc.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
-		Result: &assessment.AssessmentResult{
-			Id:                   testdata.MockTargetOfEvaluationID1,
-			MetricId:             testdata.MockMetricID1,
-			EvidenceId:           testdata.MockTargetOfEvaluationID1,
-			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-			Timestamp:            timestamppb.Now(),
-			ResourceId:           string(testdata.MockResourceID1),
-			ResourceTypes:        []string{"ResourceType"},
-			ComplianceComment:    "Some comment",
-			Compliant:            false,
-			MetricConfiguration: &assessment.MetricConfiguration{
-				TargetValue:          toStruct(1.0),
-				Operator:             "<",
-				IsDefault:            true,
-				MetricId:             testdata.MockMetricID1,
-				TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-			},
-			ToolId: util.Ref(assessment.AssessmentToolId),
-		}})
+		Result: clitest.MockAssessmentResult1})
 	if err != nil {
 		panic(err)
 	}
@@ -194,23 +171,4 @@ func TestNewGetControlCommand(t *testing.T) {
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response)
 	assert.Equal(t, testdata.MockControlID1, response.Id)
-}
-
-func toStruct(f float32) (s *structpb.Value) {
-	var (
-		b   []byte
-		err error
-	)
-
-	s = new(structpb.Value)
-
-	b, err = json.Marshal(f)
-	if err != nil {
-		return nil
-	}
-	if err = json.Unmarshal(b, &s); err != nil {
-		return nil
-	}
-
-	return
 }
