@@ -86,7 +86,7 @@ message ListEvidencesRequest {
 // Allows specifying Filters for ListEvidencesRequest
 message Filter {
   optional string target_of_evaluation_id = 1 [(buf.validate.field).string.uuid = true];
-  optional string tool_id = 2 [(buf.validate.field).string.uuid = true];
+  optional string tool_id = 2 [(buf.validate.field).string.min_len = 1];
 }
 
 message ListEvidencesResponse {
