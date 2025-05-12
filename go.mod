@@ -48,8 +48,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/oxisto/oauth2go v0.14.0
 	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/oauth2 v0.29.0
-
+	golang.org/x/oauth2 v0.30.0
 )
 
 // runtime dependencies (rpc)
@@ -88,7 +87,6 @@ require (
 	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.5.0 // indirect
 	modernc.org/sqlite v1.23.1 // indirect
-
 )
 
 // runtime dependencies (config, cli)
@@ -156,7 +154,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.28.13 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.12
 	github.com/aws/smithy-go v1.22.2
-
 )
 
 // runtime dependencies (OpenStack)
@@ -213,7 +210,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/stretchr/testify v1.10.0
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-
 )
 
 // tools dependencies
