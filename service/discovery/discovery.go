@@ -67,6 +67,14 @@ const (
 	ProviderAzure     = "azure"
 	ProviderOpenstack = "openstack"
 	ProviderCSAF      = "csaf"
+
+	// DiscovererStart is emitted at the start of a discovery run.
+	DiscovererStart DiscoveryEventType = iota
+	// DiscovererFinished is emitted at the end of a discovery run.
+	DiscovererFinished
+
+	// DefaultEvidenceStoreAddress specifies the default gRPC address of the evidence store service.
+	DefaultEvidenceStoreAddress = "localhost:9090"
 )
 
 var log *logrus.Entry
@@ -96,13 +104,6 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 
 // DiscoveryEventType defines the event types for [DiscoveryEvent].
 type DiscoveryEventType int
-
-const (
-	// DiscovererStart is emitted at the start of a discovery run.
-	DiscovererStart DiscoveryEventType = iota
-	// DiscovererFinished is emitted at the end of a discovery run.
-	DiscovererFinished
-)
 
 // DiscoveryEvent represents an event that is emitted if certain situations happen in the discoverer (defined by
 // [DiscoveryEventType]). Examples would be the start or the end of the discovery. We will potentially expand this in
@@ -146,11 +147,6 @@ type Service struct {
 func init() {
 	log = logrus.WithField("component", "discovery")
 }
-
-const (
-	// DefaultEvidenceStoreAddress specifies the default gRPC address of the evidence store service.
-	DefaultEvidenceStoreAddress = "localhost:9090"
-)
 
 // WithEvidenceStoreAddress is an option to configure the evidence store service gRPC address.
 func WithEvidenceStoreAddress(target string, opts ...grpc.DialOption) service.Option[*Service] {
@@ -281,9 +277,9 @@ func (svc *Service) Shutdown() {
 	svc.scheduler.Stop()
 }
 
-// initevidenceStoreStream initializes the stream that is used to send evidences to the evidence store service.
+// initEvidenceStoreStream initializes the stream that is used to send evidences to the evidence store service.
 // If configured, it uses the Authorizer of the discovery service to authenticate requests to the evidence store.
-func (svc *Service) initevidenceStoreStream(target string, _ ...grpc.DialOption) (stream evidence.EvidenceStore_StoreEvidencesClient, err error) {
+func (svc *Service) initEvidenceStoreStream(target string, _ ...grpc.DialOption) (stream evidence.EvidenceStore_StoreEvidencesClient, err error) {
 	log.Infof("Trying to establish a connection to evidence store service @ %v", target)
 
 	// Make sure, that we re-connect
@@ -467,7 +463,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		}
 
 		// Get Evidence Store stream
-		channel, err := svc.evidenceStoreStreams.GetStream(svc.evidenceStore.Target, "Evidence Store", svc.initevidenceStoreStream, svc.evidenceStore.Opts...)
+		channel, err := svc.evidenceStoreStreams.GetStream(svc.evidenceStore.Target, "Evidence Store", svc.initEvidenceStoreStream, svc.evidenceStore.Opts...)
 		if err != nil {
 			err = fmt.Errorf("could not get stream to evidence store service (%s): %w", svc.evidenceStore.Target, err)
 			log.Error(err)
