@@ -34,6 +34,7 @@ import (
 	"sync"
 
 	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/internal/logging"
 	"clouditor.io/clouditor/v2/launcher"
@@ -43,11 +44,17 @@ import (
 	"clouditor.io/clouditor/v2/service"
 
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 var log *logrus.Entry
+
+const (
+	// DefaultAssessmentAddress specifies the default gRPC address of the assessment service.
+	DefaultAssessmentAddress = "localhost:9090"
+)
 
 // DefaultServiceSpec returns a [launcher.ServiceSpec] for this [Service] with all necessary options retrieved from the
 // config system.
@@ -68,7 +75,9 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 
 // Service is an implementation of the Clouditor req service (evidenceServer)
 type Service struct {
-	storage persistence.Storage
+	storage           persistence.Storage
+	assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
+	assessment        *api.RPCConnection[assessment.AssessmentClient]
 
 	// evidenceHooks is a list of hook functions that can be used if one wants to be
 	// informed about each evidence
@@ -89,11 +98,26 @@ func WithStorage(storage persistence.Storage) service.Option[*Service] {
 	}
 }
 
+// TODO(anatheka): Write tests
+// WithAssessmentAddress is an option to configure the assessment service gRPC address.
+func WithAssessmentAddress(target string, opts ...grpc.DialOption) service.Option[*Service] {
+
+	return func(s *Service) {
+		log.Infof("Assessment URL is set to %s", target)
+
+		s.assessment.Target = target
+		s.assessment.Opts = opts
+	}
+}
+
 func NewService(opts ...service.Option[*Service]) (svc *Service) {
 	var (
 		err error
 	)
-	svc = new(Service)
+	svc = &Service{
+		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
+		assessment:        api.NewRPCConnection(DefaultAssessmentAddress, assessment.NewAssessmentClient),
+	}
 
 	for _, o := range opts {
 		o(svc)
@@ -120,7 +144,32 @@ func init() {
 
 func (svc *Service) Init() {}
 
-func (svc *Service) Shutdown() {}
+func (svc *Service) Shutdown() {
+	svc.assessmentStreams.CloseAll()
+}
+
+// TODO(anatheka): Add tests
+// initAssessmentStream initializes the stream that is used to send evidences to the assessment service.
+// If configured, it uses the Authorizer of the discovery service to authenticate requests to the assessment.
+func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
+	log.Infof("Trying to establish a connection to assessment service @ %v", target)
+
+	// Make sure, that we re-connect
+	svc.assessment.ForceReconnect()
+
+	// Set up the stream and store it in our service struct, so we can access it later to actually
+	// send the evidence data
+	stream, err = svc.assessment.Client.AssessEvidences(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("could not set up stream for assessing evidences: %w", err)
+	}
+
+	log.Infof("Connected to Assessment")
+
+	return
+}
+
+// TODO(anatheka): Change to fire and forget style
 
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives a req and stores it
 func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEvidenceRequest) (res *evidence.StoreEvidenceResponse, err error) {
@@ -143,6 +192,17 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 	}
 
 	go svc.informHooks(ctx, req.Evidence, nil)
+
+	// Get Evidence Store stream
+	channel, err := svc.assessmentStreams.GetStream(svc.assessment.Target, "Assessment", svc.initAssessmentStream, svc.assessment.Opts...)
+	if err != nil {
+		err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessment.Target, err)
+		log.Error(err)
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
+
+	// Send evidence to assessment service
+	channel.Send(&assessment.AssessEvidenceRequest{Evidence: req.Evidence})
 
 	res = &evidence.StoreEvidenceResponse{}
 
