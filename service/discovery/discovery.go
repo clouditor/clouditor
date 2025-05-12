@@ -91,7 +91,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 		WithOAuth2Authorizer(config.ClientCredentials()),
 		WithTargetOfEvaluationID(viper.GetString(config.TargetOfEvaluationIDFlag)),
 		WithProviders(providers),
-		WithAssessmentAddress(viper.GetString(config.AssessmentURLFlag)),
+		WithEvidenceStoreAddress(viper.GetString(config.AssessmentURLFlag)),
 	)
 }
 
@@ -122,7 +122,7 @@ type Service struct {
 	discovery.UnimplementedExperimentalDiscoveryServer
 
 	assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
-	assessment        *api.RPCConnection[assessment.AssessmentClient]
+	evidenceStore     *api.RPCConnection[assessment.AssessmentClient]
 
 	storage persistence.Storage
 
@@ -149,18 +149,18 @@ func init() {
 }
 
 const (
-	// DefaultAssessmentAddress specifies the default gRPC address of the assessment service.
-	DefaultAssessmentAddress = "localhost:9090"
+	// DefaultEvidenceStoreAddress specifies the default gRPC address of the evidence store service.
+	DefaultEvidenceStoreAddress = "localhost:9090"
 )
 
-// WithAssessmentAddress is an option to configure the assessment service gRPC address.
-func WithAssessmentAddress(target string, opts ...grpc.DialOption) service.Option[*Service] {
+// WithEvidenceStoreAddress is an option to configure the evidence store service gRPC address.
+func WithEvidenceStoreAddress(target string, opts ...grpc.DialOption) service.Option[*Service] {
 
 	return func(s *Service) {
-		log.Infof("Assessment URL is set to %s", target)
+		log.Infof("Evidene Store URL is set to %s", target)
 
-		s.assessment.Target = target
-		s.assessment.Opts = opts
+		s.evidenceStore.Target = target
+		s.evidenceStore.Opts = opts
 	}
 }
 
@@ -185,7 +185,7 @@ func WithEvidenceCollectorToolID(ID string) service.Option[*Service] {
 // WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
 func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[*Service] {
 	return func(svc *Service) {
-		svc.assessment.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
+		svc.evidenceStore.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
 	}
 }
 
@@ -234,7 +234,7 @@ func NewService(opts ...service.Option[*Service]) *Service {
 	var err error
 	s := &Service{
 		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
-		assessment:        api.NewRPCConnection(DefaultAssessmentAddress, assessment.NewAssessmentClient),
+		evidenceStore:     api.NewRPCConnection(DefaultEvidenceStoreAddress, assessment.NewAssessmentClient),
 		scheduler:         gocron.NewScheduler(time.UTC),
 		Events:            make(chan *DiscoveryEvent),
 		ctID:              config.DefaultTargetOfEvaluationID,
@@ -288,11 +288,11 @@ func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (s
 	log.Infof("Trying to establish a connection to assessment service @ %v", target)
 
 	// Make sure, that we re-connect
-	svc.assessment.ForceReconnect()
+	svc.evidenceStore.ForceReconnect()
 
 	// Set up the stream and store it in our service struct, so we can access it later to actually
 	// send the evidence data
-	stream, err = svc.assessment.Client.AssessEvidences(context.Background())
+	stream, err = svc.evidenceStore.Client.AssessEvidences(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("could not set up stream for assessing evidences: %w", err)
 	}
@@ -468,9 +468,9 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		}
 
 		// Get Evidence Store stream
-		channel, err := svc.assessmentStreams.GetStream(svc.assessment.Target, "Assessment", svc.initAssessmentStream, svc.assessment.Opts...)
+		channel, err := svc.assessmentStreams.GetStream(svc.evidenceStore.Target, "Assessment", svc.initAssessmentStream, svc.evidenceStore.Opts...)
 		if err != nil {
-			err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessment.Target, err)
+			err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.evidenceStore.Target, err)
 			log.Error(err)
 			continue
 		}

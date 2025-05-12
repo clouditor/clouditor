@@ -169,7 +169,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
 				assessmentStreams: tt.fields.assessmentStreams,
-				assessment:        tt.fields.assessment,
+				evidenceStore:     tt.fields.assessment,
 				storage:           tt.fields.storage,
 				scheduler:         tt.fields.scheduler,
 				authz:             tt.fields.authz,
@@ -271,7 +271,7 @@ func TestService_UpdateResource(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
 				assessmentStreams: tt.fields.assessmentStreams,
-				assessment:        tt.fields.assessment,
+				evidenceStore:     tt.fields.assessment,
 				storage:           tt.fields.storage,
 				scheduler:         tt.fields.scheduler,
 				authz:             tt.fields.authz,

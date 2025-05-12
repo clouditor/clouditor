@@ -80,11 +80,11 @@ func TestNewService(t *testing.T) {
 			name: "Create service with option 'WithAssessmentAddress'",
 			args: args{
 				opts: []service.Option[*Service]{
-					WithAssessmentAddress("localhost:9091"),
+					WithEvidenceStoreAddress("localhost:9091"),
 				},
 			},
 			want: func(t *testing.T, got *Service) bool {
-				return assert.Equal(t, "localhost:9091", got.assessment.Target)
+				return assert.Equal(t, "localhost:9091", got.evidenceStore.Target)
 			},
 		},
 		{
@@ -236,7 +236,7 @@ func TestService_StartDiscovery(t *testing.T) {
 			_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
 				return mockStream, nil
 			})
-			svc.assessment = &api.RPCConnection[assessment.AssessmentClient]{Target: "mock"}
+			svc.evidenceStore = &api.RPCConnection[assessment.AssessmentClient]{Target: "mock"}
 			go svc.StartDiscovery(tt.fields.discoverer)
 
 			if tt.checkEvidence {
@@ -386,7 +386,7 @@ func TestService_ListResources(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(WithAssessmentAddress(testdata.MockGRPCTarget, grpc.WithContextDialer(bufConnDialer)))
+			s := NewService(WithEvidenceStoreAddress(testdata.MockGRPCTarget, grpc.WithContextDialer(bufConnDialer)))
 			s.authz = tt.fields.authz
 			s.ctID = tt.fields.ctID
 			s.collectorID = tt.fields.collectorID
@@ -756,7 +756,7 @@ func TestService_Start(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
 				assessmentStreams: tt.fields.assessmentStreams,
-				assessment:        tt.fields.assessment,
+				evidenceStore:     tt.fields.assessment,
 				storage:           tt.fields.storage,
 				scheduler:         tt.fields.scheduler,
 				authz:             tt.fields.authz,
