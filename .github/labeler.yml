@@ -30,6 +30,11 @@ service/discovery:
 - changed-files:
   - any-glob-to-any-file: 'service/discovery/*'
 
+# Add 'service/evidence_store' label to any changes in service/evidence_store directory
+service/evidence_store:
+- changed-files:
+  - any-glob-to-any-file: 'service/evidence_store/*'
+
 # Add 'service/assessment' label to any changes in service/assessment directory
 service/assessment:
 - changed-files:
