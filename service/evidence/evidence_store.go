@@ -180,12 +180,12 @@ func (svc *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesS
 			log.Errorf("Error storing evidence: %v", err)
 			// Create response message. The StoreEvidence method does not need that message, so we have to create it here for the stream response.
 			res = &evidence.StoreEvidencesResponse{
-				Status:        false,
+				Status:        evidence.EvidenceStatus_EVIDENCE_STATUS_ERROR,
 				StatusMessage: err.Error(),
 			}
 		} else {
 			res = &evidence.StoreEvidencesResponse{
-				Status: true,
+				Status: evidence.EvidenceStatus_EVIDENCE_STATUS_OK,
 			}
 		}
 

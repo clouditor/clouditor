@@ -30,8 +30,8 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/v2/api"
-	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
@@ -48,14 +48,14 @@ import (
 
 func TestService_ListGraphEdges(t *testing.T) {
 	type fields struct {
-		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
-		assessment        *api.RPCConnection[assessment.AssessmentClient]
-		storage           persistence.Storage
-		scheduler         *gocron.Scheduler
-		authz             service.AuthorizationStrategy
-		providers         []string
-		Events            chan *DiscoveryEvent
-		ctID              string
+		evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
+		evidenceStore        *api.RPCConnection[evidence.EvidenceStoreClient]
+		storage              persistence.Storage
+		scheduler            *gocron.Scheduler
+		authz                service.AuthorizationStrategy
+		providers            []string
+		Events               chan *DiscoveryEvent
+		ctID                 string
 	}
 	type args struct {
 		ctx context.Context
@@ -168,14 +168,14 @@ func TestService_ListGraphEdges(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				assessmentStreams: tt.fields.assessmentStreams,
-				evidenceStore:     tt.fields.assessment,
-				storage:           tt.fields.storage,
-				scheduler:         tt.fields.scheduler,
-				authz:             tt.fields.authz,
-				providers:         tt.fields.providers,
-				Events:            tt.fields.Events,
-				ctID:              tt.fields.ctID,
+				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
+				evidenceStore:        tt.fields.evidenceStore,
+				storage:              tt.fields.storage,
+				scheduler:            tt.fields.scheduler,
+				authz:                tt.fields.authz,
+				providers:            tt.fields.providers,
+				Events:               tt.fields.Events,
+				ctID:                 tt.fields.ctID,
 			}
 			gotRes, err := svc.ListGraphEdges(tt.args.ctx, tt.args.req)
 			assert.Equal(t, tt.wantRes, gotRes)
@@ -193,14 +193,14 @@ func panicToDiscoveryResource(t *testing.T, resource ontology.IsResource, ctID, 
 
 func TestService_UpdateResource(t *testing.T) {
 	type fields struct {
-		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
-		assessment        *api.RPCConnection[assessment.AssessmentClient]
-		storage           persistence.Storage
-		scheduler         *gocron.Scheduler
-		authz             service.AuthorizationStrategy
-		providers         []string
-		Events            chan *DiscoveryEvent
-		ctID              string
+		evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
+		evidenceStore        *api.RPCConnection[evidence.EvidenceStoreClient]
+		storage              persistence.Storage
+		scheduler            *gocron.Scheduler
+		authz                service.AuthorizationStrategy
+		providers            []string
+		Events               chan *DiscoveryEvent
+		ctID                 string
 	}
 	type args struct {
 		ctx context.Context
@@ -270,14 +270,14 @@ func TestService_UpdateResource(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				assessmentStreams: tt.fields.assessmentStreams,
-				evidenceStore:     tt.fields.assessment,
-				storage:           tt.fields.storage,
-				scheduler:         tt.fields.scheduler,
-				authz:             tt.fields.authz,
-				providers:         tt.fields.providers,
-				Events:            tt.fields.Events,
-				ctID:              tt.fields.ctID,
+				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
+				evidenceStore:        tt.fields.evidenceStore,
+				storage:              tt.fields.storage,
+				scheduler:            tt.fields.scheduler,
+				authz:                tt.fields.authz,
+				providers:            tt.fields.providers,
+				Events:               tt.fields.Events,
+				ctID:                 tt.fields.ctID,
 			}
 			gotRes, err := svc.UpdateResource(tt.args.ctx, tt.args.req)
 			assert.Empty(t, cmp.Diff(gotRes, tt.wantRes, protocmp.Transform()))

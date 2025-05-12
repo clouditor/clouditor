@@ -34,7 +34,6 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/v2/api"
-	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
@@ -91,7 +90,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 		WithOAuth2Authorizer(config.ClientCredentials()),
 		WithTargetOfEvaluationID(viper.GetString(config.TargetOfEvaluationIDFlag)),
 		WithProviders(providers),
-		WithEvidenceStoreAddress(viper.GetString(config.AssessmentURLFlag)),
+		WithEvidenceStoreAddress(viper.GetString(config.EvidenceStoreURLFlag)),
 	)
 }
 
@@ -121,8 +120,8 @@ type Service struct {
 	discovery.UnimplementedDiscoveryServer
 	discovery.UnimplementedExperimentalDiscoveryServer
 
-	assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
-	evidenceStore     *api.RPCConnection[assessment.AssessmentClient]
+	evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
+	evidenceStore        *api.RPCConnection[evidence.EvidenceStoreClient]
 
 	storage persistence.Storage
 
@@ -157,7 +156,7 @@ const (
 func WithEvidenceStoreAddress(target string, opts ...grpc.DialOption) service.Option[*Service] {
 
 	return func(s *Service) {
-		log.Infof("Evidene Store URL is set to %s", target)
+		log.Infof("Evidence Store URL is set to %s", target)
 
 		s.evidenceStore.Target = target
 		s.evidenceStore.Opts = opts
@@ -233,14 +232,14 @@ func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Opti
 func NewService(opts ...service.Option[*Service]) *Service {
 	var err error
 	s := &Service{
-		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
-		evidenceStore:     api.NewRPCConnection(DefaultEvidenceStoreAddress, assessment.NewAssessmentClient),
-		scheduler:         gocron.NewScheduler(time.UTC),
-		Events:            make(chan *DiscoveryEvent),
-		ctID:              config.DefaultTargetOfEvaluationID,
-		collectorID:       config.DefaultEvidenceCollectorToolID,
-		authz:             &service.AuthorizationStrategyAllowAll{},
-		discoveryInterval: 5 * time.Minute, // Default discovery interval is 5 minutes
+		evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
+		evidenceStore:        api.NewRPCConnection(DefaultEvidenceStoreAddress, evidence.NewEvidenceStoreClient),
+		scheduler:            gocron.NewScheduler(time.UTC),
+		Events:               make(chan *DiscoveryEvent),
+		ctID:                 config.DefaultTargetOfEvaluationID,
+		collectorID:          config.DefaultEvidenceCollectorToolID,
+		authz:                &service.AuthorizationStrategyAllowAll{},
+		discoveryInterval:    5 * time.Minute, // Default discovery interval is 5 minutes
 	}
 
 	// Apply any options
@@ -278,26 +277,26 @@ func (svc *Service) Init() {
 }
 
 func (svc *Service) Shutdown() {
-	svc.assessmentStreams.CloseAll()
+	svc.evidenceStoreStreams.CloseAll()
 	svc.scheduler.Stop()
 }
 
-// initAssessmentStream initializes the stream that is used to send evidences to the assessment service.
-// If configured, it uses the Authorizer of the discovery service to authenticate requests to the assessment.
-func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
-	log.Infof("Trying to establish a connection to assessment service @ %v", target)
+// initevidenceStoreStream initializes the stream that is used to send evidences to the evidence store service.
+// If configured, it uses the Authorizer of the discovery service to authenticate requests to the evidence store.
+func (svc *Service) initevidenceStoreStream(target string, _ ...grpc.DialOption) (stream evidence.EvidenceStore_StoreEvidencesClient, err error) {
+	log.Infof("Trying to establish a connection to evidence store service @ %v", target)
 
 	// Make sure, that we re-connect
 	svc.evidenceStore.ForceReconnect()
 
 	// Set up the stream and store it in our service struct, so we can access it later to actually
 	// send the evidence data
-	stream, err = svc.evidenceStore.Client.AssessEvidences(context.Background())
+	stream, err = svc.evidenceStore.Client.StoreEvidences(context.Background())
 	if err != nil {
-		return nil, fmt.Errorf("could not set up stream for assessing evidences: %w", err)
+		return nil, fmt.Errorf("could not set up stream for storing evidences: %w", err)
 	}
 
-	log.Infof("Connected to Assessment")
+	log.Infof("Connected to Evidence Store″")
 
 	return
 }
@@ -468,14 +467,14 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		}
 
 		// Get Evidence Store stream
-		channel, err := svc.assessmentStreams.GetStream(svc.evidenceStore.Target, "Assessment", svc.initAssessmentStream, svc.evidenceStore.Opts...)
+		channel, err := svc.evidenceStoreStreams.GetStream(svc.evidenceStore.Target, "Evidence Store", svc.initevidenceStoreStream, svc.evidenceStore.Opts...)
 		if err != nil {
-			err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.evidenceStore.Target, err)
+			err = fmt.Errorf("could not get stream to evidence store service (%s): %w", svc.evidenceStore.Target, err)
 			log.Error(err)
 			continue
 		}
 
-		channel.Send(&assessment.AssessEvidenceRequest{Evidence: e})
+		channel.Send(&evidence.StoreEvidenceRequest{Evidence: e})
 	}
 }
 
