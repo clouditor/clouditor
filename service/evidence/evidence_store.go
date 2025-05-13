@@ -43,6 +43,7 @@ import (
 	"clouditor.io/clouditor/v2/persistence/inmemory"
 	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/service"
+	"golang.org/x/oauth2/clientcredentials"
 
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -66,6 +67,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 
 			return nil, nil
 		},
+		WithOAuth2Authorizer(config.ClientCredentials()),
 	)
 }
 
@@ -91,6 +93,14 @@ type Service struct {
 func WithStorage(storage persistence.Storage) service.Option[*Service] {
 	return func(svc *Service) {
 		svc.storage = storage
+	}
+}
+
+// WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
+func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[*Service] {
+	return func(s *Service) {
+		auth := api.NewOAuthAuthorizerFromClientCredentials(config)
+		s.assessment.SetAuthorizer(auth)
 	}
 }
 
