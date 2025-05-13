@@ -100,6 +100,10 @@ func TestNewService(t *testing.T) {
 
 // TestStoreEvidence tests StoreEvidence
 func TestService_StoreEvidence(t *testing.T) {
+	// mock assessment stream
+	mockStream := &mockAssessmentStream{connectionEstablished: true, expected: 2}
+	mockStream.Prepare()
+
 	type args struct {
 		in0 context.Context
 		req *evidence.StoreEvidenceRequest
@@ -170,8 +174,15 @@ func TestService_StoreEvidence(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService()
-			gotRes, err := s.StoreEvidence(tt.args.in0, tt.args.req)
+			// create service with assessment stream
+			svc := NewService()
+			svc.assessment = &api.RPCConnection[assessment.AssessmentClient]{Target: "mock"}
+			svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]()
+			_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
+				return mockStream, nil
+			})
+
+			gotRes, err := svc.StoreEvidence(tt.args.in0, tt.args.req)
 
 			tt.wantErr(t, err)
 			tt.wantRes(t, gotRes)
@@ -267,15 +278,26 @@ func TestService_StoreEvidences(t *testing.T) {
 				err                error
 				responseFromServer *evidence.StoreEvidencesResponse
 			)
-			s := NewService()
+
+			// mock assessment stream
+			mockStream := &mockAssessmentStream{connectionEstablished: true, expected: 2}
+			mockStream.Prepare()
+
+			// create service with assessment stream
+			svc := NewService()
+			svc.assessment = &api.RPCConnection[assessment.AssessmentClient]{Target: "mock"}
+			svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]()
+			_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
+				return mockStream, nil
+			})
 
 			if tt.args.streamToServer != nil {
-				err = s.StoreEvidences(tt.args.streamToServer)
+				err = svc.StoreEvidences(tt.args.streamToServer)
 				responseFromServer = <-tt.args.streamToServer.SentFromServer
 			} else if tt.args.streamToClientWithSendErr != nil {
-				err = s.StoreEvidences(tt.args.streamToClientWithSendErr)
+				err = svc.StoreEvidences(tt.args.streamToClientWithSendErr)
 			} else if tt.args.streamToServerWithRecvErr != nil {
-				err = s.StoreEvidences(tt.args.streamToServerWithRecvErr)
+				err = svc.StoreEvidences(tt.args.streamToServerWithRecvErr)
 			}
 
 			if (err != nil) != tt.wantErr {
