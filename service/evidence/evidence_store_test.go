@@ -175,6 +175,7 @@ func TestService_StoreEvidence(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// create service with assessment stream
+			// The StoreEvidence method will use the assessment stream to send the evidence to the assessment service
 			svc := NewService()
 			svc.assessment = &api.RPCConnection[assessment.AssessmentClient]{Target: "mock"}
 			svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]()
@@ -284,6 +285,7 @@ func TestService_StoreEvidences(t *testing.T) {
 			mockStream.Prepare()
 
 			// create service with assessment stream
+			// StoreEvidences sends the evidence to the StoreEvidence method which will use the assessment stream to send the evidence to the assessment service
 			svc := NewService()
 			svc.assessment = &api.RPCConnection[assessment.AssessmentClient]{Target: "mock"}
 			svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]()
