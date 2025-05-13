@@ -42,6 +42,7 @@ import (
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
@@ -1170,8 +1171,8 @@ func TestService_recvEventsLoop(t *testing.T) {
 						Type: orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED,
 					},
 				}},
-				evidenceStore: api.NewRPCConnection(DefaultEvidenceStoreAddress, evidence.NewEvidenceStoreClient),
-				orchestrator:  api.NewRPCConnection(DefaultOrchestratorAddress, orchestrator.NewOrchestratorClient),
+				evidenceStore: api.NewRPCConnection(config.DefaultEvidenceStoreURL, evidence.NewEvidenceStoreClient),
+				orchestrator:  api.NewRPCConnection(config.DefaultOrchestratorURL, orchestrator.NewOrchestratorClient),
 			},
 			wantEvent: &orchestrator.MetricChangeEvent{
 				Type: orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED,
