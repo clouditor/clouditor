@@ -13,7 +13,7 @@ require (
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1 // indirect
-	github.com/open-policy-agent/opa v1.3.0
+	github.com/open-policy-agent/opa v1.4.2
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.21.1 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
@@ -31,7 +31,7 @@ require (
 	go.opentelemetry.io/otel/sdk v1.35.0 // indirect
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
-	golang.org/x/sync v0.13.0
+	golang.org/x/sync v0.14.0
 )
 
 // runtime dependencies (logging)
@@ -48,8 +48,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/oxisto/oauth2go v0.14.0
 	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/oauth2 v0.29.0
-
+	golang.org/x/oauth2 v0.30.0
 )
 
 // runtime dependencies (rpc)
@@ -65,7 +64,7 @@ require (
 	go.opentelemetry.io/otel/sdk/metric v1.35.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250218202821-56aae31c358a
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250218202821-56aae31c358a // indirect
-	google.golang.org/grpc v1.71.0
+	google.golang.org/grpc v1.72.0
 	google.golang.org/protobuf v1.36.6
 )
 
@@ -88,7 +87,6 @@ require (
 	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.5.0 // indirect
 	modernc.org/sqlite v1.23.1 // indirect
-
 )
 
 // runtime dependencies (config, cli)
@@ -104,11 +102,11 @@ require (
 	github.com/spf13/cast v1.7.1 // indirect
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6 // indirect
-	github.com/spf13/viper v1.20.0
+	github.com/spf13/viper v1.20.1
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8 // indirect
-	golang.org/x/text v0.24.0
+	golang.org/x/text v0.25.0
 )
 
 // runtime dependencies (Azure)
@@ -145,7 +143,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.34 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.2 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.34 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.212.0
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.217.0
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.7.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.15 // indirect
@@ -156,7 +154,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.28.13 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.12
 	github.com/aws/smithy-go v1.22.2
-
 )
 
 // runtime dependencies (OpenStack)
@@ -213,7 +210,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/stretchr/testify v1.10.0
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-
 )
 
 // tools dependencies

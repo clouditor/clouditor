@@ -28,23 +28,17 @@ package assessmentresult
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/cli"
-	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/server"
 	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
 	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/types/known/structpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestMain(m *testing.M) {
@@ -60,32 +54,7 @@ func TestMain(m *testing.M) {
 
 	// Store an assessment result so that output of CMD 'list' is not empty
 	_, err = svc.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
-		Result: &assessment.AssessmentResult{
-			Id:                   testdata.MockTargetOfEvaluationID1,
-			MetricId:             testdata.MockMetricID1,
-			EvidenceId:           testdata.MockTargetOfEvaluationID1,
-			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-			Timestamp:            timestamp,
-			ResourceId:           "myResource",
-			ResourceTypes:        []string{"ResourceType"},
-			ComplianceComment:    "Something",
-			Compliant:            false,
-			MetricConfiguration: &assessment.MetricConfiguration{
-				TargetValue:          toStruct(1.0),
-				MetricId:             testdata.MockMetricID1,
-				Operator:             "==",
-				IsDefault:            true,
-				TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-			},
-			ToolId:    util.Ref(assessment.AssessmentToolId),
-			UpdatedAt: timestamp,
-			History: []*assessment.Record{
-				{
-					Timestamp:  timestamp,
-					EvidenceId: testdata.MockEvidenceID1,
-				},
-			},
-		}})
+		Result: clitest.MockAssessmentResult1})
 	if err != nil {
 		panic(err)
 	}
@@ -123,23 +92,4 @@ func TestNewListResultsCommand(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Results)
-}
-
-func toStruct(f float32) (s *structpb.Value) {
-	var (
-		b   []byte
-		err error
-	)
-
-	s = new(structpb.Value)
-
-	b, err = json.Marshal(f)
-	if err != nil {
-		return nil
-	}
-	if err = json.Unmarshal(b, &s); err != nil {
-		return nil
-	}
-
-	return
 }
