@@ -180,33 +180,6 @@ func TestService_StoreEvidence(t *testing.T) {
 				return assert.ErrorContains(t, err, "evidence.tool_id: value length must be at least 1 characters")
 			},
 		},
-		{
-			name: "Error getting assessment stream",
-			args: args{
-				in0: context.TODO(),
-				req: &evidence.StoreEvidenceRequest{
-					Evidence: &evidence.Evidence{
-						Id:                   testdata.MockEvidenceID1,
-						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-						Timestamp:            timestamppb.Now(),
-						Resource: &ontology.Resource{
-							Type: &ontology.Resource_VirtualMachine{
-								VirtualMachine: &ontology.VirtualMachine{
-									Id:   "mock-id",
-									Name: "mock-name",
-								},
-							},
-						},
-						ToolId: "mock-tool-id",
-					},
-				},
-				addStream: false,
-			},
-			wantRes: assert.Nil[*evidence.StoreEvidenceResponse],
-			wantErr: func(t *testing.T, err error) bool {
-				return assert.ErrorContains(t, err, "could not get stream to assessment service")
-			},
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

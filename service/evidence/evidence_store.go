@@ -189,16 +189,18 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 
 	go svc.informHooks(ctx, req.Evidence, nil)
 
-	// Get Evidence Store stream
-	channel, err := svc.assessmentStreams.GetStream(svc.assessment.Target, "Assessment", svc.initAssessmentStream, svc.assessment.Opts...)
-	if err != nil {
-		err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessment.Target, err)
-		log.Error(err)
-		return nil, status.Errorf(codes.Internal, "%v", err)
-	}
+	go func() {
+		// Get Evidence Store stream
+		channel, err := svc.assessmentStreams.GetStream(svc.assessment.Target, "Assessment", svc.initAssessmentStream, svc.assessment.Opts...)
+		if err != nil {
+			err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessment.Target, err)
+			log.Error(err)
+			return
+		}
 
-	// Send evidence to assessment service
-	channel.Send(&assessment.AssessEvidenceRequest{Evidence: req.Evidence})
+		// Send evidence to assessment service
+		channel.Send(&assessment.AssessEvidenceRequest{Evidence: req.Evidence})
+	}()
 
 	res = &evidence.StoreEvidenceResponse{}
 
