@@ -1055,55 +1055,73 @@ func (m *mockStreamerWithSendErr) Recv() (req *evidence.StoreEvidenceRequest, er
 
 func TestService_initAssessmentStream(t *testing.T) {
 	type fields struct {
-		storage                          persistence.Storage
-		assessmentStreams                *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
-		assessment                       *api.RPCConnection[assessment.AssessmentClient]
-		evidenceHooks                    []evidence.EvidenceHookFunc
-		authz                            service.AuthorizationStrategy
-		UnimplementedEvidenceStoreServer evidence.UnimplementedEvidenceStoreServer
+		assessment *api.RPCConnection[assessment.AssessmentClient]
 	}
 	type args struct {
 		target string
-		opts   []grpc.DialOption
 	}
 	tests := []struct {
-		name       string
-		fields     fields
-		args       args
-		wantStream assert.Want[assessment.Assessment_AssessEvidencesClient]
-		wantErr    assert.WantErr
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.WantErr
 	}{
 		{
-			name: "Invalid RPC connection",
+			name: "Stream initialization failure",
 			fields: fields{
-				assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
-				assessment:        api.NewRPCConnection("localhost:1", assessment.NewAssessmentClient),
+				assessment: &api.RPCConnection[assessment.AssessmentClient]{
+					Client: &mockAssessmentClient{failStream: true},
+				},
 			},
-
 			args: args{
-				target: "localhost:1",
+				target: "mock-target",
 			},
-			wantStream: assert.Empty[assessment.Assessment_AssessEvidencesClient],
 			wantErr: func(t *testing.T, err error) bool {
-				s, _ := status.FromError(errors.Unwrap(err))
-				return assert.Equal(t, codes.Unavailable, s.Code())
+				return assert.ErrorContains(t, err, "could not set up stream for assessing evidences")
 			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				assessment: &api.RPCConnection[assessment.AssessmentClient]{
+					Client: &mockAssessmentClient{},
+				},
+			},
+			args: args{
+				target: "mock-target",
+			},
+			wantErr: assert.Nil[error],
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				storage:                          tt.fields.storage,
-				assessmentStreams:                tt.fields.assessmentStreams,
-				assessment:                       tt.fields.assessment,
-				evidenceHooks:                    tt.fields.evidenceHooks,
-				authz:                            tt.fields.authz,
-				UnimplementedEvidenceStoreServer: tt.fields.UnimplementedEvidenceStoreServer,
+				assessment: tt.fields.assessment,
 			}
-			gotStream, err := svc.initAssessmentStream(tt.args.target, tt.args.opts...)
-
+			_, err := svc.initAssessmentStream(tt.args.target)
 			tt.wantErr(t, err)
-			tt.wantStream(t, gotStream)
 		})
 	}
+}
+
+// mockAssessmentClient is a mock implementation of the AssessmentClient interface.
+type mockAssessmentClient struct {
+	failStream bool
+}
+
+func (m *mockAssessmentClient) AssessEvidences(ctx context.Context, opts ...grpc.CallOption) (assessment.Assessment_AssessEvidencesClient, error) {
+	if m.failStream {
+		return nil, fmt.Errorf("mock stream failure")
+	}
+	return &mockAssessmentStream{}, nil
+}
+
+// AssessEvidence is a stub implementation to satisfy the AssessmentClient interface.
+func (m *mockAssessmentClient) AssessEvidence(ctx context.Context, req *assessment.AssessEvidenceRequest, opts ...grpc.CallOption) (*assessment.AssessEvidenceResponse, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+// CalculateCompliance is a stub implementation to satisfy the AssessmentClient interface.
+func (m *mockAssessmentClient) CalculateCompliance(ctx context.Context, req *assessment.CalculateComplianceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	return nil, fmt.Errorf("not implemented")
 }
