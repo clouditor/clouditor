@@ -111,8 +111,9 @@ func TestService_StoreEvidence(t *testing.T) {
 	mockStream.Prepare()
 
 	type args struct {
-		in0 context.Context
-		req *evidence.StoreEvidenceRequest
+		in0       context.Context
+		req       *evidence.StoreEvidenceRequest
+		addStream bool
 	}
 	tests := []struct {
 		name    string
@@ -140,6 +141,7 @@ func TestService_StoreEvidence(t *testing.T) {
 							},
 						},
 					}},
+				addStream: true,
 			},
 			wantRes: func(t *testing.T, got *evidence.StoreEvidenceResponse) bool {
 				return assert.Empty[*evidence.StoreEvidenceResponse](t, got)
@@ -171,10 +173,38 @@ func TestService_StoreEvidence(t *testing.T) {
 						},
 					},
 				},
+				addStream: true,
 			},
 			wantRes: assert.Nil[*evidence.StoreEvidenceResponse],
 			wantErr: func(t *testing.T, err error) bool {
 				return assert.ErrorContains(t, err, "evidence.tool_id: value length must be at least 1 characters")
+			},
+		},
+		{
+			name: "Error getting assessment stream",
+			args: args{
+				in0: context.TODO(),
+				req: &evidence.StoreEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Id:                   testdata.MockEvidenceID1,
+						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+						Timestamp:            timestamppb.Now(),
+						Resource: &ontology.Resource{
+							Type: &ontology.Resource_VirtualMachine{
+								VirtualMachine: &ontology.VirtualMachine{
+									Id:   "mock-id",
+									Name: "mock-name",
+								},
+							},
+						},
+						ToolId: "mock-tool-id",
+					},
+				},
+				addStream: false,
+			},
+			wantRes: assert.Nil[*evidence.StoreEvidenceResponse],
+			wantErr: func(t *testing.T, err error) bool {
+				return assert.ErrorContains(t, err, "could not get stream to assessment service")
 			},
 		},
 	}
@@ -183,11 +213,15 @@ func TestService_StoreEvidence(t *testing.T) {
 			// create service with assessment stream
 			// The StoreEvidence method will use the assessment stream to send the evidence to the assessment service
 			svc := NewService()
-			svc.assessment = &api.RPCConnection[assessment.AssessmentClient]{Target: "mock"}
-			svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]()
-			_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
-				return mockStream, nil
-			})
+
+			// Add assessment stream if needed
+			if tt.args.addStream {
+				svc.assessment = &api.RPCConnection[assessment.AssessmentClient]{Target: "mock"}
+				svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]()
+				_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
+					return mockStream, nil
+				})
+			}
 
 			gotRes, err := svc.StoreEvidence(tt.args.in0, tt.args.req)
 

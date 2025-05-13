@@ -167,7 +167,6 @@ func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (s
 	return
 }
 
-// TODO(anatheka): Change to fire and forget style
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives a req and stores it
 func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEvidenceRequest) (res *evidence.StoreEvidenceResponse, err error) {
 	// Validate request
