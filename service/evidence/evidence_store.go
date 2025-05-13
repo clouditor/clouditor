@@ -147,7 +147,6 @@ func (svc *Service) Shutdown() {
 	svc.assessmentStreams.CloseAll()
 }
 
-// TODO(anatheka): Add tests
 // initAssessmentStream initializes the stream that is used to send evidences to the assessment service.
 // If configured, it uses the Authorizer of the discovery service to authenticate requests to the assessment.
 func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {

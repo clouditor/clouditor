@@ -50,7 +50,6 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
-
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -1018,4 +1017,61 @@ func (m *mockStreamerWithSendErr) Recv() (req *evidence.StoreEvidenceRequest, er
 	}
 
 	return req, nil
+}
+
+func TestService_initAssessmentStream(t *testing.T) {
+	type fields struct {
+		storage                          persistence.Storage
+		assessmentStreams                *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
+		assessment                       *api.RPCConnection[assessment.AssessmentClient]
+		evidenceHooks                    []evidence.EvidenceHookFunc
+		authz                            service.AuthorizationStrategy
+		UnimplementedEvidenceStoreServer evidence.UnimplementedEvidenceStoreServer
+	}
+	type args struct {
+		target string
+		opts   []grpc.DialOption
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		args       args
+		wantStream assert.Want[assessment.Assessment_AssessEvidencesClient]
+		wantErr    assert.WantErr
+	}{
+		{
+			name: "Invalid RPC connection",
+			fields: fields{
+				// assessmentStreams: api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](),
+				// assessment:        &api.RPCConnection[assessment.AssessmentClient]{Target: "mock"},
+				assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
+				assessment:        api.NewRPCConnection("localhost:1", assessment.NewAssessmentClient),
+			},
+
+			args: args{
+				target: "localhost:1",
+			},
+			wantStream: assert.Empty[assessment.Assessment_AssessEvidencesClient],
+			wantErr: func(t *testing.T, err error) bool {
+				s, _ := status.FromError(errors.Unwrap(err))
+				return assert.Equal(t, codes.Unavailable, s.Code())
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				storage:                          tt.fields.storage,
+				assessmentStreams:                tt.fields.assessmentStreams,
+				assessment:                       tt.fields.assessment,
+				evidenceHooks:                    tt.fields.evidenceHooks,
+				authz:                            tt.fields.authz,
+				UnimplementedEvidenceStoreServer: tt.fields.UnimplementedEvidenceStoreServer,
+			}
+			gotStream, err := svc.initAssessmentStream(tt.args.target, tt.args.opts...)
+
+			tt.wantErr(t, err)
+			tt.wantStream(t, gotStream)
+		})
+	}
 }
