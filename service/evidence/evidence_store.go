@@ -36,6 +36,7 @@ import (
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/logging"
 	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/persistence"
@@ -50,11 +51,6 @@ import (
 )
 
 var log *logrus.Entry
-
-const (
-	// DefaultAssessmentAddress specifies the default gRPC address of the assessment service.
-	DefaultAssessmentAddress = "localhost:9090"
-)
 
 // DefaultServiceSpec returns a [launcher.ServiceSpec] for this [Service] with all necessary options retrieved from the
 // config system.
@@ -115,7 +111,7 @@ func NewService(opts ...service.Option[*Service]) (svc *Service) {
 	)
 	svc = &Service{
 		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
-		assessment:        api.NewRPCConnection(DefaultAssessmentAddress, assessment.NewAssessmentClient),
+		assessment:        api.NewRPCConnection(config.DefaultAssessmentURL, assessment.NewAssessmentClient),
 	}
 
 	for _, o := range opts {
@@ -159,10 +155,10 @@ func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (s
 	// send the evidence data
 	stream, err = svc.assessment.Client.AssessEvidences(context.Background())
 	if err != nil {
-		return nil, fmt.Errorf("could not set up stream for assessing evidences: %w", err)
+		return nil, fmt.Errorf("could not set up stream to assessment for assessing evidence: %w", err)
 	}
 
-	log.Infof("Connected to Assessment")
+	log.Infof("Stream to AssessEvidences established")
 
 	return
 }
@@ -189,9 +185,11 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 
 	go svc.informHooks(ctx, req.Evidence, nil)
 
+	// We use a goroutine here to send the response as quickly as possible, allowing processing to continue after the return.
+	// TODO(anatheka): Check if evidence has changed to the last time
 	go func() {
-		// Get Evidence Store stream
-		channel, err := svc.assessmentStreams.GetStream(svc.assessment.Target, "Assessment", svc.initAssessmentStream, svc.assessment.Opts...)
+		// Get Assessment stream
+		channelAssessment, err := svc.assessmentStreams.GetStream(svc.assessment.Target, "Assessment", svc.initAssessmentStream, svc.assessment.Opts...)
 		if err != nil {
 			err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessment.Target, err)
 			log.Error(err)
@@ -199,7 +197,7 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 		}
 
 		// Send evidence to assessment service
-		channel.Send(&assessment.AssessEvidenceRequest{Evidence: req.Evidence})
+		channelAssessment.Send(&assessment.AssessEvidenceRequest{Evidence: req.Evidence})
 	}()
 
 	res = &evidence.StoreEvidenceResponse{}

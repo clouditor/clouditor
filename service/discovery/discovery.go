@@ -72,9 +72,6 @@ const (
 	DiscovererStart DiscoveryEventType = iota
 	// DiscovererFinished is emitted at the end of a discovery run.
 	DiscovererFinished
-
-	// DefaultEvidenceStoreAddress specifies the default gRPC address of the evidence store service.
-	DefaultEvidenceStoreAddress = "localhost:9090"
 )
 
 var log *logrus.Entry
@@ -229,7 +226,7 @@ func NewService(opts ...service.Option[*Service]) *Service {
 	var err error
 	s := &Service{
 		evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
-		evidenceStore:        api.NewRPCConnection(DefaultEvidenceStoreAddress, evidence.NewEvidenceStoreClient),
+		evidenceStore:        api.NewRPCConnection(string(config.DefaultEvidenceStoreURL), evidence.NewEvidenceStoreClient),
 		scheduler:            gocron.NewScheduler(time.UTC),
 		Events:               make(chan *DiscoveryEvent),
 		ctID:                 config.DefaultTargetOfEvaluationID,

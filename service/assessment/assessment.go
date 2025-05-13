@@ -143,14 +143,6 @@ type Service struct {
 	evalPkg string
 }
 
-const (
-	// DefaultEvidenceStoreAddress specifies the default gRPC address of the evidence store.
-	DefaultEvidenceStoreAddress = "localhost:9090"
-
-	// DefaultOrchestratorAddress specifies the default gRPC address of the orchestrator.
-	DefaultOrchestratorAddress = "localhost:9090"
-)
-
 // WithoutEvidenceStore is a service option to discard evidences and don't send them to an evidence store
 func WithoutEvidenceStore() service.Option[*Service] {
 	return func(svc *Service) {
@@ -217,8 +209,8 @@ func NewService(opts ...service.Option[*Service]) *Service {
 		cachedConfigurations: make(map[string]cachedConfiguration),
 		requests:             make(map[string]waitingRequest),
 		evidenceResourceMap:  make(map[string]*evidence.Evidence),
-		evidenceStore:        api.NewRPCConnection(DefaultEvidenceStoreAddress, evidence.NewEvidenceStoreClient),
-		orchestrator:         api.NewRPCConnection(DefaultOrchestratorAddress, orchestrator.NewOrchestratorClient),
+		evidenceStore:        api.NewRPCConnection(config.DefaultEvidenceStoreURL, evidence.NewEvidenceStoreClient),
+		orchestrator:         api.NewRPCConnection(config.DefaultOrchestratorURL, orchestrator.NewOrchestratorClient),
 	}
 
 	// Apply any options
