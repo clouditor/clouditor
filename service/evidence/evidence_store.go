@@ -98,7 +98,6 @@ func WithStorage(storage persistence.Storage) service.Option[*Service] {
 	}
 }
 
-// TODO(anatheka): Write tests
 // WithAssessmentAddress is an option to configure the assessment service gRPC address.
 func WithAssessmentAddress(target string, opts ...grpc.DialOption) service.Option[*Service] {
 

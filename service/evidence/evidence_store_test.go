@@ -81,7 +81,7 @@ func TestNewService(t *testing.T) {
 			},
 		},
 		{
-			name: "EvidenceStoreServer created with storage option",
+			name: "EvidenceStoreServer created with option 'WithStorage'",
 			args: args{opts: []service.Option[*Service]{WithStorage(db)}},
 			want: func(t *testing.T, got *Service) bool {
 				// Storage should be gorm (in-memory storage). Hard to check since its type is not exported
@@ -89,10 +89,17 @@ func TestNewService(t *testing.T) {
 				return true
 			},
 		},
+		{
+			name: "EvidenceStoreServer created with option 'WithAssessmentAddress'",
+			args: args{opts: []service.Option[*Service]{WithAssessmentAddress("localhost:9091")}},
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, "localhost:9091", got.assessment.Target)
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewService()
+			got := NewService(tt.args.opts...)
 			tt.want(t, got)
 		})
 	}
