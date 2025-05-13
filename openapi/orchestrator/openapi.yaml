@@ -1521,6 +1521,8 @@ components:
                 - complianceComment
                 - targetOfEvaluationId
                 - toolId
+                - updatedAt
+                - history
             type: object
             properties:
                 id:
@@ -1565,6 +1567,14 @@ components:
                 toolId:
                     type: string
                     description: Reference to the tool which provided the assessment result
+                updatedAt:
+                    type: string
+                    format: date-time
+                history:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Record'
+                    description: Stores the history of evidence IDs and timestamps for evidence that have the same content as the evidence used for this assessment result.
             description: |-
                 A result resource, representing the result after assessing the cloud resource
                  with id resource_id.
@@ -2139,6 +2149,14 @@ components:
                         - $ref: '#/components/schemas/MinMax'
                     description: used for metric scale
             description: A range resource representing the range of values
+        Record:
+            type: object
+            properties:
+                evidenceId:
+                    type: string
+                timestamp:
+                    type: string
+                    format: date-time
         Redundancy:
             type: object
             properties:
