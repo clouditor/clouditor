@@ -1042,8 +1042,6 @@ func TestService_initAssessmentStream(t *testing.T) {
 		{
 			name: "Invalid RPC connection",
 			fields: fields{
-				// assessmentStreams: api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](),
-				// assessment:        &api.RPCConnection[assessment.AssessmentClient]{Target: "mock"},
 				assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
 				assessment:        api.NewRPCConnection("localhost:1", assessment.NewAssessmentClient),
 			},
