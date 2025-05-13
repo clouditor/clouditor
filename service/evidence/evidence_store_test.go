@@ -1067,7 +1067,7 @@ func TestService_initAssessmentStream(t *testing.T) {
 		wantErr assert.WantErr
 	}{
 		{
-			name: "Stream initialization failure",
+			name: "Set up stream error",
 			fields: fields{
 				assessment: &api.RPCConnection[assessment.AssessmentClient]{
 					Client: &mockAssessmentClient{failStream: true},
