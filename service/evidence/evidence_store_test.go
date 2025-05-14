@@ -789,7 +789,7 @@ func TestDefaultServiceSpec(t *testing.T) {
 }
 
 // createStoreEvidenceRequestMocks creates store evidence requests with random evidence IDs
-func createStoreEvidenceRequestMocks(t *testing.T, count int) []*evidence.StoreEvidenceRequest {
+func createStoreEvidenceRequestMocks(_ *testing.T, count int) []*evidence.StoreEvidenceRequest {
 	var mockRequests []*evidence.StoreEvidenceRequest
 
 	for i := 0; i < count; i++ {
