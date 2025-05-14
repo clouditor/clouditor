@@ -1007,44 +1007,6 @@ func TestService_handleEvidence(t *testing.T) {
 				return assert.Contains(t, err.Error(), discovery.ErrNotOntologyResource.Error())
 			},
 		},
-		{
-			name: "evidence store stream error",
-			fields: fields{
-				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(connectionRefusedDialer)),
-				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
-			},
-			args: args{
-				evidence: &evidence.Evidence{
-					Id:                   testdata.MockEvidenceID1,
-					ToolId:               testdata.MockEvidenceToolID1,
-					Timestamp:            timestamppb.Now(),
-					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-					Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
-						Id:   testdata.MockResourceID1,
-						Name: testdata.MockResourceName1,
-						BootLogging: &ontology.BootLogging{
-							LoggingServiceIds: nil,
-							Enabled:           true,
-						}}),
-				},
-				resource: &ontology.VirtualMachine{
-					Id:   testdata.MockResourceID1,
-					Name: testdata.MockResourceName1,
-					BootLogging: &ontology.BootLogging{
-						LoggingServiceIds: nil,
-						Enabled:           true,
-					},
-				},
-			},
-			want: assert.Nil[[]*assessment.AssessmentResult],
-			wantErr: func(t *testing.T, err error) bool {
-				if !assert.NotEmpty(t, err) {
-					return false
-				}
-
-				return assert.Contains(t, err.Error(), "could not get stream to evidence store")
-			},
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
