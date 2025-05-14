@@ -1050,7 +1050,7 @@ func TestService_initAssessmentStream(t *testing.T) {
 				target: "mock-target",
 			},
 			wantErr: func(t *testing.T, err error) bool {
-				return assert.ErrorContains(t, err, "could not set up stream for assessing evidences")
+				return assert.ErrorContains(t, err, "could not set up stream to assessment for assessing evidence")
 			},
 		},
 		{
