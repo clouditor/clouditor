@@ -42,6 +42,7 @@ import (
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
@@ -115,24 +116,11 @@ func TestNewService(t *testing.T) {
 			name: "AssessmentServer created with options",
 			args: args{
 				opts: []service.Option[*Service]{
-					WithEvidenceStoreAddress("localhost:9091"),
 					WithOrchestratorAddress("localhost:9092"),
 				},
 			},
 			want: func(t *testing.T, got *Service) bool {
-				return assert.Equal(t, "localhost:9091", got.evidenceStore.Target) &&
-					assert.Equal(t, "localhost:9092", got.orchestrator.Target)
-			},
-		},
-		{
-			name: "AssessmentServer without EvidenceStore",
-			args: args{
-				opts: []service.Option[*Service]{
-					WithoutEvidenceStore(),
-				},
-			},
-			want: func(t *testing.T, got *Service) bool {
-				return assert.True(t, got.isEvidenceStoreDisabled)
+				return assert.Equal(t, "localhost:9092", got.orchestrator.Target)
 			},
 		},
 		{
@@ -432,9 +420,7 @@ func TestService_AssessEvidence(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				evidenceStore:        tt.fields.evidenceStore,
 				orchestrator:         tt.fields.orchestrator,
-				evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 				orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
 				cachedConfigurations: make(map[string]cachedConfiguration),
 				evidenceResourceMap:  tt.fields.evidenceResourceMap,
@@ -459,13 +445,9 @@ func TestService_AssessEvidence(t *testing.T) {
 // Todo: Add it to table test above (would probably need some function injection in test cases like we do with storage)
 func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached(t *testing.T) {
 	s := &Service{
-		evidenceStore: api.NewRPCConnection(
-			testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
 		orchestrator: api.NewRPCConnection(
 			testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 		authz: servicetest.NewAuthorizationStrategy(true),
-		evidenceStoreStreams: api.NewStreamsOf(
-			api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 		orchestratorStreams: api.NewStreamsOf(
 			api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient,
 				*orchestrator.StoreAssessmentResultRequest](log)),
@@ -634,8 +616,6 @@ func TestService_AssessEvidences(t *testing.T) {
 			s := Service{
 				resultHooks:          tt.fields.ResultHooks,
 				cachedConfigurations: make(map[string]cachedConfiguration),
-				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
-				evidenceStore:        api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
 				orchestrator:         api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 				orchestratorStreams:  tt.fields.orchestratorStreams,
 				evidenceResourceMap:  make(map[string]*evidence.Evidence),
@@ -738,7 +718,6 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			hookCallCounter = 0
 			s := NewService(
-				WithEvidenceStoreAddress(testdata.MockGRPCTarget, grpc.WithContextDialer(bufConnDialer)),
 				WithOrchestratorAddress(testdata.MockGRPCTarget, grpc.WithContextDialer(bufConnDialer)),
 			)
 
@@ -1028,51 +1007,11 @@ func TestService_handleEvidence(t *testing.T) {
 				return assert.Contains(t, err.Error(), discovery.ErrNotOntologyResource.Error())
 			},
 		},
-		{
-			name: "evidence store stream error",
-			fields: fields{
-				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(connectionRefusedDialer)),
-				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
-			},
-			args: args{
-				evidence: &evidence.Evidence{
-					Id:                   testdata.MockEvidenceID1,
-					ToolId:               testdata.MockEvidenceToolID1,
-					Timestamp:            timestamppb.Now(),
-					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-					Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
-						Id:   testdata.MockResourceID1,
-						Name: testdata.MockResourceName1,
-						BootLogging: &ontology.BootLogging{
-							LoggingServiceIds: nil,
-							Enabled:           true,
-						}}),
-				},
-				resource: &ontology.VirtualMachine{
-					Id:   testdata.MockResourceID1,
-					Name: testdata.MockResourceName1,
-					BootLogging: &ontology.BootLogging{
-						LoggingServiceIds: nil,
-						Enabled:           true,
-					},
-				},
-			},
-			want: assert.Nil[[]*assessment.AssessmentResult],
-			wantErr: func(t *testing.T, err error) bool {
-				if !assert.NotEmpty(t, err) {
-					return false
-				}
-
-				return assert.Contains(t, err.Error(), "could not get stream to evidence store")
-			},
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				evidenceStore:        tt.fields.evidenceStore,
 				orchestrator:         tt.fields.orchestrator,
-				evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 				orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
 				cachedConfigurations: make(map[string]cachedConfiguration),
 				pe:                   policies.NewRegoEval(policies.WithPackageName(policies.DefaultRegoPackage)),
@@ -1149,7 +1088,6 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 
 func TestService_recvEventsLoop(t *testing.T) {
 	type fields struct {
-		evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
 		orchestratorStreams  *api.StreamsOf[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest]
 		orchestrator         *api.RPCConnection[orchestrator.OrchestratorClient]
 		evidenceStore        *api.RPCConnection[evidence.EvidenceStoreClient]
@@ -1170,8 +1108,8 @@ func TestService_recvEventsLoop(t *testing.T) {
 						Type: orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED,
 					},
 				}},
-				evidenceStore: api.NewRPCConnection(DefaultEvidenceStoreAddress, evidence.NewEvidenceStoreClient),
-				orchestrator:  api.NewRPCConnection(DefaultOrchestratorAddress, orchestrator.NewOrchestratorClient),
+				evidenceStore: api.NewRPCConnection(config.DefaultEvidenceStoreURL, evidence.NewEvidenceStoreClient),
+				orchestrator:  api.NewRPCConnection(config.DefaultOrchestratorURL, orchestrator.NewOrchestratorClient),
 			},
 			wantEvent: &orchestrator.MetricChangeEvent{
 				Type: orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED,
@@ -1182,8 +1120,6 @@ func TestService_recvEventsLoop(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
-				evidenceStore:        tt.fields.evidenceStore,
 				orchestrator:         tt.fields.orchestrator,
 				orchestratorStreams:  tt.fields.orchestratorStreams,
 				metricEventStream:    tt.fields.metricEventStream,
@@ -1221,15 +1157,12 @@ func (e *eventRecorder) HandleMetricEvent(event *orchestrator.MetricChangeEvent)
 
 func TestService_MetricImplementation(t *testing.T) {
 	type fields struct {
-		isEvidenceStoreDisabled bool
-		evidenceStoreStreams    *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
-		evidenceStore           *api.RPCConnection[evidence.EvidenceStoreClient]
-		orchestrator            *api.RPCConnection[orchestrator.OrchestratorClient]
-		metricEventStream       orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
-		resultHooks             []assessment.ResultHookFunc
-		cachedConfigurations    map[string]cachedConfiguration
-		pe                      policies.PolicyEval
-		evalPkg                 string
+		orchestrator         *api.RPCConnection[orchestrator.OrchestratorClient]
+		metricEventStream    orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
+		resultHooks          []assessment.ResultHookFunc
+		cachedConfigurations map[string]cachedConfiguration
+		pe                   policies.PolicyEval
+		evalPkg              string
 	}
 	type args struct {
 		lang   assessment.MetricImplementation_Language
@@ -1257,15 +1190,12 @@ func TestService_MetricImplementation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				isEvidenceStoreDisabled: tt.fields.isEvidenceStoreDisabled,
-				evidenceStoreStreams:    tt.fields.evidenceStoreStreams,
-				evidenceStore:           tt.fields.evidenceStore,
-				orchestrator:            tt.fields.orchestrator,
-				metricEventStream:       tt.fields.metricEventStream,
-				resultHooks:             tt.fields.resultHooks,
-				cachedConfigurations:    tt.fields.cachedConfigurations,
-				pe:                      tt.fields.pe,
-				evalPkg:                 tt.fields.evalPkg,
+				orchestrator:         tt.fields.orchestrator,
+				metricEventStream:    tt.fields.metricEventStream,
+				resultHooks:          tt.fields.resultHooks,
+				cachedConfigurations: tt.fields.cachedConfigurations,
+				pe:                   tt.fields.pe,
+				evalPkg:              tt.fields.evalPkg,
 			}
 			gotImpl, err := svc.MetricImplementation(tt.args.lang, tt.args.metric)
 

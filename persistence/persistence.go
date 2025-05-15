@@ -36,6 +36,7 @@ var (
 	ErrUniqueConstraintFailed = errors.New("unique constraint failed")
 	ErrUnsupportedType        = errors.New("unsupported type")
 	ErrDatabase               = errors.New("database error")
+	ErrEntryAlreadyExists     = errors.New("entry already exists")
 )
 
 // Storage comprises a database interface
