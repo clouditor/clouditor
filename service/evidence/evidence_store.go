@@ -77,6 +77,9 @@ type Service struct {
 	assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
 	assessment        *api.RPCConnection[assessment.AssessmentClient]
 
+	// channel that is used to send evidences from the StoreEvidence method to the worker threat to process the evidence
+	channelEvidence chan *evidence.Evidence
+
 	// evidenceHooks is a list of hook functions that can be used if one wants to be
 	// informed about each evidence
 	evidenceHooks []evidence.EvidenceHookFunc
@@ -88,6 +91,10 @@ type Service struct {
 	authz service.AuthorizationStrategy
 
 	evidence.UnimplementedEvidenceStoreServer
+}
+
+func init() {
+	log = logrus.WithField("component", "Evidence Store")
 }
 
 func WithStorage(storage persistence.Storage) service.Option[*Service] {
@@ -122,6 +129,7 @@ func NewService(opts ...service.Option[*Service]) (svc *Service) {
 	svc = &Service{
 		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
 		assessment:        api.NewRPCConnection(config.DefaultAssessmentURL, assessment.NewAssessmentClient),
+		channelEvidence:   make(chan *evidence.Evidence, 1000),
 	}
 
 	for _, o := range opts {
@@ -143,11 +151,20 @@ func NewService(opts ...service.Option[*Service]) (svc *Service) {
 	return
 }
 
-func init() {
-	log = logrus.WithField("component", "Evidence Store")
-}
+func (svc *Service) Init() {
 
-func (svc *Service) Init() {}
+	// Start a worker thread to process the evidence that is being passed to the StoreEvidence function in order to utilize the fire-and-forget strategy.
+	// To do this, we want an channel, that contains the evidences and call another function that processes the evidence.
+	go func() {
+		for {
+			// Wait for a new evidence to be passed to the channel
+			evidence := <-svc.channelEvidence
+
+			// Process the evidence
+			svc.handleEvidence(evidence)
+		}
+	}()
+}
 
 func (svc *Service) Shutdown() {
 	svc.assessmentStreams.CloseAll()
@@ -186,35 +203,39 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 		return nil, service.ErrPermissionDenied
 	}
 
+	// Store evidence
 	err = svc.storage.Create(req.Evidence)
 	if err != nil && errors.Is(err, persistence.ErrUniqueConstraintFailed) {
-		return nil, status.Error(codes.AlreadyExists, "entry already exists")
+		return nil, status.Error(codes.AlreadyExists, persistence.ErrEntryAlreadyExists.Error())
 	} else if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
 
 	go svc.informHooks(ctx, req.Evidence, nil)
 
-	// We use a goroutine here to send the response as quickly as possible, allowing processing to continue after the return.
-	// TODO(anatheka): Check if evidence has changed to the last time
-	go func() {
-		// Get Assessment stream
-		channelAssessment, err := svc.assessmentStreams.GetStream(svc.assessment.Target, "Assessment", svc.initAssessmentStream, svc.assessment.Opts...)
-		if err != nil {
-			err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessment.Target, err)
-			log.Error(err)
-			return
-		}
-
-		// Send evidence to assessment service
-		channelAssessment.Send(&assessment.AssessEvidenceRequest{Evidence: req.Evidence})
-	}()
+	// Send evidence to the channel for processing (fire and forget)
+	svc.channelEvidence <- req.Evidence
 
 	res = &evidence.StoreEvidenceResponse{}
 
 	logging.LogRequest(log, logrus.DebugLevel, logging.Store, req)
 
 	return res, nil
+}
+
+func (svc *Service) handleEvidence(evidence *evidence.Evidence) {
+	// TODO(anatheka): It must be checked if the evidence changed since the last time and then send to the assessment service. Add in separate PR
+
+	// Get Assessment stream
+	channelAssessment, err := svc.assessmentStreams.GetStream(svc.assessment.Target, "Assessment", svc.initAssessmentStream, svc.assessment.Opts...)
+	if err != nil {
+		err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessment.Target, err)
+		log.Error(err)
+		return
+	}
+
+	// Send evidence to assessment service
+	channelAssessment.Send(&assessment.AssessEvidenceRequest{Evidence: evidence})
 }
 
 // StoreEvidences is a method implementation of the evidenceServer interface: It receives evidences and stores them

@@ -50,6 +50,7 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
+
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -57,6 +58,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	gormio "gorm.io/gorm"
 )
 
 // TestNewService is a simply test for NewService
@@ -115,13 +117,83 @@ func TestService_StoreEvidence(t *testing.T) {
 		req       *evidence.StoreEvidenceRequest
 		addStream bool
 	}
+	type fields struct {
+		storage persistence.Storage
+		authz   service.AuthorizationStrategy
+	}
 	tests := []struct {
 		name    string
 		args    args
+		fields  fields
 		wantRes assert.Want[*evidence.StoreEvidenceResponse]
 		want    assert.Want[*Service]
-		wantErr assert.WantErr
+		wantErr assert.ErrorAssertionFunc
 	}{
+		{
+			name: "Error: invalid evidence",
+			args: args{
+				in0: context.TODO(),
+				req: &evidence.StoreEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Id:                   testdata.MockEvidenceID1,
+						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+						Timestamp:            timestamppb.Now(),
+						Resource: &ontology.Resource{
+							Type: &ontology.Resource_VirtualMachine{
+								VirtualMachine: &ontology.VirtualMachine{
+									Id: "mock-id",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantRes: assert.Nil[*evidence.StoreEvidenceResponse],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "evidence.tool_id: value length must be at least 1 characters")
+			},
+			want: func(t *testing.T, s *Service) bool {
+				return assert.NotEmpty(t, s)
+			},
+		},
+		{
+			name: "Error: authorization denied",
+			args: args{
+				in0: context.TODO(),
+				req: &evidence.StoreEvidenceRequest{
+					Evidence: evidencetest.MockEvidence1,
+				},
+			},
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID2),
+			},
+			wantRes: assert.Nil[*evidence.StoreEvidenceResponse],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.PermissionDenied, status.Code(err))
+				return assert.ErrorContains(t, err, "access denied")
+			},
+		},
+		{
+			name: "Error: storage error (database error)",
+			args: args{
+				in0: context.TODO(),
+				req: &evidence.StoreEvidenceRequest{
+					Evidence: evidencetest.MockEvidence1,
+				},
+			},
+			fields: fields{
+				authz:   servicetest.NewAuthorizationStrategy(true, testdata.MockTargetOfEvaluationID1),
+				storage: &testutil.StorageWithError{CreateErr: gormio.ErrInvalidDB},
+			},
+			wantRes: assert.Nil[*evidence.StoreEvidenceResponse],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, persistence.ErrDatabase.Error())
+			},
+			want: func(t *testing.T, s *Service) bool {
+				return assert.NotEmpty(t, s)
+			},
+		},
 		{
 			name: "Store req to the map",
 			args: args{
@@ -143,6 +215,10 @@ func TestService_StoreEvidence(t *testing.T) {
 					}},
 				addStream: true,
 			},
+			fields: fields{
+				authz:   servicetest.NewAuthorizationStrategy(true, testdata.MockTargetOfEvaluationID1),
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {}),
+			},
 			wantRes: func(t *testing.T, got *evidence.StoreEvidenceResponse) bool {
 				return assert.Empty[*evidence.StoreEvidenceResponse](t, got)
 			},
@@ -152,7 +228,7 @@ func TestService_StoreEvidence(t *testing.T) {
 				assert.NoError(t, err)
 				return assert.Equal(t, testdata.MockEvidenceID1, e.Id)
 			},
-			wantErr: assert.Nil[error],
+			wantErr: assert.NoError,
 		},
 		{
 			name: "Store an evidence without toolId to the map",
@@ -175,8 +251,12 @@ func TestService_StoreEvidence(t *testing.T) {
 				},
 				addStream: true,
 			},
+			fields: fields{
+				authz:   servicetest.NewAuthorizationStrategy(true, testdata.MockTargetOfEvaluationID1),
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {}),
+			},
 			wantRes: assert.Nil[*evidence.StoreEvidenceResponse],
-			wantErr: func(t *testing.T, err error) bool {
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "evidence.tool_id: value length must be at least 1 characters")
 			},
 		},
@@ -186,6 +266,10 @@ func TestService_StoreEvidence(t *testing.T) {
 			// create service with assessment stream
 			// The StoreEvidence method will use the assessment stream to send the evidence to the assessment service
 			svc := NewService()
+			svc.storage = tt.fields.storage
+			svc.authz = tt.fields.authz
+			svc.assessment = nil
+			svc.assessmentStreams = nil
 
 			// Add assessment stream if needed
 			if tt.args.addStream {
