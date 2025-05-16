@@ -36,6 +36,7 @@ import (
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/logging/formatter"
+	"clouditor.io/clouditor/v2/server/auth"
 	"clouditor.io/clouditor/v2/service"
 
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
@@ -58,7 +59,7 @@ type config struct {
 	grpcOpts        []grpc.ServerOption
 	services        map[*grpc.ServiceDesc]any
 	publicEndpoints []string
-	ac              AuthConfig
+	ac              auth.AuthConfig
 	reflection      bool
 }
 
