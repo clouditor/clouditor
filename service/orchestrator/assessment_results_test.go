@@ -598,7 +598,6 @@ func TestService_ListAssessmentResults(t *testing.T) {
 func TestAssessmentResultHook(t *testing.T) {
 	var (
 		hookCallCounter = 0
-		timestamp       = timestamppb.Now()
 		wg              sync.WaitGroup
 	)
 	wg.Add(2)

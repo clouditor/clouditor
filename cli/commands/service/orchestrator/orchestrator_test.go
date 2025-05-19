@@ -46,9 +46,8 @@ import (
 
 func TestMain(m *testing.M) {
 	var (
-		svc       *service_orchestrator.Service
-		err       error
-		timestamp = timestamppb.Now()
+		svc *service_orchestrator.Service
+		err error
 	)
 
 	clitest.AutoChdir()
