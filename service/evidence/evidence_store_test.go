@@ -842,6 +842,22 @@ func TestService_GetEvidence(t *testing.T) {
 			},
 			want: assert.Nil[*evidence.Evidence],
 		},
+		{
+			name: "DB error (database error)",
+			fields: fields{
+				storage: &testutil.StorageWithError{GetErr: gormio.ErrInvalidDB},
+				authz:   servicetest.NewAuthorizationStrategy(true),
+			},
+			args: args{
+				req: &evidence.GetEvidenceRequest{
+					EvidenceId: testdata.MockEvidenceID1,
+				},
+			},
+			want: assert.Nil[*evidence.Evidence],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, persistence.ErrDatabase.Error())
+			},
+		},
 	}
 
 	for _, tt := range tests {
