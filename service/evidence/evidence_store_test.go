@@ -50,6 +50,7 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
+	"golang.org/x/oauth2/clientcredentials"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
@@ -95,6 +96,13 @@ func TestNewService(t *testing.T) {
 			args: args{opts: []service.Option[*Service]{WithAssessmentAddress("localhost:9091")}},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Equal(t, "localhost:9091", got.assessment.Target)
+			},
+		},
+		{
+			name: "EvidenceStoreServer created with option 'WithOAuth2Authorizer'",
+			args: args{opts: []service.Option[*Service]{WithOAuth2Authorizer(&clientcredentials.Config{ClientID: "client"})}},
+			want: func(t *testing.T, got *Service) bool {
+				return assert.NotNil(t, got.assessment.Authorizer())
 			},
 		},
 	}
