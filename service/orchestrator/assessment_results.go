@@ -153,7 +153,7 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 		// Execute the raw SQL statement
 		err = svc.storage.Raw(&res.Results,
 			fmt.Sprintf(`WITH sorted_results AS (
-				SELECT *, ROW_NUMBER() OVER (PARTITION BY resource_id, metric_id ORDER BY timestamp DESC) AS row_number
+				SELECT *, ROW_NUMBER() OVER (PARTITION BY resource_id, metric_id ORDER BY created_at DESC) AS row_number
 				FROM assessment_results
 				%s
 		  	)

@@ -169,7 +169,7 @@ var (
 	}
 	MockAssessmentResult1 = &assessment.AssessmentResult{
 		Id:                   testdata.MockAssessmentResult1ID,
-		Timestamp:            timestamppb.New(time.Unix(1, 0)),
+		CreatedAt:            timestamppb.New(time.Unix(1, 0)),
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 		MetricId:             testdata.MockMetricID1,
 		Compliant:            true,
@@ -184,8 +184,8 @@ var (
 			MetricId:             testdata.MockMetricID1,
 			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 		},
-		ToolId:    util.Ref(assessment.AssessmentToolId),
-		UpdatedAt: timestamppb.New(time.Unix(1, 0)),
+		ToolId:           util.Ref(assessment.AssessmentToolId),
+		HistoryUpdatedAt: timestamppb.New(time.Unix(1, 0)),
 		History: []*assessment.Record{
 			{
 				EvidenceRecordedAt: timestamppb.New(time.Unix(1, 0)),
@@ -195,7 +195,7 @@ var (
 	}
 	MockAssessmentResult2 = &assessment.AssessmentResult{
 		Id:                   testdata.MockAssessmentResult2ID,
-		Timestamp:            timestamppb.New(time.Unix(1, 0)),
+		CreatedAt:            timestamppb.New(time.Unix(1, 0)),
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 		MetricId:             testdata.MockMetricID1,
 		Compliant:            true,
@@ -210,8 +210,8 @@ var (
 			MetricId:             testdata.MockMetricID1,
 			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 		},
-		ToolId:    util.Ref(assessment.AssessmentToolId),
-		UpdatedAt: timestamppb.New(time.Unix(1, 0)),
+		ToolId:           util.Ref(assessment.AssessmentToolId),
+		HistoryUpdatedAt: timestamppb.New(time.Unix(1, 0)),
 		History: []*assessment.Record{
 			{
 				EvidenceRecordedAt: timestamppb.New(time.Unix(1, 0)),
@@ -221,7 +221,7 @@ var (
 	}
 	MockAssessmentResult3 = &assessment.AssessmentResult{
 		Id:                   testdata.MockAssessmentResult3ID,
-		Timestamp:            timestamppb.New(time.Unix(1, 0)),
+		CreatedAt:            timestamppb.New(time.Unix(1, 0)),
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 		MetricId:             testdata.MockMetricID2,
 		Compliant:            false,
@@ -236,8 +236,8 @@ var (
 			MetricId:             testdata.MockMetricID2,
 			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 		},
-		ToolId:    util.Ref(assessment.AssessmentToolId),
-		UpdatedAt: timestamppb.New(time.Unix(1, 0)),
+		ToolId:           util.Ref(assessment.AssessmentToolId),
+		HistoryUpdatedAt: timestamppb.New(time.Unix(1, 0)),
 		History: []*assessment.Record{
 			{
 				EvidenceRecordedAt: timestamppb.New(time.Unix(1, 0)),
@@ -247,7 +247,7 @@ var (
 	}
 	MockAssessmentResult4 = &assessment.AssessmentResult{
 		Id:                   testdata.MockAssessmentResult4ID,
-		Timestamp:            timestamppb.New(time.Unix(1, 0)),
+		CreatedAt:            timestamppb.New(time.Unix(1, 0)),
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 		MetricId:             testdata.MockMetricID2,
 		Compliant:            false,
@@ -262,8 +262,8 @@ var (
 			MetricId:             testdata.MockMetricID2,
 			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 		},
-		ToolId:    util.Ref(testdata.MockAssessmentResultToolID),
-		UpdatedAt: timestamppb.New(time.Unix(1, 0)),
+		ToolId:           util.Ref(testdata.MockAssessmentResultToolID),
+		HistoryUpdatedAt: timestamppb.New(time.Unix(1, 0)),
 		History: []*assessment.Record{
 			{
 				EvidenceRecordedAt: timestamppb.New(time.Unix(1, 0)),

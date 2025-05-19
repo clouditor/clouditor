@@ -709,7 +709,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 						Id:                   uuid.NewString(),
 						EvidenceId:           testdata.MockEvidenceID1,
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-						Timestamp:            timestamp,
+						CreatedAt:            timestamp,
 						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue:          toStruct(1.0),
 							Operator:             "<=",
@@ -722,7 +722,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 						ResourceId:        testdata.MockResourceID1,
 						ResourceTypes:     []string{"ResourceType"},
 						ToolId:            util.Ref(assessment.AssessmentToolId),
-						UpdatedAt:         timestamp,
+						HistoryUpdatedAt:  timestamp,
 						History: []*assessment.Record{
 							{
 								EvidenceRecordedAt: timestamp,
@@ -913,7 +913,7 @@ func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAss
 				MetricId:             fmt.Sprintf("assessmentResultMetricID-%d", i),
 				EvidenceId:           testdata.MockEvidenceID1,
 				TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-				Timestamp:            timestamp,
+				CreatedAt:            timestamp,
 				MetricConfiguration: &assessment.MetricConfiguration{
 					TargetValue:          toStruct(1.0),
 					Operator:             "<=",
@@ -926,7 +926,7 @@ func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAss
 				ResourceId:        testdata.MockResourceID1,
 				ResourceTypes:     []string{"ResourceType"},
 				ToolId:            util.Ref(assessment.AssessmentToolId),
-				UpdatedAt:         timestamp,
+				HistoryUpdatedAt:  timestamp,
 				History: []*assessment.Record{
 					{
 						EvidenceRecordedAt: timestamp,

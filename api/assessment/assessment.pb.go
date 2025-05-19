@@ -375,7 +375,7 @@ type AssessmentResult struct {
 	// Assessment result id
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// Time of assessment
-	Timestamp *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
+	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
 	// Reference to the metric the assessment was based on
 	MetricId string `protobuf:"bytes,3,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty"`
 	// Data corresponding to the metric by the given metric id
@@ -395,8 +395,9 @@ type AssessmentResult struct {
 	// The target of evaluation which this assessment result belongs to
 	TargetOfEvaluationId string `protobuf:"bytes,20,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
 	// Reference to the tool which provided the assessment result
-	ToolId    *string                `protobuf:"bytes,21,opt,name=tool_id,json=toolId,proto3,oneof" json:"tool_id,omitempty"`
-	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,22,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
+	ToolId *string `protobuf:"bytes,21,opt,name=tool_id,json=toolId,proto3,oneof" json:"tool_id,omitempty"`
+	// The time of the last update of the assessment result history field″
+	HistoryUpdatedAt *timestamppb.Timestamp `protobuf:"bytes,22,opt,name=history_updated_at,json=historyUpdatedAt,proto3" json:"history_updated_at,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
 	// Stores the history of evidence IDs and timestamps for evidence that have the same content as the evidence used for this assessment result.
 	History       []*Record `protobuf:"bytes,23,rep,name=history,proto3" json:"history,omitempty" gorm:"serializer:json;constraint:OnDelete:CASCADE"`
 	unknownFields protoimpl.UnknownFields
@@ -440,9 +441,9 @@ func (x *AssessmentResult) GetId() string {
 	return ""
 }
 
-func (x *AssessmentResult) GetTimestamp() *timestamppb.Timestamp {
+func (x *AssessmentResult) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
-		return x.Timestamp
+		return x.CreatedAt
 	}
 	return nil
 }
@@ -517,9 +518,9 @@ func (x *AssessmentResult) GetToolId() string {
 	return ""
 }
 
-func (x *AssessmentResult) GetUpdatedAt() *timestamppb.Timestamp {
+func (x *AssessmentResult) GetHistoryUpdatedAt() *timestamppb.Timestamp {
 	if x != nil {
-		return x.UpdatedAt
+		return x.HistoryUpdatedAt
 	}
 	return nil
 }
@@ -681,10 +682,11 @@ const file_api_assessment_assessment_proto_rawDesc = "" +
 	"\x06status\x18\x01 \x01(\x0e2).clouditor.assessment.v1.AssessmentStatusR\x06status\"\x83\x01\n" +
 	"\x17AssessEvidencesResponse\x12A\n" +
 	"\x06status\x18\x01 \x01(\x0e2).clouditor.assessment.v1.AssessmentStatusR\x06status\x12%\n" +
-	"\x0estatus_message\x18\x02 \x01(\tR\rstatusMessage\"\xbe\b\n" +
+	"\x0estatus_message\x18\x02 \x01(\tR\rstatusMessage\"\xcf\b\n" +
 	"\x10AssessmentResult\x12\x1b\n" +
-	"\x02id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12t\n" +
-	"\ttimestamp\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB:\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\ttimestamp\x12'\n" +
+	"\x02id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12u\n" +
+	"\n" +
+	"created_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB:\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\tcreatedAt\x12'\n" +
 	"\tmetric_id\x18\x03 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\x12\x85\x01\n" +
 	"\x14metric_configuration\x18\x04 \x01(\v2,.clouditor.assessment.v1.MetricConfigurationB$\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\x13metricConfiguration\x12\x1c\n" +
@@ -701,9 +703,8 @@ const file_api_assessment_assessment_proto_rawDesc = "" +
 	" \x03(\v2).clouditor.assessment.v1.ComparisonResultB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\x11complianceDetails\x12B\n" +
 	"\x17target_of_evaluation_id\x18\x14 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12(\n" +
 	"\atool_id\x18\x15 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01H\x00R\x06toolId\x88\x01\x01\x12u\n" +
-	"\n" +
-	"updated_at\x18\x16 \x01(\v2\x1a.google.protobuf.TimestampB:\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\tupdatedAt\x12{\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01H\x00R\x06toolId\x88\x01\x01\x12\x84\x01\n" +
+	"\x12history_updated_at\x18\x16 \x01(\v2\x1a.google.protobuf.TimestampB:\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\x10historyUpdatedAt\x12{\n" +
 	"\ahistory\x18\x17 \x03(\v2\x1f.clouditor.assessment.v1.RecordB@\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x032gorm:\"serializer:json;constraint:OnDelete:CASCADE\"R\ahistoryB\n" +
 	"\n" +
 	"\b_tool_id\"\xaa\x01\n" +
@@ -764,10 +765,10 @@ var file_api_assessment_assessment_proto_depIdxs = []int32{
 	10, // 0: clouditor.assessment.v1.AssessEvidenceRequest.evidence:type_name -> clouditor.evidence.v1.Evidence
 	0,  // 1: clouditor.assessment.v1.AssessEvidenceResponse.status:type_name -> clouditor.assessment.v1.AssessmentStatus
 	0,  // 2: clouditor.assessment.v1.AssessEvidencesResponse.status:type_name -> clouditor.assessment.v1.AssessmentStatus
-	11, // 3: clouditor.assessment.v1.AssessmentResult.timestamp:type_name -> google.protobuf.Timestamp
+	11, // 3: clouditor.assessment.v1.AssessmentResult.created_at:type_name -> google.protobuf.Timestamp
 	12, // 4: clouditor.assessment.v1.AssessmentResult.metric_configuration:type_name -> clouditor.assessment.v1.MetricConfiguration
 	9,  // 5: clouditor.assessment.v1.AssessmentResult.compliance_details:type_name -> clouditor.assessment.v1.ComparisonResult
-	11, // 6: clouditor.assessment.v1.AssessmentResult.updated_at:type_name -> google.protobuf.Timestamp
+	11, // 6: clouditor.assessment.v1.AssessmentResult.history_updated_at:type_name -> google.protobuf.Timestamp
 	8,  // 7: clouditor.assessment.v1.AssessmentResult.history:type_name -> clouditor.assessment.v1.Record
 	11, // 8: clouditor.assessment.v1.Record.evidence_recorded_at:type_name -> google.protobuf.Timestamp
 	13, // 9: clouditor.assessment.v1.ComparisonResult.value:type_name -> google.protobuf.Value

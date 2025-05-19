@@ -105,7 +105,7 @@ message AssessmentResult {
   ];
 
   // Time of assessment
-  google.protobuf.Timestamp timestamp = 2 [
+  google.protobuf.Timestamp created_at = 2 [
     (tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\"",
     (buf.validate.field).required = true,
     (google.api.field_behavior) = REQUIRED
@@ -167,7 +167,8 @@ message AssessmentResult {
     (google.api.field_behavior) = REQUIRED
   ];
 
-  google.protobuf.Timestamp updated_at = 22 [
+  // The time of the last update of the assessment result history field″
+  google.protobuf.Timestamp history_updated_at = 22 [
     (tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\"",
     (buf.validate.field).required = true,
     (google.api.field_behavior) = REQUIRED

@@ -1512,7 +1512,7 @@ components:
         AssessmentResult:
             required:
                 - id
-                - timestamp
+                - createdAt
                 - metricId
                 - metricConfiguration
                 - evidenceId
@@ -1521,14 +1521,14 @@ components:
                 - complianceComment
                 - targetOfEvaluationId
                 - toolId
-                - updatedAt
+                - historyUpdatedAt
                 - history
             type: object
             properties:
                 id:
                     type: string
                     description: Assessment result id
-                timestamp:
+                createdAt:
                     type: string
                     description: Time of assessment
                     format: date-time
@@ -1567,8 +1567,9 @@ components:
                 toolId:
                     type: string
                     description: Reference to the tool which provided the assessment result
-                updatedAt:
+                historyUpdatedAt:
                     type: string
+                    description: The time of the last update of the assessment result history field″
                     format: date-time
                 history:
                     type: array
