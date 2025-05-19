@@ -35,7 +35,6 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/v2/api"
-	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/internal/config"
@@ -77,14 +76,14 @@ func TestNewService(t *testing.T) {
 		want assert.Want[*Service]
 	}{
 		{
-			name: "Create service with option 'WithAssessmentAddress'",
+			name: "Create service with option 'WithEvidenceStoreAddress'",
 			args: args{
 				opts: []service.Option[*Service]{
-					WithAssessmentAddress("localhost:9091"),
+					WithEvidenceStoreAddress("localhost:9091"),
 				},
 			},
 			want: func(t *testing.T, got *Service) bool {
-				return assert.Equal(t, "localhost:9091", got.assessment.Target)
+				return assert.Equal(t, "localhost:9091", got.evidenceStore.Target)
 			},
 		},
 		{
@@ -226,17 +225,17 @@ func TestService_StartDiscovery(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockStream := &mockAssessmentStream{connectionEstablished: true, expected: 2}
+			mockStream := &mockEvidenceStoreStream{connectionEstablished: true, expected: 2}
 			mockStream.Prepare()
 
 			svc := NewService()
 			svc.ctID = tt.fields.ctID
 			svc.collectorID = tt.fields.collectorID
-			svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]()
-			_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
+			svc.evidenceStoreStreams = api.NewStreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]()
+			_, _ = svc.evidenceStoreStreams.GetStream("mock", "Evidence Store", func(target string, additionalOpts ...grpc.DialOption) (stream evidence.EvidenceStore_StoreEvidencesClient, err error) {
 				return mockStream, nil
 			})
-			svc.assessment = &api.RPCConnection[assessment.AssessmentClient]{Target: "mock"}
+			svc.evidenceStore = &api.RPCConnection[evidence.EvidenceStoreClient]{Target: "mock"}
 			go svc.StartDiscovery(tt.fields.discoverer)
 
 			if tt.checkEvidence {
@@ -386,7 +385,7 @@ func TestService_ListResources(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(WithAssessmentAddress(testdata.MockGRPCTarget, grpc.WithContextDialer(bufConnDialer)))
+			s := NewService(WithEvidenceStoreAddress(testdata.MockGRPCTarget, grpc.WithContextDialer(bufConnDialer)))
 			s.authz = tt.fields.authz
 			s.ctID = tt.fields.ctID
 			s.collectorID = tt.fields.collectorID
@@ -416,8 +415,8 @@ func TestService_Shutdown(t *testing.T) {
 
 }
 
-// mockAssessmentStream implements Assessment_AssessEvidencesClient interface
-type mockAssessmentStream struct {
+// mockEvidenceStoreStream implements Evidence_StoreEvidenceClient interface
+type mockEvidenceStoreStream struct {
 	// We add sentEvidence field to test the evidence that would be sent over gRPC
 	sentEvidences []*evidence.Evidence
 	// We add connectionEstablished to differentiate between the case where evidences can be sent and not
@@ -427,57 +426,57 @@ type mockAssessmentStream struct {
 	wg                    sync.WaitGroup
 }
 
-func (m *mockAssessmentStream) Prepare() {
+func (m *mockEvidenceStoreStream) Prepare() {
 	m.wg.Add(m.expected)
 }
 
-func (m *mockAssessmentStream) Wait() {
+func (m *mockEvidenceStoreStream) Wait() {
 	m.wg.Wait()
 }
 
-func (m *mockAssessmentStream) Recv() (*assessment.AssessEvidencesResponse, error) {
+func (m *mockEvidenceStoreStream) Recv() (*evidence.StoreEvidencesResponse, error) {
 	if m.counter == 0 {
 		m.counter++
-		return &assessment.AssessEvidencesResponse{
-			Status:        assessment.AssessmentStatus_ASSESSMENT_STATUS_FAILED,
+		return &evidence.StoreEvidencesResponse{
+			Status:        evidence.EvidenceStatus_EVIDENCE_STATUS_ERROR,
 			StatusMessage: "mockError1",
 		}, nil
 	} else if m.counter == 1 {
 		m.counter++
-		return &assessment.AssessEvidencesResponse{
-			Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_ASSESSED,
+		return &evidence.StoreEvidencesResponse{
+			Status: evidence.EvidenceStatus_EVIDENCE_STATUS_OK,
 		}, nil
 	} else {
 		return nil, io.EOF
 	}
 }
 
-func (m *mockAssessmentStream) Send(req *assessment.AssessEvidenceRequest) (err error) {
+func (m *mockEvidenceStoreStream) Send(req *evidence.StoreEvidenceRequest) (err error) {
 	return m.SendMsg(req)
 }
 
-func (*mockAssessmentStream) CloseAndRecv() (*emptypb.Empty, error) {
+func (*mockEvidenceStoreStream) CloseAndRecv() (*emptypb.Empty, error) {
 	return nil, nil
 }
 
-func (*mockAssessmentStream) Header() (metadata.MD, error) {
+func (*mockEvidenceStoreStream) Header() (metadata.MD, error) {
 	return nil, nil
 }
 
-func (*mockAssessmentStream) Trailer() metadata.MD {
+func (*mockEvidenceStoreStream) Trailer() metadata.MD {
 	return nil
 }
 
-func (*mockAssessmentStream) CloseSend() error {
+func (*mockEvidenceStoreStream) CloseSend() error {
 	return nil
 }
 
-func (*mockAssessmentStream) Context() context.Context {
+func (*mockEvidenceStoreStream) Context() context.Context {
 	return nil
 }
 
-func (m *mockAssessmentStream) SendMsg(req interface{}) (err error) {
-	e := req.(*assessment.AssessEvidenceRequest).Evidence
+func (m *mockEvidenceStoreStream) SendMsg(req interface{}) (err error) {
+	e := req.(*evidence.StoreEvidenceRequest).Evidence
 	if m.connectionEstablished {
 		m.sentEvidences = append(m.sentEvidences, e)
 	} else {
@@ -489,7 +488,7 @@ func (m *mockAssessmentStream) SendMsg(req interface{}) (err error) {
 	return
 }
 
-func (*mockAssessmentStream) RecvMsg(_ interface{}) error {
+func (*mockEvidenceStoreStream) RecvMsg(_ interface{}) error {
 	return nil
 }
 
@@ -500,16 +499,16 @@ func TestService_Start(t *testing.T) {
 		envVariableValue string
 	}
 	type fields struct {
-		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
-		assessment        *api.RPCConnection[assessment.AssessmentClient]
-		storage           persistence.Storage
-		scheduler         *gocron.Scheduler
-		authz             service.AuthorizationStrategy
-		providers         []string
-		discoveryInterval time.Duration
-		Events            chan *DiscoveryEvent
-		ctID              string
-		envVariables      []envVariable
+		evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
+		evidenceStore        *api.RPCConnection[evidence.EvidenceStoreClient]
+		storage              persistence.Storage
+		scheduler            *gocron.Scheduler
+		authz                service.AuthorizationStrategy
+		providers            []string
+		discoveryInterval    time.Duration
+		Events               chan *DiscoveryEvent
+		ctID                 string
+		envVariables         []envVariable
 	}
 	type args struct {
 		ctx context.Context
@@ -755,15 +754,15 @@ func TestService_Start(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				assessmentStreams: tt.fields.assessmentStreams,
-				assessment:        tt.fields.assessment,
-				storage:           tt.fields.storage,
-				scheduler:         tt.fields.scheduler,
-				authz:             tt.fields.authz,
-				providers:         tt.fields.providers,
-				discoveryInterval: tt.fields.discoveryInterval,
-				Events:            tt.fields.Events,
-				ctID:              tt.fields.ctID,
+				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
+				evidenceStore:        tt.fields.evidenceStore,
+				storage:              tt.fields.storage,
+				scheduler:            tt.fields.scheduler,
+				authz:                tt.fields.authz,
+				providers:            tt.fields.providers,
+				discoveryInterval:    tt.fields.discoveryInterval,
+				Events:               tt.fields.Events,
+				ctID:                 tt.fields.ctID,
 			}
 
 			// Set env variables
