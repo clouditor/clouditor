@@ -532,11 +532,11 @@ func (x *AssessmentResult) GetHistory() []*Record {
 }
 
 type Record struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	EvidenceId    string                 `protobuf:"bytes,1,opt,name=evidence_id,json=evidenceId,proto3" json:"evidence_id,omitempty"`
-	Timestamp     *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	EvidenceId         string                 `protobuf:"bytes,1,opt,name=evidence_id,json=evidenceId,proto3" json:"evidence_id,omitempty"`
+	EvidenceRecordedAt *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=evidence_recorded_at,json=evidenceRecordedAt,proto3" json:"evidence_recorded_at,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *Record) Reset() {
@@ -576,9 +576,9 @@ func (x *Record) GetEvidenceId() string {
 	return ""
 }
 
-func (x *Record) GetTimestamp() *timestamppb.Timestamp {
+func (x *Record) GetEvidenceRecordedAt() *timestamppb.Timestamp {
 	if x != nil {
-		return x.Timestamp
+		return x.EvidenceRecordedAt
 	}
 	return nil
 }
@@ -706,11 +706,11 @@ const file_api_assessment_assessment_proto_rawDesc = "" +
 	"updated_at\x18\x16 \x01(\v2\x1a.google.protobuf.TimestampB:\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\tupdatedAt\x12{\n" +
 	"\ahistory\x18\x17 \x03(\v2\x1f.clouditor.assessment.v1.RecordB@\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x032gorm:\"serializer:json;constraint:OnDelete:CASCADE\"R\ahistoryB\n" +
 	"\n" +
-	"\b_tool_id\"\x96\x01\n" +
+	"\b_tool_id\"\xaa\x01\n" +
 	"\x06Record\x12\x1f\n" +
 	"\vevidence_id\x18\x01 \x01(\tR\n" +
-	"evidenceId\x12k\n" +
-	"\ttimestamp\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB1\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\ttimestamp\"\xb6\x02\n" +
+	"evidenceId\x12\x7f\n" +
+	"\x14evidence_recorded_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB1\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\x12evidenceRecordedAt\"\xb6\x02\n" +
 	"\x10ComparisonResult\x12&\n" +
 	"\bproperty\x18\x01 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bproperty\x127\n" +
@@ -769,7 +769,7 @@ var file_api_assessment_assessment_proto_depIdxs = []int32{
 	9,  // 5: clouditor.assessment.v1.AssessmentResult.compliance_details:type_name -> clouditor.assessment.v1.ComparisonResult
 	11, // 6: clouditor.assessment.v1.AssessmentResult.updated_at:type_name -> google.protobuf.Timestamp
 	8,  // 7: clouditor.assessment.v1.AssessmentResult.history:type_name -> clouditor.assessment.v1.Record
-	11, // 8: clouditor.assessment.v1.Record.timestamp:type_name -> google.protobuf.Timestamp
+	11, // 8: clouditor.assessment.v1.Record.evidence_recorded_at:type_name -> google.protobuf.Timestamp
 	13, // 9: clouditor.assessment.v1.ComparisonResult.value:type_name -> google.protobuf.Value
 	13, // 10: clouditor.assessment.v1.ComparisonResult.target_value:type_name -> google.protobuf.Value
 	3,  // 11: clouditor.assessment.v1.Assessment.CalculateCompliance:input_type -> clouditor.assessment.v1.CalculateComplianceRequest

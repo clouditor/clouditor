@@ -267,8 +267,8 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					UpdatedAt:            timestamp,
 					History: []*Record{
 						{
-							Timestamp:  timestamp,
-							EvidenceId: testdata.MockEvidenceID1,
+							EvidenceRecordedAt: timestamp,
+							EvidenceId:         testdata.MockEvidenceID1,
 						},
 					},
 				},

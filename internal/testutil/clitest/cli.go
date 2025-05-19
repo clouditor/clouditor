@@ -43,8 +43,8 @@ var MockAssessmentResult1 = &assessment.AssessmentResult{
 	UpdatedAt: timestamppb.New(time.Unix(1, 0)),
 	History: []*assessment.Record{
 		{
-			EvidenceId: testdata.MockEvidenceID1,
-			Timestamp:  timestamppb.New(time.Unix(1, 0)),
+			EvidenceId:         testdata.MockEvidenceID1,
+			EvidenceRecordedAt: timestamppb.New(time.Unix(1, 0)),
 		},
 	},
 }

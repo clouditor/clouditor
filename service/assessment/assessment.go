@@ -489,8 +489,8 @@ func (svc *Service) handleEvidence(
 			ToolId:               util.Ref(assessment.AssessmentToolId),
 			UpdatedAt:            timestamppb.Now(),
 			History: []*assessment.Record{{
-				EvidenceId: ev.GetId(),
-				Timestamp:  timestamppb.Now(),
+				EvidenceId:         ev.GetId(),
+				EvidenceRecordedAt: timestamppb.Now(),
 			}},
 		}
 

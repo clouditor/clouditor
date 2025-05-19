@@ -188,8 +188,8 @@ var (
 		UpdatedAt: timestamppb.New(time.Unix(1, 0)),
 		History: []*assessment.Record{
 			{
-				Timestamp:  timestamppb.New(time.Unix(1, 0)),
-				EvidenceId: testdata.MockEvidenceID1,
+				EvidenceRecordedAt: timestamppb.New(time.Unix(1, 0)),
+				EvidenceId:         testdata.MockEvidenceID1,
 			},
 		},
 	}
@@ -214,8 +214,8 @@ var (
 		UpdatedAt: timestamppb.New(time.Unix(1, 0)),
 		History: []*assessment.Record{
 			{
-				Timestamp:  timestamppb.New(time.Unix(1, 0)),
-				EvidenceId: testdata.MockEvidenceID1,
+				EvidenceRecordedAt: timestamppb.New(time.Unix(1, 0)),
+				EvidenceId:         testdata.MockEvidenceID1,
 			},
 		},
 	}
@@ -240,8 +240,8 @@ var (
 		UpdatedAt: timestamppb.New(time.Unix(1, 0)),
 		History: []*assessment.Record{
 			{
-				Timestamp:  timestamppb.New(time.Unix(1, 0)),
-				EvidenceId: testdata.MockEvidenceID1,
+				EvidenceRecordedAt: timestamppb.New(time.Unix(1, 0)),
+				EvidenceId:         testdata.MockEvidenceID1,
 			},
 		},
 	}
@@ -266,8 +266,8 @@ var (
 		UpdatedAt: timestamppb.New(time.Unix(1, 0)),
 		History: []*assessment.Record{
 			{
-				Timestamp:  timestamppb.New(time.Unix(1, 0)),
-				EvidenceId: testdata.MockEvidenceID1,
+				EvidenceRecordedAt: timestamppb.New(time.Unix(1, 0)),
+				EvidenceId:         testdata.MockEvidenceID1,
 			},
 		},
 	}

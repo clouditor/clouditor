@@ -725,8 +725,8 @@ func TestStoreAssessmentResult(t *testing.T) {
 						UpdatedAt:         timestamp,
 						History: []*assessment.Record{
 							{
-								Timestamp:  timestamp,
-								EvidenceId: testdata.MockEvidenceID1,
+								EvidenceRecordedAt: timestamp,
+								EvidenceId:         testdata.MockEvidenceID1,
 							},
 						},
 					},
@@ -929,8 +929,8 @@ func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAss
 				UpdatedAt:         timestamp,
 				History: []*assessment.Record{
 					{
-						Timestamp:  timestamp,
-						EvidenceId: testdata.MockEvidenceID1,
+						EvidenceRecordedAt: timestamp,
+						EvidenceId:         testdata.MockEvidenceID1,
 					},
 				},
 			},
