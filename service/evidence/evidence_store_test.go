@@ -50,9 +50,8 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
-	"golang.org/x/oauth2/clientcredentials"
-
 	"github.com/google/uuid"
+	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -1189,4 +1188,81 @@ func (m *mockAssessmentClient) AssessEvidence(ctx context.Context, req *assessme
 // CalculateCompliance is a stub implementation to satisfy the AssessmentClient interface.
 func (m *mockAssessmentClient) CalculateCompliance(ctx context.Context, req *assessment.CalculateComplianceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	return nil, fmt.Errorf("not implemented")
+}
+
+func TestService_handleEvidence(t *testing.T) {
+	// mock assessment stream
+	mockStream := &mockAssessmentStream{connectionEstablished: true, expected: 2}
+	mockStream.Prepare()
+
+	type fields struct {
+		storage    persistence.Storage
+		assessment *api.RPCConnection[assessment.AssessmentClient]
+		authz      service.AuthorizationStrategy
+	}
+	type args struct {
+		evidence  *evidence.Evidence
+		addStream bool
+		target    string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Error getting stream",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+				}),
+				assessment: &api.RPCConnection[assessment.AssessmentClient]{
+					Client: &mockAssessmentClient{failStream: true},
+				},
+			},
+			args: args{
+				addStream: true,
+				evidence:  evidencetest.MockEvidence1,
+				target:    "error",
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not get stream to assessment service")
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+				}),
+				assessment: &api.RPCConnection[assessment.AssessmentClient]{
+					Target: "mock",
+				},
+			},
+			args: args{
+				addStream: true,
+				evidence:  evidencetest.MockEvidence1,
+				target:    "mock",
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := NewService()
+			svc.storage = tt.fields.storage
+			svc.authz = tt.fields.authz
+			svc.assessment = tt.fields.assessment
+			svc.assessmentStreams = nil
+
+			// Add assessment stream if needed
+			if tt.args.addStream {
+				svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]()
+				_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
+					return mockStream, nil
+				})
+			}
+			err := svc.handleEvidence(tt.args.evidence)
+			tt.wantErr(t, err)
+		})
+	}
 }

@@ -161,7 +161,10 @@ func (svc *Service) Init() {
 			evidence := <-svc.channelEvidence
 
 			// Process the evidence
-			svc.handleEvidence(evidence)
+			err := svc.handleEvidence(evidence)
+			if err != nil {
+				log.Errorf("Error while processing evidence: %v", err)
+			}
 		}
 	}()
 }
@@ -223,7 +226,7 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 	return res, nil
 }
 
-func (svc *Service) handleEvidence(evidence *evidence.Evidence) {
+func (svc *Service) handleEvidence(evidence *evidence.Evidence) error {
 	// TODO(anatheka): It must be checked if the evidence changed since the last time and then send to the assessment service. Add in separate PR
 
 	// Get Assessment stream
@@ -231,11 +234,13 @@ func (svc *Service) handleEvidence(evidence *evidence.Evidence) {
 	if err != nil {
 		err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessment.Target, err)
 		log.Error(err)
-		return
+		return err
 	}
 
 	// Send evidence to assessment service
 	channelAssessment.Send(&assessment.AssessEvidenceRequest{Evidence: evidence})
+
+	return nil
 }
 
 // StoreEvidences is a method implementation of the evidenceServer interface: It receives evidences and stores them
