@@ -31,6 +31,7 @@ import (
 	"fmt"
 	"io"
 	"slices"
+	"strings"
 	"sync"
 
 	"clouditor.io/clouditor/v2/api"
@@ -73,7 +74,8 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 
 // Service is an implementation of the Clouditor req service (evidenceServer)
 type Service struct {
-	storage           persistence.Storage
+	storage persistence.Storage
+
 	assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
 	assessment        *api.RPCConnection[assessment.AssessmentClient]
 
@@ -91,6 +93,7 @@ type Service struct {
 	authz service.AuthorizationStrategy
 
 	evidence.UnimplementedEvidenceStoreServer
+	evidence.UnimplementedExperimentalResourcesServer
 }
 
 func init() {
@@ -174,7 +177,7 @@ func (svc *Service) Shutdown() {
 }
 
 // initAssessmentStream initializes the stream that is used to send evidences to the assessment service.
-// If configured, it uses the Authorizer of the discovery service to authenticate requests to the assessment.
+// If configured, it uses the Authorizer of the evidence store service to authenticate requests to the assessment.
 func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
 	log.Infof("Trying to establish a connection to assessment service @ %v", target)
 
@@ -212,6 +215,20 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 		return nil, status.Error(codes.AlreadyExists, persistence.ErrEntryAlreadyExists.Error())
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
+	}
+
+	// Store Resource
+	// Build a resource struct. This will hold the latest sync state of the
+	// resource for our storage layer. This is needed to store the resource in our DB.s
+	r, err := evidence.ToEvidenceResource(req.Evidence.GetOntologyResource(), req.GetTargetOfEvaluationId(), req.Evidence.GetToolId())
+	if err != nil {
+		log.Errorf("Could not convert resource: %v", err)
+	}
+
+	// Persist the latest state of the resource
+	err = svc.storage.Save(&r, "id = ?", r.Id)
+	if err != nil {
+		log.Errorf("Could not save resource with ID '%s' to storage: %v", r.Id, err)
 	}
 
 	go svc.informHooks(ctx, req.Evidence, nil)
@@ -379,6 +396,64 @@ func (svc *Service) GetEvidence(ctx context.Context, req *evidence.GetEvidenceRe
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
+
+	return
+}
+
+func (svc *Service) ListResources(ctx context.Context, req *evidence.ListResourcesRequest) (res *evidence.ListResourcesResponse, err error) {
+	var (
+		query   []string
+		args    []any
+		all     bool
+		allowed []string
+	)
+
+	// Validate request
+	err = api.Validate(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Filtering the resources by
+	// * target of evaluation ID
+	// * resource type
+	// * tool ID
+	if req.Filter != nil {
+		// Check if target_of_evaluation_id in filter is within allowed or one can access *all* the target of evaluations
+		if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Filter) {
+			return nil, service.ErrPermissionDenied
+		}
+
+		if req.Filter.TargetOfEvaluationId != nil {
+			query = append(query, "target_of_evaluation_id = ?")
+			args = append(args, req.Filter.GetTargetOfEvaluationId())
+		}
+		if req.Filter.Type != nil {
+			query = append(query, "(resource_type LIKE ? OR resource_type LIKE ? OR resource_type LIKE ?)")
+			args = append(args, req.Filter.GetType()+",%", "%,"+req.Filter.GetType()+",%", "%,"+req.Filter.GetType())
+		}
+		if req.Filter.ToolId != nil {
+			query = append(query, "tool_id = ?")
+			args = append(args, req.Filter.GetToolId())
+		}
+	}
+
+	// We need to further restrict our query according to the target of evaluation we are allowed to "see".
+	//
+	// TODO(oxisto): This is suboptimal, since we are now calling AllowedTargetOfEvaluations twice. Once here
+	//  and once above in CheckAccess.
+	all, allowed = svc.authz.AllowedTargetOfEvaluations(ctx)
+	if !all {
+		query = append(query, "target_of_evaluation_id IN ?")
+		args = append(args, allowed)
+	}
+
+	res = new(evidence.ListResourcesResponse)
+
+	// Join query with AND and prepend the query
+	args = append([]any{strings.Join(query, " AND ")}, args...)
+
+	res.Results, res.NextPageToken, err = service.PaginateStorage[*evidence.Resource](req, svc.storage, service.DefaultPaginationOpts, args...)
 
 	return
 }

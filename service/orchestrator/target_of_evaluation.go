@@ -32,7 +32,6 @@ import (
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
-	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/config"
@@ -247,7 +246,7 @@ func (s *Service) GetTargetOfEvaluationStatistics(ctx context.Context, req *orch
 	response.NumberOfSelectedCatalogs = int64(len(auditScopes.AuditScopes))
 
 	// Get number of discovered resources
-	resources := new(discovery.Resource)
+	resources := new(evidence.Resource)
 	count, err := s.storage.Count(resources, "target_of_evaluation_id = ?", req.TargetOfEvaluationId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error counting resources: %s", err)

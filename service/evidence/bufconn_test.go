@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package discovery
+package evidence
 
 import (
 	"context"

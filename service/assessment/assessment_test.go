@@ -38,7 +38,6 @@ import (
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
-	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/api/orchestrator"
@@ -1004,7 +1003,7 @@ func TestService_handleEvidence(t *testing.T) {
 			},
 			want: assert.Nil[[]*assessment.AssessmentResult],
 			wantErr: func(t *testing.T, err error) bool {
-				return assert.Contains(t, err.Error(), discovery.ErrNotOntologyResource.Error())
+				return assert.Contains(t, err.Error(), ontology.ErrNotOntologyResource.Error())
 			},
 		},
 	}
