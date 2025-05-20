@@ -85,7 +85,8 @@ const (
 	MockResourceName1       = "my-resource-name"
 	MockResourceStorageID   = "some-storage-service-id"
 	MockResourceStorageName = "some-storage-service-name"
-	MockResourceID2         = "my-other-resource"
+	MockResourceID2         = "my-other-resource-id"
+	MockResourceName2       = "my-other-resource-name"
 
 	// Properties for a Certificate
 	MockCertificateID          = "1234"
