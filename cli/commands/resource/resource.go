@@ -33,7 +33,7 @@ import (
 // NewListResourcesCommand returns a cobra command for the `list` subcommand
 func NewListResourcesCommand() *cobra.Command {
 	// Use Discovery's function for listing resources
-	cmd := discovery.NewQueryDiscoveryCommand()
+	cmd := discovery.NewListGraphEdgesCommand()
 	// Change use for consistency (cl resource list vs cl resource query)
 	cmd.Use = "list"
 

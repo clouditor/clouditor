@@ -10,6 +10,8 @@ import (
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/cli"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
@@ -40,6 +42,26 @@ var MockAssessmentResult1 = &assessment.AssessmentResult{
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 	},
 	ToolId: util.Ref(assessment.AssessmentToolId),
+}
+
+var MockEvidence1 = &evidence.Evidence{
+	Id:                   testdata.MockEvidenceID1,
+	Timestamp:            timestamppb.New(time.Unix(1, 0)),
+	TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+	ToolId:               testdata.MockEvidenceToolID1,
+	Resource: &ontology.Resource{
+		Type: &ontology.Resource_VirtualMachine{
+			VirtualMachine: &ontology.VirtualMachine{
+				Id:           testdata.MockResourceID1,
+				Name:         testdata.MockResourceName1,
+				Description:  "Mock evidence",
+				CreationTime: timestamppb.New(time.Unix(1, 0)),
+				AutomaticUpdates: &ontology.AutomaticUpdates{
+					Enabled: true,
+				},
+			},
+		},
+	},
 }
 
 // PrepareSession prepares a session for unit tests. It creates a temporary folder to save
