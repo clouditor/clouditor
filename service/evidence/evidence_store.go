@@ -228,6 +228,12 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 
 func (svc *Service) handleEvidence(evidence *evidence.Evidence) error {
 	// TODO(anatheka): It must be checked if the evidence changed since the last time and then send to the assessment service. Add in separate PR
+	var (
+		query []string
+		args  []any
+	)
+
+	// Check if resource has changed to the last evidence
 
 	// Get Assessment stream
 	channelAssessment, err := svc.assessmentStreams.GetStream(svc.assessment.Target, "Assessment", svc.initAssessmentStream, svc.assessment.Opts...)
