@@ -122,7 +122,7 @@ func RegisterExperimentalDiscoveryHandlerServer(ctx context.Context, mux *runtim
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/UpdateResource", runtime.WithHTTPPathPattern("/v1experimental/discovery/resources/{resource.id}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/UpdateResource", runtime.WithHTTPPathPattern("/v1experimental/evidence_store/resources/{resource.id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -200,7 +200,7 @@ func RegisterExperimentalDiscoveryHandlerClient(ctx context.Context, mux *runtim
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/UpdateResource", runtime.WithHTTPPathPattern("/v1experimental/discovery/resources/{resource.id}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/UpdateResource", runtime.WithHTTPPathPattern("/v1experimental/evidence_store/resources/{resource.id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -234,7 +234,7 @@ func RegisterExperimentalDiscoveryHandlerClient(ctx context.Context, mux *runtim
 }
 
 var (
-	pattern_ExperimentalDiscovery_UpdateResource_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1experimental", "discovery", "resources", "resource.id"}, ""))
+	pattern_ExperimentalDiscovery_UpdateResource_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1experimental", "evidence_store", "resources", "resource.id"}, ""))
 	pattern_ExperimentalDiscovery_ListGraphEdges_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1experimental", "discovery", "graph", "edges"}, ""))
 )
 

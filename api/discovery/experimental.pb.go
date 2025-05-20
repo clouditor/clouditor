@@ -305,9 +305,9 @@ const file_api_discovery_experimental_proto_rawDesc = "" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x06source\x12\"\n" +
 	"\x06target\x18\x03 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x06target\x12\x17\n" +
-	"\x04type\x18\x04 \x01(\tB\x03\xe0A\x02R\x04type2\xfd\x02\n" +
-	"\x15ExperimentalDiscovery\x12\xaa\x01\n" +
-	"\x0eUpdateResource\x129.clouditor.discovery.v1experimental.UpdateResourceRequest\x1a\x1f.clouditor.evidence.v1.Resource\"<\x82\xd3\xe4\x93\x026:\x01*\"1/v1experimental/discovery/resources/{resource.id}\x12\xb6\x01\n" +
+	"\x04type\x18\x04 \x01(\tB\x03\xe0A\x02R\x04type2\x82\x03\n" +
+	"\x15ExperimentalDiscovery\x12\xaf\x01\n" +
+	"\x0eUpdateResource\x129.clouditor.discovery.v1experimental.UpdateResourceRequest\x1a\x1f.clouditor.evidence.v1.Resource\"A\x82\xd3\xe4\x93\x02;:\x01*\"6/v1experimental/evidence_store/resources/{resource.id}\x12\xb6\x01\n" +
 	"\x0eListGraphEdges\x129.clouditor.discovery.v1experimental.ListGraphEdgesRequest\x1a:.clouditor.discovery.v1experimental.ListGraphEdgesResponse\"-\x82\xd3\xe4\x93\x02'\x12%/v1experimental/discovery/graph/edgesB)Z'clouditor.io/clouditor/v2/api/discoveryb\x06proto3"
 
 var (

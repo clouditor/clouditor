@@ -44,7 +44,7 @@ service ExperimentalDiscovery {
   // Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
   rpc UpdateResource(UpdateResourceRequest) returns (clouditor.evidence.v1.Resource) {
     option (google.api.http) = {
-      post: "/v1experimental/discovery/resources/{resource.id}"
+      post: "/v1experimental/evidence_store/resources/{resource.id}"
       body: "*"
     };
   }
