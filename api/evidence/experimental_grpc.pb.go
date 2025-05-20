@@ -27,12 +27,11 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             (unknown)
-// source: api/discovery/experimental.proto
+// source: api/evidence/experimental.proto
 
-package discovery
+package evidence
 
 import (
-	evidence "clouditor.io/clouditor/v2/api/evidence"
 	context "context"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
@@ -45,23 +44,23 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ExperimentalDiscovery_UpdateResource_FullMethodName = "/clouditor.discovery.v1experimental.ExperimentalDiscovery/UpdateResource"
-	ExperimentalDiscovery_ListGraphEdges_FullMethodName = "/clouditor.discovery.v1experimental.ExperimentalDiscovery/ListGraphEdges"
+	ExperimentalResources_UpdateResource_FullMethodName = "/clouditor.evidence.v1experimental.ExperimentalResources/UpdateResource"
+	ExperimentalResources_ListGraphEdges_FullMethodName = "/clouditor.evidence.v1experimental.ExperimentalResources/ListGraphEdges"
 )
 
-// ExperimentalDiscoveryClient is the client API for ExperimentalDiscovery service.
+// ExperimentalResourcesClient is the client API for ExperimentalResources service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// Discovers cloud resources and maps these properties to the format of the
+// Maps cloud resources and its properties to the format of the
 // ontology
-type ExperimentalDiscoveryClient interface {
+type ExperimentalResourcesClient interface {
 	// UpdateResource updates a resource (or creates it, if it does not exist).
 	// This is used to give third-party tools the possibility to add something to
 	// the resource graph.
 	//
 	// Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
-	UpdateResource(ctx context.Context, in *UpdateResourceRequest, opts ...grpc.CallOption) (*evidence.Resource, error)
+	UpdateResource(ctx context.Context, in *UpdateResourceRequest, opts ...grpc.CallOption) (*Resource, error)
 	// ListGraphEdges returns the edges (relationship) between resources in our
 	// resource graph.
 	//
@@ -69,141 +68,141 @@ type ExperimentalDiscoveryClient interface {
 	ListGraphEdges(ctx context.Context, in *ListGraphEdgesRequest, opts ...grpc.CallOption) (*ListGraphEdgesResponse, error)
 }
 
-type experimentalDiscoveryClient struct {
+type experimentalResourcesClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewExperimentalDiscoveryClient(cc grpc.ClientConnInterface) ExperimentalDiscoveryClient {
-	return &experimentalDiscoveryClient{cc}
+func NewExperimentalResourcesClient(cc grpc.ClientConnInterface) ExperimentalResourcesClient {
+	return &experimentalResourcesClient{cc}
 }
 
-func (c *experimentalDiscoveryClient) UpdateResource(ctx context.Context, in *UpdateResourceRequest, opts ...grpc.CallOption) (*evidence.Resource, error) {
+func (c *experimentalResourcesClient) UpdateResource(ctx context.Context, in *UpdateResourceRequest, opts ...grpc.CallOption) (*Resource, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(evidence.Resource)
-	err := c.cc.Invoke(ctx, ExperimentalDiscovery_UpdateResource_FullMethodName, in, out, cOpts...)
+	out := new(Resource)
+	err := c.cc.Invoke(ctx, ExperimentalResources_UpdateResource_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *experimentalDiscoveryClient) ListGraphEdges(ctx context.Context, in *ListGraphEdgesRequest, opts ...grpc.CallOption) (*ListGraphEdgesResponse, error) {
+func (c *experimentalResourcesClient) ListGraphEdges(ctx context.Context, in *ListGraphEdgesRequest, opts ...grpc.CallOption) (*ListGraphEdgesResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListGraphEdgesResponse)
-	err := c.cc.Invoke(ctx, ExperimentalDiscovery_ListGraphEdges_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, ExperimentalResources_ListGraphEdges_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// ExperimentalDiscoveryServer is the server API for ExperimentalDiscovery service.
-// All implementations must embed UnimplementedExperimentalDiscoveryServer
+// ExperimentalResourcesServer is the server API for ExperimentalResources service.
+// All implementations must embed UnimplementedExperimentalResourcesServer
 // for forward compatibility.
 //
-// Discovers cloud resources and maps these properties to the format of the
+// Maps cloud resources and its properties to the format of the
 // ontology
-type ExperimentalDiscoveryServer interface {
+type ExperimentalResourcesServer interface {
 	// UpdateResource updates a resource (or creates it, if it does not exist).
 	// This is used to give third-party tools the possibility to add something to
 	// the resource graph.
 	//
 	// Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
-	UpdateResource(context.Context, *UpdateResourceRequest) (*evidence.Resource, error)
+	UpdateResource(context.Context, *UpdateResourceRequest) (*Resource, error)
 	// ListGraphEdges returns the edges (relationship) between resources in our
 	// resource graph.
 	//
 	// Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
 	ListGraphEdges(context.Context, *ListGraphEdgesRequest) (*ListGraphEdgesResponse, error)
-	mustEmbedUnimplementedExperimentalDiscoveryServer()
+	mustEmbedUnimplementedExperimentalResourcesServer()
 }
 
-// UnimplementedExperimentalDiscoveryServer must be embedded to have
+// UnimplementedExperimentalResourcesServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedExperimentalDiscoveryServer struct{}
+type UnimplementedExperimentalResourcesServer struct{}
 
-func (UnimplementedExperimentalDiscoveryServer) UpdateResource(context.Context, *UpdateResourceRequest) (*evidence.Resource, error) {
+func (UnimplementedExperimentalResourcesServer) UpdateResource(context.Context, *UpdateResourceRequest) (*Resource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateResource not implemented")
 }
-func (UnimplementedExperimentalDiscoveryServer) ListGraphEdges(context.Context, *ListGraphEdgesRequest) (*ListGraphEdgesResponse, error) {
+func (UnimplementedExperimentalResourcesServer) ListGraphEdges(context.Context, *ListGraphEdgesRequest) (*ListGraphEdgesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListGraphEdges not implemented")
 }
-func (UnimplementedExperimentalDiscoveryServer) mustEmbedUnimplementedExperimentalDiscoveryServer() {}
-func (UnimplementedExperimentalDiscoveryServer) testEmbeddedByValue()                               {}
+func (UnimplementedExperimentalResourcesServer) mustEmbedUnimplementedExperimentalResourcesServer() {}
+func (UnimplementedExperimentalResourcesServer) testEmbeddedByValue()                               {}
 
-// UnsafeExperimentalDiscoveryServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to ExperimentalDiscoveryServer will
+// UnsafeExperimentalResourcesServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ExperimentalResourcesServer will
 // result in compilation errors.
-type UnsafeExperimentalDiscoveryServer interface {
-	mustEmbedUnimplementedExperimentalDiscoveryServer()
+type UnsafeExperimentalResourcesServer interface {
+	mustEmbedUnimplementedExperimentalResourcesServer()
 }
 
-func RegisterExperimentalDiscoveryServer(s grpc.ServiceRegistrar, srv ExperimentalDiscoveryServer) {
-	// If the following call pancis, it indicates UnimplementedExperimentalDiscoveryServer was
+func RegisterExperimentalResourcesServer(s grpc.ServiceRegistrar, srv ExperimentalResourcesServer) {
+	// If the following call pancis, it indicates UnimplementedExperimentalResourcesServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&ExperimentalDiscovery_ServiceDesc, srv)
+	s.RegisterService(&ExperimentalResources_ServiceDesc, srv)
 }
 
-func _ExperimentalDiscovery_UpdateResource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ExperimentalResources_UpdateResource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateResourceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ExperimentalDiscoveryServer).UpdateResource(ctx, in)
+		return srv.(ExperimentalResourcesServer).UpdateResource(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ExperimentalDiscovery_UpdateResource_FullMethodName,
+		FullMethod: ExperimentalResources_UpdateResource_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ExperimentalDiscoveryServer).UpdateResource(ctx, req.(*UpdateResourceRequest))
+		return srv.(ExperimentalResourcesServer).UpdateResource(ctx, req.(*UpdateResourceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ExperimentalDiscovery_ListGraphEdges_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ExperimentalResources_ListGraphEdges_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListGraphEdgesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ExperimentalDiscoveryServer).ListGraphEdges(ctx, in)
+		return srv.(ExperimentalResourcesServer).ListGraphEdges(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ExperimentalDiscovery_ListGraphEdges_FullMethodName,
+		FullMethod: ExperimentalResources_ListGraphEdges_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ExperimentalDiscoveryServer).ListGraphEdges(ctx, req.(*ListGraphEdgesRequest))
+		return srv.(ExperimentalResourcesServer).ListGraphEdges(ctx, req.(*ListGraphEdgesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// ExperimentalDiscovery_ServiceDesc is the grpc.ServiceDesc for ExperimentalDiscovery service.
+// ExperimentalResources_ServiceDesc is the grpc.ServiceDesc for ExperimentalResources service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var ExperimentalDiscovery_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "clouditor.discovery.v1experimental.ExperimentalDiscovery",
-	HandlerType: (*ExperimentalDiscoveryServer)(nil),
+var ExperimentalResources_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "clouditor.evidence.v1experimental.ExperimentalResources",
+	HandlerType: (*ExperimentalResourcesServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "UpdateResource",
-			Handler:    _ExperimentalDiscovery_UpdateResource_Handler,
+			Handler:    _ExperimentalResources_UpdateResource_Handler,
 		},
 		{
 			MethodName: "ListGraphEdges",
-			Handler:    _ExperimentalDiscovery_ListGraphEdges_Handler,
+			Handler:    _ExperimentalResources_ListGraphEdges_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/discovery/experimental.proto",
+	Metadata: "api/evidence/experimental.proto",
 }
