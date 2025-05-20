@@ -43,9 +43,12 @@ import (
 
 func TestMain(m *testing.M) {
 	svc := service_evidence.NewService()
-	svc.StoreEvidence(context.Background(), &evidence.StoreEvidenceRequest{
+	_, err := svc.StoreEvidence(context.Background(), &evidence.StoreEvidenceRequest{
 		Evidence: clitest.MockEvidence1,
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	os.Exit(clitest.RunCLITest(m, server.WithServices(svc)))
 }

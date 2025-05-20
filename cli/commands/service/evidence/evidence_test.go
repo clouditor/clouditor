@@ -43,13 +43,18 @@ import (
 
 func TestMain(m *testing.M) {
 	svc := service_evidence.NewService()
-	svc.StoreEvidence(context.Background(), &evidence.StoreEvidenceRequest{
+	_, err := svc.StoreEvidence(context.Background(), &evidence.StoreEvidenceRequest{
 		Evidence: clitest.MockEvidence1,
 	})
-	svc.StoreEvidence(context.Background(), &evidence.StoreEvidenceRequest{
+	if err != nil {
+		panic(err)
+	}
+	_, err = svc.StoreEvidence(context.Background(), &evidence.StoreEvidenceRequest{
 		Evidence: clitest.MockEvidence2,
 	})
-	// svc.StartDiscovery(&discoverytest.TestDiscoverer{TestCase: 2})
+	if err != nil {
+		panic(err)
+	}
 
 	os.Exit(clitest.RunCLITest(m,
 		server.WithServices(svc),

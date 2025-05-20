@@ -67,16 +67,17 @@ var (
 	}
 
 	MockEvidence2 = &evidence.Evidence{
-		Id:                   testdata.MockEvidenceID1,
+		Id:                   testdata.MockEvidenceID2,
 		Timestamp:            timestamppb.New(time.Unix(1, 0)),
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 		ToolId:               testdata.MockEvidenceToolID1,
 		Resource: &ontology.Resource{
 			Type: &ontology.Resource_BlockStorage{
 				BlockStorage: &ontology.BlockStorage{
-					Id:          testdata.MockResourceID2,
-					Name:        testdata.MockResourceName2,
-					Description: "Mock evidence for Block Storage",
+					Id:           testdata.MockResourceID2,
+					Name:         testdata.MockResourceName2,
+					Description:  "Mock evidence for Block Storage",
+					CreationTime: timestamppb.New(time.Unix(1, 0)),
 				},
 			},
 		},

@@ -26,9 +26,6 @@
 package evidence
 
 import (
-	"context"
-	"net"
-
 	"clouditor.io/clouditor/v2/api/assessment"
 	service_assessment "clouditor.io/clouditor/v2/service/assessment"
 
@@ -42,9 +39,9 @@ var (
 	bufConnListener *bufconn.Listener
 )
 
-func bufConnDialer(context.Context, string) (net.Conn, error) {
-	return bufConnListener.Dial()
-}
+// func bufConnDialer(context.Context, string) (net.Conn, error) {
+// 	return bufConnListener.Dial()
+// }
 
 // startBufConnServer starts an gRPC listening on a bufconn listener. It exposes
 // real functionality of the following services for testing purposes:
