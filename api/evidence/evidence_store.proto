@@ -30,6 +30,7 @@ package clouditor.evidence.v1;
 import "api/evidence/evidence.proto";
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
 
 option go_package = "clouditor.io/clouditor/v2/api/evidence";
 
@@ -57,6 +58,11 @@ service EvidenceStore {
   // as REST.
   rpc GetEvidence(GetEvidenceRequest) returns (Evidence) {
     option (google.api.http) = {get: "/v1/evidence_store/evidences/{evidence_id}"};
+  }
+
+  // Lists all resources collected in the last run, exposed as REST.
+  rpc ListResources(ListResourcesRequest) returns (ListResourcesResponse) {
+    option (google.api.http) = {get: "/v1/evidence_store/resources"};
   }
 }
 
@@ -104,4 +110,24 @@ message ListEvidencesResponse {
 
 message GetEvidenceRequest {
   string evidence_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message ListResourcesRequest {
+  message Filter {
+    optional string type = 1;
+    optional string target_of_evaluation_id = 2;
+    optional string tool_id = 3;
+  }
+
+  optional Filter filter = 1;
+
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
+}
+
+message ListResourcesResponse {
+  repeated Resource results = 1 [(google.api.field_behavior) = REQUIRED];
+  string next_page_token = 2;
 }

@@ -3,8 +3,7 @@
 
 openapi: 3.0.3
 info:
-    title: EvidenceStore API
-    description: Manages the storage of evidences
+    title: ""
     version: 0.0.1
 paths:
     /v1/evidence_store/evidence:
@@ -101,6 +100,132 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Evidence'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/evidence_store/resources:
+        get:
+            tags:
+                - EvidenceStore
+            description: Lists all resources collected in the last run, exposed as REST.
+            operationId: EvidenceStore_ListResources
+            parameters:
+                - name: filter.type
+                  in: query
+                  schema:
+                    type: string
+                - name: filter.targetOfEvaluationId
+                  in: query
+                  schema:
+                    type: string
+                - name: filter.toolId
+                  in: query
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListResourcesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1experimental/evidence/graph/edges:
+        get:
+            tags:
+                - ExperimentalResources
+            description: |-
+                ListGraphEdges returns the edges (relationship) between resources in our
+                 resource graph.
+
+                 Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
+            operationId: ExperimentalResources_ListGraphEdges
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListGraphEdgesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1experimental/evidence_store/resources/{resource.id}:
+        post:
+            tags:
+                - ExperimentalResources
+            description: |-
+                UpdateResource updates a resource (or creates it, if it does not exist).
+                 This is used to give third-party tools the possibility to add something to
+                 the resource graph.
+
+                 Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
+            operationId: ExperimentalResources_UpdateResource
+            parameters:
+                - name: resource.id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateResourceRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Resource'
                 default:
                     description: Default error response
                     content:
@@ -1404,6 +1529,22 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        GraphEdge:
+            required:
+                - id
+                - source
+                - target
+                - type
+            type: object
+            properties:
+                id:
+                    type: string
+                source:
+                    type: string
+                target:
+                    type: string
+                type:
+                    type: string
         HttpEndpoint:
             type: object
             properties:
@@ -1763,6 +1904,28 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Evidence'
+                nextPageToken:
+                    type: string
+        ListGraphEdgesResponse:
+            required:
+                - edges
+            type: object
+            properties:
+                edges:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GraphEdge'
+                nextPageToken:
+                    type: string
+        ListResourcesResponse:
+            required:
+                - results
+            type: object
+            properties:
+                results:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Resource'
                 nextPageToken:
                     type: string
         LoadBalancer:
@@ -3280,6 +3443,13 @@ components:
             description: |-
                 TransportEncryption is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  enabled means the resource _can_ be reached via https, while enforced means it _can only_ be reached via https (or http traffic is redirected)
+        UpdateResourceRequest:
+            required:
+                - resource
+            type: object
+            properties:
+                resource:
+                    $ref: '#/components/schemas/Resource'
         UsageStatistics:
             type: object
             properties:
@@ -3530,3 +3700,8 @@ components:
             description: ZoneRedundancy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 tags:
     - name: EvidenceStore
+      description: Manages the storage of evidences
+    - name: ExperimentalResources
+      description: |-
+        Maps cloud resources and its properties to the format of the
+         ontology
