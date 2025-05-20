@@ -32,6 +32,7 @@
 package discovery
 
 import (
+	evidence "clouditor.io/clouditor/v2/api/evidence"
 	context "context"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
@@ -60,7 +61,7 @@ type ExperimentalDiscoveryClient interface {
 	// the resource graph.
 	//
 	// Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
-	UpdateResource(ctx context.Context, in *UpdateResourceRequest, opts ...grpc.CallOption) (*Resource, error)
+	UpdateResource(ctx context.Context, in *UpdateResourceRequest, opts ...grpc.CallOption) (*evidence.Resource, error)
 	// ListGraphEdges returns the edges (relationship) between resources in our
 	// resource graph.
 	//
@@ -76,9 +77,9 @@ func NewExperimentalDiscoveryClient(cc grpc.ClientConnInterface) ExperimentalDis
 	return &experimentalDiscoveryClient{cc}
 }
 
-func (c *experimentalDiscoveryClient) UpdateResource(ctx context.Context, in *UpdateResourceRequest, opts ...grpc.CallOption) (*Resource, error) {
+func (c *experimentalDiscoveryClient) UpdateResource(ctx context.Context, in *UpdateResourceRequest, opts ...grpc.CallOption) (*evidence.Resource, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Resource)
+	out := new(evidence.Resource)
 	err := c.cc.Invoke(ctx, ExperimentalDiscovery_UpdateResource_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -108,7 +109,7 @@ type ExperimentalDiscoveryServer interface {
 	// the resource graph.
 	//
 	// Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
-	UpdateResource(context.Context, *UpdateResourceRequest) (*Resource, error)
+	UpdateResource(context.Context, *UpdateResourceRequest) (*evidence.Resource, error)
 	// ListGraphEdges returns the edges (relationship) between resources in our
 	// resource graph.
 	//
@@ -124,7 +125,7 @@ type ExperimentalDiscoveryServer interface {
 // pointer dereference when methods are called.
 type UnimplementedExperimentalDiscoveryServer struct{}
 
-func (UnimplementedExperimentalDiscoveryServer) UpdateResource(context.Context, *UpdateResourceRequest) (*Resource, error) {
+func (UnimplementedExperimentalDiscoveryServer) UpdateResource(context.Context, *UpdateResourceRequest) (*evidence.Resource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateResource not implemented")
 }
 func (UnimplementedExperimentalDiscoveryServer) ListGraphEdges(context.Context, *ListGraphEdgesRequest) (*ListGraphEdgesResponse, error) {

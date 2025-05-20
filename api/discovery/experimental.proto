@@ -27,7 +27,7 @@ syntax = "proto3";
 
 package clouditor.discovery.v1experimental;
 
-import "api/discovery/discovery.proto";
+import "api/evidence/evidence.proto";
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
@@ -42,7 +42,7 @@ service ExperimentalDiscovery {
   // the resource graph.
   //
   // Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
-  rpc UpdateResource(UpdateResourceRequest) returns (clouditor.discovery.v1.Resource) {
+  rpc UpdateResource(UpdateResourceRequest) returns (clouditor.evidence.v1.Resource) {
     option (google.api.http) = {
       post: "/v1experimental/discovery/resources/{resource.id}"
       body: "*"
@@ -59,7 +59,7 @@ service ExperimentalDiscovery {
 }
 
 message UpdateResourceRequest {
-  clouditor.discovery.v1.Resource resource = 1 [(google.api.field_behavior) = REQUIRED];
+  clouditor.evidence.v1.Resource resource = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
 message ListGraphEdgesRequest {
