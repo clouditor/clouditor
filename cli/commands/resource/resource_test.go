@@ -27,23 +27,25 @@ package resource
 
 import (
 	"bytes"
+	"context"
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/cli"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
-	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest"
 	"clouditor.io/clouditor/v2/server"
-	service_discovery "clouditor.io/clouditor/v2/service/discovery"
+	service_evidence "clouditor.io/clouditor/v2/service/evidence"
 
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func TestMain(m *testing.M) {
-	svc := service_discovery.NewService()
-	svc.StartDiscovery(&discoverytest.TestDiscoverer{TestCase: 2})
+	svc := service_evidence.NewService()
+	svc.StoreEvidence(context.Background(), &evidence.StoreEvidenceRequest{
+		Evidence: clitest.MockEvidence1,
+	})
 
 	os.Exit(clitest.RunCLITest(m, server.WithServices(svc)))
 }
@@ -54,7 +56,7 @@ func TestAddCommands(t *testing.T) {
 	// Check if sub commands were added
 	assert.True(t, cmd.HasSubCommands())
 
-	// Check if NewListCommand was added
+	// Check if NewListResourcesCommand was added
 	for _, v := range cmd.Commands() {
 		if v.Use == "list" {
 			return
@@ -63,7 +65,7 @@ func TestAddCommands(t *testing.T) {
 	t.Errorf("No list command was added")
 }
 
-func TestNewListCommand(t *testing.T) {
+func TestNewListResourcesCommandNoArgs(t *testing.T) {
 	var err error
 	var b bytes.Buffer
 
@@ -73,10 +75,27 @@ func TestNewListCommand(t *testing.T) {
 	err = cmd.RunE(nil, []string{})
 	assert.NoError(t, err)
 
-	var response = &discovery.ListResourcesResponse{}
+	var response = &evidence.ListResourcesResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Results)
+}
+
+func TestNewListResourcesCommandWithArgs(t *testing.T) {
+	var err error
+	var b bytes.Buffer
+
+	cli.Output = &b
+
+	cmd := NewListResourcesCommand()
+	err = cmd.RunE(nil, []string{"Test Command"})
+	assert.NoError(t, err)
+
+	var response = &evidence.ListResourcesResponse{}
+	err = protojson.Unmarshal(b.Bytes(), response)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, response)
 }

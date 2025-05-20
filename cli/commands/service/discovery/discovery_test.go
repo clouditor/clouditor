@@ -53,7 +53,7 @@ func TestAddCommands(t *testing.T) {
 
 	// Check if NewQueryDiscoveryCommand was added
 	for _, v := range cmd.Commands() {
-		if v.Use == "query" {
+		if v.Use == "start" {
 			return
 		}
 	}

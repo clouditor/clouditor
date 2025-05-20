@@ -46,6 +46,9 @@ func TestMain(m *testing.M) {
 	svc.StoreEvidence(context.Background(), &evidence.StoreEvidenceRequest{
 		Evidence: clitest.MockEvidence1,
 	})
+	svc.StoreEvidence(context.Background(), &evidence.StoreEvidenceRequest{
+		Evidence: clitest.MockEvidence2,
+	})
 	// svc.StartDiscovery(&discoverytest.TestDiscoverer{TestCase: 2})
 
 	os.Exit(clitest.RunCLITest(m,
@@ -58,41 +61,6 @@ func TestAddCommands(t *testing.T) {
 
 	// Check if sub commands were added
 	assert.True(t, cmd.HasSubCommands())
-}
-
-func TestNewListResourcesCommandNoArgs(t *testing.T) {
-	var err error
-	var b bytes.Buffer
-
-	cli.Output = &b
-
-	cmd := NewListResourceCommand()
-	err = cmd.RunE(nil, []string{})
-	assert.NoError(t, err)
-
-	var response = &evidence.ListResourcesResponse{}
-	err = protojson.Unmarshal(b.Bytes(), response)
-
-	assert.NoError(t, err)
-	assert.NotNil(t, response)
-	assert.NotEmpty(t, response.Results)
-}
-
-func TestNewListResourcesCommandWithArgs(t *testing.T) {
-	var err error
-	var b bytes.Buffer
-
-	cli.Output = &b
-
-	cmd := NewListResourceCommand()
-	err = cmd.RunE(nil, []string{"Test Command"})
-	assert.NoError(t, err)
-
-	var response = &evidence.ListResourcesResponse{}
-	err = protojson.Unmarshal(b.Bytes(), response)
-
-	assert.NoError(t, err)
-	assert.NotNil(t, response)
 }
 
 func TestNewListEvidencesCommandNoArgs(t *testing.T) {

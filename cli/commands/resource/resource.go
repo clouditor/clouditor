@@ -26,16 +26,60 @@
 package resource
 
 import (
-	"clouditor.io/clouditor/v2/cli/commands/service/discovery"
+	"fmt"
+
+	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/cli"
 	"github.com/spf13/cobra"
 )
 
-// NewListResourcesCommand returns a cobra command for the `list` subcommand
+// NewListResourceCommand returns a cobra command for the `start` subcommand
 func NewListResourcesCommand() *cobra.Command {
-	// Use Discovery's function for listing resources
-	cmd := discovery.NewListGraphEdgesCommand()
-	// Change use for consistency (cl resource list vs cl resource query)
-	cmd.Use = "list"
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "List resources",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  evidence.EvidenceStoreClient
+				res     *evidence.ListResourcesResponse
+				results []*evidence.Resource
+				req     evidence.ListResourcesRequest
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = evidence.NewEvidenceStoreClient(session)
+
+			req = evidence.ListResourcesRequest{
+				PageSize:  0,
+				PageToken: "",
+				OrderBy:   "",
+				Asc:       false,
+				Filter:    &evidence.ListResourcesRequest_Filter{},
+			}
+
+			if len(args) > 0 {
+				req.Filter.Type = &args[0]
+			}
+
+			results, err = api.ListAllPaginated(&evidence.ListResourcesRequest{}, client.ListResources, func(res *evidence.ListResourcesResponse) []*evidence.Resource {
+				return res.Results
+			})
+
+			// Build a response with all results
+			res = &evidence.ListResourcesResponse{
+				Results: results,
+			}
+
+			return session.HandleResponse(res, err)
+		},
+	}
 
 	return cmd
 }

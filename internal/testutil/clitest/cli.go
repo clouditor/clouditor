@@ -44,25 +44,44 @@ var MockAssessmentResult1 = &assessment.AssessmentResult{
 	ToolId: util.Ref(assessment.AssessmentToolId),
 }
 
-var MockEvidence1 = &evidence.Evidence{
-	Id:                   testdata.MockEvidenceID1,
-	Timestamp:            timestamppb.New(time.Unix(1, 0)),
-	TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-	ToolId:               testdata.MockEvidenceToolID1,
-	Resource: &ontology.Resource{
-		Type: &ontology.Resource_VirtualMachine{
-			VirtualMachine: &ontology.VirtualMachine{
-				Id:           testdata.MockResourceID1,
-				Name:         testdata.MockResourceName1,
-				Description:  "Mock evidence",
-				CreationTime: timestamppb.New(time.Unix(1, 0)),
-				AutomaticUpdates: &ontology.AutomaticUpdates{
-					Enabled: true,
+var (
+	MockEvidence1 = &evidence.Evidence{
+		Id:                   testdata.MockEvidenceID1,
+		Timestamp:            timestamppb.New(time.Unix(1, 0)),
+		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+		ToolId:               testdata.MockEvidenceToolID1,
+		Resource: &ontology.Resource{
+			Type: &ontology.Resource_VirtualMachine{
+				VirtualMachine: &ontology.VirtualMachine{
+					Id:           testdata.MockResourceID1,
+					Name:         testdata.MockResourceName1,
+					Description:  "Mock evidence for Virtual Machine",
+					CreationTime: timestamppb.New(time.Unix(1, 0)),
+					AutomaticUpdates: &ontology.AutomaticUpdates{
+						Enabled: true,
+					},
+					BlockStorageIds: []string{testdata.MockResourceID2},
 				},
 			},
 		},
-	},
-}
+	}
+
+	MockEvidence2 = &evidence.Evidence{
+		Id:                   testdata.MockEvidenceID1,
+		Timestamp:            timestamppb.New(time.Unix(1, 0)),
+		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+		ToolId:               testdata.MockEvidenceToolID1,
+		Resource: &ontology.Resource{
+			Type: &ontology.Resource_BlockStorage{
+				BlockStorage: &ontology.BlockStorage{
+					Id:          testdata.MockResourceID2,
+					Name:        testdata.MockResourceName2,
+					Description: "Mock evidence for Block Storage",
+				},
+			},
+		},
+	}
+)
 
 // PrepareSession prepares a session for unit tests. It creates a temporary folder to save
 // the session credentials in and does a login to the specified authorization server using

@@ -38,7 +38,7 @@ import (
 // NewGetEvidenceCommand returns a cobra command for the `get-catalog` subcommand
 func NewGetEvidenceCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get-evidence [evidence ID]",
+		Use:   "get [evidence ID]",
 		Short: "Retrieves an evidence by its ID",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -71,7 +71,7 @@ func NewGetEvidenceCommand() *cobra.Command {
 // NewListEvidencesCommand returns a cobra command for the `start` subcommand
 func NewListEvidencesCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list-evidences",
+		Use:   "list",
 		Short: "List evidences",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
@@ -80,7 +80,6 @@ func NewListEvidencesCommand() *cobra.Command {
 				client  evidence.EvidenceStoreClient
 				res     *evidence.ListEvidencesResponse
 				results []*evidence.Evidence
-				// req     evidence.ListEvidencesRequest
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -97,56 +96,6 @@ func NewListEvidencesCommand() *cobra.Command {
 			// Build a response with all results
 			res = &evidence.ListEvidencesResponse{
 				Evidences: results,
-			}
-
-			return session.HandleResponse(res, err)
-		},
-	}
-
-	return cmd
-}
-
-// NewListResourceCommand returns a cobra command for the `start` subcommand
-func NewListResourceCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "list-resources",
-		Short: "List resources",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			var (
-				err     error
-				session *cli.Session
-				client  evidence.EvidenceStoreClient
-				res     *evidence.ListResourcesResponse
-				results []*evidence.Resource
-				req     evidence.ListResourcesRequest
-			)
-
-			if session, err = cli.ContinueSession(); err != nil {
-				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
-				return nil
-			}
-
-			client = evidence.NewEvidenceStoreClient(session)
-
-			req = evidence.ListResourcesRequest{
-				PageSize:  0,
-				PageToken: "",
-				OrderBy:   "",
-				Asc:       false,
-				Filter:    &evidence.ListResourcesRequest_Filter{},
-			}
-
-			if len(args) > 0 {
-				req.Filter.Type = &args[0]
-			}
-
-			results, err = api.ListAllPaginated(&evidence.ListResourcesRequest{}, client.ListResources, func(res *evidence.ListResourcesResponse) []*evidence.Resource {
-				return res.Results
-			})
-
-			// Build a response with all results
-			res = &evidence.ListResourcesResponse{
-				Results: results,
 			}
 
 			return session.HandleResponse(res, err)
@@ -173,6 +122,6 @@ func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewGetEvidenceCommand(),
 		NewListEvidencesCommand(),
-		NewListResourceCommand(),
+		NewExperimentalCommand(),
 	)
 }

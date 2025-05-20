@@ -80,6 +80,5 @@ func NewDiscoveryCommand() *cobra.Command {
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewStartDiscoveryCommand(),
-		NewExperimentalCommand(),
 	)
 }
