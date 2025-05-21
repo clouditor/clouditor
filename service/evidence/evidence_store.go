@@ -43,9 +43,9 @@ import (
 	"clouditor.io/clouditor/v2/persistence/inmemory"
 	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/service"
-	"golang.org/x/oauth2/clientcredentials"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
