@@ -88,7 +88,7 @@ func (d *azureDiscovery) discoverApplicationGateway() ([]ontology.IsResource, er
 		func(ags *armnetwork.ApplicationGateway) error {
 			s := d.handleApplicationGateway(ags)
 
-			log.Infof("Adding application gateway %+v", s)
+			log.Infof("Adding application gateway %+v", s.GetName())
 
 			list = append(list, s)
 
