@@ -80,17 +80,7 @@ const (
 	MockEvidenceID2     = "22222222-2222-2222-2222-222222222222"
 	MockEvidenceToolID2 = "49d85e98-c3da-11ed-afa1-0242ac120002"
 
-	// Resource
-	//TODO(anatheka): Delete? We should use a specific resource, like the VirtualMachine below
-	MockResourceID1         = "my-resource-id"
-	MockResourceName1       = "my-resource-name"
-	MockResourceStorageID   = "some-storage-service-id"
-	MockResourceStorageName = "some-storage-service-name"
-	MockResourceID2         = "my-other-resource-id"
-	MockResourceName2       = "my-other-resource-name"
-
 	// Virtual Machine
-	MockResourceType               = "VirtualMachine,Compute,Infrastructure,Resource"
 	MockVirtualMachineID1          = "my-vm-id"
 	MockVirtualMachineName1        = "my-vm-name"
 	MockVirtualMachineDescription1 = "This is a mock virtual machine"
@@ -157,4 +147,8 @@ var (
 			StringValue: "MockTargetValue",
 		},
 	}
+
+	// Resource Types
+	MockVirtualMachineTypes = []string{"VirtualMachine", "Compute", "Infrastructure", "Resource"}
+	MockBlockStorageTypes   = []string{"BlockStorage", "Storage", "Infrastructure", "Resource"}
 )

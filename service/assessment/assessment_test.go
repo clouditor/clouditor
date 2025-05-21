@@ -247,8 +247,8 @@ func TestService_AssessEvidence(t *testing.T) {
 					ToolId:               testdata.MockEvidenceToolID1,
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 					Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
-						Id:   testdata.MockResourceID1,
-						Name: testdata.MockResourceName1,
+						Id:   testdata.MockVirtualMachineID1,
+						Name: testdata.MockVirtualMachineName1,
 					}),
 				},
 			},
@@ -272,8 +272,8 @@ func TestService_AssessEvidence(t *testing.T) {
 					ToolId:    testdata.MockEvidenceToolID1,
 					Timestamp: timestamppb.Now(),
 					Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
-						Id:   testdata.MockResourceID1,
-						Name: testdata.MockResourceName1,
+						Id:   testdata.MockVirtualMachineID1,
+						Name: testdata.MockVirtualMachineName1,
 					}),
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1},
 			},
@@ -294,8 +294,8 @@ func TestService_AssessEvidence(t *testing.T) {
 					ToolId:    testdata.MockEvidenceToolID1,
 					Timestamp: timestamppb.Now(),
 					Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
-						Id:   testdata.MockResourceID1,
-						Name: testdata.MockResourceName1,
+						Id:   testdata.MockVirtualMachineID1,
+						Name: testdata.MockVirtualMachineName1,
 					}),
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1},
 			},
@@ -343,8 +343,8 @@ func TestService_AssessEvidence(t *testing.T) {
 					Timestamp:            timestamppb.Now(),
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 					Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
-						Id:   testdata.MockResourceID1,
-						Name: testdata.MockResourceName1,
+						Id:   testdata.MockVirtualMachineID1,
+						Name: testdata.MockVirtualMachineName1,
 					}),
 				},
 			},
@@ -363,7 +363,7 @@ func TestService_AssessEvidence(t *testing.T) {
 					"my-other-resource-id": {
 						Id: testdata.MockEvidenceID2,
 						Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
-							Id: testdata.MockResourceID2,
+							Id: testdata.MockVirtualMachineID2,
 						}),
 					},
 				},
@@ -376,8 +376,8 @@ func TestService_AssessEvidence(t *testing.T) {
 					Timestamp:            timestamppb.Now(),
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 					Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
-						Id:   testdata.MockResourceID1,
-						Name: testdata.MockResourceName1,
+						Id:   testdata.MockVirtualMachineID1,
+						Name: testdata.MockVirtualMachineName1,
 					}),
 					ExperimentalRelatedResourceIds: []string{"my-other-resource-id"},
 				},
@@ -403,8 +403,8 @@ func TestService_AssessEvidence(t *testing.T) {
 					Timestamp:            timestamppb.Now(),
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 					Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
-						Id:   testdata.MockResourceID1,
-						Name: testdata.MockResourceName1,
+						Id:   testdata.MockVirtualMachineID1,
+						Name: testdata.MockVirtualMachineName1,
 					}),
 					ExperimentalRelatedResourceIds: []string{"my-other-resource-id"},
 				},
@@ -458,8 +458,8 @@ func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached
 	// tool id (="VirtualMachine-{testdata.MockEvidenceToolID}")
 	e := evidencetest.MockEvidence1
 	e.Resource = prototest.NewProtobufResource(t, &ontology.VirtualMachine{
-		Id:   testdata.MockResourceID1,
-		Name: testdata.MockResourceName1,
+		Id:   testdata.MockVirtualMachineID1,
+		Name: testdata.MockVirtualMachineName1,
 	})
 	_, err := s.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{Evidence: e})
 	assert.NoError(t, err)
@@ -510,7 +510,7 @@ func TestService_AssessEvidences(t *testing.T) {
 						Id:                   testdata.MockEvidenceID1,
 						Timestamp:            timestamppb.Now(),
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-						Resource:             prototest.NewProtobufResource(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+						Resource:             prototest.NewProtobufResource(t, &ontology.VirtualMachine{Id: testdata.MockVirtualMachineID1}),
 					},
 				}),
 			},
@@ -528,7 +528,7 @@ func TestService_AssessEvidences(t *testing.T) {
 						Timestamp:            timestamppb.Now(),
 						ToolId:               testdata.MockEvidenceToolID1,
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-						Resource:             prototest.NewProtobufResource(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+						Resource:             prototest.NewProtobufResource(t, &ontology.VirtualMachine{Id: testdata.MockVirtualMachineID1}),
 					},
 				}),
 			},
@@ -553,8 +553,8 @@ func TestService_AssessEvidences(t *testing.T) {
 						ToolId:               testdata.MockEvidenceToolID1,
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 						Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
-							Id:   testdata.MockResourceID1,
-							Name: testdata.MockResourceName1,
+							Id:   testdata.MockVirtualMachineID1,
+							Name: testdata.MockVirtualMachineName1,
 						}),
 					},
 				}),
@@ -576,7 +576,7 @@ func TestService_AssessEvidences(t *testing.T) {
 						Timestamp:            timestamppb.Now(),
 						ToolId:               testdata.MockEvidenceToolID1,
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-						Resource:             prototest.NewProtobufResource(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+						Resource:             prototest.NewProtobufResource(t, &ontology.VirtualMachine{Id: testdata.MockVirtualMachineID1}),
 					},
 				}),
 			},
@@ -596,7 +596,7 @@ func TestService_AssessEvidences(t *testing.T) {
 						Timestamp:            timestamppb.Now(),
 						ToolId:               testdata.MockEvidenceToolID1,
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-						Resource:             prototest.NewProtobufResource(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+						Resource:             prototest.NewProtobufResource(t, &ontology.VirtualMachine{Id: testdata.MockVirtualMachineID1}),
 					},
 				}),
 			},
@@ -680,8 +680,8 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 						Timestamp:            timestamppb.Now(),
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 						Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
-							Id:   testdata.MockResourceID1,
-							Name: testdata.MockResourceName1,
+							Id:   testdata.MockVirtualMachineID1,
+							Name: testdata.MockVirtualMachineName1,
 							BootLogging: &ontology.BootLogging{
 								LoggingServiceIds: []string{"SomeResourceId2"},
 								Enabled:           true,
@@ -960,8 +960,8 @@ func TestService_handleEvidence(t *testing.T) {
 					Timestamp:            timestamppb.Now(),
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 					Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
-						Id:   testdata.MockResourceID1,
-						Name: testdata.MockResourceName1,
+						Id:   testdata.MockVirtualMachineID1,
+						Name: testdata.MockVirtualMachineName1,
 						BootLogging: &ontology.BootLogging{
 							LoggingServiceIds: nil,
 							Enabled:           true,
@@ -969,8 +969,8 @@ func TestService_handleEvidence(t *testing.T) {
 					}),
 				},
 				resource: &ontology.VirtualMachine{
-					Id:   testdata.MockResourceID1,
-					Name: testdata.MockResourceName1,
+					Id:   testdata.MockVirtualMachineID1,
+					Name: testdata.MockVirtualMachineName1,
 					BootLogging: &ontology.BootLogging{
 						LoggingServiceIds: nil,
 						Enabled:           true,

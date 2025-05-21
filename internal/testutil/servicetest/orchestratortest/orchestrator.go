@@ -174,8 +174,8 @@ var (
 		MetricId:             testdata.MockMetricID1,
 		Compliant:            true,
 		EvidenceId:           testdata.MockEvidenceID1,
-		ResourceId:           testdata.MockResourceID1,
-		ResourceTypes:        []string{"Resource"},
+		ResourceId:           testdata.MockVirtualMachineID1,
+		ResourceTypes:        testdata.MockVirtualMachineTypes,
 		ComplianceComment:    assessment.DefaultCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:             "==",
@@ -193,8 +193,8 @@ var (
 		MetricId:             testdata.MockMetricID1,
 		Compliant:            true,
 		EvidenceId:           testdata.MockEvidenceID1,
-		ResourceId:           testdata.MockResourceID1,
-		ResourceTypes:        []string{"Resource"},
+		ResourceId:           testdata.MockVirtualMachineID1,
+		ResourceTypes:        testdata.MockVirtualMachineTypes,
 		ComplianceComment:    assessment.DefaultCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:             "==",
@@ -212,8 +212,8 @@ var (
 		MetricId:             testdata.MockMetricID2,
 		Compliant:            false,
 		EvidenceId:           testdata.MockEvidenceID1,
-		ResourceId:           testdata.MockResourceID1,
-		ResourceTypes:        []string{"Resource"},
+		ResourceId:           testdata.MockVirtualMachineID1,
+		ResourceTypes:        testdata.MockVirtualMachineTypes,
 		ComplianceComment:    assessment.DefaultNonCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:             "==",
@@ -231,8 +231,8 @@ var (
 		MetricId:             testdata.MockMetricID2,
 		Compliant:            false,
 		EvidenceId:           testdata.MockEvidenceID1,
-		ResourceId:           testdata.MockResourceID2,
-		ResourceTypes:        []string{"Resource"},
+		ResourceId:           testdata.MockVirtualMachineID2,
+		ResourceTypes:        testdata.MockVirtualMachineTypes,
 		ComplianceComment:    assessment.DefaultNonCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:             "==",
