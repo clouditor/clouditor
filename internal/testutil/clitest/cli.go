@@ -31,8 +31,8 @@ var MockAssessmentResult1 = &assessment.AssessmentResult{
 	MetricId:             testdata.MockMetricID1,
 	Compliant:            true,
 	EvidenceId:           testdata.MockEvidenceID1,
-	ResourceId:           testdata.MockResourceID1,
-	ResourceTypes:        []string{"Resource"},
+	ResourceId:           testdata.MockVirtualMachineID1,
+	ResourceTypes:        testdata.MockVirtualMachineTypes,
 	ComplianceComment:    assessment.DefaultCompliantMessage,
 	MetricConfiguration: &assessment.MetricConfiguration{
 		Operator:             "==",
@@ -53,14 +53,14 @@ var (
 		Resource: &ontology.Resource{
 			Type: &ontology.Resource_VirtualMachine{
 				VirtualMachine: &ontology.VirtualMachine{
-					Id:           testdata.MockResourceID1,
-					Name:         testdata.MockResourceName1,
+					Id:           testdata.MockVirtualMachineID1,
+					Name:         testdata.MockVirtualMachineName1,
 					Description:  "Mock evidence for Virtual Machine",
 					CreationTime: timestamppb.New(time.Unix(1, 0)),
 					AutomaticUpdates: &ontology.AutomaticUpdates{
 						Enabled: true,
 					},
-					BlockStorageIds: []string{testdata.MockResourceID2},
+					BlockStorageIds: []string{testdata.MockVirtualMachineID2},
 				},
 			},
 		},
@@ -74,8 +74,8 @@ var (
 		Resource: &ontology.Resource{
 			Type: &ontology.Resource_BlockStorage{
 				BlockStorage: &ontology.BlockStorage{
-					Id:           testdata.MockResourceID2,
-					Name:         testdata.MockResourceName2,
+					Id:           testdata.MockBlockStorageID1,
+					Name:         testdata.MockBlockStorageName1,
 					Description:  "Mock evidence for Block Storage",
 					CreationTime: timestamppb.New(time.Unix(1, 0)),
 				},
