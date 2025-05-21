@@ -154,7 +154,7 @@ func NewService(opts ...service.Option[*Service]) (svc *Service) {
 func (svc *Service) Init() {
 
 	// Start a worker thread to process the evidence that is being passed to the StoreEvidence function in order to utilize the fire-and-forget strategy.
-	// To do this, we want an channel, that contains the evidences and call another function that processes the evidence.
+	// To do this, we want a channel, that contains the evidences and call another function that processes the evidence.
 	go func() {
 		for {
 			// Wait for a new evidence to be passed to the channel
@@ -216,7 +216,8 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 
 	go svc.informHooks(ctx, req.Evidence, nil)
 
-	// Send evidence to the channel for processing (fire and forget)
+	// Send evidence to the channel for further processing and acknowledge receipt, without waiting for the processing to finish. This allows the sender to continue
+	// without waiting for the evidence to be processed.
 	svc.channelEvidence <- req.Evidence
 
 	res = &evidence.StoreEvidenceResponse{}
