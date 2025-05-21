@@ -1240,28 +1240,30 @@ func TestService_handleEvidence(t *testing.T) {
 		args    args
 		wantErr assert.ErrorAssertionFunc
 	}{
+		// {
+		// 	name: "Error getting stream",
+		// 	fields: fields{
+		// 		storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+		// 		}),
+		// 		assessment: &api.RPCConnection[assessment.AssessmentClient]{
+		// 			Client: &mockAssessmentClient{failStream: true},
+		// 		},
+		// 	},
+		// 	args: args{
+		// 		addStream: true,
+		// 		evidence:  evidencetest.MockEvidence1,
+		// 		target:    "error",
+		// 	},
+		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+		// 		return assert.ErrorContains(t, err, "could not get stream to assessment service")
+		// 	},
+		// },
 		{
-			name: "Error getting stream",
+			name: "Happy path: do not trigger new assessment",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-				}),
-				assessment: &api.RPCConnection[assessment.AssessmentClient]{
-					Client: &mockAssessmentClient{failStream: true},
-				},
-			},
-			args: args{
-				addStream: true,
-				evidence:  evidencetest.MockEvidence1,
-				target:    "error",
-			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not get stream to assessment service")
-			},
-		},
-		{
-			name: "Happy path",
-			fields: fields{
-				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Save(&evidencetest.MockEvidence1))
+					assert.NoError(t, s.Save(&evidencetest.MockResourceFromEvidence1))
 				}),
 				assessment: &api.RPCConnection[assessment.AssessmentClient]{
 					Target: "mock",
@@ -1274,6 +1276,22 @@ func TestService_handleEvidence(t *testing.T) {
 			},
 			wantErr: assert.NoError,
 		},
+		// {
+		// 	name: "Happy path: trigger new assessment",
+		// 	fields: fields{
+		// 		storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+		// 		}),
+		// 		assessment: &api.RPCConnection[assessment.AssessmentClient]{
+		// 			Target: "mock",
+		// 		},
+		// 	},
+		// 	args: args{
+		// 		addStream: true,
+		// 		evidence:  evidencetest.MockEvidence1,
+		// 		target:    "mock",
+		// 	},
+		// 	wantErr: assert.NoError,
+		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

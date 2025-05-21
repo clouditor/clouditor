@@ -81,12 +81,30 @@ const (
 	MockEvidenceToolID2 = "49d85e98-c3da-11ed-afa1-0242ac120002"
 
 	// Resource
+	//TODO(anatheka): Delete? We should use a specific resource, like the VirtualMachine below
 	MockResourceID1         = "my-resource-id"
 	MockResourceName1       = "my-resource-name"
 	MockResourceStorageID   = "some-storage-service-id"
 	MockResourceStorageName = "some-storage-service-name"
 	MockResourceID2         = "my-other-resource-id"
 	MockResourceName2       = "my-other-resource-name"
+
+	// Virtual Machine
+	MockResourceType               = "VirtualMachine,Compute,Infrastructure,Resource"
+	MockVirtualMachineID1          = "my-vm-id"
+	MockVirtualMachineName1        = "my-vm-name"
+	MockVirtualMachineDescription1 = "This is a mock virtual machine"
+	MockVirtualMachineID2          = "my-other-vm-id"
+	MockVirtualMachineName2        = "my-other-vm-name"
+	MockVirtualMachineDescription2 = "This is another mock virtual machine"
+
+	// Block Storage
+	MockBlockStorageID1          = "my-block-storage-id"
+	MockBlockStorageName1        = "my-block-storage-name"
+	MockBlockStorageDescription1 = "This is a mock block storage"
+	MockBlockStorageID2          = "my-other-block-storage-id"
+	MockBlockStorageName2        = "my-other-block-storage-name"
+	MockBlockStorageDescription2 = "This is another mock block storage"
 
 	// Properties for a Certificate
 	MockCertificateID          = "1234"
