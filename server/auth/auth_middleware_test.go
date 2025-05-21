@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package server
+package auth
 
 import (
 	"context"
@@ -42,7 +42,7 @@ import (
 )
 
 func ValidClaimAssertion(t *testing.T, ctx context.Context) bool {
-	claims, ok := ctx.Value(AuthContextKey).(*OpenIDConnectClaim)
+	claims, ok := ctx.Value(AuthTokenContextKey).(*OpenIDConnectClaim)
 	if !ok {
 		t.Errorf("Token value in context not a JWT claims object")
 		return false
@@ -153,14 +153,14 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			config := &AuthConfig{
-				jwksURL:   tt.fields.jwksURL,
-				useJWKS:   tt.fields.useJWKS,
-				publicKey: tt.fields.publicKey,
+				JwksURL:   tt.fields.jwksURL,
+				UseJWKS:   tt.fields.useJWKS,
+				PublicKey: tt.fields.publicKey,
 			}
 			got, err := config.AuthFunc()(tt.args.ctx)
 
 			if tt.wantJWKS {
-				assert.NotNil(t, config.jwks)
+				assert.NotNil(t, config.Jwks)
 			}
 
 			if tt.wantErr != nil {
