@@ -335,7 +335,7 @@ func TestService_StoreEvidences(t *testing.T) {
 				streamToServer: createMockStream(createStoreEvidenceRequestMocks(t, 1))},
 			wantErr: false,
 			wantResMessage: &evidence.StoreEvidencesResponse{
-				Status: evidence.EvidenceStatus_EVIDENCE_STATUS_OK,
+				Status: true,
 			},
 		},
 		{
@@ -345,7 +345,7 @@ func TestService_StoreEvidences(t *testing.T) {
 				streamToServer: createMockStream(createStoreEvidenceRequestMocks(t, 2))},
 			wantErr: false,
 			wantResMessage: &evidence.StoreEvidencesResponse{
-				Status: evidence.EvidenceStatus_EVIDENCE_STATUS_OK,
+				Status: true,
 			},
 		},
 		{
@@ -371,7 +371,7 @@ func TestService_StoreEvidences(t *testing.T) {
 				})},
 			wantErr: false,
 			wantResMessage: &evidence.StoreEvidencesResponse{
-				Status:        evidence.EvidenceStatus_EVIDENCE_STATUS_ERROR,
+				Status:        false,
 				StatusMessage: "evidence.target_of_evaluation_id: value must be a valid UUID",
 			},
 		},
