@@ -48,6 +48,55 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type EvidenceStatus int32
+
+const (
+	EvidenceStatus_EVIDENCE_STATUS_UNSPECIFIED EvidenceStatus = 0
+	EvidenceStatus_EVIDENCE_STATUS_OK          EvidenceStatus = 1
+	EvidenceStatus_EVIDENCE_STATUS_ERROR       EvidenceStatus = 2
+)
+
+// Enum value maps for EvidenceStatus.
+var (
+	EvidenceStatus_name = map[int32]string{
+		0: "EVIDENCE_STATUS_UNSPECIFIED",
+		1: "EVIDENCE_STATUS_OK",
+		2: "EVIDENCE_STATUS_ERROR",
+	}
+	EvidenceStatus_value = map[string]int32{
+		"EVIDENCE_STATUS_UNSPECIFIED": 0,
+		"EVIDENCE_STATUS_OK":          1,
+		"EVIDENCE_STATUS_ERROR":       2,
+	}
+)
+
+func (x EvidenceStatus) Enum() *EvidenceStatus {
+	p := new(EvidenceStatus)
+	*p = x
+	return p
+}
+
+func (x EvidenceStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (EvidenceStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_api_evidence_evidence_store_proto_enumTypes[0].Descriptor()
+}
+
+func (EvidenceStatus) Type() protoreflect.EnumType {
+	return &file_api_evidence_evidence_store_proto_enumTypes[0]
+}
+
+func (x EvidenceStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use EvidenceStatus.Descriptor instead.
+func (EvidenceStatus) EnumDescriptor() ([]byte, []int) {
+	return file_api_evidence_evidence_store_proto_rawDescGZIP(), []int{0}
+}
+
 type StoreEvidenceRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Evidence      *Evidence              `protobuf:"bytes,1,opt,name=evidence,proto3" json:"evidence,omitempty"`
@@ -132,7 +181,7 @@ func (*StoreEvidenceResponse) Descriptor() ([]byte, []int) {
 // StoreEvidencesResponse belongs to StoreEvidences, which uses a custom bidirectional streaming RPC and therefore requires a response message according to the style convention. The bidirectional streaming needs the status and its message in the response for error handling.
 type StoreEvidencesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        bool                   `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
+	Status        EvidenceStatus         `protobuf:"varint,1,opt,name=status,proto3,enum=clouditor.evidence.v1.EvidenceStatus" json:"status,omitempty"`
 	StatusMessage string                 `protobuf:"bytes,2,opt,name=status_message,json=statusMessage,proto3" json:"status_message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -168,11 +217,11 @@ func (*StoreEvidencesResponse) Descriptor() ([]byte, []int) {
 	return file_api_evidence_evidence_store_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *StoreEvidencesResponse) GetStatus() bool {
+func (x *StoreEvidencesResponse) GetStatus() EvidenceStatus {
 	if x != nil {
 		return x.Status
 	}
-	return false
+	return EvidenceStatus_EVIDENCE_STATUS_UNSPECIFIED
 }
 
 func (x *StoreEvidencesResponse) GetStatusMessage() string {
@@ -603,9 +652,9 @@ const file_api_evidence_evidence_store_proto_rawDesc = "" +
 	"!api/evidence/evidence_store.proto\x12\x15clouditor.evidence.v1\x1a\x1bapi/evidence/evidence.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\"[\n" +
 	"\x14StoreEvidenceRequest\x12C\n" +
 	"\bevidence\x18\x01 \x01(\v2\x1f.clouditor.evidence.v1.EvidenceB\x06\xbaH\x03\xc8\x01\x01R\bevidence\"\x17\n" +
-	"\x15StoreEvidenceResponse\"W\n" +
-	"\x16StoreEvidencesResponse\x12\x16\n" +
-	"\x06status\x18\x01 \x01(\bR\x06status\x12%\n" +
+	"\x15StoreEvidenceResponse\"~\n" +
+	"\x16StoreEvidencesResponse\x12=\n" +
+	"\x06status\x18\x01 \x01(\x0e2%.clouditor.evidence.v1.EvidenceStatusR\x06status\x12%\n" +
 	"\x0estatus_message\x18\x02 \x01(\tR\rstatusMessage\"\xc6\x01\n" +
 	"\x14ListEvidencesRequest\x12:\n" +
 	"\x06filter\x18\x01 \x01(\v2\x1d.clouditor.evidence.v1.FilterH\x00R\x06filter\x88\x01\x01\x12\x1b\n" +
@@ -627,7 +676,6 @@ const file_api_evidence_evidence_store_proto_rawDesc = "" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"?\n" +
 	"\x12GetEvidenceRequest\x12)\n" +
 	"\vevidence_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\n" +
-<<<<<<< Updated upstream
 	"evidenceId\"\x8a\x03\n" +
 	"\x14ListResourcesRequest\x12O\n" +
 	"\x06filter\x18\x01 \x01(\v22.clouditor.evidence.v1.ListResourcesRequest.FilterH\x00R\x06filter\x88\x01\x01\x12\x1b\n" +
@@ -653,9 +701,6 @@ const file_api_evidence_evidence_store_proto_rawDesc = "" +
 	"\x1bEVIDENCE_STATUS_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12EVIDENCE_STATUS_OK\x10\x01\x12\x19\n" +
 	"\x15EVIDENCE_STATUS_ERROR\x10\x022\xd5\x05\n" +
-=======
-	"evidenceId2\xc2\x04\n" +
->>>>>>> Stashed changes
 	"\rEvidenceStore\x12\x99\x01\n" +
 	"\rStoreEvidence\x12+.clouditor.evidence.v1.StoreEvidenceRequest\x1a,.clouditor.evidence.v1.StoreEvidenceResponse\"-\x82\xd3\xe4\x93\x02':\bevidence\"\x1b/v1/evidence_store/evidence\x12r\n" +
 	"\x0eStoreEvidences\x12+.clouditor.evidence.v1.StoreEvidenceRequest\x1a-.clouditor.evidence.v1.StoreEvidencesResponse\"\x00(\x010\x01\x12\x90\x01\n" +
@@ -675,7 +720,6 @@ func file_api_evidence_evidence_store_proto_rawDescGZIP() []byte {
 	return file_api_evidence_evidence_store_proto_rawDescData
 }
 
-<<<<<<< Updated upstream
 var file_api_evidence_evidence_store_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_api_evidence_evidence_store_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_api_evidence_evidence_store_proto_goTypes = []any{
@@ -695,57 +739,26 @@ var file_api_evidence_evidence_store_proto_goTypes = []any{
 }
 var file_api_evidence_evidence_store_proto_depIdxs = []int32{
 	11, // 0: clouditor.evidence.v1.StoreEvidenceRequest.evidence:type_name -> clouditor.evidence.v1.Evidence
-	0,  // 1: clouditor.evidence.v1.StoreEvidenceResponse.status:type_name -> clouditor.evidence.v1.EvidenceStatus
-	0,  // 2: clouditor.evidence.v1.StoreEvidencesResponse.status:type_name -> clouditor.evidence.v1.EvidenceStatus
-	5,  // 3: clouditor.evidence.v1.ListEvidencesRequest.filter:type_name -> clouditor.evidence.v1.Filter
-	11, // 4: clouditor.evidence.v1.ListEvidencesResponse.evidences:type_name -> clouditor.evidence.v1.Evidence
-	10, // 5: clouditor.evidence.v1.ListResourcesRequest.filter:type_name -> clouditor.evidence.v1.ListResourcesRequest.Filter
-	12, // 6: clouditor.evidence.v1.ListResourcesResponse.results:type_name -> clouditor.evidence.v1.Resource
-	1,  // 7: clouditor.evidence.v1.EvidenceStore.StoreEvidence:input_type -> clouditor.evidence.v1.StoreEvidenceRequest
-	1,  // 8: clouditor.evidence.v1.EvidenceStore.StoreEvidences:input_type -> clouditor.evidence.v1.StoreEvidenceRequest
-	4,  // 9: clouditor.evidence.v1.EvidenceStore.ListEvidences:input_type -> clouditor.evidence.v1.ListEvidencesRequest
-	7,  // 10: clouditor.evidence.v1.EvidenceStore.GetEvidence:input_type -> clouditor.evidence.v1.GetEvidenceRequest
-	8,  // 11: clouditor.evidence.v1.EvidenceStore.ListResources:input_type -> clouditor.evidence.v1.ListResourcesRequest
-	2,  // 12: clouditor.evidence.v1.EvidenceStore.StoreEvidence:output_type -> clouditor.evidence.v1.StoreEvidenceResponse
-	3,  // 13: clouditor.evidence.v1.EvidenceStore.StoreEvidences:output_type -> clouditor.evidence.v1.StoreEvidencesResponse
-	6,  // 14: clouditor.evidence.v1.EvidenceStore.ListEvidences:output_type -> clouditor.evidence.v1.ListEvidencesResponse
-	11, // 15: clouditor.evidence.v1.EvidenceStore.GetEvidence:output_type -> clouditor.evidence.v1.Evidence
-	9,  // 16: clouditor.evidence.v1.EvidenceStore.ListResources:output_type -> clouditor.evidence.v1.ListResourcesResponse
-	12, // [12:17] is the sub-list for method output_type
-	7,  // [7:12] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
-=======
-var file_api_evidence_evidence_store_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
-var file_api_evidence_evidence_store_proto_goTypes = []any{
-	(*StoreEvidenceRequest)(nil),   // 0: clouditor.evidence.v1.StoreEvidenceRequest
-	(*StoreEvidenceResponse)(nil),  // 1: clouditor.evidence.v1.StoreEvidenceResponse
-	(*StoreEvidencesResponse)(nil), // 2: clouditor.evidence.v1.StoreEvidencesResponse
-	(*ListEvidencesRequest)(nil),   // 3: clouditor.evidence.v1.ListEvidencesRequest
-	(*Filter)(nil),                 // 4: clouditor.evidence.v1.Filter
-	(*ListEvidencesResponse)(nil),  // 5: clouditor.evidence.v1.ListEvidencesResponse
-	(*GetEvidenceRequest)(nil),     // 6: clouditor.evidence.v1.GetEvidenceRequest
-	(*Evidence)(nil),               // 7: clouditor.evidence.v1.Evidence
-}
-var file_api_evidence_evidence_store_proto_depIdxs = []int32{
-	7, // 0: clouditor.evidence.v1.StoreEvidenceRequest.evidence:type_name -> clouditor.evidence.v1.Evidence
-	4, // 1: clouditor.evidence.v1.ListEvidencesRequest.filter:type_name -> clouditor.evidence.v1.Filter
-	7, // 2: clouditor.evidence.v1.ListEvidencesResponse.evidences:type_name -> clouditor.evidence.v1.Evidence
-	0, // 3: clouditor.evidence.v1.EvidenceStore.StoreEvidence:input_type -> clouditor.evidence.v1.StoreEvidenceRequest
-	0, // 4: clouditor.evidence.v1.EvidenceStore.StoreEvidences:input_type -> clouditor.evidence.v1.StoreEvidenceRequest
-	3, // 5: clouditor.evidence.v1.EvidenceStore.ListEvidences:input_type -> clouditor.evidence.v1.ListEvidencesRequest
-	6, // 6: clouditor.evidence.v1.EvidenceStore.GetEvidence:input_type -> clouditor.evidence.v1.GetEvidenceRequest
-	1, // 7: clouditor.evidence.v1.EvidenceStore.StoreEvidence:output_type -> clouditor.evidence.v1.StoreEvidenceResponse
-	2, // 8: clouditor.evidence.v1.EvidenceStore.StoreEvidences:output_type -> clouditor.evidence.v1.StoreEvidencesResponse
-	5, // 9: clouditor.evidence.v1.EvidenceStore.ListEvidences:output_type -> clouditor.evidence.v1.ListEvidencesResponse
-	7, // 10: clouditor.evidence.v1.EvidenceStore.GetEvidence:output_type -> clouditor.evidence.v1.Evidence
-	7, // [7:11] is the sub-list for method output_type
-	3, // [3:7] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
->>>>>>> Stashed changes
+	0,  // 1: clouditor.evidence.v1.StoreEvidencesResponse.status:type_name -> clouditor.evidence.v1.EvidenceStatus
+	5,  // 2: clouditor.evidence.v1.ListEvidencesRequest.filter:type_name -> clouditor.evidence.v1.Filter
+	11, // 3: clouditor.evidence.v1.ListEvidencesResponse.evidences:type_name -> clouditor.evidence.v1.Evidence
+	10, // 4: clouditor.evidence.v1.ListResourcesRequest.filter:type_name -> clouditor.evidence.v1.ListResourcesRequest.Filter
+	12, // 5: clouditor.evidence.v1.ListResourcesResponse.results:type_name -> clouditor.evidence.v1.Resource
+	1,  // 6: clouditor.evidence.v1.EvidenceStore.StoreEvidence:input_type -> clouditor.evidence.v1.StoreEvidenceRequest
+	1,  // 7: clouditor.evidence.v1.EvidenceStore.StoreEvidences:input_type -> clouditor.evidence.v1.StoreEvidenceRequest
+	4,  // 8: clouditor.evidence.v1.EvidenceStore.ListEvidences:input_type -> clouditor.evidence.v1.ListEvidencesRequest
+	7,  // 9: clouditor.evidence.v1.EvidenceStore.GetEvidence:input_type -> clouditor.evidence.v1.GetEvidenceRequest
+	8,  // 10: clouditor.evidence.v1.EvidenceStore.ListResources:input_type -> clouditor.evidence.v1.ListResourcesRequest
+	2,  // 11: clouditor.evidence.v1.EvidenceStore.StoreEvidence:output_type -> clouditor.evidence.v1.StoreEvidenceResponse
+	3,  // 12: clouditor.evidence.v1.EvidenceStore.StoreEvidences:output_type -> clouditor.evidence.v1.StoreEvidencesResponse
+	6,  // 13: clouditor.evidence.v1.EvidenceStore.ListEvidences:output_type -> clouditor.evidence.v1.ListEvidencesResponse
+	11, // 14: clouditor.evidence.v1.EvidenceStore.GetEvidence:output_type -> clouditor.evidence.v1.Evidence
+	9,  // 15: clouditor.evidence.v1.EvidenceStore.ListResources:output_type -> clouditor.evidence.v1.ListResourcesResponse
+	11, // [11:16] is the sub-list for method output_type
+	6,  // [6:11] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_api_evidence_evidence_store_proto_init() }
@@ -763,18 +776,14 @@ func file_api_evidence_evidence_store_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_evidence_evidence_store_proto_rawDesc), len(file_api_evidence_evidence_store_proto_rawDesc)),
-<<<<<<< Updated upstream
 			NumEnums:      1,
 			NumMessages:   10,
-=======
-			NumEnums:      0,
-			NumMessages:   7,
->>>>>>> Stashed changes
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_api_evidence_evidence_store_proto_goTypes,
 		DependencyIndexes: file_api_evidence_evidence_store_proto_depIdxs,
+		EnumInfos:         file_api_evidence_evidence_store_proto_enumTypes,
 		MessageInfos:      file_api_evidence_evidence_store_proto_msgTypes,
 	}.Build()
 	File_api_evidence_evidence_store_proto = out.File

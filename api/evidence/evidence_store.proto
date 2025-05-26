@@ -70,12 +70,18 @@ message StoreEvidenceRequest {
   Evidence evidence = 1 [(buf.validate.field).required = true];
 }
 
+enum EvidenceStatus {
+  EVIDENCE_STATUS_UNSPECIFIED = 0;
+  EVIDENCE_STATUS_OK = 1;
+  EVIDENCE_STATUS_ERROR = 2;
+}
+
 // StoreEvidenceResponse belongs to StoreEvidence, which uses a custom unary RPC and therefore requires a response message according to the style convention. Since no return values are required, this is empty.
 message StoreEvidenceResponse {}
 
 // StoreEvidencesResponse belongs to StoreEvidences, which uses a custom bidirectional streaming RPC and therefore requires a response message according to the style convention. The bidirectional streaming needs the status and its message in the response for error handling.
 message StoreEvidencesResponse {
-  bool status = 1;
+  EvidenceStatus status = 1;
   string status_message = 2;
 }
 

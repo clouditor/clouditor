@@ -44,9 +44,9 @@ import (
 	"clouditor.io/clouditor/v2/persistence/inmemory"
 	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/service"
-	"golang.org/x/oauth2/clientcredentials"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -233,7 +233,8 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 
 	go svc.informHooks(ctx, req.Evidence, nil)
 
-	// Send evidence to the channel for processing (fire and forget)
+	// Send evidence to the channel for further processing and acknowledge receipt, without waiting for the processing to finish. This allows the sender to continue
+	// without waiting for the evidence to be processed.
 	svc.channelEvidence <- req.Evidence
 
 	res = &evidence.StoreEvidenceResponse{}
@@ -289,12 +290,12 @@ func (svc *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesS
 			log.Errorf("Error storing evidence: %v", err)
 			// Create response message. The StoreEvidence method does not need that message, so we have to create it here for the stream response.
 			res = &evidence.StoreEvidencesResponse{
-				Status:        false,
+				Status:        evidence.EvidenceStatus_EVIDENCE_STATUS_ERROR,
 				StatusMessage: err.Error(),
 			}
 		} else {
 			res = &evidence.StoreEvidencesResponse{
-				Status: true,
+				Status: evidence.EvidenceStatus_EVIDENCE_STATUS_OK,
 			}
 		}
 

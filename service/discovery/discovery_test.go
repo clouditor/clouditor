@@ -270,13 +270,13 @@ func (m *mockEvidenceStoreStream) Recv() (*evidence.StoreEvidencesResponse, erro
 	if m.counter == 0 {
 		m.counter++
 		return &evidence.StoreEvidencesResponse{
-			Status:        false,
+			Status:        evidence.EvidenceStatus_EVIDENCE_STATUS_ERROR,
 			StatusMessage: "mockError1",
 		}, nil
 	} else if m.counter == 1 {
 		m.counter++
 		return &evidence.StoreEvidencesResponse{
-			Status: true,
+			Status: evidence.EvidenceStatus_EVIDENCE_STATUS_OK,
 		}, nil
 	} else {
 		return nil, io.EOF
