@@ -23,13 +23,13 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package discovery
+package evidence
 
 import (
 	"context"
 
 	"clouditor.io/clouditor/v2/api"
-	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
@@ -37,9 +37,9 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (svc *Service) ListGraphEdges(ctx context.Context, req *discovery.ListGraphEdgesRequest) (res *discovery.ListGraphEdgesResponse, err error) {
+func (svc *Service) ListGraphEdges(ctx context.Context, req *evidence.ListGraphEdgesRequest) (res *evidence.ListGraphEdgesResponse, err error) {
 	var (
-		results []*discovery.Resource
+		results []*evidence.Resource
 		all     bool
 		allowed []string
 		query   []string
@@ -58,11 +58,11 @@ func (svc *Service) ListGraphEdges(ctx context.Context, req *discovery.ListGraph
 		args = append(args, allowed)
 	}
 
-	res = new(discovery.ListGraphEdgesResponse)
+	res = new(evidence.ListGraphEdgesResponse)
 
 	// This is a little problematic, since we are actually paginating the underlying resources and not the edges, but it
 	// is probably the best we can do for now while we are not storing the edges in the database.
-	results, res.NextPageToken, err = service.PaginateStorage[*discovery.Resource](req,
+	results, res.NextPageToken, err = service.PaginateStorage[*evidence.Resource](req,
 		svc.storage,
 		service.DefaultPaginationOpts,
 		persistence.BuildConds(query, args)...,
@@ -79,7 +79,7 @@ func (svc *Service) ListGraphEdges(ctx context.Context, req *discovery.ListGraph
 		}
 
 		for _, rel := range ontology.Related(r) {
-			edge := &discovery.GraphEdge{
+			edge := &evidence.GraphEdge{
 				Id:     resource.Id + "-" + rel.Value,
 				Source: resource.Id,
 				Target: rel.Value,
@@ -93,7 +93,7 @@ func (svc *Service) ListGraphEdges(ctx context.Context, req *discovery.ListGraph
 	return
 }
 
-func (svc *Service) UpdateResource(ctx context.Context, req *discovery.UpdateResourceRequest) (res *discovery.Resource, err error) {
+func (svc *Service) UpdateResource(ctx context.Context, req *evidence.UpdateResourceRequest) (res *evidence.Resource, err error) {
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {

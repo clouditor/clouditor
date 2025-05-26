@@ -29,7 +29,6 @@ import (
 	"context"
 	"fmt"
 
-	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/cli"
 
@@ -65,56 +64,6 @@ func NewStartDiscoveryCommand() *cobra.Command {
 	return cmd
 }
 
-// NewQueryDiscoveryCommand returns a cobra command for the `start` subcommand
-func NewQueryDiscoveryCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "query",
-		Short: "Queries the discovery",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			var (
-				err     error
-				session *cli.Session
-				client  discovery.DiscoveryClient
-				res     *discovery.ListResourcesResponse
-				results []*discovery.Resource
-				req     discovery.ListResourcesRequest
-			)
-
-			if session, err = cli.ContinueSession(); err != nil {
-				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
-				return nil
-			}
-
-			client = discovery.NewDiscoveryClient(session)
-
-			req = discovery.ListResourcesRequest{
-				PageSize:  0,
-				PageToken: "",
-				OrderBy:   "",
-				Asc:       false,
-				Filter:    &discovery.ListResourcesRequest_Filter{},
-			}
-
-			if len(args) > 0 {
-				req.Filter.Type = &args[0]
-			}
-
-			results, err = api.ListAllPaginated(&discovery.ListResourcesRequest{}, client.ListResources, func(res *discovery.ListResourcesResponse) []*discovery.Resource {
-				return res.Results
-			})
-
-			// Build a response with all results
-			res = &discovery.ListResourcesResponse{
-				Results: results,
-			}
-
-			return session.HandleResponse(res, err)
-		},
-	}
-
-	return cmd
-}
-
 // NewDiscoveryCommand returns a cobra command for `discovery` subcommands
 func NewDiscoveryCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -131,7 +80,5 @@ func NewDiscoveryCommand() *cobra.Command {
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewStartDiscoveryCommand(),
-		NewQueryDiscoveryCommand(),
-		NewExperimentalCommand(),
 	)
 }

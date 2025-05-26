@@ -23,13 +23,13 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package discovery
+package evidence
 
 import (
 	"context"
 	"fmt"
 
-	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/cli"
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -64,8 +64,8 @@ func NewListGraphEdgesCommand() *cobra.Command {
 			var (
 				err     error
 				session *cli.Session
-				client  discovery.ExperimentalDiscoveryClient
-				res     *discovery.ListGraphEdgesResponse
+				client  evidence.ExperimentalResourcesClient
+				res     *evidence.ListGraphEdgesResponse
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -73,9 +73,9 @@ func NewListGraphEdgesCommand() *cobra.Command {
 				return nil
 			}
 
-			client = discovery.NewExperimentalDiscoveryClient(session)
+			client = evidence.NewExperimentalResourcesClient(session)
 
-			res, err = client.ListGraphEdges(context.Background(), &discovery.ListGraphEdgesRequest{})
+			res, err = client.ListGraphEdges(context.Background(), &evidence.ListGraphEdgesRequest{})
 
 			return session.HandleResponse(res, err)
 		},
@@ -94,9 +94,9 @@ func NewUpdateResourceCommand() *cobra.Command {
 			var (
 				err     error
 				session *cli.Session
-				client  discovery.ExperimentalDiscoveryClient
-				res     *discovery.Resource
-				req     *discovery.UpdateResourceRequest
+				client  evidence.ExperimentalResourcesClient
+				res     *evidence.Resource
+				req     *evidence.UpdateResourceRequest
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -104,10 +104,10 @@ func NewUpdateResourceCommand() *cobra.Command {
 				return nil
 			}
 
-			client = discovery.NewExperimentalDiscoveryClient(session)
+			client = evidence.NewExperimentalResourcesClient(session)
 
-			req = new(discovery.UpdateResourceRequest)
-			req.Resource = new(discovery.Resource)
+			req = new(evidence.UpdateResourceRequest)
+			req.Resource = new(evidence.Resource)
 
 			err = protojson.Unmarshal([]byte(args[0]), req.Resource)
 			if err != nil {
