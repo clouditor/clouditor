@@ -206,8 +206,8 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 		return nil, service.ErrPermissionDenied
 	}
 
-	if req.Evidence.GetToolId() == "A440E000-0000-0000-0000-000000000000" {
-		log.Errorf("Received a request with an evidence from AMOE with the tool ID '%s': Request: '%v', Evidence: '%v'", req.Evidence.GetToolId(), req, req.GetEvidence())
+	if req.Evidence.GetToolId() == "testTool" {
+		log.Errorf("Received a request with an manual test evidence with the tool ID '%s': Request: '%v', Evidence: '%v'", req.Evidence.GetToolId(), req, req.GetEvidence())
 	}
 
 	// Store evidence
