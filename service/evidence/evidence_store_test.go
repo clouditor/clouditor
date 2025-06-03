@@ -50,7 +50,6 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
-
 	"github.com/google/uuid"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
