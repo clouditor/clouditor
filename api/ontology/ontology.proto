@@ -372,6 +372,7 @@ message Infrastructure {
     CodeRepository code_repository = 3431;
     Container container = 1659;
     Function function = 14943;
+    QPU qpu = 9430;
     VirtualMachine virtual_machine = 18360;
     ContainerOrchestration container_orchestration = 3211;
     ContainerRegistry container_registry = 8326;
@@ -464,6 +465,7 @@ message Compute {
   oneof type {
     Container container = 1659;
     Function function = 14943;
+    QPU qpu = 9430;
     VirtualMachine virtual_machine = 18360;
   }
 }
@@ -1558,6 +1560,7 @@ message MachineLearningModel {
   float robustness = 13582;
   DataLocation data_location = 2998;
   optional string parent_id = 15494;
+  repeated Vulnerability vulnerabilities = 10821;
 }
 
 // MachineLearningService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1954,6 +1957,36 @@ message PolicyDocument {
   repeated SecurityFeature security_features = 15024;
 }
 
+// QPU is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message QPU {
+  option (resource_type_names) = "QPU";
+  option (resource_type_names) = "Compute";
+  option (resource_type_names) = "Infrastructure";
+  option (resource_type_names) = "Resource";
+
+  float one_qubit_error_rate = 3838;
+  float spam_error_rate = 2960;
+  float two_qubit_error_rate = 6385;
+  google.protobuf.Timestamp creation_time = 3446;
+  string description = 4376;
+  bool error_correction_enabled = 12983;
+  string id = 14403 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 9684;
+  map<string, string> labels = 11544;
+  string name = 1538 [(buf.validate.field).required = true];
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 8462;
+  EncryptionInUse encryption_in_use = 17838;
+  GeoLocation geo_location = 16558;
+  repeated Logging loggings = 972;
+  repeated string network_interface_ids = 4162;
+  repeated Redundancy redundancies = 10637;
+  RemoteAttestation remote_attestation = 18317;
+  optional string parent_id = 11595;
+  ResourceLogging resource_logging = 14960;
+  UsageStatistics usage_statistics = 11987;
+}
+
 // RBAC is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message RBAC {
   option (resource_type_names) = "RBAC";
@@ -2052,6 +2085,7 @@ message Resource {
     CodeRepository code_repository = 3431;
     Container container = 1659;
     Function function = 14943;
+    QPU qpu = 9430;
     VirtualMachine virtual_machine = 18360;
     ContainerOrchestration container_orchestration = 3211;
     ContainerRegistry container_registry = 8326;

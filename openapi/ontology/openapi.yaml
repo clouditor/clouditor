@@ -1896,6 +1896,10 @@ components:
                     $ref: '#/components/schemas/DataLocation'
                 parentId:
                     type: string
+                vulnerabilities:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Vulnerability'
             description: MachineLearningModel is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         MachineLearningService:
             type: object
@@ -2421,6 +2425,63 @@ components:
                     items:
                         $ref: '#/components/schemas/SecurityFeature'
             description: PolicyDocument is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        QPU:
+            type: object
+            properties:
+                oneQubitErrorRate:
+                    type: number
+                    format: float
+                spamErrorRate:
+                    type: number
+                    format: float
+                twoQubitErrorRate:
+                    type: number
+                    format: float
+                creationTime:
+                    type: string
+                    format: date-time
+                description:
+                    type: string
+                errorCorrectionEnabled:
+                    type: boolean
+                id:
+                    type: string
+                internetAccessibleEndpoint:
+                    type: boolean
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                encryptionInUse:
+                    $ref: '#/components/schemas/EncryptionInUse'
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                loggings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Logging'
+                networkInterfaceIds:
+                    type: array
+                    items:
+                        type: string
+                redundancies:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Redundancy'
+                remoteAttestation:
+                    $ref: '#/components/schemas/RemoteAttestation'
+                parentId:
+                    type: string
+                resourceLogging:
+                    $ref: '#/components/schemas/ResourceLogging'
+                usageStatistics:
+                    $ref: '#/components/schemas/UsageStatistics'
+            description: QPU is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         RBAC:
             type: object
             properties:
@@ -2550,6 +2611,8 @@ components:
                     $ref: '#/components/schemas/Container'
                 function:
                     $ref: '#/components/schemas/Function'
+                qpu:
+                    $ref: '#/components/schemas/QPU'
                 virtualMachine:
                     $ref: '#/components/schemas/VirtualMachine'
                 containerOrchestration:

@@ -2394,6 +2394,7 @@ type Infrastructure struct {
 	//	*Infrastructure_CodeRepository
 	//	*Infrastructure_Container
 	//	*Infrastructure_Function
+	//	*Infrastructure_Qpu
 	//	*Infrastructure_VirtualMachine
 	//	*Infrastructure_ContainerOrchestration
 	//	*Infrastructure_ContainerRegistry
@@ -2520,6 +2521,15 @@ func (x *Infrastructure) GetFunction() *Function {
 	if x != nil {
 		if x, ok := x.Type.(*Infrastructure_Function); ok {
 			return x.Function
+		}
+	}
+	return nil
+}
+
+func (x *Infrastructure) GetQpu() *QPU {
+	if x != nil {
+		if x, ok := x.Type.(*Infrastructure_Qpu); ok {
+			return x.Qpu
 		}
 	}
 	return nil
@@ -2868,6 +2878,10 @@ type Infrastructure_Function struct {
 	Function *Function `protobuf:"bytes,14943,opt,name=function,proto3,oneof"`
 }
 
+type Infrastructure_Qpu struct {
+	Qpu *QPU `protobuf:"bytes,9430,opt,name=qpu,proto3,oneof"`
+}
+
 type Infrastructure_VirtualMachine struct {
 	VirtualMachine *VirtualMachine `protobuf:"bytes,18360,opt,name=virtual_machine,json=virtualMachine,proto3,oneof"`
 }
@@ -3019,6 +3033,8 @@ func (*Infrastructure_CodeRepository) isInfrastructure_Type() {}
 func (*Infrastructure_Container) isInfrastructure_Type() {}
 
 func (*Infrastructure_Function) isInfrastructure_Type() {}
+
+func (*Infrastructure_Qpu) isInfrastructure_Type() {}
 
 func (*Infrastructure_VirtualMachine) isInfrastructure_Type() {}
 
@@ -3436,6 +3452,7 @@ type Compute struct {
 	//
 	//	*Compute_Container
 	//	*Compute_Function
+	//	*Compute_Qpu
 	//	*Compute_VirtualMachine
 	Type          isCompute_Type `protobuf_oneof:"type"`
 	unknownFields protoimpl.UnknownFields
@@ -3497,6 +3514,15 @@ func (x *Compute) GetFunction() *Function {
 	return nil
 }
 
+func (x *Compute) GetQpu() *QPU {
+	if x != nil {
+		if x, ok := x.Type.(*Compute_Qpu); ok {
+			return x.Qpu
+		}
+	}
+	return nil
+}
+
 func (x *Compute) GetVirtualMachine() *VirtualMachine {
 	if x != nil {
 		if x, ok := x.Type.(*Compute_VirtualMachine); ok {
@@ -3518,6 +3544,10 @@ type Compute_Function struct {
 	Function *Function `protobuf:"bytes,14943,opt,name=function,proto3,oneof"`
 }
 
+type Compute_Qpu struct {
+	Qpu *QPU `protobuf:"bytes,9430,opt,name=qpu,proto3,oneof"`
+}
+
 type Compute_VirtualMachine struct {
 	VirtualMachine *VirtualMachine `protobuf:"bytes,18360,opt,name=virtual_machine,json=virtualMachine,proto3,oneof"`
 }
@@ -3525,6 +3555,8 @@ type Compute_VirtualMachine struct {
 func (*Compute_Container) isCompute_Type() {}
 
 func (*Compute_Function) isCompute_Type() {}
+
+func (*Compute_Qpu) isCompute_Type() {}
 
 func (*Compute_VirtualMachine) isCompute_Type() {}
 
@@ -10969,12 +11001,13 @@ type MachineLearningModel struct {
 	PrivacyLabel   float32                `protobuf:"fixed32,8059,opt,name=privacy_label,json=privacyLabel,proto3" json:"privacy_label,omitempty"`
 	PrivacyLevel   float32                `protobuf:"fixed32,1262,opt,name=privacy_level,json=privacyLevel,proto3" json:"privacy_level,omitempty"`
 	// The raw field contains the raw information that is used to fill in the fields of the ontology.
-	Raw           string        `protobuf:"bytes,12454,opt,name=raw,proto3" json:"raw,omitempty"`
-	Robustness    float32       `protobuf:"fixed32,13582,opt,name=robustness,proto3" json:"robustness,omitempty"`
-	DataLocation  *DataLocation `protobuf:"bytes,2998,opt,name=data_location,json=dataLocation,proto3" json:"data_location,omitempty"`
-	ParentId      *string       `protobuf:"bytes,15494,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Raw             string           `protobuf:"bytes,12454,opt,name=raw,proto3" json:"raw,omitempty"`
+	Robustness      float32          `protobuf:"fixed32,13582,opt,name=robustness,proto3" json:"robustness,omitempty"`
+	DataLocation    *DataLocation    `protobuf:"bytes,2998,opt,name=data_location,json=dataLocation,proto3" json:"data_location,omitempty"`
+	ParentId        *string          `protobuf:"bytes,15494,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`
+	Vulnerabilities []*Vulnerability `protobuf:"bytes,10821,rep,name=vulnerabilities,proto3" json:"vulnerabilities,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *MachineLearningModel) Reset() {
@@ -11103,6 +11136,13 @@ func (x *MachineLearningModel) GetParentId() string {
 		return *x.ParentId
 	}
 	return ""
+}
+
+func (x *MachineLearningModel) GetVulnerabilities() []*Vulnerability {
+	if x != nil {
+		return x.Vulnerabilities
+	}
+	return nil
 }
 
 // MachineLearningService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -13880,6 +13920,204 @@ func (x *PolicyDocument) GetSecurityFeatures() []*SecurityFeature {
 	return nil
 }
 
+// QPU is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+type QPU struct {
+	state                      protoimpl.MessageState `protogen:"open.v1"`
+	OneQubitErrorRate          float32                `protobuf:"fixed32,3838,opt,name=one_qubit_error_rate,json=oneQubitErrorRate,proto3" json:"one_qubit_error_rate,omitempty"`
+	SpamErrorRate              float32                `protobuf:"fixed32,2960,opt,name=spam_error_rate,json=spamErrorRate,proto3" json:"spam_error_rate,omitempty"`
+	TwoQubitErrorRate          float32                `protobuf:"fixed32,6385,opt,name=two_qubit_error_rate,json=twoQubitErrorRate,proto3" json:"two_qubit_error_rate,omitempty"`
+	CreationTime               *timestamppb.Timestamp `protobuf:"bytes,3446,opt,name=creation_time,json=creationTime,proto3" json:"creation_time,omitempty"`
+	Description                string                 `protobuf:"bytes,4376,opt,name=description,proto3" json:"description,omitempty"`
+	ErrorCorrectionEnabled     bool                   `protobuf:"varint,12983,opt,name=error_correction_enabled,json=errorCorrectionEnabled,proto3" json:"error_correction_enabled,omitempty"`
+	Id                         string                 `protobuf:"bytes,14403,opt,name=id,proto3" json:"id,omitempty"`
+	InternetAccessibleEndpoint bool                   `protobuf:"varint,9684,opt,name=internet_accessible_endpoint,json=internetAccessibleEndpoint,proto3" json:"internet_accessible_endpoint,omitempty"`
+	Labels                     map[string]string      `protobuf:"bytes,11544,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Name                       string                 `protobuf:"bytes,1538,opt,name=name,proto3" json:"name,omitempty"`
+	// The raw field contains the raw information that is used to fill in the fields of the ontology.
+	Raw                 string             `protobuf:"bytes,8462,opt,name=raw,proto3" json:"raw,omitempty"`
+	EncryptionInUse     *EncryptionInUse   `protobuf:"bytes,17838,opt,name=encryption_in_use,json=encryptionInUse,proto3" json:"encryption_in_use,omitempty"`
+	GeoLocation         *GeoLocation       `protobuf:"bytes,16558,opt,name=geo_location,json=geoLocation,proto3" json:"geo_location,omitempty"`
+	Loggings            []*Logging         `protobuf:"bytes,972,rep,name=loggings,proto3" json:"loggings,omitempty"`
+	NetworkInterfaceIds []string           `protobuf:"bytes,4162,rep,name=network_interface_ids,json=networkInterfaceIds,proto3" json:"network_interface_ids,omitempty"`
+	Redundancies        []*Redundancy      `protobuf:"bytes,10637,rep,name=redundancies,proto3" json:"redundancies,omitempty"`
+	RemoteAttestation   *RemoteAttestation `protobuf:"bytes,18317,opt,name=remote_attestation,json=remoteAttestation,proto3" json:"remote_attestation,omitempty"`
+	ParentId            *string            `protobuf:"bytes,11595,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`
+	ResourceLogging     *ResourceLogging   `protobuf:"bytes,14960,opt,name=resource_logging,json=resourceLogging,proto3" json:"resource_logging,omitempty"`
+	UsageStatistics     *UsageStatistics   `protobuf:"bytes,11987,opt,name=usage_statistics,json=usageStatistics,proto3" json:"usage_statistics,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *QPU) Reset() {
+	*x = QPU{}
+	mi := &file_api_ontology_ontology_proto_msgTypes[118]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *QPU) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QPU) ProtoMessage() {}
+
+func (x *QPU) ProtoReflect() protoreflect.Message {
+	mi := &file_api_ontology_ontology_proto_msgTypes[118]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QPU.ProtoReflect.Descriptor instead.
+func (*QPU) Descriptor() ([]byte, []int) {
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{118}
+}
+
+func (x *QPU) GetOneQubitErrorRate() float32 {
+	if x != nil {
+		return x.OneQubitErrorRate
+	}
+	return 0
+}
+
+func (x *QPU) GetSpamErrorRate() float32 {
+	if x != nil {
+		return x.SpamErrorRate
+	}
+	return 0
+}
+
+func (x *QPU) GetTwoQubitErrorRate() float32 {
+	if x != nil {
+		return x.TwoQubitErrorRate
+	}
+	return 0
+}
+
+func (x *QPU) GetCreationTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreationTime
+	}
+	return nil
+}
+
+func (x *QPU) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *QPU) GetErrorCorrectionEnabled() bool {
+	if x != nil {
+		return x.ErrorCorrectionEnabled
+	}
+	return false
+}
+
+func (x *QPU) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *QPU) GetInternetAccessibleEndpoint() bool {
+	if x != nil {
+		return x.InternetAccessibleEndpoint
+	}
+	return false
+}
+
+func (x *QPU) GetLabels() map[string]string {
+	if x != nil {
+		return x.Labels
+	}
+	return nil
+}
+
+func (x *QPU) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *QPU) GetRaw() string {
+	if x != nil {
+		return x.Raw
+	}
+	return ""
+}
+
+func (x *QPU) GetEncryptionInUse() *EncryptionInUse {
+	if x != nil {
+		return x.EncryptionInUse
+	}
+	return nil
+}
+
+func (x *QPU) GetGeoLocation() *GeoLocation {
+	if x != nil {
+		return x.GeoLocation
+	}
+	return nil
+}
+
+func (x *QPU) GetLoggings() []*Logging {
+	if x != nil {
+		return x.Loggings
+	}
+	return nil
+}
+
+func (x *QPU) GetNetworkInterfaceIds() []string {
+	if x != nil {
+		return x.NetworkInterfaceIds
+	}
+	return nil
+}
+
+func (x *QPU) GetRedundancies() []*Redundancy {
+	if x != nil {
+		return x.Redundancies
+	}
+	return nil
+}
+
+func (x *QPU) GetRemoteAttestation() *RemoteAttestation {
+	if x != nil {
+		return x.RemoteAttestation
+	}
+	return nil
+}
+
+func (x *QPU) GetParentId() string {
+	if x != nil && x.ParentId != nil {
+		return *x.ParentId
+	}
+	return ""
+}
+
+func (x *QPU) GetResourceLogging() *ResourceLogging {
+	if x != nil {
+		return x.ResourceLogging
+	}
+	return nil
+}
+
+func (x *QPU) GetUsageStatistics() *UsageStatistics {
+	if x != nil {
+		return x.UsageStatistics
+	}
+	return nil
+}
+
 // RBAC is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 type RBAC struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -13893,7 +14131,7 @@ type RBAC struct {
 
 func (x *RBAC) Reset() {
 	*x = RBAC{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[118]
+	mi := &file_api_ontology_ontology_proto_msgTypes[119]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13905,7 +14143,7 @@ func (x *RBAC) String() string {
 func (*RBAC) ProtoMessage() {}
 
 func (x *RBAC) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[118]
+	mi := &file_api_ontology_ontology_proto_msgTypes[119]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13918,7 +14156,7 @@ func (x *RBAC) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RBAC.ProtoReflect.Descriptor instead.
 func (*RBAC) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{118}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{119}
 }
 
 func (x *RBAC) GetBroadAssignments() float32 {
@@ -13950,7 +14188,7 @@ type Redundancy struct {
 
 func (x *Redundancy) Reset() {
 	*x = Redundancy{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[119]
+	mi := &file_api_ontology_ontology_proto_msgTypes[120]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13962,7 +14200,7 @@ func (x *Redundancy) String() string {
 func (*Redundancy) ProtoMessage() {}
 
 func (x *Redundancy) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[119]
+	mi := &file_api_ontology_ontology_proto_msgTypes[120]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13975,7 +14213,7 @@ func (x *Redundancy) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Redundancy.ProtoReflect.Descriptor instead.
 func (*Redundancy) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{119}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{120}
 }
 
 func (x *Redundancy) GetType() isRedundancy_Type {
@@ -14067,7 +14305,7 @@ type RelationalDatabaseService struct {
 
 func (x *RelationalDatabaseService) Reset() {
 	*x = RelationalDatabaseService{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[120]
+	mi := &file_api_ontology_ontology_proto_msgTypes[121]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14079,7 +14317,7 @@ func (x *RelationalDatabaseService) String() string {
 func (*RelationalDatabaseService) ProtoMessage() {}
 
 func (x *RelationalDatabaseService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[120]
+	mi := &file_api_ontology_ontology_proto_msgTypes[121]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14092,7 +14330,7 @@ func (x *RelationalDatabaseService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RelationalDatabaseService.ProtoReflect.Descriptor instead.
 func (*RelationalDatabaseService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{120}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{121}
 }
 
 func (x *RelationalDatabaseService) GetCreationTime() *timestamppb.Timestamp {
@@ -14270,7 +14508,7 @@ type Reliability struct {
 
 func (x *Reliability) Reset() {
 	*x = Reliability{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[121]
+	mi := &file_api_ontology_ontology_proto_msgTypes[122]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14282,7 +14520,7 @@ func (x *Reliability) String() string {
 func (*Reliability) ProtoMessage() {}
 
 func (x *Reliability) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[121]
+	mi := &file_api_ontology_ontology_proto_msgTypes[122]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14295,7 +14533,7 @@ func (x *Reliability) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Reliability.ProtoReflect.Descriptor instead.
 func (*Reliability) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{121}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{122}
 }
 
 func (x *Reliability) GetType() isReliability_Type {
@@ -14351,7 +14589,7 @@ type RemoteAttestation struct {
 
 func (x *RemoteAttestation) Reset() {
 	*x = RemoteAttestation{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[122]
+	mi := &file_api_ontology_ontology_proto_msgTypes[123]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14363,7 +14601,7 @@ func (x *RemoteAttestation) String() string {
 func (*RemoteAttestation) ProtoMessage() {}
 
 func (x *RemoteAttestation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[122]
+	mi := &file_api_ontology_ontology_proto_msgTypes[123]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14376,7 +14614,7 @@ func (x *RemoteAttestation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoteAttestation.ProtoReflect.Descriptor instead.
 func (*RemoteAttestation) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{122}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{123}
 }
 
 func (x *RemoteAttestation) GetCreationTime() *timestamppb.Timestamp {
@@ -14413,7 +14651,7 @@ type RemoteDataLocation struct {
 
 func (x *RemoteDataLocation) Reset() {
 	*x = RemoteDataLocation{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[123]
+	mi := &file_api_ontology_ontology_proto_msgTypes[124]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14425,7 +14663,7 @@ func (x *RemoteDataLocation) String() string {
 func (*RemoteDataLocation) ProtoMessage() {}
 
 func (x *RemoteDataLocation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[123]
+	mi := &file_api_ontology_ontology_proto_msgTypes[124]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14438,7 +14676,7 @@ func (x *RemoteDataLocation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoteDataLocation.ProtoReflect.Descriptor instead.
 func (*RemoteDataLocation) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{123}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{124}
 }
 
 func (x *RemoteDataLocation) GetPath() string {
@@ -14480,6 +14718,7 @@ type Resource struct {
 	//	*Resource_CodeRepository
 	//	*Resource_Container
 	//	*Resource_Function
+	//	*Resource_Qpu
 	//	*Resource_VirtualMachine
 	//	*Resource_ContainerOrchestration
 	//	*Resource_ContainerRegistry
@@ -14533,7 +14772,7 @@ type Resource struct {
 
 func (x *Resource) Reset() {
 	*x = Resource{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[124]
+	mi := &file_api_ontology_ontology_proto_msgTypes[125]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14545,7 +14784,7 @@ func (x *Resource) String() string {
 func (*Resource) ProtoMessage() {}
 
 func (x *Resource) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[124]
+	mi := &file_api_ontology_ontology_proto_msgTypes[125]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14558,7 +14797,7 @@ func (x *Resource) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Resource.ProtoReflect.Descriptor instead.
 func (*Resource) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{124}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{125}
 }
 
 func (x *Resource) GetType() isResource_Type {
@@ -14617,6 +14856,15 @@ func (x *Resource) GetFunction() *Function {
 	if x != nil {
 		if x, ok := x.Type.(*Resource_Function); ok {
 			return x.Function
+		}
+	}
+	return nil
+}
+
+func (x *Resource) GetQpu() *QPU {
+	if x != nil {
+		if x, ok := x.Type.(*Resource_Qpu); ok {
+			return x.Qpu
 		}
 	}
 	return nil
@@ -15064,6 +15312,10 @@ type Resource_Function struct {
 	Function *Function `protobuf:"bytes,14943,opt,name=function,proto3,oneof"`
 }
 
+type Resource_Qpu struct {
+	Qpu *QPU `protobuf:"bytes,9430,opt,name=qpu,proto3,oneof"`
+}
+
 type Resource_VirtualMachine struct {
 	VirtualMachine *VirtualMachine `protobuf:"bytes,18360,opt,name=virtual_machine,json=virtualMachine,proto3,oneof"`
 }
@@ -15260,6 +15512,8 @@ func (*Resource_Container) isResource_Type() {}
 
 func (*Resource_Function) isResource_Type() {}
 
+func (*Resource_Qpu) isResource_Type() {}
+
 func (*Resource_VirtualMachine) isResource_Type() {}
 
 func (*Resource_ContainerOrchestration) isResource_Type() {}
@@ -15374,7 +15628,7 @@ type ResourceGroup struct {
 
 func (x *ResourceGroup) Reset() {
 	*x = ResourceGroup{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[125]
+	mi := &file_api_ontology_ontology_proto_msgTypes[126]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15386,7 +15640,7 @@ func (x *ResourceGroup) String() string {
 func (*ResourceGroup) ProtoMessage() {}
 
 func (x *ResourceGroup) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[125]
+	mi := &file_api_ontology_ontology_proto_msgTypes[126]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15399,7 +15653,7 @@ func (x *ResourceGroup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResourceGroup.ProtoReflect.Descriptor instead.
 func (*ResourceGroup) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{125}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{126}
 }
 
 func (x *ResourceGroup) GetCreationTime() *timestamppb.Timestamp {
@@ -15500,7 +15754,7 @@ type ResourceLogging struct {
 
 func (x *ResourceLogging) Reset() {
 	*x = ResourceLogging{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[126]
+	mi := &file_api_ontology_ontology_proto_msgTypes[127]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15512,7 +15766,7 @@ func (x *ResourceLogging) String() string {
 func (*ResourceLogging) ProtoMessage() {}
 
 func (x *ResourceLogging) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[126]
+	mi := &file_api_ontology_ontology_proto_msgTypes[127]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15525,7 +15779,7 @@ func (x *ResourceLogging) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResourceLogging.ProtoReflect.Descriptor instead.
 func (*ResourceLogging) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{126}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{127}
 }
 
 func (x *ResourceLogging) GetEnabled() bool {
@@ -15572,7 +15826,7 @@ type ResourceType struct {
 
 func (x *ResourceType) Reset() {
 	*x = ResourceType{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[127]
+	mi := &file_api_ontology_ontology_proto_msgTypes[128]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15584,7 +15838,7 @@ func (x *ResourceType) String() string {
 func (*ResourceType) ProtoMessage() {}
 
 func (x *ResourceType) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[127]
+	mi := &file_api_ontology_ontology_proto_msgTypes[128]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15597,7 +15851,7 @@ func (x *ResourceType) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResourceType.ProtoReflect.Descriptor instead.
 func (*ResourceType) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{127}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{128}
 }
 
 // RobustnessScore is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -15609,7 +15863,7 @@ type RobustnessScore struct {
 
 func (x *RobustnessScore) Reset() {
 	*x = RobustnessScore{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[128]
+	mi := &file_api_ontology_ontology_proto_msgTypes[129]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15621,7 +15875,7 @@ func (x *RobustnessScore) String() string {
 func (*RobustnessScore) ProtoMessage() {}
 
 func (x *RobustnessScore) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[128]
+	mi := &file_api_ontology_ontology_proto_msgTypes[129]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15634,7 +15888,7 @@ func (x *RobustnessScore) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RobustnessScore.ProtoReflect.Descriptor instead.
 func (*RobustnessScore) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{128}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{129}
 }
 
 // RoleAssignment is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -15662,7 +15916,7 @@ type RoleAssignment struct {
 
 func (x *RoleAssignment) Reset() {
 	*x = RoleAssignment{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[129]
+	mi := &file_api_ontology_ontology_proto_msgTypes[130]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15674,7 +15928,7 @@ func (x *RoleAssignment) String() string {
 func (*RoleAssignment) ProtoMessage() {}
 
 func (x *RoleAssignment) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[129]
+	mi := &file_api_ontology_ontology_proto_msgTypes[130]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15687,7 +15941,7 @@ func (x *RoleAssignment) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RoleAssignment.ProtoReflect.Descriptor instead.
 func (*RoleAssignment) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{129}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{130}
 }
 
 func (x *RoleAssignment) GetActivated() bool {
@@ -15807,7 +16061,7 @@ type SchemaValidation struct {
 
 func (x *SchemaValidation) Reset() {
 	*x = SchemaValidation{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[130]
+	mi := &file_api_ontology_ontology_proto_msgTypes[131]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15819,7 +16073,7 @@ func (x *SchemaValidation) String() string {
 func (*SchemaValidation) ProtoMessage() {}
 
 func (x *SchemaValidation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[130]
+	mi := &file_api_ontology_ontology_proto_msgTypes[131]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15832,7 +16086,7 @@ func (x *SchemaValidation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SchemaValidation.ProtoReflect.Descriptor instead.
 func (*SchemaValidation) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{130}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{131}
 }
 
 func (x *SchemaValidation) GetFormat() string {
@@ -15883,7 +16137,7 @@ type Secret struct {
 
 func (x *Secret) Reset() {
 	*x = Secret{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[131]
+	mi := &file_api_ontology_ontology_proto_msgTypes[132]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15895,7 +16149,7 @@ func (x *Secret) String() string {
 func (*Secret) ProtoMessage() {}
 
 func (x *Secret) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[131]
+	mi := &file_api_ontology_ontology_proto_msgTypes[132]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15908,7 +16162,7 @@ func (x *Secret) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Secret.ProtoReflect.Descriptor instead.
 func (*Secret) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{131}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{132}
 }
 
 func (x *Secret) GetCreationTime() *timestamppb.Timestamp {
@@ -16054,7 +16308,7 @@ type SecurityAdvisoryDocument struct {
 
 func (x *SecurityAdvisoryDocument) Reset() {
 	*x = SecurityAdvisoryDocument{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[132]
+	mi := &file_api_ontology_ontology_proto_msgTypes[133]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16066,7 +16320,7 @@ func (x *SecurityAdvisoryDocument) String() string {
 func (*SecurityAdvisoryDocument) ProtoMessage() {}
 
 func (x *SecurityAdvisoryDocument) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[132]
+	mi := &file_api_ontology_ontology_proto_msgTypes[133]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16079,7 +16333,7 @@ func (x *SecurityAdvisoryDocument) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SecurityAdvisoryDocument.ProtoReflect.Descriptor instead.
 func (*SecurityAdvisoryDocument) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{132}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{133}
 }
 
 func (x *SecurityAdvisoryDocument) GetCreationTime() *timestamppb.Timestamp {
@@ -16190,7 +16444,7 @@ type SecurityAdvisoryFeed struct {
 
 func (x *SecurityAdvisoryFeed) Reset() {
 	*x = SecurityAdvisoryFeed{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[133]
+	mi := &file_api_ontology_ontology_proto_msgTypes[134]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16202,7 +16456,7 @@ func (x *SecurityAdvisoryFeed) String() string {
 func (*SecurityAdvisoryFeed) ProtoMessage() {}
 
 func (x *SecurityAdvisoryFeed) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[133]
+	mi := &file_api_ontology_ontology_proto_msgTypes[134]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16215,7 +16469,7 @@ func (x *SecurityAdvisoryFeed) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SecurityAdvisoryFeed.ProtoReflect.Descriptor instead.
 func (*SecurityAdvisoryFeed) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{133}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{134}
 }
 
 func (x *SecurityAdvisoryFeed) GetSecurityAdvisoryDocumentIds() []string {
@@ -16256,7 +16510,7 @@ type SecurityAdvisoryService struct {
 
 func (x *SecurityAdvisoryService) Reset() {
 	*x = SecurityAdvisoryService{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[134]
+	mi := &file_api_ontology_ontology_proto_msgTypes[135]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16268,7 +16522,7 @@ func (x *SecurityAdvisoryService) String() string {
 func (*SecurityAdvisoryService) ProtoMessage() {}
 
 func (x *SecurityAdvisoryService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[134]
+	mi := &file_api_ontology_ontology_proto_msgTypes[135]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16281,7 +16535,7 @@ func (x *SecurityAdvisoryService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SecurityAdvisoryService.ProtoReflect.Descriptor instead.
 func (*SecurityAdvisoryService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{134}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{135}
 }
 
 func (x *SecurityAdvisoryService) GetCreationTime() *timestamppb.Timestamp {
@@ -16473,7 +16727,7 @@ type SecurityFeature struct {
 
 func (x *SecurityFeature) Reset() {
 	*x = SecurityFeature{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[135]
+	mi := &file_api_ontology_ontology_proto_msgTypes[136]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16485,7 +16739,7 @@ func (x *SecurityFeature) String() string {
 func (*SecurityFeature) ProtoMessage() {}
 
 func (x *SecurityFeature) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[135]
+	mi := &file_api_ontology_ontology_proto_msgTypes[136]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16498,7 +16752,7 @@ func (x *SecurityFeature) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SecurityFeature.ProtoReflect.Descriptor instead.
 func (*SecurityFeature) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{135}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{136}
 }
 
 func (x *SecurityFeature) GetType() isSecurityFeature_Type {
@@ -17086,7 +17340,7 @@ type SecurityTraining struct {
 
 func (x *SecurityTraining) Reset() {
 	*x = SecurityTraining{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[136]
+	mi := &file_api_ontology_ontology_proto_msgTypes[137]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17098,7 +17352,7 @@ func (x *SecurityTraining) String() string {
 func (*SecurityTraining) ProtoMessage() {}
 
 func (x *SecurityTraining) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[136]
+	mi := &file_api_ontology_ontology_proto_msgTypes[137]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17111,7 +17365,7 @@ func (x *SecurityTraining) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SecurityTraining.ProtoReflect.Descriptor instead.
 func (*SecurityTraining) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{136}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{137}
 }
 
 func (x *SecurityTraining) GetAnnualUpdateCompleted() bool {
@@ -17200,7 +17454,7 @@ type ServiceMetadataDocument struct {
 
 func (x *ServiceMetadataDocument) Reset() {
 	*x = ServiceMetadataDocument{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[137]
+	mi := &file_api_ontology_ontology_proto_msgTypes[138]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17212,7 +17466,7 @@ func (x *ServiceMetadataDocument) String() string {
 func (*ServiceMetadataDocument) ProtoMessage() {}
 
 func (x *ServiceMetadataDocument) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[137]
+	mi := &file_api_ontology_ontology_proto_msgTypes[138]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17225,7 +17479,7 @@ func (x *ServiceMetadataDocument) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServiceMetadataDocument.ProtoReflect.Descriptor instead.
 func (*ServiceMetadataDocument) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{137}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{138}
 }
 
 func (x *ServiceMetadataDocument) GetCreationTime() *timestamppb.Timestamp {
@@ -17330,7 +17584,7 @@ type DocumentSignature struct {
 
 func (x *DocumentSignature) Reset() {
 	*x = DocumentSignature{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[138]
+	mi := &file_api_ontology_ontology_proto_msgTypes[139]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17342,7 +17596,7 @@ func (x *DocumentSignature) String() string {
 func (*DocumentSignature) ProtoMessage() {}
 
 func (x *DocumentSignature) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[138]
+	mi := &file_api_ontology_ontology_proto_msgTypes[139]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17355,7 +17609,7 @@ func (x *DocumentSignature) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DocumentSignature.ProtoReflect.Descriptor instead.
 func (*DocumentSignature) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{138}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{139}
 }
 
 func (x *DocumentSignature) GetAlgorithm() string {
@@ -17383,7 +17637,7 @@ type SingleSignOn struct {
 
 func (x *SingleSignOn) Reset() {
 	*x = SingleSignOn{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[139]
+	mi := &file_api_ontology_ontology_proto_msgTypes[140]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17395,7 +17649,7 @@ func (x *SingleSignOn) String() string {
 func (*SingleSignOn) ProtoMessage() {}
 
 func (x *SingleSignOn) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[139]
+	mi := &file_api_ontology_ontology_proto_msgTypes[140]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17408,7 +17662,7 @@ func (x *SingleSignOn) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SingleSignOn.ProtoReflect.Descriptor instead.
 func (*SingleSignOn) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{139}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{140}
 }
 
 func (x *SingleSignOn) GetContextIsChecked() bool {
@@ -17440,7 +17694,7 @@ type Code struct {
 
 func (x *Code) Reset() {
 	*x = Code{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[140]
+	mi := &file_api_ontology_ontology_proto_msgTypes[141]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17452,7 +17706,7 @@ func (x *Code) String() string {
 func (*Code) ProtoMessage() {}
 
 func (x *Code) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[140]
+	mi := &file_api_ontology_ontology_proto_msgTypes[141]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17465,7 +17719,7 @@ func (x *Code) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Code.ProtoReflect.Descriptor instead.
 func (*Code) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{140}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{141}
 }
 
 func (x *Code) GetType() isCode_Type {
@@ -17544,7 +17798,7 @@ type SourceCodeFile struct {
 
 func (x *SourceCodeFile) Reset() {
 	*x = SourceCodeFile{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[141]
+	mi := &file_api_ontology_ontology_proto_msgTypes[142]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17556,7 +17810,7 @@ func (x *SourceCodeFile) String() string {
 func (*SourceCodeFile) ProtoMessage() {}
 
 func (x *SourceCodeFile) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[141]
+	mi := &file_api_ontology_ontology_proto_msgTypes[142]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17569,7 +17823,7 @@ func (x *SourceCodeFile) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SourceCodeFile.ProtoReflect.Descriptor instead.
 func (*SourceCodeFile) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{141}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{142}
 }
 
 func (x *SourceCodeFile) GetCreationTime() *timestamppb.Timestamp {
@@ -17658,7 +17912,7 @@ type Storage struct {
 
 func (x *Storage) Reset() {
 	*x = Storage{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[142]
+	mi := &file_api_ontology_ontology_proto_msgTypes[143]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17670,7 +17924,7 @@ func (x *Storage) String() string {
 func (*Storage) ProtoMessage() {}
 
 func (x *Storage) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[142]
+	mi := &file_api_ontology_ontology_proto_msgTypes[143]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17683,7 +17937,7 @@ func (x *Storage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Storage.ProtoReflect.Descriptor instead.
 func (*Storage) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{142}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{143}
 }
 
 func (x *Storage) GetType() isStorage_Type {
@@ -17776,7 +18030,7 @@ type StorageService struct {
 
 func (x *StorageService) Reset() {
 	*x = StorageService{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[143]
+	mi := &file_api_ontology_ontology_proto_msgTypes[144]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17788,7 +18042,7 @@ func (x *StorageService) String() string {
 func (*StorageService) ProtoMessage() {}
 
 func (x *StorageService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[143]
+	mi := &file_api_ontology_ontology_proto_msgTypes[144]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17801,7 +18055,7 @@ func (x *StorageService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StorageService.ProtoReflect.Descriptor instead.
 func (*StorageService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{143}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{144}
 }
 
 func (x *StorageService) GetType() isStorageService_Type {
@@ -17914,7 +18168,7 @@ type Tool struct {
 
 func (x *Tool) Reset() {
 	*x = Tool{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[144]
+	mi := &file_api_ontology_ontology_proto_msgTypes[145]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17926,7 +18180,7 @@ func (x *Tool) String() string {
 func (*Tool) ProtoMessage() {}
 
 func (x *Tool) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[144]
+	mi := &file_api_ontology_ontology_proto_msgTypes[145]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17939,7 +18193,7 @@ func (x *Tool) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Tool.ProtoReflect.Descriptor instead.
 func (*Tool) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{144}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{145}
 }
 
 // Training is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -17956,7 +18210,7 @@ type Training struct {
 
 func (x *Training) Reset() {
 	*x = Training{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[145]
+	mi := &file_api_ontology_ontology_proto_msgTypes[146]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17968,7 +18222,7 @@ func (x *Training) String() string {
 func (*Training) ProtoMessage() {}
 
 func (x *Training) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[145]
+	mi := &file_api_ontology_ontology_proto_msgTypes[146]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17981,7 +18235,7 @@ func (x *Training) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Training.ProtoReflect.Descriptor instead.
 func (*Training) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{145}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{146}
 }
 
 func (x *Training) GetType() isTraining_Type {
@@ -18040,7 +18294,7 @@ type TransportEncryption struct {
 
 func (x *TransportEncryption) Reset() {
 	*x = TransportEncryption{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[146]
+	mi := &file_api_ontology_ontology_proto_msgTypes[147]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18052,7 +18306,7 @@ func (x *TransportEncryption) String() string {
 func (*TransportEncryption) ProtoMessage() {}
 
 func (x *TransportEncryption) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[146]
+	mi := &file_api_ontology_ontology_proto_msgTypes[147]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18065,7 +18319,7 @@ func (x *TransportEncryption) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransportEncryption.ProtoReflect.Descriptor instead.
 func (*TransportEncryption) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{146}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{147}
 }
 
 func (x *TransportEncryption) GetEnabled() bool {
@@ -18113,7 +18367,7 @@ type UsageStatistics struct {
 
 func (x *UsageStatistics) Reset() {
 	*x = UsageStatistics{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[147]
+	mi := &file_api_ontology_ontology_proto_msgTypes[148]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18125,7 +18379,7 @@ func (x *UsageStatistics) String() string {
 func (*UsageStatistics) ProtoMessage() {}
 
 func (x *UsageStatistics) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[147]
+	mi := &file_api_ontology_ontology_proto_msgTypes[148]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18138,7 +18392,7 @@ func (x *UsageStatistics) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UsageStatistics.ProtoReflect.Descriptor instead.
 func (*UsageStatistics) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{147}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{148}
 }
 
 func (x *UsageStatistics) GetApiHitsPerMonth() int32 {
@@ -18171,7 +18425,7 @@ type VMImage struct {
 
 func (x *VMImage) Reset() {
 	*x = VMImage{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[148]
+	mi := &file_api_ontology_ontology_proto_msgTypes[149]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18183,7 +18437,7 @@ func (x *VMImage) String() string {
 func (*VMImage) ProtoMessage() {}
 
 func (x *VMImage) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[148]
+	mi := &file_api_ontology_ontology_proto_msgTypes[149]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18196,7 +18450,7 @@ func (x *VMImage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VMImage.ProtoReflect.Descriptor instead.
 func (*VMImage) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{148}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{149}
 }
 
 func (x *VMImage) GetCreationTime() *timestamppb.Timestamp {
@@ -18322,7 +18576,7 @@ type VirtualMachine struct {
 
 func (x *VirtualMachine) Reset() {
 	*x = VirtualMachine{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[149]
+	mi := &file_api_ontology_ontology_proto_msgTypes[150]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18334,7 +18588,7 @@ func (x *VirtualMachine) String() string {
 func (*VirtualMachine) ProtoMessage() {}
 
 func (x *VirtualMachine) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[149]
+	mi := &file_api_ontology_ontology_proto_msgTypes[150]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18347,7 +18601,7 @@ func (x *VirtualMachine) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VirtualMachine.ProtoReflect.Descriptor instead.
 func (*VirtualMachine) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{149}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{150}
 }
 
 func (x *VirtualMachine) GetCreationTime() *timestamppb.Timestamp {
@@ -18526,7 +18780,7 @@ type VirtualNetwork struct {
 
 func (x *VirtualNetwork) Reset() {
 	*x = VirtualNetwork{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[150]
+	mi := &file_api_ontology_ontology_proto_msgTypes[151]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18538,7 +18792,7 @@ func (x *VirtualNetwork) String() string {
 func (*VirtualNetwork) ProtoMessage() {}
 
 func (x *VirtualNetwork) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[150]
+	mi := &file_api_ontology_ontology_proto_msgTypes[151]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18551,7 +18805,7 @@ func (x *VirtualNetwork) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VirtualNetwork.ProtoReflect.Descriptor instead.
 func (*VirtualNetwork) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{150}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{151}
 }
 
 func (x *VirtualNetwork) GetCreationTime() *timestamppb.Timestamp {
@@ -18660,7 +18914,7 @@ type VirtualSubNetwork struct {
 
 func (x *VirtualSubNetwork) Reset() {
 	*x = VirtualSubNetwork{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[151]
+	mi := &file_api_ontology_ontology_proto_msgTypes[152]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18672,7 +18926,7 @@ func (x *VirtualSubNetwork) String() string {
 func (*VirtualSubNetwork) ProtoMessage() {}
 
 func (x *VirtualSubNetwork) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[151]
+	mi := &file_api_ontology_ontology_proto_msgTypes[152]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18685,7 +18939,7 @@ func (x *VirtualSubNetwork) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VirtualSubNetwork.ProtoReflect.Descriptor instead.
 func (*VirtualSubNetwork) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{151}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{152}
 }
 
 func (x *VirtualSubNetwork) GetCreationTime() *timestamppb.Timestamp {
@@ -18788,7 +19042,7 @@ type Vulnerability struct {
 
 func (x *Vulnerability) Reset() {
 	*x = Vulnerability{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[152]
+	mi := &file_api_ontology_ontology_proto_msgTypes[153]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18800,7 +19054,7 @@ func (x *Vulnerability) String() string {
 func (*Vulnerability) ProtoMessage() {}
 
 func (x *Vulnerability) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[152]
+	mi := &file_api_ontology_ontology_proto_msgTypes[153]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18813,7 +19067,7 @@ func (x *Vulnerability) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Vulnerability.ProtoReflect.Descriptor instead.
 func (*Vulnerability) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{152}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{153}
 }
 
 func (x *Vulnerability) GetCve() string {
@@ -18862,7 +19116,7 @@ type WebApplicationFirewall struct {
 
 func (x *WebApplicationFirewall) Reset() {
 	*x = WebApplicationFirewall{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[153]
+	mi := &file_api_ontology_ontology_proto_msgTypes[154]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18874,7 +19128,7 @@ func (x *WebApplicationFirewall) String() string {
 func (*WebApplicationFirewall) ProtoMessage() {}
 
 func (x *WebApplicationFirewall) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[153]
+	mi := &file_api_ontology_ontology_proto_msgTypes[154]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18887,7 +19141,7 @@ func (x *WebApplicationFirewall) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WebApplicationFirewall.ProtoReflect.Descriptor instead.
 func (*WebApplicationFirewall) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{153}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{154}
 }
 
 func (x *WebApplicationFirewall) GetEnabled() bool {
@@ -18919,7 +19173,7 @@ type Workflow struct {
 
 func (x *Workflow) Reset() {
 	*x = Workflow{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[154]
+	mi := &file_api_ontology_ontology_proto_msgTypes[155]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18931,7 +19185,7 @@ func (x *Workflow) String() string {
 func (*Workflow) ProtoMessage() {}
 
 func (x *Workflow) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[154]
+	mi := &file_api_ontology_ontology_proto_msgTypes[155]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18944,7 +19198,7 @@ func (x *Workflow) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Workflow.ProtoReflect.Descriptor instead.
 func (*Workflow) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{154}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{155}
 }
 
 func (x *Workflow) GetCreationTime() *timestamppb.Timestamp {
@@ -19041,7 +19295,7 @@ type ZoneRedundancy struct {
 
 func (x *ZoneRedundancy) Reset() {
 	*x = ZoneRedundancy{}
-	mi := &file_api_ontology_ontology_proto_msgTypes[155]
+	mi := &file_api_ontology_ontology_proto_msgTypes[156]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -19053,7 +19307,7 @@ func (x *ZoneRedundancy) String() string {
 func (*ZoneRedundancy) ProtoMessage() {}
 
 func (x *ZoneRedundancy) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[155]
+	mi := &file_api_ontology_ontology_proto_msgTypes[156]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19066,7 +19320,7 @@ func (x *ZoneRedundancy) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ZoneRedundancy.ProtoReflect.Descriptor instead.
 func (*ZoneRedundancy) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{155}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{156}
 }
 
 func (x *ZoneRedundancy) GetGeoLocations() []*GeoLocation {
@@ -19303,14 +19557,15 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x18authentication_mechanism\x18\xd3\x1c \x01(\tR\x17authenticationMechanism\x125\n" +
 	"\x16key_exchange_algorithm\x18\xc8t \x01(\tR\x14keyExchangeAlgorithm\x12$\n" +
 	"\rmac_algorithm\x18\xa8\x12 \x01(\tR\fmacAlgorithm\x12&\n" +
-	"\x0esession_cipher\x18\xee, \x01(\tR\rsessionCipher: \x82\xa6\x1d\vCipherSuite\x82\xa6\x1d\rFunctionality\"\xb1\x1b\n" +
+	"\x0esession_cipher\x18\xee, \x01(\tR\rsessionCipher: \x82\xa6\x1d\vCipherSuite\x82\xa6\x1d\rFunctionality\"\xe2\x1b\n" +
 	"\x0eInfrastructure\x12;\n" +
 	"\aaccount\x18\xc0Y \x01(\v2\x1e.clouditor.ontology.v1.AccountH\x00R\aaccount\x12/\n" +
 	"\x03job\x18\x9f\x1f \x01(\v2\x1a.clouditor.ontology.v1.JobH\x00R\x03job\x12>\n" +
 	"\bworkflow\x18\xaaD \x01(\v2\x1f.clouditor.ontology.v1.WorkflowH\x00R\bworkflow\x12Q\n" +
 	"\x0fcode_repository\x18\xe7\x1a \x01(\v2%.clouditor.ontology.v1.CodeRepositoryH\x00R\x0ecodeRepository\x12A\n" +
 	"\tcontainer\x18\xfb\f \x01(\v2 .clouditor.ontology.v1.ContainerH\x00R\tcontainer\x12>\n" +
-	"\bfunction\x18\xdft \x01(\v2\x1f.clouditor.ontology.v1.FunctionH\x00R\bfunction\x12R\n" +
+	"\bfunction\x18\xdft \x01(\v2\x1f.clouditor.ontology.v1.FunctionH\x00R\bfunction\x12/\n" +
+	"\x03qpu\x18\xd6I \x01(\v2\x1a.clouditor.ontology.v1.QPUH\x00R\x03qpu\x12R\n" +
 	"\x0fvirtual_machine\x18\xb8\x8f\x01 \x01(\v2%.clouditor.ontology.v1.VirtualMachineH\x00R\x0evirtualMachine\x12i\n" +
 	"\x17container_orchestration\x18\x8b\x19 \x01(\v2-.clouditor.ontology.v1.ContainerOrchestrationH\x00R\x16containerOrchestration\x12Z\n" +
 	"\x12container_registry\x18\x86A \x01(\v2(.clouditor.ontology.v1.ContainerRegistryH\x00R\x11containerRegistry\x12G\n" +
@@ -19382,10 +19637,11 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\tComponent\x12H\n" +
 	"\vapplication\x18\xfa\x90\x01 \x01(\v2\".clouditor.ontology.v1.ApplicationH\x00R\vapplication\x12;\n" +
 	"\alibrary\x18\xb9o \x01(\v2\x1e.clouditor.ontology.v1.LibraryH\x00R\alibraryB\x06\n" +
-	"\x04type\"\xe8\x01\n" +
+	"\x04type\"\x99\x02\n" +
 	"\aCompute\x12A\n" +
 	"\tcontainer\x18\xfb\f \x01(\v2 .clouditor.ontology.v1.ContainerH\x00R\tcontainer\x12>\n" +
-	"\bfunction\x18\xdft \x01(\v2\x1f.clouditor.ontology.v1.FunctionH\x00R\bfunction\x12R\n" +
+	"\bfunction\x18\xdft \x01(\v2\x1f.clouditor.ontology.v1.FunctionH\x00R\bfunction\x12/\n" +
+	"\x03qpu\x18\xd6I \x01(\v2\x1a.clouditor.ontology.v1.QPUH\x00R\x03qpu\x12R\n" +
 	"\x0fvirtual_machine\x18\xb8\x8f\x01 \x01(\v2%.clouditor.ontology.v1.VirtualMachineH\x00R\x0evirtualMachineB\x06\n" +
 	"\x04type\"\xa1\x03\n" +
 	"\x0fConfidentiality\x12g\n" +
@@ -20157,7 +20413,7 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:A\x82\xa6\x1d\x16MachineLearningDataset\x82\xa6\x1d\x0fMachineLearning\x82\xa6\x1d\x04Data\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-	"_parent_id\"\xf1\x05\n" +
+	"_parent_id\"\xc2\x06\n" +
 	"\x14MachineLearningModel\x12&\n" +
 	"\x0eadv_robustness\x18\xe9n \x01(\x02R\radvRobustness\x12A\n" +
 	"\rcreation_time\x18Ռ\x01 \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
@@ -20175,7 +20431,8 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"robustness\x18\x8ej \x01(\x02R\n" +
 	"robustness\x12I\n" +
 	"\rdata_location\x18\xb6\x17 \x01(\v2#.clouditor.ontology.v1.DataLocationR\fdataLocation\x12!\n" +
-	"\tparent_id\x18\x86y \x01(\tH\x00R\bparentId\x88\x01\x01\x1a9\n" +
+	"\tparent_id\x18\x86y \x01(\tH\x00R\bparentId\x88\x01\x01\x12O\n" +
+	"\x0fvulnerabilities\x18\xc5T \x03(\v2$.clouditor.ontology.v1.VulnerabilityR\x0fvulnerabilities\x1a9\n" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:?\x82\xa6\x1d\x14MachineLearningModel\x82\xa6\x1d\x0fMachineLearning\x82\xa6\x1d\x04Data\x82\xa6\x1d\bResourceB\f\n" +
@@ -20481,6 +20738,32 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:2\x82\xa6\x1d\x0ePolicyDocument\x82\xa6\x1d\bDocument\x82\xa6\x1d\x04Data\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
+	"_parent_id\"\xf9\t\n" +
+	"\x03QPU\x120\n" +
+	"\x14one_qubit_error_rate\x18\xfe\x1d \x01(\x02R\x11oneQubitErrorRate\x12'\n" +
+	"\x0fspam_error_rate\x18\x90\x17 \x01(\x02R\rspamErrorRate\x120\n" +
+	"\x14two_qubit_error_rate\x18\xf11 \x01(\x02R\x11twoQubitErrorRate\x12@\n" +
+	"\rcreation_time\x18\xf6\x1a \x01(\v2\x1a.google.protobuf.TimestampR\fcreationTime\x12!\n" +
+	"\vdescription\x18\x98\" \x01(\tR\vdescription\x129\n" +
+	"\x18error_correction_enabled\x18\xb7e \x01(\bR\x16errorCorrectionEnabled\x12\x17\n" +
+	"\x02id\x18\xc3p \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12A\n" +
+	"\x1cinternet_accessible_endpoint\x18\xd4K \x01(\bR\x1ainternetAccessibleEndpoint\x12?\n" +
+	"\x06labels\x18\x98Z \x03(\v2&.clouditor.ontology.v1.QPU.LabelsEntryR\x06labels\x12\x1b\n" +
+	"\x04name\x18\x82\f \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\x11\n" +
+	"\x03raw\x18\x8eB \x01(\tR\x03raw\x12T\n" +
+	"\x11encryption_in_use\x18\xae\x8b\x01 \x01(\v2&.clouditor.ontology.v1.EncryptionInUseR\x0fencryptionInUse\x12G\n" +
+	"\fgeo_location\x18\xae\x81\x01 \x01(\v2\".clouditor.ontology.v1.GeoLocationR\vgeoLocation\x12;\n" +
+	"\bloggings\x18\xcc\a \x03(\v2\x1e.clouditor.ontology.v1.LoggingR\bloggings\x123\n" +
+	"\x15network_interface_ids\x18\xc2  \x03(\tR\x13networkInterfaceIds\x12F\n" +
+	"\fredundancies\x18\x8dS \x03(\v2!.clouditor.ontology.v1.RedundancyR\fredundancies\x12Y\n" +
+	"\x12remote_attestation\x18\x8d\x8f\x01 \x01(\v2(.clouditor.ontology.v1.RemoteAttestationR\x11remoteAttestation\x12!\n" +
+	"\tparent_id\x18\xcbZ \x01(\tH\x00R\bparentId\x88\x01\x01\x12R\n" +
+	"\x10resource_logging\x18\xf0t \x01(\v2&.clouditor.ontology.v1.ResourceLoggingR\x0fresourceLogging\x12R\n" +
+	"\x10usage_statistics\x18\xd3] \x01(\v2&.clouditor.ontology.v1.UsageStatisticsR\x0fusageStatistics\x1a9\n" +
+	"\vLabelsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:0\x82\xa6\x1d\x03QPU\x82\xa6\x1d\aCompute\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
+	"\n" +
 	"_parent_id\"\x86\x01\n" +
 	"\x04RBAC\x12,\n" +
 	"\x11broad_assignments\x18\xae, \x01(\x02R\x10broadAssignments\x12\"\n" +
@@ -20538,14 +20821,15 @@ const file_api_ontology_ontology_proto_rawDesc = "" +
 	"\n" +
 	"storage_id\x18\xc1v \x01(\tH\x00R\tstorageId\x88\x01\x01\x12^\n" +
 	"\x14transport_encryption\x18\xe1\x1b \x01(\v2*.clouditor.ontology.v1.TransportEncryptionR\x13transportEncryption:7\x82\xa6\x1d\x12RemoteDataLocation\x82\xa6\x1d\fDataLocation\x82\xa6\x1d\rFunctionalityB\r\n" +
-	"\v_storage_id\"\x97#\n" +
+	"\v_storage_id\"\xc8#\n" +
 	"\bResource\x12;\n" +
 	"\aaccount\x18\xc0Y \x01(\v2\x1e.clouditor.ontology.v1.AccountH\x00R\aaccount\x12/\n" +
 	"\x03job\x18\x9f\x1f \x01(\v2\x1a.clouditor.ontology.v1.JobH\x00R\x03job\x12>\n" +
 	"\bworkflow\x18\xaaD \x01(\v2\x1f.clouditor.ontology.v1.WorkflowH\x00R\bworkflow\x12Q\n" +
 	"\x0fcode_repository\x18\xe7\x1a \x01(\v2%.clouditor.ontology.v1.CodeRepositoryH\x00R\x0ecodeRepository\x12A\n" +
 	"\tcontainer\x18\xfb\f \x01(\v2 .clouditor.ontology.v1.ContainerH\x00R\tcontainer\x12>\n" +
-	"\bfunction\x18\xdft \x01(\v2\x1f.clouditor.ontology.v1.FunctionH\x00R\bfunction\x12R\n" +
+	"\bfunction\x18\xdft \x01(\v2\x1f.clouditor.ontology.v1.FunctionH\x00R\bfunction\x12/\n" +
+	"\x03qpu\x18\xd6I \x01(\v2\x1a.clouditor.ontology.v1.QPUH\x00R\x03qpu\x12R\n" +
 	"\x0fvirtual_machine\x18\xb8\x8f\x01 \x01(\v2%.clouditor.ontology.v1.VirtualMachineH\x00R\x0evirtualMachine\x12i\n" +
 	"\x17container_orchestration\x18\x8b\x19 \x01(\v2-.clouditor.ontology.v1.ContainerOrchestrationH\x00R\x16containerOrchestration\x12Z\n" +
 	"\x12container_registry\x18\x86A \x01(\v2(.clouditor.ontology.v1.ContainerRegistryH\x00R\x11containerRegistry\x12G\n" +
@@ -20985,7 +21269,7 @@ func file_api_ontology_ontology_proto_rawDescGZIP() []byte {
 	return file_api_ontology_ontology_proto_rawDescData
 }
 
-var file_api_ontology_ontology_proto_msgTypes = make([]protoimpl.MessageInfo, 208)
+var file_api_ontology_ontology_proto_msgTypes = make([]protoimpl.MessageInfo, 210)
 var file_api_ontology_ontology_proto_goTypes = []any{
 	(*ABAC)(nil),                           // 0: clouditor.ontology.v1.ABAC
 	(*AccessRestriction)(nil),              // 1: clouditor.ontology.v1.AccessRestriction
@@ -21105,840 +21389,855 @@ var file_api_ontology_ontology_proto_goTypes = []any{
 	(*PasswordBasedAuthentication)(nil),    // 115: clouditor.ontology.v1.PasswordBasedAuthentication
 	(*PasswordPolicy)(nil),                 // 116: clouditor.ontology.v1.PasswordPolicy
 	(*PolicyDocument)(nil),                 // 117: clouditor.ontology.v1.PolicyDocument
-	(*RBAC)(nil),                           // 118: clouditor.ontology.v1.RBAC
-	(*Redundancy)(nil),                     // 119: clouditor.ontology.v1.Redundancy
-	(*RelationalDatabaseService)(nil),      // 120: clouditor.ontology.v1.RelationalDatabaseService
-	(*Reliability)(nil),                    // 121: clouditor.ontology.v1.Reliability
-	(*RemoteAttestation)(nil),              // 122: clouditor.ontology.v1.RemoteAttestation
-	(*RemoteDataLocation)(nil),             // 123: clouditor.ontology.v1.RemoteDataLocation
-	(*Resource)(nil),                       // 124: clouditor.ontology.v1.Resource
-	(*ResourceGroup)(nil),                  // 125: clouditor.ontology.v1.ResourceGroup
-	(*ResourceLogging)(nil),                // 126: clouditor.ontology.v1.ResourceLogging
-	(*ResourceType)(nil),                   // 127: clouditor.ontology.v1.ResourceType
-	(*RobustnessScore)(nil),                // 128: clouditor.ontology.v1.RobustnessScore
-	(*RoleAssignment)(nil),                 // 129: clouditor.ontology.v1.RoleAssignment
-	(*SchemaValidation)(nil),               // 130: clouditor.ontology.v1.SchemaValidation
-	(*Secret)(nil),                         // 131: clouditor.ontology.v1.Secret
-	(*SecurityAdvisoryDocument)(nil),       // 132: clouditor.ontology.v1.SecurityAdvisoryDocument
-	(*SecurityAdvisoryFeed)(nil),           // 133: clouditor.ontology.v1.SecurityAdvisoryFeed
-	(*SecurityAdvisoryService)(nil),        // 134: clouditor.ontology.v1.SecurityAdvisoryService
-	(*SecurityFeature)(nil),                // 135: clouditor.ontology.v1.SecurityFeature
-	(*SecurityTraining)(nil),               // 136: clouditor.ontology.v1.SecurityTraining
-	(*ServiceMetadataDocument)(nil),        // 137: clouditor.ontology.v1.ServiceMetadataDocument
-	(*DocumentSignature)(nil),              // 138: clouditor.ontology.v1.DocumentSignature
-	(*SingleSignOn)(nil),                   // 139: clouditor.ontology.v1.SingleSignOn
-	(*Code)(nil),                           // 140: clouditor.ontology.v1.Code
-	(*SourceCodeFile)(nil),                 // 141: clouditor.ontology.v1.SourceCodeFile
-	(*Storage)(nil),                        // 142: clouditor.ontology.v1.Storage
-	(*StorageService)(nil),                 // 143: clouditor.ontology.v1.StorageService
-	(*Tool)(nil),                           // 144: clouditor.ontology.v1.Tool
-	(*Training)(nil),                       // 145: clouditor.ontology.v1.Training
-	(*TransportEncryption)(nil),            // 146: clouditor.ontology.v1.TransportEncryption
-	(*UsageStatistics)(nil),                // 147: clouditor.ontology.v1.UsageStatistics
-	(*VMImage)(nil),                        // 148: clouditor.ontology.v1.VMImage
-	(*VirtualMachine)(nil),                 // 149: clouditor.ontology.v1.VirtualMachine
-	(*VirtualNetwork)(nil),                 // 150: clouditor.ontology.v1.VirtualNetwork
-	(*VirtualSubNetwork)(nil),              // 151: clouditor.ontology.v1.VirtualSubNetwork
-	(*Vulnerability)(nil),                  // 152: clouditor.ontology.v1.Vulnerability
-	(*WebApplicationFirewall)(nil),         // 153: clouditor.ontology.v1.WebApplicationFirewall
-	(*Workflow)(nil),                       // 154: clouditor.ontology.v1.Workflow
-	(*ZoneRedundancy)(nil),                 // 155: clouditor.ontology.v1.ZoneRedundancy
-	nil,                                    // 156: clouditor.ontology.v1.Account.LabelsEntry
-	nil,                                    // 157: clouditor.ontology.v1.Application.LabelsEntry
-	nil,                                    // 158: clouditor.ontology.v1.AwarenessTraining.LabelsEntry
-	nil,                                    // 159: clouditor.ontology.v1.BlockStorage.LabelsEntry
-	nil,                                    // 160: clouditor.ontology.v1.Certificate.LabelsEntry
-	nil,                                    // 161: clouditor.ontology.v1.CodeRepository.LabelsEntry
-	nil,                                    // 162: clouditor.ontology.v1.Container.LabelsEntry
-	nil,                                    // 163: clouditor.ontology.v1.ContainerImage.LabelsEntry
-	nil,                                    // 164: clouditor.ontology.v1.ContainerOrchestration.LabelsEntry
-	nil,                                    // 165: clouditor.ontology.v1.ContainerRegistry.LabelsEntry
-	nil,                                    // 166: clouditor.ontology.v1.DatabaseStorage.LabelsEntry
-	nil,                                    // 167: clouditor.ontology.v1.DeviceProvisioningService.LabelsEntry
-	nil,                                    // 168: clouditor.ontology.v1.DocumentDatabaseService.LabelsEntry
-	nil,                                    // 169: clouditor.ontology.v1.FileStorage.LabelsEntry
-	nil,                                    // 170: clouditor.ontology.v1.FileStorageService.LabelsEntry
-	nil,                                    // 171: clouditor.ontology.v1.Function.LabelsEntry
-	nil,                                    // 172: clouditor.ontology.v1.FunctionService.LabelsEntry
-	nil,                                    // 173: clouditor.ontology.v1.GenericDocument.LabelsEntry
-	nil,                                    // 174: clouditor.ontology.v1.GenericNetworkService.LabelsEntry
-	nil,                                    // 175: clouditor.ontology.v1.Identity.LabelsEntry
-	nil,                                    // 176: clouditor.ontology.v1.Job.LabelsEntry
-	nil,                                    // 177: clouditor.ontology.v1.Key.LabelsEntry
-	nil,                                    // 178: clouditor.ontology.v1.KeyValueDatabaseService.LabelsEntry
-	nil,                                    // 179: clouditor.ontology.v1.KeyVault.LabelsEntry
-	nil,                                    // 180: clouditor.ontology.v1.Library.LabelsEntry
-	nil,                                    // 181: clouditor.ontology.v1.LoadBalancer.LabelsEntry
-	nil,                                    // 182: clouditor.ontology.v1.LoggingService.LabelsEntry
-	nil,                                    // 183: clouditor.ontology.v1.MachineLearningDataset.LabelsEntry
-	nil,                                    // 184: clouditor.ontology.v1.MachineLearningModel.LabelsEntry
-	nil,                                    // 185: clouditor.ontology.v1.MachineLearningService.LabelsEntry
-	nil,                                    // 186: clouditor.ontology.v1.MessagingHub.LabelsEntry
-	nil,                                    // 187: clouditor.ontology.v1.MultiModalDatabaseService.LabelsEntry
-	nil,                                    // 188: clouditor.ontology.v1.NetworkInterface.LabelsEntry
-	nil,                                    // 189: clouditor.ontology.v1.NetworkSecurityGroup.LabelsEntry
-	nil,                                    // 190: clouditor.ontology.v1.ObjectStorage.LabelsEntry
-	nil,                                    // 191: clouditor.ontology.v1.ObjectStorageService.LabelsEntry
-	nil,                                    // 192: clouditor.ontology.v1.PasswordPolicy.LabelsEntry
-	nil,                                    // 193: clouditor.ontology.v1.PolicyDocument.LabelsEntry
-	nil,                                    // 194: clouditor.ontology.v1.RelationalDatabaseService.LabelsEntry
-	nil,                                    // 195: clouditor.ontology.v1.ResourceGroup.LabelsEntry
-	nil,                                    // 196: clouditor.ontology.v1.RoleAssignment.LabelsEntry
-	nil,                                    // 197: clouditor.ontology.v1.Secret.LabelsEntry
-	nil,                                    // 198: clouditor.ontology.v1.SecurityAdvisoryDocument.LabelsEntry
-	nil,                                    // 199: clouditor.ontology.v1.SecurityAdvisoryService.LabelsEntry
-	nil,                                    // 200: clouditor.ontology.v1.SecurityTraining.LabelsEntry
-	nil,                                    // 201: clouditor.ontology.v1.ServiceMetadataDocument.LabelsEntry
-	nil,                                    // 202: clouditor.ontology.v1.SourceCodeFile.LabelsEntry
-	nil,                                    // 203: clouditor.ontology.v1.VMImage.LabelsEntry
-	nil,                                    // 204: clouditor.ontology.v1.VirtualMachine.LabelsEntry
-	nil,                                    // 205: clouditor.ontology.v1.VirtualNetwork.LabelsEntry
-	nil,                                    // 206: clouditor.ontology.v1.VirtualSubNetwork.LabelsEntry
-	nil,                                    // 207: clouditor.ontology.v1.Workflow.LabelsEntry
-	(*timestamppb.Timestamp)(nil),          // 208: google.protobuf.Timestamp
-	(*durationpb.Duration)(nil),            // 209: google.protobuf.Duration
-	(*descriptorpb.MessageOptions)(nil),    // 210: google.protobuf.MessageOptions
+	(*QPU)(nil),                            // 118: clouditor.ontology.v1.QPU
+	(*RBAC)(nil),                           // 119: clouditor.ontology.v1.RBAC
+	(*Redundancy)(nil),                     // 120: clouditor.ontology.v1.Redundancy
+	(*RelationalDatabaseService)(nil),      // 121: clouditor.ontology.v1.RelationalDatabaseService
+	(*Reliability)(nil),                    // 122: clouditor.ontology.v1.Reliability
+	(*RemoteAttestation)(nil),              // 123: clouditor.ontology.v1.RemoteAttestation
+	(*RemoteDataLocation)(nil),             // 124: clouditor.ontology.v1.RemoteDataLocation
+	(*Resource)(nil),                       // 125: clouditor.ontology.v1.Resource
+	(*ResourceGroup)(nil),                  // 126: clouditor.ontology.v1.ResourceGroup
+	(*ResourceLogging)(nil),                // 127: clouditor.ontology.v1.ResourceLogging
+	(*ResourceType)(nil),                   // 128: clouditor.ontology.v1.ResourceType
+	(*RobustnessScore)(nil),                // 129: clouditor.ontology.v1.RobustnessScore
+	(*RoleAssignment)(nil),                 // 130: clouditor.ontology.v1.RoleAssignment
+	(*SchemaValidation)(nil),               // 131: clouditor.ontology.v1.SchemaValidation
+	(*Secret)(nil),                         // 132: clouditor.ontology.v1.Secret
+	(*SecurityAdvisoryDocument)(nil),       // 133: clouditor.ontology.v1.SecurityAdvisoryDocument
+	(*SecurityAdvisoryFeed)(nil),           // 134: clouditor.ontology.v1.SecurityAdvisoryFeed
+	(*SecurityAdvisoryService)(nil),        // 135: clouditor.ontology.v1.SecurityAdvisoryService
+	(*SecurityFeature)(nil),                // 136: clouditor.ontology.v1.SecurityFeature
+	(*SecurityTraining)(nil),               // 137: clouditor.ontology.v1.SecurityTraining
+	(*ServiceMetadataDocument)(nil),        // 138: clouditor.ontology.v1.ServiceMetadataDocument
+	(*DocumentSignature)(nil),              // 139: clouditor.ontology.v1.DocumentSignature
+	(*SingleSignOn)(nil),                   // 140: clouditor.ontology.v1.SingleSignOn
+	(*Code)(nil),                           // 141: clouditor.ontology.v1.Code
+	(*SourceCodeFile)(nil),                 // 142: clouditor.ontology.v1.SourceCodeFile
+	(*Storage)(nil),                        // 143: clouditor.ontology.v1.Storage
+	(*StorageService)(nil),                 // 144: clouditor.ontology.v1.StorageService
+	(*Tool)(nil),                           // 145: clouditor.ontology.v1.Tool
+	(*Training)(nil),                       // 146: clouditor.ontology.v1.Training
+	(*TransportEncryption)(nil),            // 147: clouditor.ontology.v1.TransportEncryption
+	(*UsageStatistics)(nil),                // 148: clouditor.ontology.v1.UsageStatistics
+	(*VMImage)(nil),                        // 149: clouditor.ontology.v1.VMImage
+	(*VirtualMachine)(nil),                 // 150: clouditor.ontology.v1.VirtualMachine
+	(*VirtualNetwork)(nil),                 // 151: clouditor.ontology.v1.VirtualNetwork
+	(*VirtualSubNetwork)(nil),              // 152: clouditor.ontology.v1.VirtualSubNetwork
+	(*Vulnerability)(nil),                  // 153: clouditor.ontology.v1.Vulnerability
+	(*WebApplicationFirewall)(nil),         // 154: clouditor.ontology.v1.WebApplicationFirewall
+	(*Workflow)(nil),                       // 155: clouditor.ontology.v1.Workflow
+	(*ZoneRedundancy)(nil),                 // 156: clouditor.ontology.v1.ZoneRedundancy
+	nil,                                    // 157: clouditor.ontology.v1.Account.LabelsEntry
+	nil,                                    // 158: clouditor.ontology.v1.Application.LabelsEntry
+	nil,                                    // 159: clouditor.ontology.v1.AwarenessTraining.LabelsEntry
+	nil,                                    // 160: clouditor.ontology.v1.BlockStorage.LabelsEntry
+	nil,                                    // 161: clouditor.ontology.v1.Certificate.LabelsEntry
+	nil,                                    // 162: clouditor.ontology.v1.CodeRepository.LabelsEntry
+	nil,                                    // 163: clouditor.ontology.v1.Container.LabelsEntry
+	nil,                                    // 164: clouditor.ontology.v1.ContainerImage.LabelsEntry
+	nil,                                    // 165: clouditor.ontology.v1.ContainerOrchestration.LabelsEntry
+	nil,                                    // 166: clouditor.ontology.v1.ContainerRegistry.LabelsEntry
+	nil,                                    // 167: clouditor.ontology.v1.DatabaseStorage.LabelsEntry
+	nil,                                    // 168: clouditor.ontology.v1.DeviceProvisioningService.LabelsEntry
+	nil,                                    // 169: clouditor.ontology.v1.DocumentDatabaseService.LabelsEntry
+	nil,                                    // 170: clouditor.ontology.v1.FileStorage.LabelsEntry
+	nil,                                    // 171: clouditor.ontology.v1.FileStorageService.LabelsEntry
+	nil,                                    // 172: clouditor.ontology.v1.Function.LabelsEntry
+	nil,                                    // 173: clouditor.ontology.v1.FunctionService.LabelsEntry
+	nil,                                    // 174: clouditor.ontology.v1.GenericDocument.LabelsEntry
+	nil,                                    // 175: clouditor.ontology.v1.GenericNetworkService.LabelsEntry
+	nil,                                    // 176: clouditor.ontology.v1.Identity.LabelsEntry
+	nil,                                    // 177: clouditor.ontology.v1.Job.LabelsEntry
+	nil,                                    // 178: clouditor.ontology.v1.Key.LabelsEntry
+	nil,                                    // 179: clouditor.ontology.v1.KeyValueDatabaseService.LabelsEntry
+	nil,                                    // 180: clouditor.ontology.v1.KeyVault.LabelsEntry
+	nil,                                    // 181: clouditor.ontology.v1.Library.LabelsEntry
+	nil,                                    // 182: clouditor.ontology.v1.LoadBalancer.LabelsEntry
+	nil,                                    // 183: clouditor.ontology.v1.LoggingService.LabelsEntry
+	nil,                                    // 184: clouditor.ontology.v1.MachineLearningDataset.LabelsEntry
+	nil,                                    // 185: clouditor.ontology.v1.MachineLearningModel.LabelsEntry
+	nil,                                    // 186: clouditor.ontology.v1.MachineLearningService.LabelsEntry
+	nil,                                    // 187: clouditor.ontology.v1.MessagingHub.LabelsEntry
+	nil,                                    // 188: clouditor.ontology.v1.MultiModalDatabaseService.LabelsEntry
+	nil,                                    // 189: clouditor.ontology.v1.NetworkInterface.LabelsEntry
+	nil,                                    // 190: clouditor.ontology.v1.NetworkSecurityGroup.LabelsEntry
+	nil,                                    // 191: clouditor.ontology.v1.ObjectStorage.LabelsEntry
+	nil,                                    // 192: clouditor.ontology.v1.ObjectStorageService.LabelsEntry
+	nil,                                    // 193: clouditor.ontology.v1.PasswordPolicy.LabelsEntry
+	nil,                                    // 194: clouditor.ontology.v1.PolicyDocument.LabelsEntry
+	nil,                                    // 195: clouditor.ontology.v1.QPU.LabelsEntry
+	nil,                                    // 196: clouditor.ontology.v1.RelationalDatabaseService.LabelsEntry
+	nil,                                    // 197: clouditor.ontology.v1.ResourceGroup.LabelsEntry
+	nil,                                    // 198: clouditor.ontology.v1.RoleAssignment.LabelsEntry
+	nil,                                    // 199: clouditor.ontology.v1.Secret.LabelsEntry
+	nil,                                    // 200: clouditor.ontology.v1.SecurityAdvisoryDocument.LabelsEntry
+	nil,                                    // 201: clouditor.ontology.v1.SecurityAdvisoryService.LabelsEntry
+	nil,                                    // 202: clouditor.ontology.v1.SecurityTraining.LabelsEntry
+	nil,                                    // 203: clouditor.ontology.v1.ServiceMetadataDocument.LabelsEntry
+	nil,                                    // 204: clouditor.ontology.v1.SourceCodeFile.LabelsEntry
+	nil,                                    // 205: clouditor.ontology.v1.VMImage.LabelsEntry
+	nil,                                    // 206: clouditor.ontology.v1.VirtualMachine.LabelsEntry
+	nil,                                    // 207: clouditor.ontology.v1.VirtualNetwork.LabelsEntry
+	nil,                                    // 208: clouditor.ontology.v1.VirtualSubNetwork.LabelsEntry
+	nil,                                    // 209: clouditor.ontology.v1.Workflow.LabelsEntry
+	(*timestamppb.Timestamp)(nil),          // 210: google.protobuf.Timestamp
+	(*durationpb.Duration)(nil),            // 211: google.protobuf.Duration
+	(*descriptorpb.MessageOptions)(nil),    // 212: google.protobuf.MessageOptions
 }
 var file_api_ontology_ontology_proto_depIdxs = []int32{
 	84,  // 0: clouditor.ontology.v1.AccessRestriction.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
-	153, // 1: clouditor.ontology.v1.AccessRestriction.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
-	208, // 2: clouditor.ontology.v1.Account.creation_time:type_name -> google.protobuf.Timestamp
-	156, // 3: clouditor.ontology.v1.Account.labels:type_name -> clouditor.ontology.v1.Account.LabelsEntry
+	154, // 1: clouditor.ontology.v1.AccessRestriction.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
+	210, // 2: clouditor.ontology.v1.Account.creation_time:type_name -> google.protobuf.Timestamp
+	157, // 3: clouditor.ontology.v1.Account.labels:type_name -> clouditor.ontology.v1.Account.LabelsEntry
 	64,  // 4: clouditor.ontology.v1.Account.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
 	92,  // 5: clouditor.ontology.v1.Account.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 6: clouditor.ontology.v1.Account.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 7: clouditor.ontology.v1.Account.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	209, // 8: clouditor.ontology.v1.ActivityLogging.retention_period:type_name -> google.protobuf.Duration
+	120, // 6: clouditor.ontology.v1.Account.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 7: clouditor.ontology.v1.Account.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	211, // 8: clouditor.ontology.v1.ActivityLogging.retention_period:type_name -> google.protobuf.Duration
 	6,   // 9: clouditor.ontology.v1.AnomalyDetection.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
-	208, // 10: clouditor.ontology.v1.Application.creation_time:type_name -> google.protobuf.Timestamp
-	157, // 11: clouditor.ontology.v1.Application.labels:type_name -> clouditor.ontology.v1.Application.LabelsEntry
+	210, // 10: clouditor.ontology.v1.Application.creation_time:type_name -> google.protobuf.Timestamp
+	158, // 11: clouditor.ontology.v1.Application.labels:type_name -> clouditor.ontology.v1.Application.LabelsEntry
 	12,  // 12: clouditor.ontology.v1.Application.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
 	61,  // 13: clouditor.ontology.v1.Application.functionalities:type_name -> clouditor.ontology.v1.Functionality
-	209, // 14: clouditor.ontology.v1.ApplicationLogging.retention_period:type_name -> google.protobuf.Duration
+	211, // 14: clouditor.ontology.v1.ApplicationLogging.retention_period:type_name -> google.protobuf.Duration
 	38,  // 15: clouditor.ontology.v1.AtRestEncryption.customer_key_encryption:type_name -> clouditor.ontology.v1.CustomerKeyEncryption
 	99,  // 16: clouditor.ontology.v1.AtRestEncryption.managed_key_encryption:type_name -> clouditor.ontology.v1.ManagedKeyEncryption
 	87,  // 17: clouditor.ontology.v1.Attestation.local_attestation:type_name -> clouditor.ontology.v1.LocalAttestation
-	122, // 18: clouditor.ontology.v1.Attestation.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
+	123, // 18: clouditor.ontology.v1.Attestation.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
 	4,   // 19: clouditor.ontology.v1.Auditing.anomaly_detection:type_name -> clouditor.ontology.v1.AnomalyDetection
 	3,   // 20: clouditor.ontology.v1.Auditing.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
 	6,   // 21: clouditor.ontology.v1.Auditing.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
 	17,  // 22: clouditor.ontology.v1.Auditing.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
 	109, // 23: clouditor.ontology.v1.Auditing.os_logging:type_name -> clouditor.ontology.v1.OSLogging
-	126, // 24: clouditor.ontology.v1.Auditing.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	127, // 24: clouditor.ontology.v1.Auditing.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
 	98,  // 25: clouditor.ontology.v1.Auditing.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	147, // 26: clouditor.ontology.v1.Auditing.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	148, // 26: clouditor.ontology.v1.Auditing.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
 	20,  // 27: clouditor.ontology.v1.Authenticity.certificate_based_authentication:type_name -> clouditor.ontology.v1.CertificateBasedAuthentication
 	80,  // 28: clouditor.ontology.v1.Authenticity.token_based_authentication:type_name -> clouditor.ontology.v1.TokenBasedAuthentication
 	102, // 29: clouditor.ontology.v1.Authenticity.multi_factor_authentiation:type_name -> clouditor.ontology.v1.MultiFactorAuthentiation
 	108, // 30: clouditor.ontology.v1.Authenticity.no_authentication:type_name -> clouditor.ontology.v1.NoAuthentication
 	110, // 31: clouditor.ontology.v1.Authenticity.otp_based_authentication:type_name -> clouditor.ontology.v1.OTPBasedAuthentication
 	115, // 32: clouditor.ontology.v1.Authenticity.password_based_authentication:type_name -> clouditor.ontology.v1.PasswordBasedAuthentication
-	139, // 33: clouditor.ontology.v1.Authenticity.single_sign_on:type_name -> clouditor.ontology.v1.SingleSignOn
+	140, // 33: clouditor.ontology.v1.Authenticity.single_sign_on:type_name -> clouditor.ontology.v1.SingleSignOn
 	0,   // 34: clouditor.ontology.v1.Authorization.abac:type_name -> clouditor.ontology.v1.ABAC
 	84,  // 35: clouditor.ontology.v1.Authorization.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
-	153, // 36: clouditor.ontology.v1.Authorization.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
-	118, // 37: clouditor.ontology.v1.Authorization.rbac:type_name -> clouditor.ontology.v1.RBAC
-	209, // 38: clouditor.ontology.v1.AutomaticUpdates.interval:type_name -> google.protobuf.Duration
+	154, // 36: clouditor.ontology.v1.Authorization.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
+	119, // 37: clouditor.ontology.v1.Authorization.rbac:type_name -> clouditor.ontology.v1.RBAC
+	211, // 38: clouditor.ontology.v1.AutomaticUpdates.interval:type_name -> google.protobuf.Duration
 	15,  // 39: clouditor.ontology.v1.Availability.backup:type_name -> clouditor.ontology.v1.Backup
 	39,  // 40: clouditor.ontology.v1.Availability.d_do_s_protection:type_name -> clouditor.ontology.v1.DDoSProtection
 	64,  // 41: clouditor.ontology.v1.Availability.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
 	65,  // 42: clouditor.ontology.v1.Availability.geo_redundancy:type_name -> clouditor.ontology.v1.GeoRedundancy
 	89,  // 43: clouditor.ontology.v1.Availability.local_redundancy:type_name -> clouditor.ontology.v1.LocalRedundancy
-	155, // 44: clouditor.ontology.v1.Availability.zone_redundancy:type_name -> clouditor.ontology.v1.ZoneRedundancy
-	208, // 45: clouditor.ontology.v1.AwarenessTraining.creation_time:type_name -> google.protobuf.Timestamp
-	158, // 46: clouditor.ontology.v1.AwarenessTraining.labels:type_name -> clouditor.ontology.v1.AwarenessTraining.LabelsEntry
-	209, // 47: clouditor.ontology.v1.Backup.interval:type_name -> google.protobuf.Duration
-	209, // 48: clouditor.ontology.v1.Backup.retention_period:type_name -> google.protobuf.Duration
-	146, // 49: clouditor.ontology.v1.Backup.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	208, // 50: clouditor.ontology.v1.BlockStorage.creation_time:type_name -> google.protobuf.Timestamp
-	159, // 51: clouditor.ontology.v1.BlockStorage.labels:type_name -> clouditor.ontology.v1.BlockStorage.LabelsEntry
+	156, // 44: clouditor.ontology.v1.Availability.zone_redundancy:type_name -> clouditor.ontology.v1.ZoneRedundancy
+	210, // 45: clouditor.ontology.v1.AwarenessTraining.creation_time:type_name -> google.protobuf.Timestamp
+	159, // 46: clouditor.ontology.v1.AwarenessTraining.labels:type_name -> clouditor.ontology.v1.AwarenessTraining.LabelsEntry
+	211, // 47: clouditor.ontology.v1.Backup.interval:type_name -> google.protobuf.Duration
+	211, // 48: clouditor.ontology.v1.Backup.retention_period:type_name -> google.protobuf.Duration
+	147, // 49: clouditor.ontology.v1.Backup.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	210, // 50: clouditor.ontology.v1.BlockStorage.creation_time:type_name -> google.protobuf.Timestamp
+	160, // 51: clouditor.ontology.v1.BlockStorage.labels:type_name -> clouditor.ontology.v1.BlockStorage.LabelsEntry
 	3,   // 52: clouditor.ontology.v1.BlockStorage.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
 	7,   // 53: clouditor.ontology.v1.BlockStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
 	15,  // 54: clouditor.ontology.v1.BlockStorage.backups:type_name -> clouditor.ontology.v1.Backup
 	64,  // 55: clouditor.ontology.v1.BlockStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
 	76,  // 56: clouditor.ontology.v1.BlockStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
 	92,  // 57: clouditor.ontology.v1.BlockStorage.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 58: clouditor.ontology.v1.BlockStorage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	126, // 59: clouditor.ontology.v1.BlockStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	147, // 60: clouditor.ontology.v1.BlockStorage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	209, // 61: clouditor.ontology.v1.BootLogging.retention_period:type_name -> google.protobuf.Duration
+	120, // 58: clouditor.ontology.v1.BlockStorage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	127, // 59: clouditor.ontology.v1.BlockStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	148, // 60: clouditor.ontology.v1.BlockStorage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	211, // 61: clouditor.ontology.v1.BootLogging.retention_period:type_name -> google.protobuf.Duration
 	79,  // 62: clouditor.ontology.v1.CICDService.job:type_name -> clouditor.ontology.v1.Job
-	154, // 63: clouditor.ontology.v1.CICDService.workflow:type_name -> clouditor.ontology.v1.Workflow
-	208, // 64: clouditor.ontology.v1.Certificate.creation_time:type_name -> google.protobuf.Timestamp
-	208, // 65: clouditor.ontology.v1.Certificate.expiration_date:type_name -> google.protobuf.Timestamp
-	160, // 66: clouditor.ontology.v1.Certificate.labels:type_name -> clouditor.ontology.v1.Certificate.LabelsEntry
-	208, // 67: clouditor.ontology.v1.Certificate.not_before_date:type_name -> google.protobuf.Timestamp
+	155, // 63: clouditor.ontology.v1.CICDService.workflow:type_name -> clouditor.ontology.v1.Workflow
+	210, // 64: clouditor.ontology.v1.Certificate.creation_time:type_name -> google.protobuf.Timestamp
+	210, // 65: clouditor.ontology.v1.Certificate.expiration_date:type_name -> google.protobuf.Timestamp
+	161, // 66: clouditor.ontology.v1.Certificate.labels:type_name -> clouditor.ontology.v1.Certificate.LabelsEntry
+	210, // 67: clouditor.ontology.v1.Certificate.not_before_date:type_name -> google.protobuf.Timestamp
 	64,  // 68: clouditor.ontology.v1.Certificate.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
 	92,  // 69: clouditor.ontology.v1.Certificate.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 70: clouditor.ontology.v1.Certificate.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 71: clouditor.ontology.v1.Certificate.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	120, // 70: clouditor.ontology.v1.Certificate.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 71: clouditor.ontology.v1.Certificate.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
 	2,   // 72: clouditor.ontology.v1.Infrastructure.account:type_name -> clouditor.ontology.v1.Account
 	79,  // 73: clouditor.ontology.v1.Infrastructure.job:type_name -> clouditor.ontology.v1.Job
-	154, // 74: clouditor.ontology.v1.Infrastructure.workflow:type_name -> clouditor.ontology.v1.Workflow
+	155, // 74: clouditor.ontology.v1.Infrastructure.workflow:type_name -> clouditor.ontology.v1.Workflow
 	26,  // 75: clouditor.ontology.v1.Infrastructure.code_repository:type_name -> clouditor.ontology.v1.CodeRepository
 	30,  // 76: clouditor.ontology.v1.Infrastructure.container:type_name -> clouditor.ontology.v1.Container
 	59,  // 77: clouditor.ontology.v1.Infrastructure.function:type_name -> clouditor.ontology.v1.Function
-	149, // 78: clouditor.ontology.v1.Infrastructure.virtual_machine:type_name -> clouditor.ontology.v1.VirtualMachine
-	32,  // 79: clouditor.ontology.v1.Infrastructure.container_orchestration:type_name -> clouditor.ontology.v1.ContainerOrchestration
-	33,  // 80: clouditor.ontology.v1.Infrastructure.container_registry:type_name -> clouditor.ontology.v1.ContainerRegistry
-	19,  // 81: clouditor.ontology.v1.Infrastructure.certificate:type_name -> clouditor.ontology.v1.Certificate
-	81,  // 82: clouditor.ontology.v1.Infrastructure.key:type_name -> clouditor.ontology.v1.Key
-	131, // 83: clouditor.ontology.v1.Infrastructure.secret:type_name -> clouditor.ontology.v1.Secret
-	74,  // 84: clouditor.ontology.v1.Infrastructure.identity:type_name -> clouditor.ontology.v1.Identity
-	129, // 85: clouditor.ontology.v1.Infrastructure.role_assignment:type_name -> clouditor.ontology.v1.RoleAssignment
-	31,  // 86: clouditor.ontology.v1.Infrastructure.container_image:type_name -> clouditor.ontology.v1.ContainerImage
-	148, // 87: clouditor.ontology.v1.Infrastructure.vm_image:type_name -> clouditor.ontology.v1.VMImage
-	48,  // 88: clouditor.ontology.v1.Infrastructure.device_provisioning_service:type_name -> clouditor.ontology.v1.DeviceProvisioningService
-	100, // 89: clouditor.ontology.v1.Infrastructure.messaging_hub:type_name -> clouditor.ontology.v1.MessagingHub
-	83,  // 90: clouditor.ontology.v1.Infrastructure.key_vault:type_name -> clouditor.ontology.v1.KeyVault
-	104, // 91: clouditor.ontology.v1.Infrastructure.network_interface:type_name -> clouditor.ontology.v1.NetworkInterface
-	105, // 92: clouditor.ontology.v1.Infrastructure.network_security_group:type_name -> clouditor.ontology.v1.NetworkSecurityGroup
-	60,  // 93: clouditor.ontology.v1.Infrastructure.function_service:type_name -> clouditor.ontology.v1.FunctionService
-	63,  // 94: clouditor.ontology.v1.Infrastructure.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
-	86,  // 95: clouditor.ontology.v1.Infrastructure.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
-	93,  // 96: clouditor.ontology.v1.Infrastructure.logging_service:type_name -> clouditor.ontology.v1.LoggingService
-	97,  // 97: clouditor.ontology.v1.Infrastructure.machine_learning_service:type_name -> clouditor.ontology.v1.MachineLearningService
-	134, // 98: clouditor.ontology.v1.Infrastructure.security_advisory_service:type_name -> clouditor.ontology.v1.SecurityAdvisoryService
-	50,  // 99: clouditor.ontology.v1.Infrastructure.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
-	82,  // 100: clouditor.ontology.v1.Infrastructure.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
-	103, // 101: clouditor.ontology.v1.Infrastructure.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
-	120, // 102: clouditor.ontology.v1.Infrastructure.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
-	56,  // 103: clouditor.ontology.v1.Infrastructure.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
-	113, // 104: clouditor.ontology.v1.Infrastructure.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
-	150, // 105: clouditor.ontology.v1.Infrastructure.virtual_network:type_name -> clouditor.ontology.v1.VirtualNetwork
-	151, // 106: clouditor.ontology.v1.Infrastructure.virtual_sub_network:type_name -> clouditor.ontology.v1.VirtualSubNetwork
-	116, // 107: clouditor.ontology.v1.Infrastructure.password_policy:type_name -> clouditor.ontology.v1.PasswordPolicy
-	125, // 108: clouditor.ontology.v1.Infrastructure.resource_group:type_name -> clouditor.ontology.v1.ResourceGroup
-	16,  // 109: clouditor.ontology.v1.Infrastructure.block_storage:type_name -> clouditor.ontology.v1.BlockStorage
-	46,  // 110: clouditor.ontology.v1.Infrastructure.database_storage:type_name -> clouditor.ontology.v1.DatabaseStorage
-	55,  // 111: clouditor.ontology.v1.Infrastructure.file_storage:type_name -> clouditor.ontology.v1.FileStorage
-	111, // 112: clouditor.ontology.v1.Infrastructure.object_storage:type_name -> clouditor.ontology.v1.ObjectStorage
-	208, // 113: clouditor.ontology.v1.CodeRepository.creation_time:type_name -> google.protobuf.Timestamp
-	161, // 114: clouditor.ontology.v1.CodeRepository.labels:type_name -> clouditor.ontology.v1.CodeRepository.LabelsEntry
-	64,  // 115: clouditor.ontology.v1.CodeRepository.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 116: clouditor.ontology.v1.CodeRepository.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 117: clouditor.ontology.v1.CodeRepository.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 118: clouditor.ontology.v1.CodeRepository.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	5,   // 119: clouditor.ontology.v1.Component.application:type_name -> clouditor.ontology.v1.Application
-	85,  // 120: clouditor.ontology.v1.Component.library:type_name -> clouditor.ontology.v1.Library
-	30,  // 121: clouditor.ontology.v1.Compute.container:type_name -> clouditor.ontology.v1.Container
-	59,  // 122: clouditor.ontology.v1.Compute.function:type_name -> clouditor.ontology.v1.Function
-	149, // 123: clouditor.ontology.v1.Compute.virtual_machine:type_name -> clouditor.ontology.v1.VirtualMachine
-	38,  // 124: clouditor.ontology.v1.Confidentiality.customer_key_encryption:type_name -> clouditor.ontology.v1.CustomerKeyEncryption
-	99,  // 125: clouditor.ontology.v1.Confidentiality.managed_key_encryption:type_name -> clouditor.ontology.v1.ManagedKeyEncryption
-	51,  // 126: clouditor.ontology.v1.Confidentiality.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
-	146, // 127: clouditor.ontology.v1.Confidentiality.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	208, // 128: clouditor.ontology.v1.Container.creation_time:type_name -> google.protobuf.Timestamp
-	162, // 129: clouditor.ontology.v1.Container.labels:type_name -> clouditor.ontology.v1.Container.LabelsEntry
-	51,  // 130: clouditor.ontology.v1.Container.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
-	64,  // 131: clouditor.ontology.v1.Container.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 132: clouditor.ontology.v1.Container.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 133: clouditor.ontology.v1.Container.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	122, // 134: clouditor.ontology.v1.Container.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
-	126, // 135: clouditor.ontology.v1.Container.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	147, // 136: clouditor.ontology.v1.Container.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	208, // 137: clouditor.ontology.v1.ContainerImage.creation_time:type_name -> google.protobuf.Timestamp
-	163, // 138: clouditor.ontology.v1.ContainerImage.labels:type_name -> clouditor.ontology.v1.ContainerImage.LabelsEntry
-	64,  // 139: clouditor.ontology.v1.ContainerImage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 140: clouditor.ontology.v1.ContainerImage.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 141: clouditor.ontology.v1.ContainerImage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 142: clouditor.ontology.v1.ContainerImage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	208, // 143: clouditor.ontology.v1.ContainerOrchestration.creation_time:type_name -> google.protobuf.Timestamp
-	164, // 144: clouditor.ontology.v1.ContainerOrchestration.labels:type_name -> clouditor.ontology.v1.ContainerOrchestration.LabelsEntry
-	64,  // 145: clouditor.ontology.v1.ContainerOrchestration.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 146: clouditor.ontology.v1.ContainerOrchestration.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 147: clouditor.ontology.v1.ContainerOrchestration.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	126, // 148: clouditor.ontology.v1.ContainerOrchestration.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	147, // 149: clouditor.ontology.v1.ContainerOrchestration.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	208, // 150: clouditor.ontology.v1.ContainerRegistry.creation_time:type_name -> google.protobuf.Timestamp
-	165, // 151: clouditor.ontology.v1.ContainerRegistry.labels:type_name -> clouditor.ontology.v1.ContainerRegistry.LabelsEntry
-	64,  // 152: clouditor.ontology.v1.ContainerRegistry.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 153: clouditor.ontology.v1.ContainerRegistry.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 154: clouditor.ontology.v1.ContainerRegistry.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 155: clouditor.ontology.v1.ContainerRegistry.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	21,  // 156: clouditor.ontology.v1.Core.certification_target:type_name -> clouditor.ontology.v1.CertificationTarget
-	24,  // 157: clouditor.ontology.v1.Core.cloud_sdk:type_name -> clouditor.ontology.v1.CloudSDK
-	67,  // 158: clouditor.ontology.v1.Core.http_client_library:type_name -> clouditor.ontology.v1.HttpClientLibrary
-	71,  // 159: clouditor.ontology.v1.Core.http_server:type_name -> clouditor.ontology.v1.HttpServer
-	91,  // 160: clouditor.ontology.v1.Core.logger:type_name -> clouditor.ontology.v1.Logger
-	127, // 161: clouditor.ontology.v1.Core.resource_type:type_name -> clouditor.ontology.v1.ResourceType
-	144, // 162: clouditor.ontology.v1.Core.tool:type_name -> clouditor.ontology.v1.Tool
-	19,  // 163: clouditor.ontology.v1.Credential.certificate:type_name -> clouditor.ontology.v1.Certificate
-	81,  // 164: clouditor.ontology.v1.Credential.key:type_name -> clouditor.ontology.v1.Key
-	131, // 165: clouditor.ontology.v1.Credential.secret:type_name -> clouditor.ontology.v1.Secret
-	53,  // 166: clouditor.ontology.v1.DocumentChecksum.errors:type_name -> clouditor.ontology.v1.Error
-	47,  // 167: clouditor.ontology.v1.CryptographicOperation.decryption:type_name -> clouditor.ontology.v1.Decryption
-	52,  // 168: clouditor.ontology.v1.CryptographicOperation.encryption:type_name -> clouditor.ontology.v1.Encryption
-	66,  // 169: clouditor.ontology.v1.CryptographicOperation.cryptographic_hash:type_name -> clouditor.ontology.v1.CryptographicHash
-	62,  // 170: clouditor.ontology.v1.Data.generic_document:type_name -> clouditor.ontology.v1.GenericDocument
-	117, // 171: clouditor.ontology.v1.Data.policy_document:type_name -> clouditor.ontology.v1.PolicyDocument
-	132, // 172: clouditor.ontology.v1.Data.security_advisory_document:type_name -> clouditor.ontology.v1.SecurityAdvisoryDocument
-	137, // 173: clouditor.ontology.v1.Data.service_metadata_document:type_name -> clouditor.ontology.v1.ServiceMetadataDocument
-	95,  // 174: clouditor.ontology.v1.Data.machine_learning_dataset:type_name -> clouditor.ontology.v1.MachineLearningDataset
-	96,  // 175: clouditor.ontology.v1.Data.machine_learning_model:type_name -> clouditor.ontology.v1.MachineLearningModel
-	88,  // 176: clouditor.ontology.v1.DataLocation.local_data_location:type_name -> clouditor.ontology.v1.LocalDataLocation
-	123, // 177: clouditor.ontology.v1.DataLocation.remote_data_location:type_name -> clouditor.ontology.v1.RemoteDataLocation
-	25,  // 178: clouditor.ontology.v1.DatabaseConnect.code_region:type_name -> clouditor.ontology.v1.CodeRegion
-	42,  // 179: clouditor.ontology.v1.DatabaseOperation.database_connect:type_name -> clouditor.ontology.v1.DatabaseConnect
-	44,  // 180: clouditor.ontology.v1.DatabaseOperation.database_query:type_name -> clouditor.ontology.v1.DatabaseQuery
-	25,  // 181: clouditor.ontology.v1.DatabaseQuery.code_region:type_name -> clouditor.ontology.v1.CodeRegion
-	50,  // 182: clouditor.ontology.v1.DatabaseService.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
-	82,  // 183: clouditor.ontology.v1.DatabaseService.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
-	103, // 184: clouditor.ontology.v1.DatabaseService.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
-	120, // 185: clouditor.ontology.v1.DatabaseService.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
-	208, // 186: clouditor.ontology.v1.DatabaseStorage.creation_time:type_name -> google.protobuf.Timestamp
-	166, // 187: clouditor.ontology.v1.DatabaseStorage.labels:type_name -> clouditor.ontology.v1.DatabaseStorage.LabelsEntry
-	3,   // 188: clouditor.ontology.v1.DatabaseStorage.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	7,   // 189: clouditor.ontology.v1.DatabaseStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
-	15,  // 190: clouditor.ontology.v1.DatabaseStorage.backups:type_name -> clouditor.ontology.v1.Backup
-	64,  // 191: clouditor.ontology.v1.DatabaseStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	76,  // 192: clouditor.ontology.v1.DatabaseStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
-	92,  // 193: clouditor.ontology.v1.DatabaseStorage.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 194: clouditor.ontology.v1.DatabaseStorage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	126, // 195: clouditor.ontology.v1.DatabaseStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	147, // 196: clouditor.ontology.v1.DatabaseStorage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	25,  // 197: clouditor.ontology.v1.Decryption.code_region:type_name -> clouditor.ontology.v1.CodeRegion
-	208, // 198: clouditor.ontology.v1.DeviceProvisioningService.creation_time:type_name -> google.protobuf.Timestamp
-	167, // 199: clouditor.ontology.v1.DeviceProvisioningService.labels:type_name -> clouditor.ontology.v1.DeviceProvisioningService.LabelsEntry
-	64,  // 200: clouditor.ontology.v1.DeviceProvisioningService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 201: clouditor.ontology.v1.DeviceProvisioningService.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 202: clouditor.ontology.v1.DeviceProvisioningService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 203: clouditor.ontology.v1.DeviceProvisioningService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	62,  // 204: clouditor.ontology.v1.Document.generic_document:type_name -> clouditor.ontology.v1.GenericDocument
-	117, // 205: clouditor.ontology.v1.Document.policy_document:type_name -> clouditor.ontology.v1.PolicyDocument
-	132, // 206: clouditor.ontology.v1.Document.security_advisory_document:type_name -> clouditor.ontology.v1.SecurityAdvisoryDocument
-	137, // 207: clouditor.ontology.v1.Document.service_metadata_document:type_name -> clouditor.ontology.v1.ServiceMetadataDocument
-	208, // 208: clouditor.ontology.v1.DocumentDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
-	168, // 209: clouditor.ontology.v1.DocumentDatabaseService.labels:type_name -> clouditor.ontology.v1.DocumentDatabaseService.LabelsEntry
-	3,   // 210: clouditor.ontology.v1.DocumentDatabaseService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	4,   // 211: clouditor.ontology.v1.DocumentDatabaseService.anomaly_detections:type_name -> clouditor.ontology.v1.AnomalyDetection
-	10,  // 212: clouditor.ontology.v1.DocumentDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 213: clouditor.ontology.v1.DocumentDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	68,  // 214: clouditor.ontology.v1.DocumentDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	92,  // 215: clouditor.ontology.v1.DocumentDatabaseService.loggings:type_name -> clouditor.ontology.v1.Logging
-	98,  // 216: clouditor.ontology.v1.DocumentDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	119, // 217: clouditor.ontology.v1.DocumentDatabaseService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	146, // 218: clouditor.ontology.v1.DocumentDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	147, // 219: clouditor.ontology.v1.DocumentDatabaseService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	25,  // 220: clouditor.ontology.v1.Encryption.code_region:type_name -> clouditor.ontology.v1.CodeRegion
-	208, // 221: clouditor.ontology.v1.FileStorage.creation_time:type_name -> google.protobuf.Timestamp
-	169, // 222: clouditor.ontology.v1.FileStorage.labels:type_name -> clouditor.ontology.v1.FileStorage.LabelsEntry
-	3,   // 223: clouditor.ontology.v1.FileStorage.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	7,   // 224: clouditor.ontology.v1.FileStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
-	15,  // 225: clouditor.ontology.v1.FileStorage.backups:type_name -> clouditor.ontology.v1.Backup
-	64,  // 226: clouditor.ontology.v1.FileStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	76,  // 227: clouditor.ontology.v1.FileStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
-	92,  // 228: clouditor.ontology.v1.FileStorage.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 229: clouditor.ontology.v1.FileStorage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	126, // 230: clouditor.ontology.v1.FileStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	147, // 231: clouditor.ontology.v1.FileStorage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	208, // 232: clouditor.ontology.v1.FileStorageService.creation_time:type_name -> google.protobuf.Timestamp
-	170, // 233: clouditor.ontology.v1.FileStorageService.labels:type_name -> clouditor.ontology.v1.FileStorageService.LabelsEntry
-	3,   // 234: clouditor.ontology.v1.FileStorageService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	10,  // 235: clouditor.ontology.v1.FileStorageService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 236: clouditor.ontology.v1.FileStorageService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	68,  // 237: clouditor.ontology.v1.FileStorageService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	92,  // 238: clouditor.ontology.v1.FileStorageService.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 239: clouditor.ontology.v1.FileStorageService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	146, // 240: clouditor.ontology.v1.FileStorageService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	147, // 241: clouditor.ontology.v1.FileStorageService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	84,  // 242: clouditor.ontology.v1.Firewall.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
-	153, // 243: clouditor.ontology.v1.Firewall.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
-	24,  // 244: clouditor.ontology.v1.Framework.cloud_sdk:type_name -> clouditor.ontology.v1.CloudSDK
-	67,  // 245: clouditor.ontology.v1.Framework.http_client_library:type_name -> clouditor.ontology.v1.HttpClientLibrary
-	71,  // 246: clouditor.ontology.v1.Framework.http_server:type_name -> clouditor.ontology.v1.HttpServer
-	91,  // 247: clouditor.ontology.v1.Framework.logger:type_name -> clouditor.ontology.v1.Logger
-	208, // 248: clouditor.ontology.v1.Function.creation_time:type_name -> google.protobuf.Timestamp
-	171, // 249: clouditor.ontology.v1.Function.labels:type_name -> clouditor.ontology.v1.Function.LabelsEntry
-	51,  // 250: clouditor.ontology.v1.Function.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
-	64,  // 251: clouditor.ontology.v1.Function.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 252: clouditor.ontology.v1.Function.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 253: clouditor.ontology.v1.Function.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	122, // 254: clouditor.ontology.v1.Function.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
-	126, // 255: clouditor.ontology.v1.Function.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	147, // 256: clouditor.ontology.v1.Function.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	208, // 257: clouditor.ontology.v1.FunctionService.creation_time:type_name -> google.protobuf.Timestamp
-	172, // 258: clouditor.ontology.v1.FunctionService.labels:type_name -> clouditor.ontology.v1.FunctionService.LabelsEntry
-	10,  // 259: clouditor.ontology.v1.FunctionService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 260: clouditor.ontology.v1.FunctionService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 261: clouditor.ontology.v1.FunctionService.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 262: clouditor.ontology.v1.FunctionService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	146, // 263: clouditor.ontology.v1.FunctionService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	147, // 264: clouditor.ontology.v1.FunctionService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	22,  // 265: clouditor.ontology.v1.Functionality.cipher_suite:type_name -> clouditor.ontology.v1.CipherSuite
-	25,  // 266: clouditor.ontology.v1.Functionality.code_region:type_name -> clouditor.ontology.v1.CodeRegion
-	88,  // 267: clouditor.ontology.v1.Functionality.local_data_location:type_name -> clouditor.ontology.v1.LocalDataLocation
-	123, // 268: clouditor.ontology.v1.Functionality.remote_data_location:type_name -> clouditor.ontology.v1.RemoteDataLocation
-	53,  // 269: clouditor.ontology.v1.Functionality.error:type_name -> clouditor.ontology.v1.Error
-	68,  // 270: clouditor.ontology.v1.Functionality.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	70,  // 271: clouditor.ontology.v1.Functionality.http_request_handler:type_name -> clouditor.ontology.v1.HttpRequestHandler
-	47,  // 272: clouditor.ontology.v1.Functionality.decryption:type_name -> clouditor.ontology.v1.Decryption
-	52,  // 273: clouditor.ontology.v1.Functionality.encryption:type_name -> clouditor.ontology.v1.Encryption
-	66,  // 274: clouditor.ontology.v1.Functionality.cryptographic_hash:type_name -> clouditor.ontology.v1.CryptographicHash
-	42,  // 275: clouditor.ontology.v1.Functionality.database_connect:type_name -> clouditor.ontology.v1.DatabaseConnect
-	44,  // 276: clouditor.ontology.v1.Functionality.database_query:type_name -> clouditor.ontology.v1.DatabaseQuery
-	69,  // 277: clouditor.ontology.v1.Functionality.http_request:type_name -> clouditor.ontology.v1.HttpRequest
-	90,  // 278: clouditor.ontology.v1.Functionality.log_operation:type_name -> clouditor.ontology.v1.LogOperation
-	112, // 279: clouditor.ontology.v1.Functionality.object_storage_request:type_name -> clouditor.ontology.v1.ObjectStorageRequest
-	130, // 280: clouditor.ontology.v1.Functionality.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
-	133, // 281: clouditor.ontology.v1.Functionality.security_advisory_feed:type_name -> clouditor.ontology.v1.SecurityAdvisoryFeed
-	152, // 282: clouditor.ontology.v1.Functionality.vulnerability:type_name -> clouditor.ontology.v1.Vulnerability
-	208, // 283: clouditor.ontology.v1.GenericDocument.creation_time:type_name -> google.protobuf.Timestamp
-	173, // 284: clouditor.ontology.v1.GenericDocument.labels:type_name -> clouditor.ontology.v1.GenericDocument.LabelsEntry
-	41,  // 285: clouditor.ontology.v1.GenericDocument.data_location:type_name -> clouditor.ontology.v1.DataLocation
-	36,  // 286: clouditor.ontology.v1.GenericDocument.document_checksums:type_name -> clouditor.ontology.v1.DocumentChecksum
-	138, // 287: clouditor.ontology.v1.GenericDocument.document_signatures:type_name -> clouditor.ontology.v1.DocumentSignature
-	130, // 288: clouditor.ontology.v1.GenericDocument.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
-	135, // 289: clouditor.ontology.v1.GenericDocument.security_features:type_name -> clouditor.ontology.v1.SecurityFeature
-	208, // 290: clouditor.ontology.v1.GenericNetworkService.creation_time:type_name -> google.protobuf.Timestamp
-	174, // 291: clouditor.ontology.v1.GenericNetworkService.labels:type_name -> clouditor.ontology.v1.GenericNetworkService.LabelsEntry
-	10,  // 292: clouditor.ontology.v1.GenericNetworkService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 293: clouditor.ontology.v1.GenericNetworkService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 294: clouditor.ontology.v1.GenericNetworkService.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 295: clouditor.ontology.v1.GenericNetworkService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	146, // 296: clouditor.ontology.v1.GenericNetworkService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	147, // 297: clouditor.ontology.v1.GenericNetworkService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	64,  // 298: clouditor.ontology.v1.GeoRedundancy.geo_locations:type_name -> clouditor.ontology.v1.GeoLocation
-	25,  // 299: clouditor.ontology.v1.CryptographicHash.code_region:type_name -> clouditor.ontology.v1.CodeRegion
-	10,  // 300: clouditor.ontology.v1.HttpEndpoint.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	146, // 301: clouditor.ontology.v1.HttpEndpoint.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	25,  // 302: clouditor.ontology.v1.HttpRequest.code_region:type_name -> clouditor.ontology.v1.CodeRegion
-	68,  // 303: clouditor.ontology.v1.HttpRequest.http_endpoints:type_name -> clouditor.ontology.v1.HttpEndpoint
-	68,  // 304: clouditor.ontology.v1.HttpRequestHandler.http_endpoints:type_name -> clouditor.ontology.v1.HttpEndpoint
-	70,  // 305: clouditor.ontology.v1.HttpServer.http_request_handler:type_name -> clouditor.ontology.v1.HttpRequestHandler
-	14,  // 306: clouditor.ontology.v1.HumanResources.awareness_training:type_name -> clouditor.ontology.v1.AwarenessTraining
-	136, // 307: clouditor.ontology.v1.HumanResources.security_training:type_name -> clouditor.ontology.v1.SecurityTraining
-	74,  // 308: clouditor.ontology.v1.Identifiable.identity:type_name -> clouditor.ontology.v1.Identity
-	129, // 309: clouditor.ontology.v1.Identifiable.role_assignment:type_name -> clouditor.ontology.v1.RoleAssignment
-	208, // 310: clouditor.ontology.v1.Identity.creation_time:type_name -> google.protobuf.Timestamp
-	175, // 311: clouditor.ontology.v1.Identity.labels:type_name -> clouditor.ontology.v1.Identity.LabelsEntry
-	208, // 312: clouditor.ontology.v1.Identity.last_activity:type_name -> google.protobuf.Timestamp
-	10,  // 313: clouditor.ontology.v1.Identity.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	11,  // 314: clouditor.ontology.v1.Identity.authorization:type_name -> clouditor.ontology.v1.Authorization
-	64,  // 315: clouditor.ontology.v1.Identity.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 316: clouditor.ontology.v1.Identity.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 317: clouditor.ontology.v1.Identity.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 318: clouditor.ontology.v1.Identity.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	31,  // 319: clouditor.ontology.v1.Image.container_image:type_name -> clouditor.ontology.v1.ContainerImage
-	148, // 320: clouditor.ontology.v1.Image.vm_image:type_name -> clouditor.ontology.v1.VMImage
-	87,  // 321: clouditor.ontology.v1.Integrity.local_attestation:type_name -> clouditor.ontology.v1.LocalAttestation
-	122, // 322: clouditor.ontology.v1.Integrity.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
-	12,  // 323: clouditor.ontology.v1.Integrity.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
-	36,  // 324: clouditor.ontology.v1.Integrity.document_checksum:type_name -> clouditor.ontology.v1.DocumentChecksum
-	76,  // 325: clouditor.ontology.v1.Integrity.immutability:type_name -> clouditor.ontology.v1.Immutability
-	138, // 326: clouditor.ontology.v1.Integrity.document_signature:type_name -> clouditor.ontology.v1.DocumentSignature
-	48,  // 327: clouditor.ontology.v1.IoT.device_provisioning_service:type_name -> clouditor.ontology.v1.DeviceProvisioningService
-	100, // 328: clouditor.ontology.v1.IoT.messaging_hub:type_name -> clouditor.ontology.v1.MessagingHub
-	208, // 329: clouditor.ontology.v1.Job.creation_time:type_name -> google.protobuf.Timestamp
-	176, // 330: clouditor.ontology.v1.Job.labels:type_name -> clouditor.ontology.v1.Job.LabelsEntry
-	64,  // 331: clouditor.ontology.v1.Job.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 332: clouditor.ontology.v1.Job.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 333: clouditor.ontology.v1.Job.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 334: clouditor.ontology.v1.Job.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	208, // 335: clouditor.ontology.v1.Key.creation_time:type_name -> google.protobuf.Timestamp
-	208, // 336: clouditor.ontology.v1.Key.expiration_date:type_name -> google.protobuf.Timestamp
-	177, // 337: clouditor.ontology.v1.Key.labels:type_name -> clouditor.ontology.v1.Key.LabelsEntry
-	208, // 338: clouditor.ontology.v1.Key.not_before_date:type_name -> google.protobuf.Timestamp
-	64,  // 339: clouditor.ontology.v1.Key.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 340: clouditor.ontology.v1.Key.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 341: clouditor.ontology.v1.Key.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 342: clouditor.ontology.v1.Key.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	208, // 343: clouditor.ontology.v1.KeyValueDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
-	178, // 344: clouditor.ontology.v1.KeyValueDatabaseService.labels:type_name -> clouditor.ontology.v1.KeyValueDatabaseService.LabelsEntry
-	3,   // 345: clouditor.ontology.v1.KeyValueDatabaseService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	4,   // 346: clouditor.ontology.v1.KeyValueDatabaseService.anomaly_detections:type_name -> clouditor.ontology.v1.AnomalyDetection
-	10,  // 347: clouditor.ontology.v1.KeyValueDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 348: clouditor.ontology.v1.KeyValueDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	68,  // 349: clouditor.ontology.v1.KeyValueDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	92,  // 350: clouditor.ontology.v1.KeyValueDatabaseService.loggings:type_name -> clouditor.ontology.v1.Logging
-	98,  // 351: clouditor.ontology.v1.KeyValueDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	119, // 352: clouditor.ontology.v1.KeyValueDatabaseService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	146, // 353: clouditor.ontology.v1.KeyValueDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	147, // 354: clouditor.ontology.v1.KeyValueDatabaseService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	208, // 355: clouditor.ontology.v1.KeyVault.creation_time:type_name -> google.protobuf.Timestamp
-	179, // 356: clouditor.ontology.v1.KeyVault.labels:type_name -> clouditor.ontology.v1.KeyVault.LabelsEntry
-	64,  // 357: clouditor.ontology.v1.KeyVault.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 358: clouditor.ontology.v1.KeyVault.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 359: clouditor.ontology.v1.KeyVault.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 360: clouditor.ontology.v1.KeyVault.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	208, // 361: clouditor.ontology.v1.Library.creation_time:type_name -> google.protobuf.Timestamp
-	180, // 362: clouditor.ontology.v1.Library.labels:type_name -> clouditor.ontology.v1.Library.LabelsEntry
-	61,  // 363: clouditor.ontology.v1.Library.functionalities:type_name -> clouditor.ontology.v1.Functionality
-	152, // 364: clouditor.ontology.v1.Library.vulnerabilities:type_name -> clouditor.ontology.v1.Vulnerability
-	208, // 365: clouditor.ontology.v1.LoadBalancer.creation_time:type_name -> google.protobuf.Timestamp
-	181, // 366: clouditor.ontology.v1.LoadBalancer.labels:type_name -> clouditor.ontology.v1.LoadBalancer.LabelsEntry
-	1,   // 367: clouditor.ontology.v1.LoadBalancer.access_restriction:type_name -> clouditor.ontology.v1.AccessRestriction
-	10,  // 368: clouditor.ontology.v1.LoadBalancer.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 369: clouditor.ontology.v1.LoadBalancer.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	68,  // 370: clouditor.ontology.v1.LoadBalancer.http_endpoints:type_name -> clouditor.ontology.v1.HttpEndpoint
-	92,  // 371: clouditor.ontology.v1.LoadBalancer.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 372: clouditor.ontology.v1.LoadBalancer.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	146, // 373: clouditor.ontology.v1.LoadBalancer.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	147, // 374: clouditor.ontology.v1.LoadBalancer.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	7,   // 375: clouditor.ontology.v1.LocalDataLocation.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
-	64,  // 376: clouditor.ontology.v1.LocalRedundancy.geo_locations:type_name -> clouditor.ontology.v1.GeoLocation
-	25,  // 377: clouditor.ontology.v1.LogOperation.code_region:type_name -> clouditor.ontology.v1.CodeRegion
-	92,  // 378: clouditor.ontology.v1.LogOperation.logging:type_name -> clouditor.ontology.v1.Logging
-	3,   // 379: clouditor.ontology.v1.Logging.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	6,   // 380: clouditor.ontology.v1.Logging.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
-	17,  // 381: clouditor.ontology.v1.Logging.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
-	109, // 382: clouditor.ontology.v1.Logging.os_logging:type_name -> clouditor.ontology.v1.OSLogging
-	126, // 383: clouditor.ontology.v1.Logging.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	208, // 384: clouditor.ontology.v1.LoggingService.creation_time:type_name -> google.protobuf.Timestamp
-	182, // 385: clouditor.ontology.v1.LoggingService.labels:type_name -> clouditor.ontology.v1.LoggingService.LabelsEntry
-	10,  // 386: clouditor.ontology.v1.LoggingService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 387: clouditor.ontology.v1.LoggingService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 388: clouditor.ontology.v1.LoggingService.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 389: clouditor.ontology.v1.LoggingService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	146, // 390: clouditor.ontology.v1.LoggingService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	147, // 391: clouditor.ontology.v1.LoggingService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	95,  // 392: clouditor.ontology.v1.MachineLearning.machine_learning_dataset:type_name -> clouditor.ontology.v1.MachineLearningDataset
-	96,  // 393: clouditor.ontology.v1.MachineLearning.machine_learning_model:type_name -> clouditor.ontology.v1.MachineLearningModel
-	208, // 394: clouditor.ontology.v1.MachineLearningDataset.creation_time:type_name -> google.protobuf.Timestamp
-	183, // 395: clouditor.ontology.v1.MachineLearningDataset.labels:type_name -> clouditor.ontology.v1.MachineLearningDataset.LabelsEntry
-	41,  // 396: clouditor.ontology.v1.MachineLearningDataset.data_location:type_name -> clouditor.ontology.v1.DataLocation
-	208, // 397: clouditor.ontology.v1.MachineLearningModel.creation_time:type_name -> google.protobuf.Timestamp
-	184, // 398: clouditor.ontology.v1.MachineLearningModel.labels:type_name -> clouditor.ontology.v1.MachineLearningModel.LabelsEntry
-	41,  // 399: clouditor.ontology.v1.MachineLearningModel.data_location:type_name -> clouditor.ontology.v1.DataLocation
-	208, // 400: clouditor.ontology.v1.MachineLearningService.creation_time:type_name -> google.protobuf.Timestamp
-	185, // 401: clouditor.ontology.v1.MachineLearningService.labels:type_name -> clouditor.ontology.v1.MachineLearningService.LabelsEntry
-	10,  // 402: clouditor.ontology.v1.MachineLearningService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 403: clouditor.ontology.v1.MachineLearningService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 404: clouditor.ontology.v1.MachineLearningService.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 405: clouditor.ontology.v1.MachineLearningService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	146, // 406: clouditor.ontology.v1.MachineLearningService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	147, // 407: clouditor.ontology.v1.MachineLearningService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	209, // 408: clouditor.ontology.v1.MalwareProtection.duration_since_active:type_name -> google.protobuf.Duration
-	6,   // 409: clouditor.ontology.v1.MalwareProtection.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
-	208, // 410: clouditor.ontology.v1.MessagingHub.creation_time:type_name -> google.protobuf.Timestamp
-	186, // 411: clouditor.ontology.v1.MessagingHub.labels:type_name -> clouditor.ontology.v1.MessagingHub.LabelsEntry
-	64,  // 412: clouditor.ontology.v1.MessagingHub.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 413: clouditor.ontology.v1.MessagingHub.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 414: clouditor.ontology.v1.MessagingHub.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 415: clouditor.ontology.v1.MessagingHub.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	141, // 416: clouditor.ontology.v1.CodeModule.source_code_file:type_name -> clouditor.ontology.v1.SourceCodeFile
-	10,  // 417: clouditor.ontology.v1.MultiFactorAuthentiation.authenticities:type_name -> clouditor.ontology.v1.Authenticity
-	208, // 418: clouditor.ontology.v1.MultiModalDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
-	187, // 419: clouditor.ontology.v1.MultiModalDatabaseService.labels:type_name -> clouditor.ontology.v1.MultiModalDatabaseService.LabelsEntry
-	3,   // 420: clouditor.ontology.v1.MultiModalDatabaseService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	4,   // 421: clouditor.ontology.v1.MultiModalDatabaseService.anomaly_detections:type_name -> clouditor.ontology.v1.AnomalyDetection
-	10,  // 422: clouditor.ontology.v1.MultiModalDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 423: clouditor.ontology.v1.MultiModalDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	68,  // 424: clouditor.ontology.v1.MultiModalDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	92,  // 425: clouditor.ontology.v1.MultiModalDatabaseService.loggings:type_name -> clouditor.ontology.v1.Logging
-	98,  // 426: clouditor.ontology.v1.MultiModalDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	119, // 427: clouditor.ontology.v1.MultiModalDatabaseService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	146, // 428: clouditor.ontology.v1.MultiModalDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	147, // 429: clouditor.ontology.v1.MultiModalDatabaseService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	208, // 430: clouditor.ontology.v1.NetworkInterface.creation_time:type_name -> google.protobuf.Timestamp
-	188, // 431: clouditor.ontology.v1.NetworkInterface.labels:type_name -> clouditor.ontology.v1.NetworkInterface.LabelsEntry
-	1,   // 432: clouditor.ontology.v1.NetworkInterface.access_restriction:type_name -> clouditor.ontology.v1.AccessRestriction
-	64,  // 433: clouditor.ontology.v1.NetworkInterface.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 434: clouditor.ontology.v1.NetworkInterface.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 435: clouditor.ontology.v1.NetworkInterface.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 436: clouditor.ontology.v1.NetworkInterface.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	208, // 437: clouditor.ontology.v1.NetworkSecurityGroup.creation_time:type_name -> google.protobuf.Timestamp
-	189, // 438: clouditor.ontology.v1.NetworkSecurityGroup.labels:type_name -> clouditor.ontology.v1.NetworkSecurityGroup.LabelsEntry
-	64,  // 439: clouditor.ontology.v1.NetworkSecurityGroup.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 440: clouditor.ontology.v1.NetworkSecurityGroup.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 441: clouditor.ontology.v1.NetworkSecurityGroup.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 442: clouditor.ontology.v1.NetworkSecurityGroup.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	60,  // 443: clouditor.ontology.v1.NetworkService.function_service:type_name -> clouditor.ontology.v1.FunctionService
-	63,  // 444: clouditor.ontology.v1.NetworkService.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
-	86,  // 445: clouditor.ontology.v1.NetworkService.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
-	93,  // 446: clouditor.ontology.v1.NetworkService.logging_service:type_name -> clouditor.ontology.v1.LoggingService
-	97,  // 447: clouditor.ontology.v1.NetworkService.machine_learning_service:type_name -> clouditor.ontology.v1.MachineLearningService
-	134, // 448: clouditor.ontology.v1.NetworkService.security_advisory_service:type_name -> clouditor.ontology.v1.SecurityAdvisoryService
-	50,  // 449: clouditor.ontology.v1.NetworkService.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
-	82,  // 450: clouditor.ontology.v1.NetworkService.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
-	103, // 451: clouditor.ontology.v1.NetworkService.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
-	120, // 452: clouditor.ontology.v1.NetworkService.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
-	56,  // 453: clouditor.ontology.v1.NetworkService.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
-	113, // 454: clouditor.ontology.v1.NetworkService.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
-	104, // 455: clouditor.ontology.v1.Networking.network_interface:type_name -> clouditor.ontology.v1.NetworkInterface
-	105, // 456: clouditor.ontology.v1.Networking.network_security_group:type_name -> clouditor.ontology.v1.NetworkSecurityGroup
-	60,  // 457: clouditor.ontology.v1.Networking.function_service:type_name -> clouditor.ontology.v1.FunctionService
-	63,  // 458: clouditor.ontology.v1.Networking.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
-	86,  // 459: clouditor.ontology.v1.Networking.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
-	93,  // 460: clouditor.ontology.v1.Networking.logging_service:type_name -> clouditor.ontology.v1.LoggingService
-	97,  // 461: clouditor.ontology.v1.Networking.machine_learning_service:type_name -> clouditor.ontology.v1.MachineLearningService
-	134, // 462: clouditor.ontology.v1.Networking.security_advisory_service:type_name -> clouditor.ontology.v1.SecurityAdvisoryService
-	50,  // 463: clouditor.ontology.v1.Networking.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
-	82,  // 464: clouditor.ontology.v1.Networking.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
-	103, // 465: clouditor.ontology.v1.Networking.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
-	120, // 466: clouditor.ontology.v1.Networking.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
-	56,  // 467: clouditor.ontology.v1.Networking.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
-	113, // 468: clouditor.ontology.v1.Networking.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
-	150, // 469: clouditor.ontology.v1.Networking.virtual_network:type_name -> clouditor.ontology.v1.VirtualNetwork
-	151, // 470: clouditor.ontology.v1.Networking.virtual_sub_network:type_name -> clouditor.ontology.v1.VirtualSubNetwork
-	209, // 471: clouditor.ontology.v1.OSLogging.retention_period:type_name -> google.protobuf.Duration
-	208, // 472: clouditor.ontology.v1.ObjectStorage.creation_time:type_name -> google.protobuf.Timestamp
-	190, // 473: clouditor.ontology.v1.ObjectStorage.labels:type_name -> clouditor.ontology.v1.ObjectStorage.LabelsEntry
-	3,   // 474: clouditor.ontology.v1.ObjectStorage.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	7,   // 475: clouditor.ontology.v1.ObjectStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
-	15,  // 476: clouditor.ontology.v1.ObjectStorage.backups:type_name -> clouditor.ontology.v1.Backup
-	64,  // 477: clouditor.ontology.v1.ObjectStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	76,  // 478: clouditor.ontology.v1.ObjectStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
-	92,  // 479: clouditor.ontology.v1.ObjectStorage.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 480: clouditor.ontology.v1.ObjectStorage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	126, // 481: clouditor.ontology.v1.ObjectStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	147, // 482: clouditor.ontology.v1.ObjectStorage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	25,  // 483: clouditor.ontology.v1.ObjectStorageRequest.code_region:type_name -> clouditor.ontology.v1.CodeRegion
-	208, // 484: clouditor.ontology.v1.ObjectStorageService.creation_time:type_name -> google.protobuf.Timestamp
-	191, // 485: clouditor.ontology.v1.ObjectStorageService.labels:type_name -> clouditor.ontology.v1.ObjectStorageService.LabelsEntry
-	3,   // 486: clouditor.ontology.v1.ObjectStorageService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	10,  // 487: clouditor.ontology.v1.ObjectStorageService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 488: clouditor.ontology.v1.ObjectStorageService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	68,  // 489: clouditor.ontology.v1.ObjectStorageService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	92,  // 490: clouditor.ontology.v1.ObjectStorageService.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 491: clouditor.ontology.v1.ObjectStorageService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	146, // 492: clouditor.ontology.v1.ObjectStorageService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	147, // 493: clouditor.ontology.v1.ObjectStorageService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	47,  // 494: clouditor.ontology.v1.Operation.decryption:type_name -> clouditor.ontology.v1.Decryption
-	52,  // 495: clouditor.ontology.v1.Operation.encryption:type_name -> clouditor.ontology.v1.Encryption
-	66,  // 496: clouditor.ontology.v1.Operation.cryptographic_hash:type_name -> clouditor.ontology.v1.CryptographicHash
-	42,  // 497: clouditor.ontology.v1.Operation.database_connect:type_name -> clouditor.ontology.v1.DatabaseConnect
-	44,  // 498: clouditor.ontology.v1.Operation.database_query:type_name -> clouditor.ontology.v1.DatabaseQuery
-	69,  // 499: clouditor.ontology.v1.Operation.http_request:type_name -> clouditor.ontology.v1.HttpRequest
-	90,  // 500: clouditor.ontology.v1.Operation.log_operation:type_name -> clouditor.ontology.v1.LogOperation
-	112, // 501: clouditor.ontology.v1.Operation.object_storage_request:type_name -> clouditor.ontology.v1.ObjectStorageRequest
-	208, // 502: clouditor.ontology.v1.PasswordPolicy.creation_time:type_name -> google.protobuf.Timestamp
-	192, // 503: clouditor.ontology.v1.PasswordPolicy.labels:type_name -> clouditor.ontology.v1.PasswordPolicy.LabelsEntry
-	64,  // 504: clouditor.ontology.v1.PasswordPolicy.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 505: clouditor.ontology.v1.PasswordPolicy.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 506: clouditor.ontology.v1.PasswordPolicy.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 507: clouditor.ontology.v1.PasswordPolicy.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	208, // 508: clouditor.ontology.v1.PolicyDocument.creation_time:type_name -> google.protobuf.Timestamp
-	193, // 509: clouditor.ontology.v1.PolicyDocument.labels:type_name -> clouditor.ontology.v1.PolicyDocument.LabelsEntry
-	41,  // 510: clouditor.ontology.v1.PolicyDocument.data_location:type_name -> clouditor.ontology.v1.DataLocation
-	36,  // 511: clouditor.ontology.v1.PolicyDocument.document_checksums:type_name -> clouditor.ontology.v1.DocumentChecksum
-	138, // 512: clouditor.ontology.v1.PolicyDocument.document_signatures:type_name -> clouditor.ontology.v1.DocumentSignature
-	130, // 513: clouditor.ontology.v1.PolicyDocument.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
-	135, // 514: clouditor.ontology.v1.PolicyDocument.security_features:type_name -> clouditor.ontology.v1.SecurityFeature
-	65,  // 515: clouditor.ontology.v1.Redundancy.geo_redundancy:type_name -> clouditor.ontology.v1.GeoRedundancy
-	89,  // 516: clouditor.ontology.v1.Redundancy.local_redundancy:type_name -> clouditor.ontology.v1.LocalRedundancy
-	155, // 517: clouditor.ontology.v1.Redundancy.zone_redundancy:type_name -> clouditor.ontology.v1.ZoneRedundancy
-	208, // 518: clouditor.ontology.v1.RelationalDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
-	194, // 519: clouditor.ontology.v1.RelationalDatabaseService.labels:type_name -> clouditor.ontology.v1.RelationalDatabaseService.LabelsEntry
-	3,   // 520: clouditor.ontology.v1.RelationalDatabaseService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	4,   // 521: clouditor.ontology.v1.RelationalDatabaseService.anomaly_detections:type_name -> clouditor.ontology.v1.AnomalyDetection
-	10,  // 522: clouditor.ontology.v1.RelationalDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 523: clouditor.ontology.v1.RelationalDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	68,  // 524: clouditor.ontology.v1.RelationalDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	92,  // 525: clouditor.ontology.v1.RelationalDatabaseService.loggings:type_name -> clouditor.ontology.v1.Logging
-	98,  // 526: clouditor.ontology.v1.RelationalDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	119, // 527: clouditor.ontology.v1.RelationalDatabaseService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	146, // 528: clouditor.ontology.v1.RelationalDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	147, // 529: clouditor.ontology.v1.RelationalDatabaseService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	54,  // 530: clouditor.ontology.v1.Reliability.explainable_results:type_name -> clouditor.ontology.v1.ExplainableResults
-	128, // 531: clouditor.ontology.v1.Reliability.robustness_score:type_name -> clouditor.ontology.v1.RobustnessScore
-	208, // 532: clouditor.ontology.v1.RemoteAttestation.creation_time:type_name -> google.protobuf.Timestamp
-	10,  // 533: clouditor.ontology.v1.RemoteDataLocation.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	146, // 534: clouditor.ontology.v1.RemoteDataLocation.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	2,   // 535: clouditor.ontology.v1.Resource.account:type_name -> clouditor.ontology.v1.Account
-	79,  // 536: clouditor.ontology.v1.Resource.job:type_name -> clouditor.ontology.v1.Job
-	154, // 537: clouditor.ontology.v1.Resource.workflow:type_name -> clouditor.ontology.v1.Workflow
-	26,  // 538: clouditor.ontology.v1.Resource.code_repository:type_name -> clouditor.ontology.v1.CodeRepository
-	30,  // 539: clouditor.ontology.v1.Resource.container:type_name -> clouditor.ontology.v1.Container
-	59,  // 540: clouditor.ontology.v1.Resource.function:type_name -> clouditor.ontology.v1.Function
-	149, // 541: clouditor.ontology.v1.Resource.virtual_machine:type_name -> clouditor.ontology.v1.VirtualMachine
-	32,  // 542: clouditor.ontology.v1.Resource.container_orchestration:type_name -> clouditor.ontology.v1.ContainerOrchestration
-	33,  // 543: clouditor.ontology.v1.Resource.container_registry:type_name -> clouditor.ontology.v1.ContainerRegistry
-	19,  // 544: clouditor.ontology.v1.Resource.certificate:type_name -> clouditor.ontology.v1.Certificate
-	81,  // 545: clouditor.ontology.v1.Resource.key:type_name -> clouditor.ontology.v1.Key
-	131, // 546: clouditor.ontology.v1.Resource.secret:type_name -> clouditor.ontology.v1.Secret
-	74,  // 547: clouditor.ontology.v1.Resource.identity:type_name -> clouditor.ontology.v1.Identity
-	129, // 548: clouditor.ontology.v1.Resource.role_assignment:type_name -> clouditor.ontology.v1.RoleAssignment
-	31,  // 549: clouditor.ontology.v1.Resource.container_image:type_name -> clouditor.ontology.v1.ContainerImage
-	148, // 550: clouditor.ontology.v1.Resource.vm_image:type_name -> clouditor.ontology.v1.VMImage
-	48,  // 551: clouditor.ontology.v1.Resource.device_provisioning_service:type_name -> clouditor.ontology.v1.DeviceProvisioningService
-	100, // 552: clouditor.ontology.v1.Resource.messaging_hub:type_name -> clouditor.ontology.v1.MessagingHub
-	83,  // 553: clouditor.ontology.v1.Resource.key_vault:type_name -> clouditor.ontology.v1.KeyVault
-	104, // 554: clouditor.ontology.v1.Resource.network_interface:type_name -> clouditor.ontology.v1.NetworkInterface
-	105, // 555: clouditor.ontology.v1.Resource.network_security_group:type_name -> clouditor.ontology.v1.NetworkSecurityGroup
-	60,  // 556: clouditor.ontology.v1.Resource.function_service:type_name -> clouditor.ontology.v1.FunctionService
-	63,  // 557: clouditor.ontology.v1.Resource.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
-	86,  // 558: clouditor.ontology.v1.Resource.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
-	93,  // 559: clouditor.ontology.v1.Resource.logging_service:type_name -> clouditor.ontology.v1.LoggingService
-	97,  // 560: clouditor.ontology.v1.Resource.machine_learning_service:type_name -> clouditor.ontology.v1.MachineLearningService
-	134, // 561: clouditor.ontology.v1.Resource.security_advisory_service:type_name -> clouditor.ontology.v1.SecurityAdvisoryService
-	50,  // 562: clouditor.ontology.v1.Resource.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
-	82,  // 563: clouditor.ontology.v1.Resource.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
-	103, // 564: clouditor.ontology.v1.Resource.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
-	120, // 565: clouditor.ontology.v1.Resource.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
-	56,  // 566: clouditor.ontology.v1.Resource.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
-	113, // 567: clouditor.ontology.v1.Resource.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
-	150, // 568: clouditor.ontology.v1.Resource.virtual_network:type_name -> clouditor.ontology.v1.VirtualNetwork
-	151, // 569: clouditor.ontology.v1.Resource.virtual_sub_network:type_name -> clouditor.ontology.v1.VirtualSubNetwork
-	116, // 570: clouditor.ontology.v1.Resource.password_policy:type_name -> clouditor.ontology.v1.PasswordPolicy
-	125, // 571: clouditor.ontology.v1.Resource.resource_group:type_name -> clouditor.ontology.v1.ResourceGroup
-	16,  // 572: clouditor.ontology.v1.Resource.block_storage:type_name -> clouditor.ontology.v1.BlockStorage
-	46,  // 573: clouditor.ontology.v1.Resource.database_storage:type_name -> clouditor.ontology.v1.DatabaseStorage
-	55,  // 574: clouditor.ontology.v1.Resource.file_storage:type_name -> clouditor.ontology.v1.FileStorage
-	111, // 575: clouditor.ontology.v1.Resource.object_storage:type_name -> clouditor.ontology.v1.ObjectStorage
-	62,  // 576: clouditor.ontology.v1.Resource.generic_document:type_name -> clouditor.ontology.v1.GenericDocument
-	117, // 577: clouditor.ontology.v1.Resource.policy_document:type_name -> clouditor.ontology.v1.PolicyDocument
-	132, // 578: clouditor.ontology.v1.Resource.security_advisory_document:type_name -> clouditor.ontology.v1.SecurityAdvisoryDocument
-	137, // 579: clouditor.ontology.v1.Resource.service_metadata_document:type_name -> clouditor.ontology.v1.ServiceMetadataDocument
-	95,  // 580: clouditor.ontology.v1.Resource.machine_learning_dataset:type_name -> clouditor.ontology.v1.MachineLearningDataset
-	96,  // 581: clouditor.ontology.v1.Resource.machine_learning_model:type_name -> clouditor.ontology.v1.MachineLearningModel
-	14,  // 582: clouditor.ontology.v1.Resource.awareness_training:type_name -> clouditor.ontology.v1.AwarenessTraining
-	136, // 583: clouditor.ontology.v1.Resource.security_training:type_name -> clouditor.ontology.v1.SecurityTraining
-	5,   // 584: clouditor.ontology.v1.Resource.application:type_name -> clouditor.ontology.v1.Application
-	85,  // 585: clouditor.ontology.v1.Resource.library:type_name -> clouditor.ontology.v1.Library
-	141, // 586: clouditor.ontology.v1.Resource.source_code_file:type_name -> clouditor.ontology.v1.SourceCodeFile
-	208, // 587: clouditor.ontology.v1.ResourceGroup.creation_time:type_name -> google.protobuf.Timestamp
-	195, // 588: clouditor.ontology.v1.ResourceGroup.labels:type_name -> clouditor.ontology.v1.ResourceGroup.LabelsEntry
-	64,  // 589: clouditor.ontology.v1.ResourceGroup.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 590: clouditor.ontology.v1.ResourceGroup.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 591: clouditor.ontology.v1.ResourceGroup.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 592: clouditor.ontology.v1.ResourceGroup.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	209, // 593: clouditor.ontology.v1.ResourceLogging.retention_period:type_name -> google.protobuf.Duration
-	208, // 594: clouditor.ontology.v1.RoleAssignment.creation_time:type_name -> google.protobuf.Timestamp
-	196, // 595: clouditor.ontology.v1.RoleAssignment.labels:type_name -> clouditor.ontology.v1.RoleAssignment.LabelsEntry
-	10,  // 596: clouditor.ontology.v1.RoleAssignment.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	11,  // 597: clouditor.ontology.v1.RoleAssignment.authorization:type_name -> clouditor.ontology.v1.Authorization
-	64,  // 598: clouditor.ontology.v1.RoleAssignment.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 599: clouditor.ontology.v1.RoleAssignment.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 600: clouditor.ontology.v1.RoleAssignment.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 601: clouditor.ontology.v1.RoleAssignment.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	53,  // 602: clouditor.ontology.v1.SchemaValidation.errors:type_name -> clouditor.ontology.v1.Error
-	208, // 603: clouditor.ontology.v1.Secret.creation_time:type_name -> google.protobuf.Timestamp
-	208, // 604: clouditor.ontology.v1.Secret.expiration_date:type_name -> google.protobuf.Timestamp
-	197, // 605: clouditor.ontology.v1.Secret.labels:type_name -> clouditor.ontology.v1.Secret.LabelsEntry
-	208, // 606: clouditor.ontology.v1.Secret.not_before_date:type_name -> google.protobuf.Timestamp
-	64,  // 607: clouditor.ontology.v1.Secret.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 608: clouditor.ontology.v1.Secret.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 609: clouditor.ontology.v1.Secret.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 610: clouditor.ontology.v1.Secret.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	208, // 611: clouditor.ontology.v1.SecurityAdvisoryDocument.creation_time:type_name -> google.protobuf.Timestamp
-	198, // 612: clouditor.ontology.v1.SecurityAdvisoryDocument.labels:type_name -> clouditor.ontology.v1.SecurityAdvisoryDocument.LabelsEntry
-	41,  // 613: clouditor.ontology.v1.SecurityAdvisoryDocument.data_location:type_name -> clouditor.ontology.v1.DataLocation
-	36,  // 614: clouditor.ontology.v1.SecurityAdvisoryDocument.document_checksums:type_name -> clouditor.ontology.v1.DocumentChecksum
-	138, // 615: clouditor.ontology.v1.SecurityAdvisoryDocument.document_signatures:type_name -> clouditor.ontology.v1.DocumentSignature
-	130, // 616: clouditor.ontology.v1.SecurityAdvisoryDocument.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
-	135, // 617: clouditor.ontology.v1.SecurityAdvisoryDocument.security_features:type_name -> clouditor.ontology.v1.SecurityFeature
-	152, // 618: clouditor.ontology.v1.SecurityAdvisoryDocument.vulnerabilities:type_name -> clouditor.ontology.v1.Vulnerability
-	208, // 619: clouditor.ontology.v1.SecurityAdvisoryService.creation_time:type_name -> google.protobuf.Timestamp
-	199, // 620: clouditor.ontology.v1.SecurityAdvisoryService.labels:type_name -> clouditor.ontology.v1.SecurityAdvisoryService.LabelsEntry
-	10,  // 621: clouditor.ontology.v1.SecurityAdvisoryService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	64,  // 622: clouditor.ontology.v1.SecurityAdvisoryService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 623: clouditor.ontology.v1.SecurityAdvisoryService.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 624: clouditor.ontology.v1.SecurityAdvisoryService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	133, // 625: clouditor.ontology.v1.SecurityAdvisoryService.security_advisory_feeds:type_name -> clouditor.ontology.v1.SecurityAdvisoryFeed
-	146, // 626: clouditor.ontology.v1.SecurityAdvisoryService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	147, // 627: clouditor.ontology.v1.SecurityAdvisoryService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	4,   // 628: clouditor.ontology.v1.SecurityFeature.anomaly_detection:type_name -> clouditor.ontology.v1.AnomalyDetection
-	3,   // 629: clouditor.ontology.v1.SecurityFeature.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	6,   // 630: clouditor.ontology.v1.SecurityFeature.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
-	17,  // 631: clouditor.ontology.v1.SecurityFeature.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
-	109, // 632: clouditor.ontology.v1.SecurityFeature.os_logging:type_name -> clouditor.ontology.v1.OSLogging
-	126, // 633: clouditor.ontology.v1.SecurityFeature.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	98,  // 634: clouditor.ontology.v1.SecurityFeature.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	147, // 635: clouditor.ontology.v1.SecurityFeature.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	20,  // 636: clouditor.ontology.v1.SecurityFeature.certificate_based_authentication:type_name -> clouditor.ontology.v1.CertificateBasedAuthentication
-	80,  // 637: clouditor.ontology.v1.SecurityFeature.token_based_authentication:type_name -> clouditor.ontology.v1.TokenBasedAuthentication
-	102, // 638: clouditor.ontology.v1.SecurityFeature.multi_factor_authentiation:type_name -> clouditor.ontology.v1.MultiFactorAuthentiation
-	108, // 639: clouditor.ontology.v1.SecurityFeature.no_authentication:type_name -> clouditor.ontology.v1.NoAuthentication
-	110, // 640: clouditor.ontology.v1.SecurityFeature.otp_based_authentication:type_name -> clouditor.ontology.v1.OTPBasedAuthentication
-	115, // 641: clouditor.ontology.v1.SecurityFeature.password_based_authentication:type_name -> clouditor.ontology.v1.PasswordBasedAuthentication
-	139, // 642: clouditor.ontology.v1.SecurityFeature.single_sign_on:type_name -> clouditor.ontology.v1.SingleSignOn
-	0,   // 643: clouditor.ontology.v1.SecurityFeature.abac:type_name -> clouditor.ontology.v1.ABAC
-	84,  // 644: clouditor.ontology.v1.SecurityFeature.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
-	153, // 645: clouditor.ontology.v1.SecurityFeature.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
-	118, // 646: clouditor.ontology.v1.SecurityFeature.rbac:type_name -> clouditor.ontology.v1.RBAC
-	15,  // 647: clouditor.ontology.v1.SecurityFeature.backup:type_name -> clouditor.ontology.v1.Backup
-	39,  // 648: clouditor.ontology.v1.SecurityFeature.d_do_s_protection:type_name -> clouditor.ontology.v1.DDoSProtection
-	64,  // 649: clouditor.ontology.v1.SecurityFeature.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	65,  // 650: clouditor.ontology.v1.SecurityFeature.geo_redundancy:type_name -> clouditor.ontology.v1.GeoRedundancy
-	89,  // 651: clouditor.ontology.v1.SecurityFeature.local_redundancy:type_name -> clouditor.ontology.v1.LocalRedundancy
-	155, // 652: clouditor.ontology.v1.SecurityFeature.zone_redundancy:type_name -> clouditor.ontology.v1.ZoneRedundancy
-	38,  // 653: clouditor.ontology.v1.SecurityFeature.customer_key_encryption:type_name -> clouditor.ontology.v1.CustomerKeyEncryption
-	99,  // 654: clouditor.ontology.v1.SecurityFeature.managed_key_encryption:type_name -> clouditor.ontology.v1.ManagedKeyEncryption
-	51,  // 655: clouditor.ontology.v1.SecurityFeature.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
-	146, // 656: clouditor.ontology.v1.SecurityFeature.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	87,  // 657: clouditor.ontology.v1.SecurityFeature.local_attestation:type_name -> clouditor.ontology.v1.LocalAttestation
-	122, // 658: clouditor.ontology.v1.SecurityFeature.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
-	12,  // 659: clouditor.ontology.v1.SecurityFeature.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
-	36,  // 660: clouditor.ontology.v1.SecurityFeature.document_checksum:type_name -> clouditor.ontology.v1.DocumentChecksum
-	76,  // 661: clouditor.ontology.v1.SecurityFeature.immutability:type_name -> clouditor.ontology.v1.Immutability
-	138, // 662: clouditor.ontology.v1.SecurityFeature.document_signature:type_name -> clouditor.ontology.v1.DocumentSignature
-	54,  // 663: clouditor.ontology.v1.SecurityFeature.explainable_results:type_name -> clouditor.ontology.v1.ExplainableResults
-	128, // 664: clouditor.ontology.v1.SecurityFeature.robustness_score:type_name -> clouditor.ontology.v1.RobustnessScore
-	208, // 665: clouditor.ontology.v1.SecurityTraining.creation_time:type_name -> google.protobuf.Timestamp
-	200, // 666: clouditor.ontology.v1.SecurityTraining.labels:type_name -> clouditor.ontology.v1.SecurityTraining.LabelsEntry
-	208, // 667: clouditor.ontology.v1.ServiceMetadataDocument.creation_time:type_name -> google.protobuf.Timestamp
-	201, // 668: clouditor.ontology.v1.ServiceMetadataDocument.labels:type_name -> clouditor.ontology.v1.ServiceMetadataDocument.LabelsEntry
-	41,  // 669: clouditor.ontology.v1.ServiceMetadataDocument.data_location:type_name -> clouditor.ontology.v1.DataLocation
-	36,  // 670: clouditor.ontology.v1.ServiceMetadataDocument.document_checksums:type_name -> clouditor.ontology.v1.DocumentChecksum
-	138, // 671: clouditor.ontology.v1.ServiceMetadataDocument.document_signatures:type_name -> clouditor.ontology.v1.DocumentSignature
-	130, // 672: clouditor.ontology.v1.ServiceMetadataDocument.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
-	135, // 673: clouditor.ontology.v1.ServiceMetadataDocument.security_features:type_name -> clouditor.ontology.v1.SecurityFeature
-	53,  // 674: clouditor.ontology.v1.DocumentSignature.errors:type_name -> clouditor.ontology.v1.Error
-	5,   // 675: clouditor.ontology.v1.Code.application:type_name -> clouditor.ontology.v1.Application
-	85,  // 676: clouditor.ontology.v1.Code.library:type_name -> clouditor.ontology.v1.Library
-	141, // 677: clouditor.ontology.v1.Code.source_code_file:type_name -> clouditor.ontology.v1.SourceCodeFile
-	208, // 678: clouditor.ontology.v1.SourceCodeFile.creation_time:type_name -> google.protobuf.Timestamp
-	202, // 679: clouditor.ontology.v1.SourceCodeFile.labels:type_name -> clouditor.ontology.v1.SourceCodeFile.LabelsEntry
-	61,  // 680: clouditor.ontology.v1.SourceCodeFile.functionalities:type_name -> clouditor.ontology.v1.Functionality
-	16,  // 681: clouditor.ontology.v1.Storage.block_storage:type_name -> clouditor.ontology.v1.BlockStorage
-	46,  // 682: clouditor.ontology.v1.Storage.database_storage:type_name -> clouditor.ontology.v1.DatabaseStorage
-	55,  // 683: clouditor.ontology.v1.Storage.file_storage:type_name -> clouditor.ontology.v1.FileStorage
-	111, // 684: clouditor.ontology.v1.Storage.object_storage:type_name -> clouditor.ontology.v1.ObjectStorage
-	50,  // 685: clouditor.ontology.v1.StorageService.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
-	82,  // 686: clouditor.ontology.v1.StorageService.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
-	103, // 687: clouditor.ontology.v1.StorageService.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
-	120, // 688: clouditor.ontology.v1.StorageService.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
-	56,  // 689: clouditor.ontology.v1.StorageService.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
-	113, // 690: clouditor.ontology.v1.StorageService.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
-	14,  // 691: clouditor.ontology.v1.Training.awareness_training:type_name -> clouditor.ontology.v1.AwarenessTraining
-	136, // 692: clouditor.ontology.v1.Training.security_training:type_name -> clouditor.ontology.v1.SecurityTraining
-	22,  // 693: clouditor.ontology.v1.TransportEncryption.cipher_suites:type_name -> clouditor.ontology.v1.CipherSuite
-	208, // 694: clouditor.ontology.v1.VMImage.creation_time:type_name -> google.protobuf.Timestamp
-	203, // 695: clouditor.ontology.v1.VMImage.labels:type_name -> clouditor.ontology.v1.VMImage.LabelsEntry
-	64,  // 696: clouditor.ontology.v1.VMImage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 697: clouditor.ontology.v1.VMImage.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 698: clouditor.ontology.v1.VMImage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 699: clouditor.ontology.v1.VMImage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	208, // 700: clouditor.ontology.v1.VirtualMachine.creation_time:type_name -> google.protobuf.Timestamp
-	204, // 701: clouditor.ontology.v1.VirtualMachine.labels:type_name -> clouditor.ontology.v1.VirtualMachine.LabelsEntry
-	3,   // 702: clouditor.ontology.v1.VirtualMachine.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	12,  // 703: clouditor.ontology.v1.VirtualMachine.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
-	17,  // 704: clouditor.ontology.v1.VirtualMachine.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
-	51,  // 705: clouditor.ontology.v1.VirtualMachine.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
-	64,  // 706: clouditor.ontology.v1.VirtualMachine.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 707: clouditor.ontology.v1.VirtualMachine.loggings:type_name -> clouditor.ontology.v1.Logging
-	98,  // 708: clouditor.ontology.v1.VirtualMachine.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	109, // 709: clouditor.ontology.v1.VirtualMachine.os_logging:type_name -> clouditor.ontology.v1.OSLogging
-	119, // 710: clouditor.ontology.v1.VirtualMachine.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	122, // 711: clouditor.ontology.v1.VirtualMachine.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
-	126, // 712: clouditor.ontology.v1.VirtualMachine.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	147, // 713: clouditor.ontology.v1.VirtualMachine.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	208, // 714: clouditor.ontology.v1.VirtualNetwork.creation_time:type_name -> google.protobuf.Timestamp
-	205, // 715: clouditor.ontology.v1.VirtualNetwork.labels:type_name -> clouditor.ontology.v1.VirtualNetwork.LabelsEntry
-	64,  // 716: clouditor.ontology.v1.VirtualNetwork.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 717: clouditor.ontology.v1.VirtualNetwork.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 718: clouditor.ontology.v1.VirtualNetwork.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 719: clouditor.ontology.v1.VirtualNetwork.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	208, // 720: clouditor.ontology.v1.VirtualSubNetwork.creation_time:type_name -> google.protobuf.Timestamp
-	206, // 721: clouditor.ontology.v1.VirtualSubNetwork.labels:type_name -> clouditor.ontology.v1.VirtualSubNetwork.LabelsEntry
-	64,  // 722: clouditor.ontology.v1.VirtualSubNetwork.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 723: clouditor.ontology.v1.VirtualSubNetwork.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 724: clouditor.ontology.v1.VirtualSubNetwork.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 725: clouditor.ontology.v1.VirtualSubNetwork.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	208, // 726: clouditor.ontology.v1.Workflow.creation_time:type_name -> google.protobuf.Timestamp
-	207, // 727: clouditor.ontology.v1.Workflow.labels:type_name -> clouditor.ontology.v1.Workflow.LabelsEntry
-	64,  // 728: clouditor.ontology.v1.Workflow.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	92,  // 729: clouditor.ontology.v1.Workflow.loggings:type_name -> clouditor.ontology.v1.Logging
-	119, // 730: clouditor.ontology.v1.Workflow.redundancies:type_name -> clouditor.ontology.v1.Redundancy
-	147, // 731: clouditor.ontology.v1.Workflow.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
-	64,  // 732: clouditor.ontology.v1.ZoneRedundancy.geo_locations:type_name -> clouditor.ontology.v1.GeoLocation
-	210, // 733: clouditor.ontology.v1.resource_type_names:extendee -> google.protobuf.MessageOptions
-	734, // [734:734] is the sub-list for method output_type
-	734, // [734:734] is the sub-list for method input_type
-	734, // [734:734] is the sub-list for extension type_name
-	733, // [733:734] is the sub-list for extension extendee
-	0,   // [0:733] is the sub-list for field type_name
+	118, // 78: clouditor.ontology.v1.Infrastructure.qpu:type_name -> clouditor.ontology.v1.QPU
+	150, // 79: clouditor.ontology.v1.Infrastructure.virtual_machine:type_name -> clouditor.ontology.v1.VirtualMachine
+	32,  // 80: clouditor.ontology.v1.Infrastructure.container_orchestration:type_name -> clouditor.ontology.v1.ContainerOrchestration
+	33,  // 81: clouditor.ontology.v1.Infrastructure.container_registry:type_name -> clouditor.ontology.v1.ContainerRegistry
+	19,  // 82: clouditor.ontology.v1.Infrastructure.certificate:type_name -> clouditor.ontology.v1.Certificate
+	81,  // 83: clouditor.ontology.v1.Infrastructure.key:type_name -> clouditor.ontology.v1.Key
+	132, // 84: clouditor.ontology.v1.Infrastructure.secret:type_name -> clouditor.ontology.v1.Secret
+	74,  // 85: clouditor.ontology.v1.Infrastructure.identity:type_name -> clouditor.ontology.v1.Identity
+	130, // 86: clouditor.ontology.v1.Infrastructure.role_assignment:type_name -> clouditor.ontology.v1.RoleAssignment
+	31,  // 87: clouditor.ontology.v1.Infrastructure.container_image:type_name -> clouditor.ontology.v1.ContainerImage
+	149, // 88: clouditor.ontology.v1.Infrastructure.vm_image:type_name -> clouditor.ontology.v1.VMImage
+	48,  // 89: clouditor.ontology.v1.Infrastructure.device_provisioning_service:type_name -> clouditor.ontology.v1.DeviceProvisioningService
+	100, // 90: clouditor.ontology.v1.Infrastructure.messaging_hub:type_name -> clouditor.ontology.v1.MessagingHub
+	83,  // 91: clouditor.ontology.v1.Infrastructure.key_vault:type_name -> clouditor.ontology.v1.KeyVault
+	104, // 92: clouditor.ontology.v1.Infrastructure.network_interface:type_name -> clouditor.ontology.v1.NetworkInterface
+	105, // 93: clouditor.ontology.v1.Infrastructure.network_security_group:type_name -> clouditor.ontology.v1.NetworkSecurityGroup
+	60,  // 94: clouditor.ontology.v1.Infrastructure.function_service:type_name -> clouditor.ontology.v1.FunctionService
+	63,  // 95: clouditor.ontology.v1.Infrastructure.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
+	86,  // 96: clouditor.ontology.v1.Infrastructure.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
+	93,  // 97: clouditor.ontology.v1.Infrastructure.logging_service:type_name -> clouditor.ontology.v1.LoggingService
+	97,  // 98: clouditor.ontology.v1.Infrastructure.machine_learning_service:type_name -> clouditor.ontology.v1.MachineLearningService
+	135, // 99: clouditor.ontology.v1.Infrastructure.security_advisory_service:type_name -> clouditor.ontology.v1.SecurityAdvisoryService
+	50,  // 100: clouditor.ontology.v1.Infrastructure.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
+	82,  // 101: clouditor.ontology.v1.Infrastructure.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
+	103, // 102: clouditor.ontology.v1.Infrastructure.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
+	121, // 103: clouditor.ontology.v1.Infrastructure.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
+	56,  // 104: clouditor.ontology.v1.Infrastructure.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
+	113, // 105: clouditor.ontology.v1.Infrastructure.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
+	151, // 106: clouditor.ontology.v1.Infrastructure.virtual_network:type_name -> clouditor.ontology.v1.VirtualNetwork
+	152, // 107: clouditor.ontology.v1.Infrastructure.virtual_sub_network:type_name -> clouditor.ontology.v1.VirtualSubNetwork
+	116, // 108: clouditor.ontology.v1.Infrastructure.password_policy:type_name -> clouditor.ontology.v1.PasswordPolicy
+	126, // 109: clouditor.ontology.v1.Infrastructure.resource_group:type_name -> clouditor.ontology.v1.ResourceGroup
+	16,  // 110: clouditor.ontology.v1.Infrastructure.block_storage:type_name -> clouditor.ontology.v1.BlockStorage
+	46,  // 111: clouditor.ontology.v1.Infrastructure.database_storage:type_name -> clouditor.ontology.v1.DatabaseStorage
+	55,  // 112: clouditor.ontology.v1.Infrastructure.file_storage:type_name -> clouditor.ontology.v1.FileStorage
+	111, // 113: clouditor.ontology.v1.Infrastructure.object_storage:type_name -> clouditor.ontology.v1.ObjectStorage
+	210, // 114: clouditor.ontology.v1.CodeRepository.creation_time:type_name -> google.protobuf.Timestamp
+	162, // 115: clouditor.ontology.v1.CodeRepository.labels:type_name -> clouditor.ontology.v1.CodeRepository.LabelsEntry
+	64,  // 116: clouditor.ontology.v1.CodeRepository.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 117: clouditor.ontology.v1.CodeRepository.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 118: clouditor.ontology.v1.CodeRepository.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 119: clouditor.ontology.v1.CodeRepository.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	5,   // 120: clouditor.ontology.v1.Component.application:type_name -> clouditor.ontology.v1.Application
+	85,  // 121: clouditor.ontology.v1.Component.library:type_name -> clouditor.ontology.v1.Library
+	30,  // 122: clouditor.ontology.v1.Compute.container:type_name -> clouditor.ontology.v1.Container
+	59,  // 123: clouditor.ontology.v1.Compute.function:type_name -> clouditor.ontology.v1.Function
+	118, // 124: clouditor.ontology.v1.Compute.qpu:type_name -> clouditor.ontology.v1.QPU
+	150, // 125: clouditor.ontology.v1.Compute.virtual_machine:type_name -> clouditor.ontology.v1.VirtualMachine
+	38,  // 126: clouditor.ontology.v1.Confidentiality.customer_key_encryption:type_name -> clouditor.ontology.v1.CustomerKeyEncryption
+	99,  // 127: clouditor.ontology.v1.Confidentiality.managed_key_encryption:type_name -> clouditor.ontology.v1.ManagedKeyEncryption
+	51,  // 128: clouditor.ontology.v1.Confidentiality.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
+	147, // 129: clouditor.ontology.v1.Confidentiality.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	210, // 130: clouditor.ontology.v1.Container.creation_time:type_name -> google.protobuf.Timestamp
+	163, // 131: clouditor.ontology.v1.Container.labels:type_name -> clouditor.ontology.v1.Container.LabelsEntry
+	51,  // 132: clouditor.ontology.v1.Container.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
+	64,  // 133: clouditor.ontology.v1.Container.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 134: clouditor.ontology.v1.Container.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 135: clouditor.ontology.v1.Container.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	123, // 136: clouditor.ontology.v1.Container.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
+	127, // 137: clouditor.ontology.v1.Container.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	148, // 138: clouditor.ontology.v1.Container.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 139: clouditor.ontology.v1.ContainerImage.creation_time:type_name -> google.protobuf.Timestamp
+	164, // 140: clouditor.ontology.v1.ContainerImage.labels:type_name -> clouditor.ontology.v1.ContainerImage.LabelsEntry
+	64,  // 141: clouditor.ontology.v1.ContainerImage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 142: clouditor.ontology.v1.ContainerImage.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 143: clouditor.ontology.v1.ContainerImage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 144: clouditor.ontology.v1.ContainerImage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 145: clouditor.ontology.v1.ContainerOrchestration.creation_time:type_name -> google.protobuf.Timestamp
+	165, // 146: clouditor.ontology.v1.ContainerOrchestration.labels:type_name -> clouditor.ontology.v1.ContainerOrchestration.LabelsEntry
+	64,  // 147: clouditor.ontology.v1.ContainerOrchestration.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 148: clouditor.ontology.v1.ContainerOrchestration.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 149: clouditor.ontology.v1.ContainerOrchestration.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	127, // 150: clouditor.ontology.v1.ContainerOrchestration.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	148, // 151: clouditor.ontology.v1.ContainerOrchestration.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 152: clouditor.ontology.v1.ContainerRegistry.creation_time:type_name -> google.protobuf.Timestamp
+	166, // 153: clouditor.ontology.v1.ContainerRegistry.labels:type_name -> clouditor.ontology.v1.ContainerRegistry.LabelsEntry
+	64,  // 154: clouditor.ontology.v1.ContainerRegistry.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 155: clouditor.ontology.v1.ContainerRegistry.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 156: clouditor.ontology.v1.ContainerRegistry.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 157: clouditor.ontology.v1.ContainerRegistry.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	21,  // 158: clouditor.ontology.v1.Core.certification_target:type_name -> clouditor.ontology.v1.CertificationTarget
+	24,  // 159: clouditor.ontology.v1.Core.cloud_sdk:type_name -> clouditor.ontology.v1.CloudSDK
+	67,  // 160: clouditor.ontology.v1.Core.http_client_library:type_name -> clouditor.ontology.v1.HttpClientLibrary
+	71,  // 161: clouditor.ontology.v1.Core.http_server:type_name -> clouditor.ontology.v1.HttpServer
+	91,  // 162: clouditor.ontology.v1.Core.logger:type_name -> clouditor.ontology.v1.Logger
+	128, // 163: clouditor.ontology.v1.Core.resource_type:type_name -> clouditor.ontology.v1.ResourceType
+	145, // 164: clouditor.ontology.v1.Core.tool:type_name -> clouditor.ontology.v1.Tool
+	19,  // 165: clouditor.ontology.v1.Credential.certificate:type_name -> clouditor.ontology.v1.Certificate
+	81,  // 166: clouditor.ontology.v1.Credential.key:type_name -> clouditor.ontology.v1.Key
+	132, // 167: clouditor.ontology.v1.Credential.secret:type_name -> clouditor.ontology.v1.Secret
+	53,  // 168: clouditor.ontology.v1.DocumentChecksum.errors:type_name -> clouditor.ontology.v1.Error
+	47,  // 169: clouditor.ontology.v1.CryptographicOperation.decryption:type_name -> clouditor.ontology.v1.Decryption
+	52,  // 170: clouditor.ontology.v1.CryptographicOperation.encryption:type_name -> clouditor.ontology.v1.Encryption
+	66,  // 171: clouditor.ontology.v1.CryptographicOperation.cryptographic_hash:type_name -> clouditor.ontology.v1.CryptographicHash
+	62,  // 172: clouditor.ontology.v1.Data.generic_document:type_name -> clouditor.ontology.v1.GenericDocument
+	117, // 173: clouditor.ontology.v1.Data.policy_document:type_name -> clouditor.ontology.v1.PolicyDocument
+	133, // 174: clouditor.ontology.v1.Data.security_advisory_document:type_name -> clouditor.ontology.v1.SecurityAdvisoryDocument
+	138, // 175: clouditor.ontology.v1.Data.service_metadata_document:type_name -> clouditor.ontology.v1.ServiceMetadataDocument
+	95,  // 176: clouditor.ontology.v1.Data.machine_learning_dataset:type_name -> clouditor.ontology.v1.MachineLearningDataset
+	96,  // 177: clouditor.ontology.v1.Data.machine_learning_model:type_name -> clouditor.ontology.v1.MachineLearningModel
+	88,  // 178: clouditor.ontology.v1.DataLocation.local_data_location:type_name -> clouditor.ontology.v1.LocalDataLocation
+	124, // 179: clouditor.ontology.v1.DataLocation.remote_data_location:type_name -> clouditor.ontology.v1.RemoteDataLocation
+	25,  // 180: clouditor.ontology.v1.DatabaseConnect.code_region:type_name -> clouditor.ontology.v1.CodeRegion
+	42,  // 181: clouditor.ontology.v1.DatabaseOperation.database_connect:type_name -> clouditor.ontology.v1.DatabaseConnect
+	44,  // 182: clouditor.ontology.v1.DatabaseOperation.database_query:type_name -> clouditor.ontology.v1.DatabaseQuery
+	25,  // 183: clouditor.ontology.v1.DatabaseQuery.code_region:type_name -> clouditor.ontology.v1.CodeRegion
+	50,  // 184: clouditor.ontology.v1.DatabaseService.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
+	82,  // 185: clouditor.ontology.v1.DatabaseService.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
+	103, // 186: clouditor.ontology.v1.DatabaseService.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
+	121, // 187: clouditor.ontology.v1.DatabaseService.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
+	210, // 188: clouditor.ontology.v1.DatabaseStorage.creation_time:type_name -> google.protobuf.Timestamp
+	167, // 189: clouditor.ontology.v1.DatabaseStorage.labels:type_name -> clouditor.ontology.v1.DatabaseStorage.LabelsEntry
+	3,   // 190: clouditor.ontology.v1.DatabaseStorage.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	7,   // 191: clouditor.ontology.v1.DatabaseStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
+	15,  // 192: clouditor.ontology.v1.DatabaseStorage.backups:type_name -> clouditor.ontology.v1.Backup
+	64,  // 193: clouditor.ontology.v1.DatabaseStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	76,  // 194: clouditor.ontology.v1.DatabaseStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
+	92,  // 195: clouditor.ontology.v1.DatabaseStorage.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 196: clouditor.ontology.v1.DatabaseStorage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	127, // 197: clouditor.ontology.v1.DatabaseStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	148, // 198: clouditor.ontology.v1.DatabaseStorage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	25,  // 199: clouditor.ontology.v1.Decryption.code_region:type_name -> clouditor.ontology.v1.CodeRegion
+	210, // 200: clouditor.ontology.v1.DeviceProvisioningService.creation_time:type_name -> google.protobuf.Timestamp
+	168, // 201: clouditor.ontology.v1.DeviceProvisioningService.labels:type_name -> clouditor.ontology.v1.DeviceProvisioningService.LabelsEntry
+	64,  // 202: clouditor.ontology.v1.DeviceProvisioningService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 203: clouditor.ontology.v1.DeviceProvisioningService.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 204: clouditor.ontology.v1.DeviceProvisioningService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 205: clouditor.ontology.v1.DeviceProvisioningService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	62,  // 206: clouditor.ontology.v1.Document.generic_document:type_name -> clouditor.ontology.v1.GenericDocument
+	117, // 207: clouditor.ontology.v1.Document.policy_document:type_name -> clouditor.ontology.v1.PolicyDocument
+	133, // 208: clouditor.ontology.v1.Document.security_advisory_document:type_name -> clouditor.ontology.v1.SecurityAdvisoryDocument
+	138, // 209: clouditor.ontology.v1.Document.service_metadata_document:type_name -> clouditor.ontology.v1.ServiceMetadataDocument
+	210, // 210: clouditor.ontology.v1.DocumentDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
+	169, // 211: clouditor.ontology.v1.DocumentDatabaseService.labels:type_name -> clouditor.ontology.v1.DocumentDatabaseService.LabelsEntry
+	3,   // 212: clouditor.ontology.v1.DocumentDatabaseService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	4,   // 213: clouditor.ontology.v1.DocumentDatabaseService.anomaly_detections:type_name -> clouditor.ontology.v1.AnomalyDetection
+	10,  // 214: clouditor.ontology.v1.DocumentDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	64,  // 215: clouditor.ontology.v1.DocumentDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	68,  // 216: clouditor.ontology.v1.DocumentDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	92,  // 217: clouditor.ontology.v1.DocumentDatabaseService.loggings:type_name -> clouditor.ontology.v1.Logging
+	98,  // 218: clouditor.ontology.v1.DocumentDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	120, // 219: clouditor.ontology.v1.DocumentDatabaseService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 220: clouditor.ontology.v1.DocumentDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 221: clouditor.ontology.v1.DocumentDatabaseService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	25,  // 222: clouditor.ontology.v1.Encryption.code_region:type_name -> clouditor.ontology.v1.CodeRegion
+	210, // 223: clouditor.ontology.v1.FileStorage.creation_time:type_name -> google.protobuf.Timestamp
+	170, // 224: clouditor.ontology.v1.FileStorage.labels:type_name -> clouditor.ontology.v1.FileStorage.LabelsEntry
+	3,   // 225: clouditor.ontology.v1.FileStorage.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	7,   // 226: clouditor.ontology.v1.FileStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
+	15,  // 227: clouditor.ontology.v1.FileStorage.backups:type_name -> clouditor.ontology.v1.Backup
+	64,  // 228: clouditor.ontology.v1.FileStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	76,  // 229: clouditor.ontology.v1.FileStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
+	92,  // 230: clouditor.ontology.v1.FileStorage.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 231: clouditor.ontology.v1.FileStorage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	127, // 232: clouditor.ontology.v1.FileStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	148, // 233: clouditor.ontology.v1.FileStorage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 234: clouditor.ontology.v1.FileStorageService.creation_time:type_name -> google.protobuf.Timestamp
+	171, // 235: clouditor.ontology.v1.FileStorageService.labels:type_name -> clouditor.ontology.v1.FileStorageService.LabelsEntry
+	3,   // 236: clouditor.ontology.v1.FileStorageService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	10,  // 237: clouditor.ontology.v1.FileStorageService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	64,  // 238: clouditor.ontology.v1.FileStorageService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	68,  // 239: clouditor.ontology.v1.FileStorageService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	92,  // 240: clouditor.ontology.v1.FileStorageService.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 241: clouditor.ontology.v1.FileStorageService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 242: clouditor.ontology.v1.FileStorageService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 243: clouditor.ontology.v1.FileStorageService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	84,  // 244: clouditor.ontology.v1.Firewall.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
+	154, // 245: clouditor.ontology.v1.Firewall.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
+	24,  // 246: clouditor.ontology.v1.Framework.cloud_sdk:type_name -> clouditor.ontology.v1.CloudSDK
+	67,  // 247: clouditor.ontology.v1.Framework.http_client_library:type_name -> clouditor.ontology.v1.HttpClientLibrary
+	71,  // 248: clouditor.ontology.v1.Framework.http_server:type_name -> clouditor.ontology.v1.HttpServer
+	91,  // 249: clouditor.ontology.v1.Framework.logger:type_name -> clouditor.ontology.v1.Logger
+	210, // 250: clouditor.ontology.v1.Function.creation_time:type_name -> google.protobuf.Timestamp
+	172, // 251: clouditor.ontology.v1.Function.labels:type_name -> clouditor.ontology.v1.Function.LabelsEntry
+	51,  // 252: clouditor.ontology.v1.Function.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
+	64,  // 253: clouditor.ontology.v1.Function.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 254: clouditor.ontology.v1.Function.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 255: clouditor.ontology.v1.Function.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	123, // 256: clouditor.ontology.v1.Function.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
+	127, // 257: clouditor.ontology.v1.Function.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	148, // 258: clouditor.ontology.v1.Function.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 259: clouditor.ontology.v1.FunctionService.creation_time:type_name -> google.protobuf.Timestamp
+	173, // 260: clouditor.ontology.v1.FunctionService.labels:type_name -> clouditor.ontology.v1.FunctionService.LabelsEntry
+	10,  // 261: clouditor.ontology.v1.FunctionService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	64,  // 262: clouditor.ontology.v1.FunctionService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 263: clouditor.ontology.v1.FunctionService.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 264: clouditor.ontology.v1.FunctionService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 265: clouditor.ontology.v1.FunctionService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 266: clouditor.ontology.v1.FunctionService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	22,  // 267: clouditor.ontology.v1.Functionality.cipher_suite:type_name -> clouditor.ontology.v1.CipherSuite
+	25,  // 268: clouditor.ontology.v1.Functionality.code_region:type_name -> clouditor.ontology.v1.CodeRegion
+	88,  // 269: clouditor.ontology.v1.Functionality.local_data_location:type_name -> clouditor.ontology.v1.LocalDataLocation
+	124, // 270: clouditor.ontology.v1.Functionality.remote_data_location:type_name -> clouditor.ontology.v1.RemoteDataLocation
+	53,  // 271: clouditor.ontology.v1.Functionality.error:type_name -> clouditor.ontology.v1.Error
+	68,  // 272: clouditor.ontology.v1.Functionality.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	70,  // 273: clouditor.ontology.v1.Functionality.http_request_handler:type_name -> clouditor.ontology.v1.HttpRequestHandler
+	47,  // 274: clouditor.ontology.v1.Functionality.decryption:type_name -> clouditor.ontology.v1.Decryption
+	52,  // 275: clouditor.ontology.v1.Functionality.encryption:type_name -> clouditor.ontology.v1.Encryption
+	66,  // 276: clouditor.ontology.v1.Functionality.cryptographic_hash:type_name -> clouditor.ontology.v1.CryptographicHash
+	42,  // 277: clouditor.ontology.v1.Functionality.database_connect:type_name -> clouditor.ontology.v1.DatabaseConnect
+	44,  // 278: clouditor.ontology.v1.Functionality.database_query:type_name -> clouditor.ontology.v1.DatabaseQuery
+	69,  // 279: clouditor.ontology.v1.Functionality.http_request:type_name -> clouditor.ontology.v1.HttpRequest
+	90,  // 280: clouditor.ontology.v1.Functionality.log_operation:type_name -> clouditor.ontology.v1.LogOperation
+	112, // 281: clouditor.ontology.v1.Functionality.object_storage_request:type_name -> clouditor.ontology.v1.ObjectStorageRequest
+	131, // 282: clouditor.ontology.v1.Functionality.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
+	134, // 283: clouditor.ontology.v1.Functionality.security_advisory_feed:type_name -> clouditor.ontology.v1.SecurityAdvisoryFeed
+	153, // 284: clouditor.ontology.v1.Functionality.vulnerability:type_name -> clouditor.ontology.v1.Vulnerability
+	210, // 285: clouditor.ontology.v1.GenericDocument.creation_time:type_name -> google.protobuf.Timestamp
+	174, // 286: clouditor.ontology.v1.GenericDocument.labels:type_name -> clouditor.ontology.v1.GenericDocument.LabelsEntry
+	41,  // 287: clouditor.ontology.v1.GenericDocument.data_location:type_name -> clouditor.ontology.v1.DataLocation
+	36,  // 288: clouditor.ontology.v1.GenericDocument.document_checksums:type_name -> clouditor.ontology.v1.DocumentChecksum
+	139, // 289: clouditor.ontology.v1.GenericDocument.document_signatures:type_name -> clouditor.ontology.v1.DocumentSignature
+	131, // 290: clouditor.ontology.v1.GenericDocument.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
+	136, // 291: clouditor.ontology.v1.GenericDocument.security_features:type_name -> clouditor.ontology.v1.SecurityFeature
+	210, // 292: clouditor.ontology.v1.GenericNetworkService.creation_time:type_name -> google.protobuf.Timestamp
+	175, // 293: clouditor.ontology.v1.GenericNetworkService.labels:type_name -> clouditor.ontology.v1.GenericNetworkService.LabelsEntry
+	10,  // 294: clouditor.ontology.v1.GenericNetworkService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	64,  // 295: clouditor.ontology.v1.GenericNetworkService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 296: clouditor.ontology.v1.GenericNetworkService.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 297: clouditor.ontology.v1.GenericNetworkService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 298: clouditor.ontology.v1.GenericNetworkService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 299: clouditor.ontology.v1.GenericNetworkService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	64,  // 300: clouditor.ontology.v1.GeoRedundancy.geo_locations:type_name -> clouditor.ontology.v1.GeoLocation
+	25,  // 301: clouditor.ontology.v1.CryptographicHash.code_region:type_name -> clouditor.ontology.v1.CodeRegion
+	10,  // 302: clouditor.ontology.v1.HttpEndpoint.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	147, // 303: clouditor.ontology.v1.HttpEndpoint.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	25,  // 304: clouditor.ontology.v1.HttpRequest.code_region:type_name -> clouditor.ontology.v1.CodeRegion
+	68,  // 305: clouditor.ontology.v1.HttpRequest.http_endpoints:type_name -> clouditor.ontology.v1.HttpEndpoint
+	68,  // 306: clouditor.ontology.v1.HttpRequestHandler.http_endpoints:type_name -> clouditor.ontology.v1.HttpEndpoint
+	70,  // 307: clouditor.ontology.v1.HttpServer.http_request_handler:type_name -> clouditor.ontology.v1.HttpRequestHandler
+	14,  // 308: clouditor.ontology.v1.HumanResources.awareness_training:type_name -> clouditor.ontology.v1.AwarenessTraining
+	137, // 309: clouditor.ontology.v1.HumanResources.security_training:type_name -> clouditor.ontology.v1.SecurityTraining
+	74,  // 310: clouditor.ontology.v1.Identifiable.identity:type_name -> clouditor.ontology.v1.Identity
+	130, // 311: clouditor.ontology.v1.Identifiable.role_assignment:type_name -> clouditor.ontology.v1.RoleAssignment
+	210, // 312: clouditor.ontology.v1.Identity.creation_time:type_name -> google.protobuf.Timestamp
+	176, // 313: clouditor.ontology.v1.Identity.labels:type_name -> clouditor.ontology.v1.Identity.LabelsEntry
+	210, // 314: clouditor.ontology.v1.Identity.last_activity:type_name -> google.protobuf.Timestamp
+	10,  // 315: clouditor.ontology.v1.Identity.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	11,  // 316: clouditor.ontology.v1.Identity.authorization:type_name -> clouditor.ontology.v1.Authorization
+	64,  // 317: clouditor.ontology.v1.Identity.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 318: clouditor.ontology.v1.Identity.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 319: clouditor.ontology.v1.Identity.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 320: clouditor.ontology.v1.Identity.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	31,  // 321: clouditor.ontology.v1.Image.container_image:type_name -> clouditor.ontology.v1.ContainerImage
+	149, // 322: clouditor.ontology.v1.Image.vm_image:type_name -> clouditor.ontology.v1.VMImage
+	87,  // 323: clouditor.ontology.v1.Integrity.local_attestation:type_name -> clouditor.ontology.v1.LocalAttestation
+	123, // 324: clouditor.ontology.v1.Integrity.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
+	12,  // 325: clouditor.ontology.v1.Integrity.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
+	36,  // 326: clouditor.ontology.v1.Integrity.document_checksum:type_name -> clouditor.ontology.v1.DocumentChecksum
+	76,  // 327: clouditor.ontology.v1.Integrity.immutability:type_name -> clouditor.ontology.v1.Immutability
+	139, // 328: clouditor.ontology.v1.Integrity.document_signature:type_name -> clouditor.ontology.v1.DocumentSignature
+	48,  // 329: clouditor.ontology.v1.IoT.device_provisioning_service:type_name -> clouditor.ontology.v1.DeviceProvisioningService
+	100, // 330: clouditor.ontology.v1.IoT.messaging_hub:type_name -> clouditor.ontology.v1.MessagingHub
+	210, // 331: clouditor.ontology.v1.Job.creation_time:type_name -> google.protobuf.Timestamp
+	177, // 332: clouditor.ontology.v1.Job.labels:type_name -> clouditor.ontology.v1.Job.LabelsEntry
+	64,  // 333: clouditor.ontology.v1.Job.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 334: clouditor.ontology.v1.Job.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 335: clouditor.ontology.v1.Job.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 336: clouditor.ontology.v1.Job.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 337: clouditor.ontology.v1.Key.creation_time:type_name -> google.protobuf.Timestamp
+	210, // 338: clouditor.ontology.v1.Key.expiration_date:type_name -> google.protobuf.Timestamp
+	178, // 339: clouditor.ontology.v1.Key.labels:type_name -> clouditor.ontology.v1.Key.LabelsEntry
+	210, // 340: clouditor.ontology.v1.Key.not_before_date:type_name -> google.protobuf.Timestamp
+	64,  // 341: clouditor.ontology.v1.Key.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 342: clouditor.ontology.v1.Key.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 343: clouditor.ontology.v1.Key.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 344: clouditor.ontology.v1.Key.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 345: clouditor.ontology.v1.KeyValueDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
+	179, // 346: clouditor.ontology.v1.KeyValueDatabaseService.labels:type_name -> clouditor.ontology.v1.KeyValueDatabaseService.LabelsEntry
+	3,   // 347: clouditor.ontology.v1.KeyValueDatabaseService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	4,   // 348: clouditor.ontology.v1.KeyValueDatabaseService.anomaly_detections:type_name -> clouditor.ontology.v1.AnomalyDetection
+	10,  // 349: clouditor.ontology.v1.KeyValueDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	64,  // 350: clouditor.ontology.v1.KeyValueDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	68,  // 351: clouditor.ontology.v1.KeyValueDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	92,  // 352: clouditor.ontology.v1.KeyValueDatabaseService.loggings:type_name -> clouditor.ontology.v1.Logging
+	98,  // 353: clouditor.ontology.v1.KeyValueDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	120, // 354: clouditor.ontology.v1.KeyValueDatabaseService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 355: clouditor.ontology.v1.KeyValueDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 356: clouditor.ontology.v1.KeyValueDatabaseService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 357: clouditor.ontology.v1.KeyVault.creation_time:type_name -> google.protobuf.Timestamp
+	180, // 358: clouditor.ontology.v1.KeyVault.labels:type_name -> clouditor.ontology.v1.KeyVault.LabelsEntry
+	64,  // 359: clouditor.ontology.v1.KeyVault.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 360: clouditor.ontology.v1.KeyVault.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 361: clouditor.ontology.v1.KeyVault.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 362: clouditor.ontology.v1.KeyVault.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 363: clouditor.ontology.v1.Library.creation_time:type_name -> google.protobuf.Timestamp
+	181, // 364: clouditor.ontology.v1.Library.labels:type_name -> clouditor.ontology.v1.Library.LabelsEntry
+	61,  // 365: clouditor.ontology.v1.Library.functionalities:type_name -> clouditor.ontology.v1.Functionality
+	153, // 366: clouditor.ontology.v1.Library.vulnerabilities:type_name -> clouditor.ontology.v1.Vulnerability
+	210, // 367: clouditor.ontology.v1.LoadBalancer.creation_time:type_name -> google.protobuf.Timestamp
+	182, // 368: clouditor.ontology.v1.LoadBalancer.labels:type_name -> clouditor.ontology.v1.LoadBalancer.LabelsEntry
+	1,   // 369: clouditor.ontology.v1.LoadBalancer.access_restriction:type_name -> clouditor.ontology.v1.AccessRestriction
+	10,  // 370: clouditor.ontology.v1.LoadBalancer.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	64,  // 371: clouditor.ontology.v1.LoadBalancer.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	68,  // 372: clouditor.ontology.v1.LoadBalancer.http_endpoints:type_name -> clouditor.ontology.v1.HttpEndpoint
+	92,  // 373: clouditor.ontology.v1.LoadBalancer.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 374: clouditor.ontology.v1.LoadBalancer.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 375: clouditor.ontology.v1.LoadBalancer.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 376: clouditor.ontology.v1.LoadBalancer.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	7,   // 377: clouditor.ontology.v1.LocalDataLocation.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
+	64,  // 378: clouditor.ontology.v1.LocalRedundancy.geo_locations:type_name -> clouditor.ontology.v1.GeoLocation
+	25,  // 379: clouditor.ontology.v1.LogOperation.code_region:type_name -> clouditor.ontology.v1.CodeRegion
+	92,  // 380: clouditor.ontology.v1.LogOperation.logging:type_name -> clouditor.ontology.v1.Logging
+	3,   // 381: clouditor.ontology.v1.Logging.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	6,   // 382: clouditor.ontology.v1.Logging.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
+	17,  // 383: clouditor.ontology.v1.Logging.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
+	109, // 384: clouditor.ontology.v1.Logging.os_logging:type_name -> clouditor.ontology.v1.OSLogging
+	127, // 385: clouditor.ontology.v1.Logging.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	210, // 386: clouditor.ontology.v1.LoggingService.creation_time:type_name -> google.protobuf.Timestamp
+	183, // 387: clouditor.ontology.v1.LoggingService.labels:type_name -> clouditor.ontology.v1.LoggingService.LabelsEntry
+	10,  // 388: clouditor.ontology.v1.LoggingService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	64,  // 389: clouditor.ontology.v1.LoggingService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 390: clouditor.ontology.v1.LoggingService.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 391: clouditor.ontology.v1.LoggingService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 392: clouditor.ontology.v1.LoggingService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 393: clouditor.ontology.v1.LoggingService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	95,  // 394: clouditor.ontology.v1.MachineLearning.machine_learning_dataset:type_name -> clouditor.ontology.v1.MachineLearningDataset
+	96,  // 395: clouditor.ontology.v1.MachineLearning.machine_learning_model:type_name -> clouditor.ontology.v1.MachineLearningModel
+	210, // 396: clouditor.ontology.v1.MachineLearningDataset.creation_time:type_name -> google.protobuf.Timestamp
+	184, // 397: clouditor.ontology.v1.MachineLearningDataset.labels:type_name -> clouditor.ontology.v1.MachineLearningDataset.LabelsEntry
+	41,  // 398: clouditor.ontology.v1.MachineLearningDataset.data_location:type_name -> clouditor.ontology.v1.DataLocation
+	210, // 399: clouditor.ontology.v1.MachineLearningModel.creation_time:type_name -> google.protobuf.Timestamp
+	185, // 400: clouditor.ontology.v1.MachineLearningModel.labels:type_name -> clouditor.ontology.v1.MachineLearningModel.LabelsEntry
+	41,  // 401: clouditor.ontology.v1.MachineLearningModel.data_location:type_name -> clouditor.ontology.v1.DataLocation
+	153, // 402: clouditor.ontology.v1.MachineLearningModel.vulnerabilities:type_name -> clouditor.ontology.v1.Vulnerability
+	210, // 403: clouditor.ontology.v1.MachineLearningService.creation_time:type_name -> google.protobuf.Timestamp
+	186, // 404: clouditor.ontology.v1.MachineLearningService.labels:type_name -> clouditor.ontology.v1.MachineLearningService.LabelsEntry
+	10,  // 405: clouditor.ontology.v1.MachineLearningService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	64,  // 406: clouditor.ontology.v1.MachineLearningService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 407: clouditor.ontology.v1.MachineLearningService.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 408: clouditor.ontology.v1.MachineLearningService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 409: clouditor.ontology.v1.MachineLearningService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 410: clouditor.ontology.v1.MachineLearningService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	211, // 411: clouditor.ontology.v1.MalwareProtection.duration_since_active:type_name -> google.protobuf.Duration
+	6,   // 412: clouditor.ontology.v1.MalwareProtection.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
+	210, // 413: clouditor.ontology.v1.MessagingHub.creation_time:type_name -> google.protobuf.Timestamp
+	187, // 414: clouditor.ontology.v1.MessagingHub.labels:type_name -> clouditor.ontology.v1.MessagingHub.LabelsEntry
+	64,  // 415: clouditor.ontology.v1.MessagingHub.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 416: clouditor.ontology.v1.MessagingHub.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 417: clouditor.ontology.v1.MessagingHub.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 418: clouditor.ontology.v1.MessagingHub.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	142, // 419: clouditor.ontology.v1.CodeModule.source_code_file:type_name -> clouditor.ontology.v1.SourceCodeFile
+	10,  // 420: clouditor.ontology.v1.MultiFactorAuthentiation.authenticities:type_name -> clouditor.ontology.v1.Authenticity
+	210, // 421: clouditor.ontology.v1.MultiModalDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
+	188, // 422: clouditor.ontology.v1.MultiModalDatabaseService.labels:type_name -> clouditor.ontology.v1.MultiModalDatabaseService.LabelsEntry
+	3,   // 423: clouditor.ontology.v1.MultiModalDatabaseService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	4,   // 424: clouditor.ontology.v1.MultiModalDatabaseService.anomaly_detections:type_name -> clouditor.ontology.v1.AnomalyDetection
+	10,  // 425: clouditor.ontology.v1.MultiModalDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	64,  // 426: clouditor.ontology.v1.MultiModalDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	68,  // 427: clouditor.ontology.v1.MultiModalDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	92,  // 428: clouditor.ontology.v1.MultiModalDatabaseService.loggings:type_name -> clouditor.ontology.v1.Logging
+	98,  // 429: clouditor.ontology.v1.MultiModalDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	120, // 430: clouditor.ontology.v1.MultiModalDatabaseService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 431: clouditor.ontology.v1.MultiModalDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 432: clouditor.ontology.v1.MultiModalDatabaseService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 433: clouditor.ontology.v1.NetworkInterface.creation_time:type_name -> google.protobuf.Timestamp
+	189, // 434: clouditor.ontology.v1.NetworkInterface.labels:type_name -> clouditor.ontology.v1.NetworkInterface.LabelsEntry
+	1,   // 435: clouditor.ontology.v1.NetworkInterface.access_restriction:type_name -> clouditor.ontology.v1.AccessRestriction
+	64,  // 436: clouditor.ontology.v1.NetworkInterface.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 437: clouditor.ontology.v1.NetworkInterface.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 438: clouditor.ontology.v1.NetworkInterface.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 439: clouditor.ontology.v1.NetworkInterface.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 440: clouditor.ontology.v1.NetworkSecurityGroup.creation_time:type_name -> google.protobuf.Timestamp
+	190, // 441: clouditor.ontology.v1.NetworkSecurityGroup.labels:type_name -> clouditor.ontology.v1.NetworkSecurityGroup.LabelsEntry
+	64,  // 442: clouditor.ontology.v1.NetworkSecurityGroup.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 443: clouditor.ontology.v1.NetworkSecurityGroup.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 444: clouditor.ontology.v1.NetworkSecurityGroup.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 445: clouditor.ontology.v1.NetworkSecurityGroup.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	60,  // 446: clouditor.ontology.v1.NetworkService.function_service:type_name -> clouditor.ontology.v1.FunctionService
+	63,  // 447: clouditor.ontology.v1.NetworkService.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
+	86,  // 448: clouditor.ontology.v1.NetworkService.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
+	93,  // 449: clouditor.ontology.v1.NetworkService.logging_service:type_name -> clouditor.ontology.v1.LoggingService
+	97,  // 450: clouditor.ontology.v1.NetworkService.machine_learning_service:type_name -> clouditor.ontology.v1.MachineLearningService
+	135, // 451: clouditor.ontology.v1.NetworkService.security_advisory_service:type_name -> clouditor.ontology.v1.SecurityAdvisoryService
+	50,  // 452: clouditor.ontology.v1.NetworkService.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
+	82,  // 453: clouditor.ontology.v1.NetworkService.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
+	103, // 454: clouditor.ontology.v1.NetworkService.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
+	121, // 455: clouditor.ontology.v1.NetworkService.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
+	56,  // 456: clouditor.ontology.v1.NetworkService.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
+	113, // 457: clouditor.ontology.v1.NetworkService.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
+	104, // 458: clouditor.ontology.v1.Networking.network_interface:type_name -> clouditor.ontology.v1.NetworkInterface
+	105, // 459: clouditor.ontology.v1.Networking.network_security_group:type_name -> clouditor.ontology.v1.NetworkSecurityGroup
+	60,  // 460: clouditor.ontology.v1.Networking.function_service:type_name -> clouditor.ontology.v1.FunctionService
+	63,  // 461: clouditor.ontology.v1.Networking.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
+	86,  // 462: clouditor.ontology.v1.Networking.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
+	93,  // 463: clouditor.ontology.v1.Networking.logging_service:type_name -> clouditor.ontology.v1.LoggingService
+	97,  // 464: clouditor.ontology.v1.Networking.machine_learning_service:type_name -> clouditor.ontology.v1.MachineLearningService
+	135, // 465: clouditor.ontology.v1.Networking.security_advisory_service:type_name -> clouditor.ontology.v1.SecurityAdvisoryService
+	50,  // 466: clouditor.ontology.v1.Networking.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
+	82,  // 467: clouditor.ontology.v1.Networking.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
+	103, // 468: clouditor.ontology.v1.Networking.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
+	121, // 469: clouditor.ontology.v1.Networking.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
+	56,  // 470: clouditor.ontology.v1.Networking.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
+	113, // 471: clouditor.ontology.v1.Networking.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
+	151, // 472: clouditor.ontology.v1.Networking.virtual_network:type_name -> clouditor.ontology.v1.VirtualNetwork
+	152, // 473: clouditor.ontology.v1.Networking.virtual_sub_network:type_name -> clouditor.ontology.v1.VirtualSubNetwork
+	211, // 474: clouditor.ontology.v1.OSLogging.retention_period:type_name -> google.protobuf.Duration
+	210, // 475: clouditor.ontology.v1.ObjectStorage.creation_time:type_name -> google.protobuf.Timestamp
+	191, // 476: clouditor.ontology.v1.ObjectStorage.labels:type_name -> clouditor.ontology.v1.ObjectStorage.LabelsEntry
+	3,   // 477: clouditor.ontology.v1.ObjectStorage.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	7,   // 478: clouditor.ontology.v1.ObjectStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
+	15,  // 479: clouditor.ontology.v1.ObjectStorage.backups:type_name -> clouditor.ontology.v1.Backup
+	64,  // 480: clouditor.ontology.v1.ObjectStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	76,  // 481: clouditor.ontology.v1.ObjectStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
+	92,  // 482: clouditor.ontology.v1.ObjectStorage.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 483: clouditor.ontology.v1.ObjectStorage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	127, // 484: clouditor.ontology.v1.ObjectStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	148, // 485: clouditor.ontology.v1.ObjectStorage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	25,  // 486: clouditor.ontology.v1.ObjectStorageRequest.code_region:type_name -> clouditor.ontology.v1.CodeRegion
+	210, // 487: clouditor.ontology.v1.ObjectStorageService.creation_time:type_name -> google.protobuf.Timestamp
+	192, // 488: clouditor.ontology.v1.ObjectStorageService.labels:type_name -> clouditor.ontology.v1.ObjectStorageService.LabelsEntry
+	3,   // 489: clouditor.ontology.v1.ObjectStorageService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	10,  // 490: clouditor.ontology.v1.ObjectStorageService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	64,  // 491: clouditor.ontology.v1.ObjectStorageService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	68,  // 492: clouditor.ontology.v1.ObjectStorageService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	92,  // 493: clouditor.ontology.v1.ObjectStorageService.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 494: clouditor.ontology.v1.ObjectStorageService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 495: clouditor.ontology.v1.ObjectStorageService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 496: clouditor.ontology.v1.ObjectStorageService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	47,  // 497: clouditor.ontology.v1.Operation.decryption:type_name -> clouditor.ontology.v1.Decryption
+	52,  // 498: clouditor.ontology.v1.Operation.encryption:type_name -> clouditor.ontology.v1.Encryption
+	66,  // 499: clouditor.ontology.v1.Operation.cryptographic_hash:type_name -> clouditor.ontology.v1.CryptographicHash
+	42,  // 500: clouditor.ontology.v1.Operation.database_connect:type_name -> clouditor.ontology.v1.DatabaseConnect
+	44,  // 501: clouditor.ontology.v1.Operation.database_query:type_name -> clouditor.ontology.v1.DatabaseQuery
+	69,  // 502: clouditor.ontology.v1.Operation.http_request:type_name -> clouditor.ontology.v1.HttpRequest
+	90,  // 503: clouditor.ontology.v1.Operation.log_operation:type_name -> clouditor.ontology.v1.LogOperation
+	112, // 504: clouditor.ontology.v1.Operation.object_storage_request:type_name -> clouditor.ontology.v1.ObjectStorageRequest
+	210, // 505: clouditor.ontology.v1.PasswordPolicy.creation_time:type_name -> google.protobuf.Timestamp
+	193, // 506: clouditor.ontology.v1.PasswordPolicy.labels:type_name -> clouditor.ontology.v1.PasswordPolicy.LabelsEntry
+	64,  // 507: clouditor.ontology.v1.PasswordPolicy.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 508: clouditor.ontology.v1.PasswordPolicy.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 509: clouditor.ontology.v1.PasswordPolicy.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 510: clouditor.ontology.v1.PasswordPolicy.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 511: clouditor.ontology.v1.PolicyDocument.creation_time:type_name -> google.protobuf.Timestamp
+	194, // 512: clouditor.ontology.v1.PolicyDocument.labels:type_name -> clouditor.ontology.v1.PolicyDocument.LabelsEntry
+	41,  // 513: clouditor.ontology.v1.PolicyDocument.data_location:type_name -> clouditor.ontology.v1.DataLocation
+	36,  // 514: clouditor.ontology.v1.PolicyDocument.document_checksums:type_name -> clouditor.ontology.v1.DocumentChecksum
+	139, // 515: clouditor.ontology.v1.PolicyDocument.document_signatures:type_name -> clouditor.ontology.v1.DocumentSignature
+	131, // 516: clouditor.ontology.v1.PolicyDocument.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
+	136, // 517: clouditor.ontology.v1.PolicyDocument.security_features:type_name -> clouditor.ontology.v1.SecurityFeature
+	210, // 518: clouditor.ontology.v1.QPU.creation_time:type_name -> google.protobuf.Timestamp
+	195, // 519: clouditor.ontology.v1.QPU.labels:type_name -> clouditor.ontology.v1.QPU.LabelsEntry
+	51,  // 520: clouditor.ontology.v1.QPU.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
+	64,  // 521: clouditor.ontology.v1.QPU.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 522: clouditor.ontology.v1.QPU.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 523: clouditor.ontology.v1.QPU.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	123, // 524: clouditor.ontology.v1.QPU.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
+	127, // 525: clouditor.ontology.v1.QPU.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	148, // 526: clouditor.ontology.v1.QPU.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	65,  // 527: clouditor.ontology.v1.Redundancy.geo_redundancy:type_name -> clouditor.ontology.v1.GeoRedundancy
+	89,  // 528: clouditor.ontology.v1.Redundancy.local_redundancy:type_name -> clouditor.ontology.v1.LocalRedundancy
+	156, // 529: clouditor.ontology.v1.Redundancy.zone_redundancy:type_name -> clouditor.ontology.v1.ZoneRedundancy
+	210, // 530: clouditor.ontology.v1.RelationalDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
+	196, // 531: clouditor.ontology.v1.RelationalDatabaseService.labels:type_name -> clouditor.ontology.v1.RelationalDatabaseService.LabelsEntry
+	3,   // 532: clouditor.ontology.v1.RelationalDatabaseService.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	4,   // 533: clouditor.ontology.v1.RelationalDatabaseService.anomaly_detections:type_name -> clouditor.ontology.v1.AnomalyDetection
+	10,  // 534: clouditor.ontology.v1.RelationalDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	64,  // 535: clouditor.ontology.v1.RelationalDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	68,  // 536: clouditor.ontology.v1.RelationalDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	92,  // 537: clouditor.ontology.v1.RelationalDatabaseService.loggings:type_name -> clouditor.ontology.v1.Logging
+	98,  // 538: clouditor.ontology.v1.RelationalDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	120, // 539: clouditor.ontology.v1.RelationalDatabaseService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	147, // 540: clouditor.ontology.v1.RelationalDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 541: clouditor.ontology.v1.RelationalDatabaseService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	54,  // 542: clouditor.ontology.v1.Reliability.explainable_results:type_name -> clouditor.ontology.v1.ExplainableResults
+	129, // 543: clouditor.ontology.v1.Reliability.robustness_score:type_name -> clouditor.ontology.v1.RobustnessScore
+	210, // 544: clouditor.ontology.v1.RemoteAttestation.creation_time:type_name -> google.protobuf.Timestamp
+	10,  // 545: clouditor.ontology.v1.RemoteDataLocation.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	147, // 546: clouditor.ontology.v1.RemoteDataLocation.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	2,   // 547: clouditor.ontology.v1.Resource.account:type_name -> clouditor.ontology.v1.Account
+	79,  // 548: clouditor.ontology.v1.Resource.job:type_name -> clouditor.ontology.v1.Job
+	155, // 549: clouditor.ontology.v1.Resource.workflow:type_name -> clouditor.ontology.v1.Workflow
+	26,  // 550: clouditor.ontology.v1.Resource.code_repository:type_name -> clouditor.ontology.v1.CodeRepository
+	30,  // 551: clouditor.ontology.v1.Resource.container:type_name -> clouditor.ontology.v1.Container
+	59,  // 552: clouditor.ontology.v1.Resource.function:type_name -> clouditor.ontology.v1.Function
+	118, // 553: clouditor.ontology.v1.Resource.qpu:type_name -> clouditor.ontology.v1.QPU
+	150, // 554: clouditor.ontology.v1.Resource.virtual_machine:type_name -> clouditor.ontology.v1.VirtualMachine
+	32,  // 555: clouditor.ontology.v1.Resource.container_orchestration:type_name -> clouditor.ontology.v1.ContainerOrchestration
+	33,  // 556: clouditor.ontology.v1.Resource.container_registry:type_name -> clouditor.ontology.v1.ContainerRegistry
+	19,  // 557: clouditor.ontology.v1.Resource.certificate:type_name -> clouditor.ontology.v1.Certificate
+	81,  // 558: clouditor.ontology.v1.Resource.key:type_name -> clouditor.ontology.v1.Key
+	132, // 559: clouditor.ontology.v1.Resource.secret:type_name -> clouditor.ontology.v1.Secret
+	74,  // 560: clouditor.ontology.v1.Resource.identity:type_name -> clouditor.ontology.v1.Identity
+	130, // 561: clouditor.ontology.v1.Resource.role_assignment:type_name -> clouditor.ontology.v1.RoleAssignment
+	31,  // 562: clouditor.ontology.v1.Resource.container_image:type_name -> clouditor.ontology.v1.ContainerImage
+	149, // 563: clouditor.ontology.v1.Resource.vm_image:type_name -> clouditor.ontology.v1.VMImage
+	48,  // 564: clouditor.ontology.v1.Resource.device_provisioning_service:type_name -> clouditor.ontology.v1.DeviceProvisioningService
+	100, // 565: clouditor.ontology.v1.Resource.messaging_hub:type_name -> clouditor.ontology.v1.MessagingHub
+	83,  // 566: clouditor.ontology.v1.Resource.key_vault:type_name -> clouditor.ontology.v1.KeyVault
+	104, // 567: clouditor.ontology.v1.Resource.network_interface:type_name -> clouditor.ontology.v1.NetworkInterface
+	105, // 568: clouditor.ontology.v1.Resource.network_security_group:type_name -> clouditor.ontology.v1.NetworkSecurityGroup
+	60,  // 569: clouditor.ontology.v1.Resource.function_service:type_name -> clouditor.ontology.v1.FunctionService
+	63,  // 570: clouditor.ontology.v1.Resource.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
+	86,  // 571: clouditor.ontology.v1.Resource.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
+	93,  // 572: clouditor.ontology.v1.Resource.logging_service:type_name -> clouditor.ontology.v1.LoggingService
+	97,  // 573: clouditor.ontology.v1.Resource.machine_learning_service:type_name -> clouditor.ontology.v1.MachineLearningService
+	135, // 574: clouditor.ontology.v1.Resource.security_advisory_service:type_name -> clouditor.ontology.v1.SecurityAdvisoryService
+	50,  // 575: clouditor.ontology.v1.Resource.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
+	82,  // 576: clouditor.ontology.v1.Resource.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
+	103, // 577: clouditor.ontology.v1.Resource.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
+	121, // 578: clouditor.ontology.v1.Resource.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
+	56,  // 579: clouditor.ontology.v1.Resource.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
+	113, // 580: clouditor.ontology.v1.Resource.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
+	151, // 581: clouditor.ontology.v1.Resource.virtual_network:type_name -> clouditor.ontology.v1.VirtualNetwork
+	152, // 582: clouditor.ontology.v1.Resource.virtual_sub_network:type_name -> clouditor.ontology.v1.VirtualSubNetwork
+	116, // 583: clouditor.ontology.v1.Resource.password_policy:type_name -> clouditor.ontology.v1.PasswordPolicy
+	126, // 584: clouditor.ontology.v1.Resource.resource_group:type_name -> clouditor.ontology.v1.ResourceGroup
+	16,  // 585: clouditor.ontology.v1.Resource.block_storage:type_name -> clouditor.ontology.v1.BlockStorage
+	46,  // 586: clouditor.ontology.v1.Resource.database_storage:type_name -> clouditor.ontology.v1.DatabaseStorage
+	55,  // 587: clouditor.ontology.v1.Resource.file_storage:type_name -> clouditor.ontology.v1.FileStorage
+	111, // 588: clouditor.ontology.v1.Resource.object_storage:type_name -> clouditor.ontology.v1.ObjectStorage
+	62,  // 589: clouditor.ontology.v1.Resource.generic_document:type_name -> clouditor.ontology.v1.GenericDocument
+	117, // 590: clouditor.ontology.v1.Resource.policy_document:type_name -> clouditor.ontology.v1.PolicyDocument
+	133, // 591: clouditor.ontology.v1.Resource.security_advisory_document:type_name -> clouditor.ontology.v1.SecurityAdvisoryDocument
+	138, // 592: clouditor.ontology.v1.Resource.service_metadata_document:type_name -> clouditor.ontology.v1.ServiceMetadataDocument
+	95,  // 593: clouditor.ontology.v1.Resource.machine_learning_dataset:type_name -> clouditor.ontology.v1.MachineLearningDataset
+	96,  // 594: clouditor.ontology.v1.Resource.machine_learning_model:type_name -> clouditor.ontology.v1.MachineLearningModel
+	14,  // 595: clouditor.ontology.v1.Resource.awareness_training:type_name -> clouditor.ontology.v1.AwarenessTraining
+	137, // 596: clouditor.ontology.v1.Resource.security_training:type_name -> clouditor.ontology.v1.SecurityTraining
+	5,   // 597: clouditor.ontology.v1.Resource.application:type_name -> clouditor.ontology.v1.Application
+	85,  // 598: clouditor.ontology.v1.Resource.library:type_name -> clouditor.ontology.v1.Library
+	142, // 599: clouditor.ontology.v1.Resource.source_code_file:type_name -> clouditor.ontology.v1.SourceCodeFile
+	210, // 600: clouditor.ontology.v1.ResourceGroup.creation_time:type_name -> google.protobuf.Timestamp
+	197, // 601: clouditor.ontology.v1.ResourceGroup.labels:type_name -> clouditor.ontology.v1.ResourceGroup.LabelsEntry
+	64,  // 602: clouditor.ontology.v1.ResourceGroup.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 603: clouditor.ontology.v1.ResourceGroup.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 604: clouditor.ontology.v1.ResourceGroup.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 605: clouditor.ontology.v1.ResourceGroup.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	211, // 606: clouditor.ontology.v1.ResourceLogging.retention_period:type_name -> google.protobuf.Duration
+	210, // 607: clouditor.ontology.v1.RoleAssignment.creation_time:type_name -> google.protobuf.Timestamp
+	198, // 608: clouditor.ontology.v1.RoleAssignment.labels:type_name -> clouditor.ontology.v1.RoleAssignment.LabelsEntry
+	10,  // 609: clouditor.ontology.v1.RoleAssignment.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	11,  // 610: clouditor.ontology.v1.RoleAssignment.authorization:type_name -> clouditor.ontology.v1.Authorization
+	64,  // 611: clouditor.ontology.v1.RoleAssignment.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 612: clouditor.ontology.v1.RoleAssignment.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 613: clouditor.ontology.v1.RoleAssignment.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 614: clouditor.ontology.v1.RoleAssignment.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	53,  // 615: clouditor.ontology.v1.SchemaValidation.errors:type_name -> clouditor.ontology.v1.Error
+	210, // 616: clouditor.ontology.v1.Secret.creation_time:type_name -> google.protobuf.Timestamp
+	210, // 617: clouditor.ontology.v1.Secret.expiration_date:type_name -> google.protobuf.Timestamp
+	199, // 618: clouditor.ontology.v1.Secret.labels:type_name -> clouditor.ontology.v1.Secret.LabelsEntry
+	210, // 619: clouditor.ontology.v1.Secret.not_before_date:type_name -> google.protobuf.Timestamp
+	64,  // 620: clouditor.ontology.v1.Secret.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 621: clouditor.ontology.v1.Secret.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 622: clouditor.ontology.v1.Secret.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 623: clouditor.ontology.v1.Secret.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 624: clouditor.ontology.v1.SecurityAdvisoryDocument.creation_time:type_name -> google.protobuf.Timestamp
+	200, // 625: clouditor.ontology.v1.SecurityAdvisoryDocument.labels:type_name -> clouditor.ontology.v1.SecurityAdvisoryDocument.LabelsEntry
+	41,  // 626: clouditor.ontology.v1.SecurityAdvisoryDocument.data_location:type_name -> clouditor.ontology.v1.DataLocation
+	36,  // 627: clouditor.ontology.v1.SecurityAdvisoryDocument.document_checksums:type_name -> clouditor.ontology.v1.DocumentChecksum
+	139, // 628: clouditor.ontology.v1.SecurityAdvisoryDocument.document_signatures:type_name -> clouditor.ontology.v1.DocumentSignature
+	131, // 629: clouditor.ontology.v1.SecurityAdvisoryDocument.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
+	136, // 630: clouditor.ontology.v1.SecurityAdvisoryDocument.security_features:type_name -> clouditor.ontology.v1.SecurityFeature
+	153, // 631: clouditor.ontology.v1.SecurityAdvisoryDocument.vulnerabilities:type_name -> clouditor.ontology.v1.Vulnerability
+	210, // 632: clouditor.ontology.v1.SecurityAdvisoryService.creation_time:type_name -> google.protobuf.Timestamp
+	201, // 633: clouditor.ontology.v1.SecurityAdvisoryService.labels:type_name -> clouditor.ontology.v1.SecurityAdvisoryService.LabelsEntry
+	10,  // 634: clouditor.ontology.v1.SecurityAdvisoryService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	64,  // 635: clouditor.ontology.v1.SecurityAdvisoryService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 636: clouditor.ontology.v1.SecurityAdvisoryService.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 637: clouditor.ontology.v1.SecurityAdvisoryService.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	134, // 638: clouditor.ontology.v1.SecurityAdvisoryService.security_advisory_feeds:type_name -> clouditor.ontology.v1.SecurityAdvisoryFeed
+	147, // 639: clouditor.ontology.v1.SecurityAdvisoryService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	148, // 640: clouditor.ontology.v1.SecurityAdvisoryService.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	4,   // 641: clouditor.ontology.v1.SecurityFeature.anomaly_detection:type_name -> clouditor.ontology.v1.AnomalyDetection
+	3,   // 642: clouditor.ontology.v1.SecurityFeature.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	6,   // 643: clouditor.ontology.v1.SecurityFeature.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
+	17,  // 644: clouditor.ontology.v1.SecurityFeature.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
+	109, // 645: clouditor.ontology.v1.SecurityFeature.os_logging:type_name -> clouditor.ontology.v1.OSLogging
+	127, // 646: clouditor.ontology.v1.SecurityFeature.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	98,  // 647: clouditor.ontology.v1.SecurityFeature.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	148, // 648: clouditor.ontology.v1.SecurityFeature.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	20,  // 649: clouditor.ontology.v1.SecurityFeature.certificate_based_authentication:type_name -> clouditor.ontology.v1.CertificateBasedAuthentication
+	80,  // 650: clouditor.ontology.v1.SecurityFeature.token_based_authentication:type_name -> clouditor.ontology.v1.TokenBasedAuthentication
+	102, // 651: clouditor.ontology.v1.SecurityFeature.multi_factor_authentiation:type_name -> clouditor.ontology.v1.MultiFactorAuthentiation
+	108, // 652: clouditor.ontology.v1.SecurityFeature.no_authentication:type_name -> clouditor.ontology.v1.NoAuthentication
+	110, // 653: clouditor.ontology.v1.SecurityFeature.otp_based_authentication:type_name -> clouditor.ontology.v1.OTPBasedAuthentication
+	115, // 654: clouditor.ontology.v1.SecurityFeature.password_based_authentication:type_name -> clouditor.ontology.v1.PasswordBasedAuthentication
+	140, // 655: clouditor.ontology.v1.SecurityFeature.single_sign_on:type_name -> clouditor.ontology.v1.SingleSignOn
+	0,   // 656: clouditor.ontology.v1.SecurityFeature.abac:type_name -> clouditor.ontology.v1.ABAC
+	84,  // 657: clouditor.ontology.v1.SecurityFeature.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
+	154, // 658: clouditor.ontology.v1.SecurityFeature.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
+	119, // 659: clouditor.ontology.v1.SecurityFeature.rbac:type_name -> clouditor.ontology.v1.RBAC
+	15,  // 660: clouditor.ontology.v1.SecurityFeature.backup:type_name -> clouditor.ontology.v1.Backup
+	39,  // 661: clouditor.ontology.v1.SecurityFeature.d_do_s_protection:type_name -> clouditor.ontology.v1.DDoSProtection
+	64,  // 662: clouditor.ontology.v1.SecurityFeature.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	65,  // 663: clouditor.ontology.v1.SecurityFeature.geo_redundancy:type_name -> clouditor.ontology.v1.GeoRedundancy
+	89,  // 664: clouditor.ontology.v1.SecurityFeature.local_redundancy:type_name -> clouditor.ontology.v1.LocalRedundancy
+	156, // 665: clouditor.ontology.v1.SecurityFeature.zone_redundancy:type_name -> clouditor.ontology.v1.ZoneRedundancy
+	38,  // 666: clouditor.ontology.v1.SecurityFeature.customer_key_encryption:type_name -> clouditor.ontology.v1.CustomerKeyEncryption
+	99,  // 667: clouditor.ontology.v1.SecurityFeature.managed_key_encryption:type_name -> clouditor.ontology.v1.ManagedKeyEncryption
+	51,  // 668: clouditor.ontology.v1.SecurityFeature.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
+	147, // 669: clouditor.ontology.v1.SecurityFeature.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	87,  // 670: clouditor.ontology.v1.SecurityFeature.local_attestation:type_name -> clouditor.ontology.v1.LocalAttestation
+	123, // 671: clouditor.ontology.v1.SecurityFeature.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
+	12,  // 672: clouditor.ontology.v1.SecurityFeature.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
+	36,  // 673: clouditor.ontology.v1.SecurityFeature.document_checksum:type_name -> clouditor.ontology.v1.DocumentChecksum
+	76,  // 674: clouditor.ontology.v1.SecurityFeature.immutability:type_name -> clouditor.ontology.v1.Immutability
+	139, // 675: clouditor.ontology.v1.SecurityFeature.document_signature:type_name -> clouditor.ontology.v1.DocumentSignature
+	54,  // 676: clouditor.ontology.v1.SecurityFeature.explainable_results:type_name -> clouditor.ontology.v1.ExplainableResults
+	129, // 677: clouditor.ontology.v1.SecurityFeature.robustness_score:type_name -> clouditor.ontology.v1.RobustnessScore
+	210, // 678: clouditor.ontology.v1.SecurityTraining.creation_time:type_name -> google.protobuf.Timestamp
+	202, // 679: clouditor.ontology.v1.SecurityTraining.labels:type_name -> clouditor.ontology.v1.SecurityTraining.LabelsEntry
+	210, // 680: clouditor.ontology.v1.ServiceMetadataDocument.creation_time:type_name -> google.protobuf.Timestamp
+	203, // 681: clouditor.ontology.v1.ServiceMetadataDocument.labels:type_name -> clouditor.ontology.v1.ServiceMetadataDocument.LabelsEntry
+	41,  // 682: clouditor.ontology.v1.ServiceMetadataDocument.data_location:type_name -> clouditor.ontology.v1.DataLocation
+	36,  // 683: clouditor.ontology.v1.ServiceMetadataDocument.document_checksums:type_name -> clouditor.ontology.v1.DocumentChecksum
+	139, // 684: clouditor.ontology.v1.ServiceMetadataDocument.document_signatures:type_name -> clouditor.ontology.v1.DocumentSignature
+	131, // 685: clouditor.ontology.v1.ServiceMetadataDocument.schema_validation:type_name -> clouditor.ontology.v1.SchemaValidation
+	136, // 686: clouditor.ontology.v1.ServiceMetadataDocument.security_features:type_name -> clouditor.ontology.v1.SecurityFeature
+	53,  // 687: clouditor.ontology.v1.DocumentSignature.errors:type_name -> clouditor.ontology.v1.Error
+	5,   // 688: clouditor.ontology.v1.Code.application:type_name -> clouditor.ontology.v1.Application
+	85,  // 689: clouditor.ontology.v1.Code.library:type_name -> clouditor.ontology.v1.Library
+	142, // 690: clouditor.ontology.v1.Code.source_code_file:type_name -> clouditor.ontology.v1.SourceCodeFile
+	210, // 691: clouditor.ontology.v1.SourceCodeFile.creation_time:type_name -> google.protobuf.Timestamp
+	204, // 692: clouditor.ontology.v1.SourceCodeFile.labels:type_name -> clouditor.ontology.v1.SourceCodeFile.LabelsEntry
+	61,  // 693: clouditor.ontology.v1.SourceCodeFile.functionalities:type_name -> clouditor.ontology.v1.Functionality
+	16,  // 694: clouditor.ontology.v1.Storage.block_storage:type_name -> clouditor.ontology.v1.BlockStorage
+	46,  // 695: clouditor.ontology.v1.Storage.database_storage:type_name -> clouditor.ontology.v1.DatabaseStorage
+	55,  // 696: clouditor.ontology.v1.Storage.file_storage:type_name -> clouditor.ontology.v1.FileStorage
+	111, // 697: clouditor.ontology.v1.Storage.object_storage:type_name -> clouditor.ontology.v1.ObjectStorage
+	50,  // 698: clouditor.ontology.v1.StorageService.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
+	82,  // 699: clouditor.ontology.v1.StorageService.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
+	103, // 700: clouditor.ontology.v1.StorageService.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
+	121, // 701: clouditor.ontology.v1.StorageService.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
+	56,  // 702: clouditor.ontology.v1.StorageService.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
+	113, // 703: clouditor.ontology.v1.StorageService.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
+	14,  // 704: clouditor.ontology.v1.Training.awareness_training:type_name -> clouditor.ontology.v1.AwarenessTraining
+	137, // 705: clouditor.ontology.v1.Training.security_training:type_name -> clouditor.ontology.v1.SecurityTraining
+	22,  // 706: clouditor.ontology.v1.TransportEncryption.cipher_suites:type_name -> clouditor.ontology.v1.CipherSuite
+	210, // 707: clouditor.ontology.v1.VMImage.creation_time:type_name -> google.protobuf.Timestamp
+	205, // 708: clouditor.ontology.v1.VMImage.labels:type_name -> clouditor.ontology.v1.VMImage.LabelsEntry
+	64,  // 709: clouditor.ontology.v1.VMImage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 710: clouditor.ontology.v1.VMImage.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 711: clouditor.ontology.v1.VMImage.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 712: clouditor.ontology.v1.VMImage.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 713: clouditor.ontology.v1.VirtualMachine.creation_time:type_name -> google.protobuf.Timestamp
+	206, // 714: clouditor.ontology.v1.VirtualMachine.labels:type_name -> clouditor.ontology.v1.VirtualMachine.LabelsEntry
+	3,   // 715: clouditor.ontology.v1.VirtualMachine.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	12,  // 716: clouditor.ontology.v1.VirtualMachine.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
+	17,  // 717: clouditor.ontology.v1.VirtualMachine.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
+	51,  // 718: clouditor.ontology.v1.VirtualMachine.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
+	64,  // 719: clouditor.ontology.v1.VirtualMachine.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 720: clouditor.ontology.v1.VirtualMachine.loggings:type_name -> clouditor.ontology.v1.Logging
+	98,  // 721: clouditor.ontology.v1.VirtualMachine.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	109, // 722: clouditor.ontology.v1.VirtualMachine.os_logging:type_name -> clouditor.ontology.v1.OSLogging
+	120, // 723: clouditor.ontology.v1.VirtualMachine.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	123, // 724: clouditor.ontology.v1.VirtualMachine.remote_attestation:type_name -> clouditor.ontology.v1.RemoteAttestation
+	127, // 725: clouditor.ontology.v1.VirtualMachine.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	148, // 726: clouditor.ontology.v1.VirtualMachine.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 727: clouditor.ontology.v1.VirtualNetwork.creation_time:type_name -> google.protobuf.Timestamp
+	207, // 728: clouditor.ontology.v1.VirtualNetwork.labels:type_name -> clouditor.ontology.v1.VirtualNetwork.LabelsEntry
+	64,  // 729: clouditor.ontology.v1.VirtualNetwork.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 730: clouditor.ontology.v1.VirtualNetwork.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 731: clouditor.ontology.v1.VirtualNetwork.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 732: clouditor.ontology.v1.VirtualNetwork.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 733: clouditor.ontology.v1.VirtualSubNetwork.creation_time:type_name -> google.protobuf.Timestamp
+	208, // 734: clouditor.ontology.v1.VirtualSubNetwork.labels:type_name -> clouditor.ontology.v1.VirtualSubNetwork.LabelsEntry
+	64,  // 735: clouditor.ontology.v1.VirtualSubNetwork.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 736: clouditor.ontology.v1.VirtualSubNetwork.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 737: clouditor.ontology.v1.VirtualSubNetwork.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 738: clouditor.ontology.v1.VirtualSubNetwork.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	210, // 739: clouditor.ontology.v1.Workflow.creation_time:type_name -> google.protobuf.Timestamp
+	209, // 740: clouditor.ontology.v1.Workflow.labels:type_name -> clouditor.ontology.v1.Workflow.LabelsEntry
+	64,  // 741: clouditor.ontology.v1.Workflow.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	92,  // 742: clouditor.ontology.v1.Workflow.loggings:type_name -> clouditor.ontology.v1.Logging
+	120, // 743: clouditor.ontology.v1.Workflow.redundancies:type_name -> clouditor.ontology.v1.Redundancy
+	148, // 744: clouditor.ontology.v1.Workflow.usage_statistics:type_name -> clouditor.ontology.v1.UsageStatistics
+	64,  // 745: clouditor.ontology.v1.ZoneRedundancy.geo_locations:type_name -> clouditor.ontology.v1.GeoLocation
+	212, // 746: clouditor.ontology.v1.resource_type_names:extendee -> google.protobuf.MessageOptions
+	747, // [747:747] is the sub-list for method output_type
+	747, // [747:747] is the sub-list for method input_type
+	747, // [747:747] is the sub-list for extension type_name
+	746, // [746:747] is the sub-list for extension extendee
+	0,   // [0:746] is the sub-list for field type_name
 }
 
 func init() { file_api_ontology_ontology_proto_init() }
@@ -22008,6 +22307,7 @@ func file_api_ontology_ontology_proto_init() {
 		(*Infrastructure_CodeRepository)(nil),
 		(*Infrastructure_Container)(nil),
 		(*Infrastructure_Function)(nil),
+		(*Infrastructure_Qpu)(nil),
 		(*Infrastructure_VirtualMachine)(nil),
 		(*Infrastructure_ContainerOrchestration)(nil),
 		(*Infrastructure_ContainerRegistry)(nil),
@@ -22052,6 +22352,7 @@ func file_api_ontology_ontology_proto_init() {
 	file_api_ontology_ontology_proto_msgTypes[28].OneofWrappers = []any{
 		(*Compute_Container)(nil),
 		(*Compute_Function)(nil),
+		(*Compute_Qpu)(nil),
 		(*Compute_VirtualMachine)(nil),
 	}
 	file_api_ontology_ontology_proto_msgTypes[29].OneofWrappers = []any{
@@ -22253,24 +22554,26 @@ func file_api_ontology_ontology_proto_init() {
 	}
 	file_api_ontology_ontology_proto_msgTypes[116].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[117].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[119].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[118].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[120].OneofWrappers = []any{
 		(*Redundancy_GeoRedundancy)(nil),
 		(*Redundancy_LocalRedundancy)(nil),
 		(*Redundancy_ZoneRedundancy)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[120].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[121].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[121].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[122].OneofWrappers = []any{
 		(*Reliability_ExplainableResults)(nil),
 		(*Reliability_RobustnessScore)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[123].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[124].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[124].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[125].OneofWrappers = []any{
 		(*Resource_Account)(nil),
 		(*Resource_Job)(nil),
 		(*Resource_Workflow)(nil),
 		(*Resource_CodeRepository)(nil),
 		(*Resource_Container)(nil),
 		(*Resource_Function)(nil),
+		(*Resource_Qpu)(nil),
 		(*Resource_VirtualMachine)(nil),
 		(*Resource_ContainerOrchestration)(nil),
 		(*Resource_ContainerRegistry)(nil),
@@ -22318,12 +22621,12 @@ func file_api_ontology_ontology_proto_init() {
 		(*Resource_Library)(nil),
 		(*Resource_SourceCodeFile)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[125].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[129].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[131].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[126].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[130].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[132].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[134].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[135].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[133].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[135].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[136].OneofWrappers = []any{
 		(*SecurityFeature_AnomalyDetection)(nil),
 		(*SecurityFeature_ActivityLogging)(nil),
 		(*SecurityFeature_ApplicationLogging)(nil),
@@ -22362,21 +22665,21 @@ func file_api_ontology_ontology_proto_init() {
 		(*SecurityFeature_ExplainableResults)(nil),
 		(*SecurityFeature_RobustnessScore)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[136].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[137].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[140].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[138].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[141].OneofWrappers = []any{
 		(*Code_Application)(nil),
 		(*Code_Library)(nil),
 		(*Code_SourceCodeFile)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[141].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[142].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[142].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[143].OneofWrappers = []any{
 		(*Storage_BlockStorage)(nil),
 		(*Storage_DatabaseStorage)(nil),
 		(*Storage_FileStorage)(nil),
 		(*Storage_ObjectStorage)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[143].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[144].OneofWrappers = []any{
 		(*StorageService_DocumentDatabaseService)(nil),
 		(*StorageService_KeyValueDatabaseService)(nil),
 		(*StorageService_MultiModalDatabaseService)(nil),
@@ -22384,22 +22687,22 @@ func file_api_ontology_ontology_proto_init() {
 		(*StorageService_FileStorageService)(nil),
 		(*StorageService_ObjectStorageService)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[145].OneofWrappers = []any{
+	file_api_ontology_ontology_proto_msgTypes[146].OneofWrappers = []any{
 		(*Training_AwarenessTraining)(nil),
 		(*Training_SecurityTraining)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[148].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[149].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[150].OneofWrappers = []any{}
 	file_api_ontology_ontology_proto_msgTypes[151].OneofWrappers = []any{}
-	file_api_ontology_ontology_proto_msgTypes[154].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[152].OneofWrappers = []any{}
+	file_api_ontology_ontology_proto_msgTypes[155].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_ontology_ontology_proto_rawDesc), len(file_api_ontology_ontology_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   208,
+			NumMessages:   210,
 			NumExtensions: 1,
 			NumServices:   0,
 		},
