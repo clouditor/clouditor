@@ -24,7 +24,7 @@ import (
 
 var MockAssessmentResult1 = &assessment.AssessmentResult{
 	Id:                   testdata.MockAssessmentResult1ID,
-	Timestamp:            timestamppb.New(time.Unix(1, 0)),
+	CreatedAt:            timestamppb.New(time.Unix(1, 0)),
 	TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 	MetricId:             testdata.MockMetricID1,
 	Compliant:            true,
@@ -39,7 +39,14 @@ var MockAssessmentResult1 = &assessment.AssessmentResult{
 		MetricId:             testdata.MockMetricID1,
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 	},
-	ToolId: util.Ref(assessment.AssessmentToolId),
+	ToolId:           util.Ref(assessment.AssessmentToolId),
+	HistoryUpdatedAt: timestamppb.New(time.Unix(1, 0)),
+	History: []*assessment.Record{
+		{
+			EvidenceId:         testdata.MockEvidenceID1,
+			EvidenceRecordedAt: timestamppb.New(time.Unix(1, 0)),
+		},
+	},
 }
 
 // PrepareSession prepares a session for unit tests. It creates a temporary folder to save
