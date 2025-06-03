@@ -503,7 +503,7 @@ func (*GetSupportedResourceTypesRequest) Descriptor() ([]byte, []int) {
 
 type GetSupportedResourceTypesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ResourceTypes []string               `protobuf:"bytes,1,rep,name=resource_types,json=resourceTypes,proto3" json:"resource_types,omitempty"`
+	ResourceType  []string               `protobuf:"bytes,1,rep,name=resource_type,json=resourceType,proto3" json:"resource_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -538,9 +538,9 @@ func (*GetSupportedResourceTypesResponse) Descriptor() ([]byte, []int) {
 	return file_api_evidence_evidence_store_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *GetSupportedResourceTypesResponse) GetResourceTypes() []string {
+func (x *GetSupportedResourceTypesResponse) GetResourceType() []string {
 	if x != nil {
-		return x.ResourceTypes
+		return x.ResourceType
 	}
 	return nil
 }
@@ -578,9 +578,9 @@ const file_api_evidence_evidence_store_proto_rawDesc = "" +
 	"\x12GetEvidenceRequest\x12)\n" +
 	"\vevidence_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\n" +
 	"evidenceId\"\"\n" +
-	" GetSupportedResourceTypesRequest\"T\n" +
-	"!GetSupportedResourceTypesResponse\x12/\n" +
-	"\x0eresource_types\x18\x01 \x03(\tB\b\xbaH\x05\x92\x01\x02\b\x01R\rresourceTypes*d\n" +
+	" GetSupportedResourceTypesRequest\"R\n" +
+	"!GetSupportedResourceTypesResponse\x12-\n" +
+	"\rresource_type\x18\x01 \x03(\tB\b\xbaH\x05\x92\x01\x02\b\x01R\fresourceType*d\n" +
 	"\x0eEvidenceStatus\x12\x1f\n" +
 	"\x1bEVIDENCE_STATUS_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12EVIDENCE_STATUS_OK\x10\x01\x12\x19\n" +

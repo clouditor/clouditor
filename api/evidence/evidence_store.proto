@@ -114,5 +114,5 @@ message GetEvidenceRequest {
 message GetSupportedResourceTypesRequest {}
 
 message GetSupportedResourceTypesResponse {
-  repeated string resource_types = 1 [(buf.validate.field).repeated.min_items = 1];
+  repeated string resource_type = 1 [(buf.validate.field).repeated.min_items = 1];
 }

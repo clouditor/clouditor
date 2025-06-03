@@ -1324,7 +1324,7 @@ func TestService_GetSupportedResourceTypes(t *testing.T) {
 			},
 			wantRes: func(t *testing.T, got *evidence.GetSupportedResourceTypesResponse) bool {
 				assert.NotNil(t, got)
-				return assert.NotEmpty(t, got.ResourceTypes)
+				return assert.NotEmpty(t, got.ResourceType)
 			},
 			wantErr: assert.NoError,
 		},

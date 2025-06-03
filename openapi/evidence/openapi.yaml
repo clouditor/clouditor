@@ -1418,7 +1418,7 @@ components:
         GetSupportedResourceTypesResponse:
             type: object
             properties:
-                resourceTypes:
+                resourceType:
                     type: array
                     items:
                         type: string
