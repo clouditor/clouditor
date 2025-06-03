@@ -88,6 +88,43 @@ func ResourceTypes(r IsResource) []string {
 	return nil
 }
 
+// GetResourceTypes returns a list of resource types that are supported by the ontology.
+func GetResourceTypes() []string {
+	var types []string
+
+	var resource Resource
+
+	// Zugriff auf die Descriptor der Resource-Message
+	md := resource.ProtoReflect().Descriptor()
+
+	// Durchlaufen der Felder der Resource
+	for i := 0; i < md.Fields().Len(); i++ {
+		field := md.Fields().Get(i)
+		if field.ContainingOneof() != nil {
+			types = append(types, string(field.Name()))
+		}
+	}
+
+	return types
+}
+
+// func GetResourceTypes() []string {
+// 	var types []string
+// 	resource := &ontology.Resource{}
+// 	// rt := reflect.TypeOf(resourceType)
+
+// 	md := proto.MessageReflect(resource).Descriptor()
+
+// 	for i := 0; i < md.Fields().Len(); i++ {
+// 		field := md.Fields().Get(i)
+// 		if field.ContainingOneof() != nil {
+// 			types = append(types, string(field.Name()))
+// 		}
+// 	}
+
+// 	return types
+// }
+
 func HasType(r IsResource, typ string) bool {
 	return slices.Contains(ResourceTypes(r), typ)
 }

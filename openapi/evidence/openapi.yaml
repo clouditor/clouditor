@@ -107,6 +107,25 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/evidence_store/supported_resource_types:
+        get:
+            tags:
+                - EvidenceStore
+            description: Returns the resource types that are supported by the EvidenceStore.
+            operationId: EvidenceStore_GetSupportedResourceTypes
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetSupportedResourceTypesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
         ABAC:
@@ -1396,6 +1415,13 @@ components:
                     items:
                         $ref: '#/components/schemas/GeoLocation'
             description: GeoRedundancy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        GetSupportedResourceTypesResponse:
+            type: object
+            properties:
+                resourceTypes:
+                    type: array
+                    items:
+                        type: string
         GoogleProtobufAny:
             type: object
             properties:
