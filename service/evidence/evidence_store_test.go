@@ -1282,3 +1282,67 @@ func TestService_handleEvidence(t *testing.T) {
 		})
 	}
 }
+
+func TestService_GetSupportedResourceTypes(t *testing.T) {
+	type fields struct {
+		storage                          persistence.Storage
+		assessmentStreams                *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
+		assessment                       *api.RPCConnection[assessment.AssessmentClient]
+		channelEvidence                  chan *evidence.Evidence
+		evidenceHooks                    []evidence.EvidenceHookFunc
+		authz                            service.AuthorizationStrategy
+		UnimplementedEvidenceStoreServer evidence.UnimplementedEvidenceStoreServer
+	}
+	type args struct {
+		ctx context.Context
+		req *evidence.GetSupportedResourceTypesRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes assert.Want[*evidence.GetSupportedResourceTypesResponse]
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Request is nil",
+			args: args{
+				ctx: context.TODO(),
+				req: nil,
+			},
+			wantRes: assert.Nil[*evidence.GetSupportedResourceTypesResponse],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
+			},
+		},
+		{
+			name: "Happy path",
+			args: args{
+				ctx: context.TODO(),
+				req: &evidence.GetSupportedResourceTypesRequest{},
+			},
+			wantRes: func(t *testing.T, got *evidence.GetSupportedResourceTypesResponse) bool {
+				assert.NotNil(t, got)
+				return assert.NotEmpty(t, got.ResourceTypes)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				storage:           tt.fields.storage,
+				assessmentStreams: tt.fields.assessmentStreams,
+				assessment:        tt.fields.assessment,
+				channelEvidence:   tt.fields.channelEvidence,
+				evidenceHooks:     tt.fields.evidenceHooks,
+				authz:             tt.fields.authz,
+			}
+			gotRes, err := svc.GetSupportedResourceTypes(tt.args.ctx, tt.args.req)
+
+			tt.wantRes(t, gotRes)
+			tt.wantErr(t, err)
+		})
+	}
+}
