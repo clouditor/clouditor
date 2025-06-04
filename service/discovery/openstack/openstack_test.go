@@ -430,6 +430,33 @@ func Test_openstackDiscovery_List(t *testing.T) {
 			},
 		},
 		{
+			name: "error discover clusters",
+			fields: fields{
+				testhelper: "clusters",
+				authOpts: &gophercloud.AuthOptions{
+					IdentityEndpoint: testdata.MockOpenstackIdentityEndpoint,
+					Username:         testdata.MockOpenstackUsername,
+					Password:         testdata.MockOpenstackPassword,
+					TenantName:       testdata.MockOpenstackTenantName,
+				},
+				clients: clients{
+					provider: &gophercloud.ProviderClient{
+						TokenID: client.TokenID,
+						EndpointLocator: func(eo gophercloud.EndpointOpts) (string, error) {
+							return testhelper.Endpoint(), nil
+						},
+					},
+					identityClient: client.ServiceClient(),
+				},
+				project: &project{},
+				domain:  &domain{},
+			},
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not discover clusters:")
+			},
+		},
+		{
 			name: "error discover projects: but there is no error, as a resource is added based on other information discovered before.",
 			fields: fields{
 				testhelper: "project",
@@ -461,7 +488,7 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					Raw:      "",
 				}
 
-				got0 := got[7].(*ontology.ResourceGroup)
+				got0 := got[9].(*ontology.ResourceGroup)
 				assert.NotEmpty(t, got0.GetRaw())
 				got0.Raw = ""
 				return assert.Equal(t, want, got0)
@@ -520,7 +547,7 @@ func Test_openstackDiscovery_List(t *testing.T) {
 				},
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {
-				return assert.Equal(t, 9, len(got))
+				return assert.Equal(t, 11, len(got))
 			},
 			wantErr: assert.NoError,
 		},
@@ -549,8 +576,7 @@ func Test_openstackDiscovery_List(t *testing.T) {
 				openstacktest.HandleInterfaceListSuccessfully(t)
 				openstacktest.HandleNetworkListSuccessfully(t)
 				openstacktest.MockStorageListResponse(t)
-				// openstacktest.HandleListProjectsSuccessfully(t)
-				// openstacktest.HandleListDomainsSuccessfully(t)
+				openstacktest.HandleListClusterSuccessfully(t)
 			case "domain":
 				fmt.Println("Setting up handlers to get an error for domain resources")
 				const ConsoleOutputBody = `{
@@ -562,9 +588,21 @@ func Test_openstackDiscovery_List(t *testing.T) {
 				openstacktest.HandleInterfaceListSuccessfully(t)
 				openstacktest.HandleNetworkListSuccessfully(t)
 				openstacktest.MockStorageListResponse(t)
-				// openstacktest.HandleListProjectsSuccessfully(t)
+				openstacktest.HandleListClusterSuccessfully(t)
 			case "project":
 				fmt.Println("Setting up handlers to get an error for project resources")
+				const ConsoleOutputBody = `{
+					"output": "output test"
+				}`
+
+				openstacktest.HandleServerListSuccessfully(t)
+				openstacktest.HandleShowConsoleOutputSuccessfully(t, ConsoleOutputBody)
+				openstacktest.HandleInterfaceListSuccessfully(t)
+				openstacktest.HandleNetworkListSuccessfully(t)
+				openstacktest.MockStorageListResponse(t)
+				openstacktest.HandleListClusterSuccessfully(t)
+			case "clusters":
+				fmt.Println("Setting up handlers to get an error for storage resources")
 				const ConsoleOutputBody = `{
 					"output": "output test"
 				}`
