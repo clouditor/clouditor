@@ -198,6 +198,16 @@ func (d *openstackDiscovery) authorize() (err error) {
 		}
 	}
 
+	// Cluster client
+	if d.clients.clusterClient == nil {
+		d.clients.clusterClient, err = openstack.NewContainerInfraV1(d.clients.provider, gophercloud.EndpointOpts{
+			Region: d.region,
+		})
+		if err != nil {
+			return fmt.Errorf("could not create cluster client: %w", err)
+		}
+	}
+
 	return
 }
 
@@ -223,6 +233,7 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 		storages []ontology.IsResource
 		projects []ontology.IsResource
 		domains  []ontology.IsResource
+		clusters []ontology.IsResource
 	)
 
 	if err = d.authorize(); err != nil {
@@ -253,7 +264,7 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 	list = append(list, storages...)
 
 	// Discover clusters
-	clusters, err := d.discoverCluster()
+	clusters, err = d.discoverCluster()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover clusters: %v", err)
 	}
