@@ -81,6 +81,7 @@ type clients struct {
 	computeClient  *gophercloud.ServiceClient
 	networkClient  *gophercloud.ServiceClient
 	storageClient  *gophercloud.ServiceClient
+	clusterClient  *gophercloud.ServiceClient
 }
 
 func (*openstackDiscovery) Name() string {
