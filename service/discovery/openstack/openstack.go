@@ -252,6 +252,13 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 	}
 	list = append(list, storages...)
 
+	// Discover clusters
+	clusters, err := d.discoverCluster()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover clusters: %v", err)
+	}
+	list = append(list, clusters...)
+
 	// Discover project resources
 	projects, err = d.discoverProjects()
 	if err != nil {
