@@ -457,7 +457,7 @@ func Test_openstackDiscovery_List(t *testing.T) {
 		{
 			name: "error discover clusters",
 			fields: fields{
-				testhelper: "cluster",
+				testhelper: "clusters",
 				authOpts: &gophercloud.AuthOptions{
 					IdentityEndpoint: testdata.MockOpenstackIdentityEndpoint,
 					Username:         testdata.MockOpenstackUsername,
