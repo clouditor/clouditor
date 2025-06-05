@@ -215,6 +215,31 @@ func Test_openstackDiscovery_authorize(t *testing.T) {
 			},
 		},
 		{
+			name: "cluster client error",
+			fields: fields{
+				authOpts: &gophercloud.AuthOptions{
+					IdentityEndpoint: testdata.MockOpenstackIdentityEndpoint,
+					Username:         testdata.MockOpenstackUsername,
+					Password:         testdata.MockOpenstackPassword,
+					TenantName:       testdata.MockOpenstackTenantName,
+				},
+				clients: clients{
+					provider: &gophercloud.ProviderClient{
+						TokenID: client.TokenID,
+						EndpointLocator: func(eo gophercloud.EndpointOpts) (string, error) {
+							if eo.Type == "container-infrastructure-management" {
+								return "", errors.New("this is a test error")
+							}
+							return testhelper.Endpoint(), nil
+						},
+					},
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not create cluster client:")
+			},
+		},
+		{
 			name: "Happy path",
 			fields: fields{
 				authOpts: &gophercloud.AuthOptions{
@@ -432,7 +457,7 @@ func Test_openstackDiscovery_List(t *testing.T) {
 		{
 			name: "error discover clusters",
 			fields: fields{
-				testhelper: "clusters",
+				testhelper: "cluster",
 				authOpts: &gophercloud.AuthOptions{
 					IdentityEndpoint: testdata.MockOpenstackIdentityEndpoint,
 					Username:         testdata.MockOpenstackUsername,
