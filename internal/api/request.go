@@ -17,3 +17,7 @@ type PayloadRequest interface {
 type TargetOfEvaluationRequest interface {
 	GetTargetOfEvaluationId() string
 }
+
+type StoreEvidenceRequest interface {
+	GetEvidence() string
+}
