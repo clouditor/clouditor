@@ -395,10 +395,10 @@ func Test_openstackDiscovery_List(t *testing.T) {
 				project: &project{},
 				domain:  &domain{},
 			},
-			want: assert.Nil[[]ontology.IsResource],
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not discover servers:")
+			want: func(t *testing.T, got []ontology.IsResource) bool {
+				return assert.Equal(t, 0, len(got))
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "error discover network interfaces",
@@ -422,10 +422,10 @@ func Test_openstackDiscovery_List(t *testing.T) {
 				project: &project{},
 				domain:  &domain{},
 			},
-			want: assert.Nil[[]ontology.IsResource],
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not discover network interfaces:")
+			want: func(t *testing.T, got []ontology.IsResource) bool {
+				return assert.Equal(t, 4, len(got))
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "error discover block storage",
@@ -449,10 +449,10 @@ func Test_openstackDiscovery_List(t *testing.T) {
 				project: &project{},
 				domain:  &domain{},
 			},
-			want: assert.Nil[[]ontology.IsResource],
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not discover block storage:")
+			want: func(t *testing.T, got []ontology.IsResource) bool {
+				return assert.Equal(t, 6, len(got))
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "error discover clusters",
@@ -476,10 +476,10 @@ func Test_openstackDiscovery_List(t *testing.T) {
 				project: &project{},
 				domain:  &domain{},
 			},
-			want: assert.Nil[[]ontology.IsResource],
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not discover clusters:")
+			want: func(t *testing.T, got []ontology.IsResource) bool {
+				return assert.Equal(t, 8, len(got))
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "error discover projects: but there is no error, as a resource is added based on other information discovered before.",
@@ -542,10 +542,10 @@ func Test_openstackDiscovery_List(t *testing.T) {
 				project: &project{},
 				domain:  &domain{},
 			},
-			want: assert.Nil[[]ontology.IsResource],
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not discover domains:")
+			want: func(t *testing.T, got []ontology.IsResource) bool {
+				return assert.Equal(t, 10, len(got))
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "Happy path",

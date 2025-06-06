@@ -284,7 +284,7 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 	}
 	list = append(list, domains...)
 
-	return
+	return list, nil
 }
 
 type ClientFunc func() (*gophercloud.ServiceClient, error)
