@@ -25,26 +25,26 @@
 
 syntax = "proto3";
 
-package clouditor.discovery.v1experimental;
+package clouditor.evidence.v1experimental;
 
-import "api/discovery/discovery.proto";
+import "api/evidence/evidence.proto";
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 
-option go_package = "clouditor.io/clouditor/v2/api/discovery";
+option go_package = "clouditor.io/clouditor/v2/api/evidence";
 
-// Discovers cloud resources and maps these properties to the format of the
+// Maps cloud resources and its properties to the format of the
 // ontology
-service ExperimentalDiscovery {
+service ExperimentalResources {
   // UpdateResource updates a resource (or creates it, if it does not exist).
   // This is used to give third-party tools the possibility to add something to
   // the resource graph.
   //
   // Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
-  rpc UpdateResource(UpdateResourceRequest) returns (clouditor.discovery.v1.Resource) {
+  rpc UpdateResource(UpdateResourceRequest) returns (clouditor.evidence.v1.Resource) {
     option (google.api.http) = {
-      post: "/v1experimental/discovery/resources/{resource.id}"
+      post: "/v1experimental/evidence_store/resources/{resource.id}"
       body: "*"
     };
   }
@@ -54,12 +54,12 @@ service ExperimentalDiscovery {
   //
   // Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
   rpc ListGraphEdges(ListGraphEdgesRequest) returns (ListGraphEdgesResponse) {
-    option (google.api.http) = {get: "/v1experimental/discovery/graph/edges"};
+    option (google.api.http) = {get: "/v1experimental/evidence/graph/edges"};
   }
 }
 
 message UpdateResourceRequest {
-  clouditor.discovery.v1.Resource resource = 1 [(google.api.field_behavior) = REQUIRED];
+  clouditor.evidence.v1.Resource resource = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
 message ListGraphEdgesRequest {
