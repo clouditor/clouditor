@@ -245,42 +245,42 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 	// Discover servers
 	servers, err = d.discoverServer()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover servers: %w", err)
+		log.Errorf("could not discover servers: %v", err)
 	}
 	list = append(list, servers...)
 
 	// Discover networks interfaces
 	networks, err = d.discoverNetworkInterfaces()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover network interfaces: %w", err)
+		log.Errorf("could not discover network interfaces: %v", err)
 	}
 	list = append(list, networks...)
 
 	// Discover block storage
 	storages, err = d.discoverBlockStorage()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover block storage: %w", err)
+		log.Errorf("could not discover block storage: %v", err)
 	}
 	list = append(list, storages...)
 
 	// Discover clusters
 	clusters, err = d.discoverCluster()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover clusters: %v", err)
+		log.Errorf("could not discover clusters: %v", err)
 	}
 	list = append(list, clusters...)
 
 	// Discover project resources
 	projects, err = d.discoverProjects()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover projects/tenants: %v", err)
+		log.Errorf("could not discover projects/tenants: %v", err)
 	}
 	list = append(list, projects...)
 
 	// Discover domains resource
 	domains, err = d.discoverDomains()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover domains: %v", err)
+		log.Errorf("could not discover domains: %v", err)
 	}
 	list = append(list, domains...)
 
