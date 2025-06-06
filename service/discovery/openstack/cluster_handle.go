@@ -48,5 +48,7 @@ func (d *openstackDiscovery) handleCluster(cluster *clusters.Cluster) (ontology.
 		Raw:      discovery.Raw(cluster),
 	}
 
+	log.Infof("Adding cluster '%s", cluster.Name)
+
 	return r, nil
 }
