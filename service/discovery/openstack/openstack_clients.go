@@ -62,3 +62,11 @@ func (d *openstackDiscovery) storageClient() (client *gophercloud.ServiceClient,
 	}
 	return d.clients.storageClient, nil
 }
+
+// clusterClient returns the cluster client if initialized
+func (d *openstackDiscovery) clusterClient() (client *gophercloud.ServiceClient, err error) {
+	if d.clients.clusterClient == nil {
+		return nil, fmt.Errorf("cluster client not initialized")
+	}
+	return d.clients.clusterClient, nil
+}

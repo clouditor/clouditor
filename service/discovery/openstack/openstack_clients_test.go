@@ -219,3 +219,50 @@ func Test_openstackDiscovery_storageClient(t *testing.T) {
 		})
 	}
 }
+
+func Test_openstackDiscovery_clusterClient(t *testing.T) {
+	type fields struct {
+		ctID     string
+		clients  clients
+		authOpts *gophercloud.AuthOptions
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		wantClient assert.Want[*gophercloud.ServiceClient]
+		wantErr    assert.ErrorAssertionFunc
+	}{
+		{
+			name:       "clusterClient not initialized",
+			wantClient: assert.Nil[*gophercloud.ServiceClient],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "cluster client not initialized")
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				clients: clients{
+					clusterClient: &gophercloud.ServiceClient{},
+				},
+			},
+			wantClient: func(t *testing.T, got *gophercloud.ServiceClient) bool {
+				return assert.NotNil(t, got)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &openstackDiscovery{
+				ctID:     tt.fields.ctID,
+				clients:  tt.fields.clients,
+				authOpts: tt.fields.authOpts,
+			}
+			gotClient, err := d.clusterClient()
+
+			tt.wantClient(t, gotClient)
+			tt.wantErr(t, err)
+		})
+	}
+}
