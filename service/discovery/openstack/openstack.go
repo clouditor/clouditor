@@ -284,6 +284,8 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 	}
 	list = append(list, domains...)
 
+	log.Infof("Discovered %d resources in OpenStack", len(list))
+
 	return list, nil
 }
 
