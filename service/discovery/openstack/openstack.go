@@ -216,6 +216,8 @@ func NewAuthorizer() (gophercloud.AuthOptions, error) {
 	if err != nil {
 		log.Error("%w: %w", ErrGettingAuthOptionsFromEnv, err)
 	}
+
+	ao.AllowReauth = true // Allow re-authentication if the token expires
 	return ao, err
 
 }
