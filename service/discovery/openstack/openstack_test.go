@@ -295,6 +295,8 @@ func TestNewAuthorizer(t *testing.T) {
 				envVariables: []envVariables{},
 			},
 			want: func(t *testing.T, got gophercloud.AuthOptions) bool {
+				assert.True(t, got.AllowReauth)
+				got.AllowReauth = false // We do not want to check this field in the following
 				return assert.Empty(t, got)
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -333,6 +335,7 @@ func TestNewAuthorizer(t *testing.T) {
 					Username:         testdata.MockOpenstackUsername,
 					Password:         testdata.MockOpenstackPassword,
 					TenantID:         testdata.MockProjectID1,
+					AllowReauth:      true,
 				}
 				return assert.Equal(t, want, got)
 			},
