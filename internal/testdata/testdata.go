@@ -131,10 +131,10 @@ const (
 	MockEvaluationResult10ID = "11111111-1111-1111-1111-111111111110"
 )
 
-func MockMetricsDirectory1() (string, error) {
-	tempDir1, err := os.MkdirTemp("", "")
-	metricsDir1 := filepath.Join(tempDir1, "policies", "metrics", "metrics", "TestCategory", "TestMetric")
-	err = os.MkdirAll(metricsDir1, 0755)
+func MockMetricsDirectory() (string, error) {
+	tempDir, err := os.MkdirTemp("", "")
+	metricsDir := filepath.Join(tempDir, "policies", "metrics", "metrics", "TestCategory", "TestMetric")
+	err = os.MkdirAll(metricsDir, 0755)
 
 	// Create test YAML files
 	validYaml := `
@@ -147,18 +147,9 @@ properties:
     operator: "=="
     targetValue: "123"
 `
-	err = os.WriteFile(filepath.Join(metricsDir1, "valid.yaml"), []byte(validYaml), 0644)
-
-	return tempDir1, err
-}
-
-func MockMetricsDirectory2() (string, error) {
-	tempDir2, err := os.MkdirTemp("", "")
-	metricsDir2 := filepath.Join(tempDir2, "policies", "metrics", "metrics", "TestCategory", "TestMetric")
-	err = os.MkdirAll(metricsDir2, 0755)
 
 	// Create test YAML files
-	validYaml := `
+	validYaml2 := `
 id: TestMetric
 description: Test Metric 1
 version: "1.0"
@@ -168,9 +159,11 @@ properties:
     operator: "=="
     targetValue: "123"
 `
-	err = os.WriteFile(filepath.Join(metricsDir2, "valid.yaml"), []byte(validYaml), 0644)
 
-	return tempDir2, err
+	err = os.WriteFile(filepath.Join(metricsDir, "valid.yaml"), []byte(validYaml), 0644)
+	err = os.WriteFile(filepath.Join(metricsDir, "valid2.yaml"), []byte(validYaml2), 0644)
+
+	return tempDir, err
 }
 
 var (

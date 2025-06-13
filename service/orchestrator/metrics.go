@@ -52,6 +52,8 @@ import (
 )
 
 var baseDir = "."
+
+// a slice of metric paths that makes it easy to add new paths to be searched for metrics
 var defaultMetricsPath = fmt.Sprintf("%s/policies/security-metrics/metrics", baseDir)
 
 // ErrMetricNotFound indicates the certification was not found
@@ -60,30 +62,19 @@ var ErrMetricNotFound = status.Error(codes.NotFound, "metric not found")
 // loadMetrics takes care of loading the metric definitions from the (embedded) metrics.json as
 // well as the default metric implementations from the Rego files.
 func (svc *Service) loadMetrics() (err error) {
-	var (
-		metrics    []*assessment.Metric
-		extMetrics []*assessment.Metric
-	)
+	var metrics []*assessment.Metric
 
 	// Default to loading metrics from our standard metrics repository
-	if svc.loadInternalMetricsFunc == nil && svc.loadExternalMetricsFunc == nil {
-		svc.loadInternalMetricsFunc = svc.loadMetricsFromMetricsRepository
+	if svc.loadMetricsFunc == nil {
+		svc.loadMetricsFunc = svc.loadMetricsFromMetricsRepository
 	}
 
 	// Execute the metric loading functions if they are set
-	if svc.loadInternalMetricsFunc != nil {
-		metrics, err = svc.loadInternalMetricsFunc()
+	if svc.loadMetricsFunc != nil {
+		metrics, err = svc.loadMetricsFunc()
 		if err != nil {
 			return fmt.Errorf("could not load metrics: %w", err)
 		}
-	}
-
-	if svc.loadExternalMetricsFunc != nil {
-		extMetrics, err = svc.loadExternalMetricsFunc()
-		if err != nil {
-			return fmt.Errorf("could not load external metrics: %w", err)
-		}
-		metrics = append(metrics, extMetrics...)
 	}
 
 	defaultMetricConfigurations = make(map[string]*assessment.MetricConfiguration)
@@ -161,47 +152,40 @@ func prepareMetric(m *assessment.Metric) (err error) {
 // loadMetricsFromMetricsRepository loads metric definitions by walking through YAML files
 // in the policies/security-metrics/metrics directory.
 // it uses all given paths or the default path if none are provided.
-func (svc *Service) loadMetricsFromMetricsRepository(path ...string) (metrics []*assessment.Metric, err error) {
+func (svc *Service) loadMetricsFromMetricsRepository() (metrics []*assessment.Metric, err error) {
 	metrics = make([]*assessment.Metric, 0)
 
-	// If no paths are provided, use the default path "policies/security-metrics/metrics"
-	if len(path) == 0 {
-		path = append(path, defaultMetricsPath)
-	}
-
 	// Walk through the provided paths and import metrics
-	for _, p := range path {
-		err = filepath.Walk(p, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return fmt.Errorf("error accessing path %s: %w", path, err)
-			}
+	err = filepath.Walk(defaultMetricsPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return fmt.Errorf("error accessing path %s: %w", path, err)
+		}
 
-			// Skip directories and non-yaml files
-			if info.IsDir() || (!strings.HasSuffix(info.Name(), ".yaml") && !strings.HasSuffix(info.Name(), ".yml")) {
-				return nil
-			}
-
-			// Read the YAML file
-			b, err := os.ReadFile(path)
-			if err != nil {
-				return fmt.Errorf("error reading file %s: %w", path, err)
-			}
-
-			var metric assessment.Metric
-
-			dec := yaml.NewDecoder(bytes.NewReader(b))
-			err = dec.Decode(&metric)
-			if err != nil {
-				return fmt.Errorf("error decoding metric %s: %w", path, err)
-			}
-
-			// Set the category automatically, since it is not included in the yaml definition
-			metric.Category = filepath.Base(filepath.Dir(filepath.Dir(path)))
-
-			metrics = append(metrics, &metric)
+		// Skip directories and non-yaml files
+		if info.IsDir() || (!strings.HasSuffix(info.Name(), ".yaml") && !strings.HasSuffix(info.Name(), ".yml")) {
 			return nil
-		})
-	}
+		}
+
+		// Read the YAML file
+		b, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("error reading file %s: %w", path, err)
+		}
+
+		var metric assessment.Metric
+
+		dec := yaml.NewDecoder(bytes.NewReader(b))
+		err = dec.Decode(&metric)
+		if err != nil {
+			return fmt.Errorf("error decoding metric %s: %w", path, err)
+		}
+
+		// Set the category automatically, since it is not included in the yaml definition
+		metric.Category = filepath.Base(filepath.Dir(filepath.Dir(path)))
+
+		metrics = append(metrics, &metric)
+		return nil
+	})
 
 	if err != nil {
 		return nil, fmt.Errorf("error reading metrics directory: %w", err)

@@ -83,26 +83,23 @@ var (
 
 func Test_loadMetricsFromRepository(t *testing.T) {
 	// Create a temporary directory structure for test files
-	var tempDir1, err = testdata.MockMetricsDirectory1()
-	assert.NoError(t, err)
-
-	tempDir2, err := testdata.MockMetricsDirectory2()
+	var tempDir, err = testdata.MockMetricsDirectory()
 	assert.NoError(t, err)
 
 	tests := []struct {
 		name       string
-		path       []string
+		path       string
 		wantMetric []*assessment.Metric
 		wantErr    assert.ErrorAssertionFunc
 	}{
 		{
 			name:    "Invalid path",
-			path:    []string{"doesnotexist"},
+			path:    "doesnotexist",
 			wantErr: assert.Error,
 		},
 		{
 			name: "Happy path",
-			path: []string{tempDir1, tempDir2},
+			path: tempDir,
 			wantMetric: []*assessment.Metric{
 				{
 					Id:          "TestMetric",
@@ -123,8 +120,10 @@ func Test_loadMetricsFromRepository(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
 			svc := &Service{}
-			gotMetrics, err := svc.loadMetricsFromMetricsRepository(tt.path...)
+			defaultMetricsPath = tt.path
+			gotMetrics, err := svc.loadMetricsFromMetricsRepository()
 
 			if tt.wantMetric != nil {
 				assert.NoError(t, api.Validate(gotMetrics[0]))
@@ -602,7 +601,7 @@ func TestService_ListMetrics(t *testing.T) {
 		auditScopeHooks         []orchestrator.AuditScopeHookFunc
 		AssessmentResultHooks   []assessment.ResultHookFunc
 		storage                 persistence.Storage
-		loadMetricsFunc         func(...string) ([]*assessment.Metric, error)
+		loadMetricsFunc         func() ([]*assessment.Metric, error)
 		catalogsFolder          string
 		loadCatalogsFunc        func() ([]*orchestrator.Catalog, error)
 		events                  chan *orchestrator.MetricChangeEvent
@@ -707,7 +706,7 @@ func TestService_ListMetrics(t *testing.T) {
 				TargetOfEvaluationHooks: tt.fields.TargetOfEvaluationHooks,
 				auditScopeHooks:         tt.fields.auditScopeHooks,
 				AssessmentResultHooks:   tt.fields.AssessmentResultHooks,
-				loadInternalMetricsFunc: tt.fields.loadMetricsFunc,
+				loadMetricsFunc:         tt.fields.loadMetricsFunc,
 				storage:                 tt.fields.storage,
 				catalogsFolder:          tt.fields.catalogsFolder,
 				loadCatalogsFunc:        tt.fields.loadCatalogsFunc,
@@ -1190,7 +1189,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 	type fields struct {
 		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
-		loadMetricsFunc       func(...string) ([]*assessment.Metric, error)
+		loadMetricsFunc       func() ([]*assessment.Metric, error)
 		catalogsFolder        string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
@@ -1553,13 +1552,13 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				AssessmentResultHooks:   tt.fields.AssessmentResultHooks,
-				storage:                 tt.fields.storage,
-				loadInternalMetricsFunc: tt.fields.loadMetricsFunc,
-				catalogsFolder:          tt.fields.catalogsFolder,
-				loadCatalogsFunc:        tt.fields.loadCatalogsFunc,
-				events:                  tt.fields.events,
-				authz:                   tt.fields.authz,
+				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
+				storage:               tt.fields.storage,
+				loadMetricsFunc:       tt.fields.loadMetricsFunc,
+				catalogsFolder:        tt.fields.catalogsFolder,
+				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
+				events:                tt.fields.events,
+				authz:                 tt.fields.authz,
 			}
 			gotRes, err := svc.UpdateMetricConfiguration(tt.args.in0, tt.args.req)
 			tt.wantErr(t, err)

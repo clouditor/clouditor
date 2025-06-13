@@ -98,11 +98,8 @@ type Service struct {
 
 	storage persistence.Storage
 
-	// loadInternalMetricsFunc is a function that is used to initially load metrics at the start of the orchestrator
-	loadInternalMetricsFunc func(path ...string) ([]*assessment.Metric, error)
-
-	// loadExternalMetricsFunc is a function that is used to initially load metrics from an external repository at the start of the orchestrator
-	loadExternalMetricsFunc func() ([]*assessment.Metric, error)
+	// loadMetricsFunc is a function used to initially load metrics at the start of the orchestrator
+	loadMetricsFunc func() ([]*assessment.Metric, error)
 
 	catalogsFolder string
 
@@ -118,13 +115,6 @@ type Service struct {
 
 func init() {
 	log = logrus.WithField("component", "orchestrator")
-}
-
-// WithExternalMetrics can be used to load metric definitions from an external source
-func WithExternalMetrics(f func() ([]*assessment.Metric, error)) service.Option[*Service] {
-	return func(s *Service) {
-		s.loadExternalMetricsFunc = f
-	}
 }
 
 // WithCatalogsFolder can be used to load catalog files from a different catalogs folder
