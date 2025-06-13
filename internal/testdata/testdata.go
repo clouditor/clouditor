@@ -18,9 +18,12 @@ const (
 	MockResourceGroup          = "TestResourceGroup"
 
 	// Audit Scope
-	MockAuditScopeID1 = "11111111-1111-1111-1111-111111111123"
-	MockAuditScopeID2 = "11111111-1111-1111-1111-111111111124"
-	MockAuditScopeID3 = "11111111-1111-1111-1111-111111111125"
+	MockAuditScopeID1   = "11111111-1111-1111-1111-111111111123"
+	MockAuditScopeName1 = "Mock Audit Scope 1"
+	MockAuditScopeID2   = "11111111-1111-1111-1111-111111111124"
+	MockAuditScopeName2 = "Mock Audit Scope 2"
+	MockAuditScopeID3   = "11111111-1111-1111-1111-111111111125"
+	MockAuditScopeName3 = "Mock Audit Scope 3"
 
 	// Auth
 	MockAuthUser     = "clouditor"

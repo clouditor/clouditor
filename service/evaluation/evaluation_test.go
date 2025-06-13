@@ -702,7 +702,7 @@ func TestService_StopEvaluation(t *testing.T) {
 			fields: fields{
 				scheduler: gocron.NewScheduler(time.Local),
 				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1)))
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1, testdata.MockAuditScopeName1)))
 				})))),
 				authz:         &service.AuthorizationStrategyAllowAll{},
 				auditScopeTag: fmt.Sprintf("%s-%s", testdata.MockTargetOfEvaluationID1, testdata.MockCatalogID1),
@@ -726,7 +726,7 @@ func TestService_StopEvaluation(t *testing.T) {
 			},
 			fields: fields{
 				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1)))
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1, testdata.MockAuditScopeName1)))
 				})))),
 
 				scheduler: func() *gocron.Scheduler {
@@ -886,7 +886,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			fields: fields{
 				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1)))
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1, testdata.MockAuditScopeName1)))
 				})))),
 				scheduler: func() *gocron.Scheduler {
 					s := gocron.NewScheduler(time.Local)
@@ -918,7 +918,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			fields: fields{
 				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1)))
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1, testdata.MockAuditScopeName1)))
 				})))),
 				scheduler:       gocron.NewScheduler(time.Local),
 				authz:           &service.AuthorizationStrategyAllowAll{},

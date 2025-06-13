@@ -29,6 +29,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 
 	"github.com/google/uuid"
@@ -70,6 +71,7 @@ func TestValidate(t *testing.T) {
 					AuditScope: &orchestrator.AuditScope{
 						Id:                   uuid.NewString(),
 						TargetOfEvaluationId: "11111111-1111-1111-1111-111111111111",
+						Name:                 testdata.MockAuditScopeName1,
 						CatalogId:            "0000",
 					},
 				},

@@ -519,8 +519,8 @@ func TestService_GetTargetOfEvaluationStatistics(t *testing.T) {
 					}))
 
 					// Store audit scopes
-					assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", "", testdata.MockTargetOfEvaluationID1)))
-					assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", "", testdata.MockTargetOfEvaluationID1)))
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", "", testdata.MockTargetOfEvaluationID1, testdata.MockAuditScopeName1)))
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", "", testdata.MockTargetOfEvaluationID1, "Second Audit Scope for ToE1")))
 
 					// Store resources
 					assert.NoError(t, s.Create(&discovery.Resource{
