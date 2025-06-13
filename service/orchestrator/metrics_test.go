@@ -139,6 +139,11 @@ func Test_loadMetricsFromRepository(t *testing.T) {
 }
 
 func Test_loadMetricImplementation(t *testing.T) {
+	metric, err := os.ReadFile("internal/testutil/metrictest/metric.rego")
+	if err != nil {
+		t.Fatalf("Failed to read metric file: %v", err)
+	}
+
 	type args struct {
 		metricID string
 		file     string
@@ -169,24 +174,7 @@ func Test_loadMetricImplementation(t *testing.T) {
 			wantImpl: &assessment.MetricImplementation{
 				MetricId: testdata.MockMetricID1,
 				Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
-				Code: `package metrics.iam.admin_mfa_enabled
-
-import data.compare
-import rego.v1
-import input as identity
-
-default applicable = false
-
-default compliant = false
-
-applicable if {
-    # we are only interested in some kind of privileged user
-    identity.privileged
-}
-
-compliant if {
-	compare(data.operator, data.target_value, identity.enforceMFA)
-}`,
+				Code:     string(metric),
 			},
 			wantErr: assert.NoError,
 		},
