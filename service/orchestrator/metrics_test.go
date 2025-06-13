@@ -321,7 +321,7 @@ func TestService_CreateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:          testdata.MockMetricName1,
+						Id:          testdata.MockMetricID1,
 						Description: testdata.MockMetricDescription1,
 						Version:     "1.0",
 						Comments:    "Test comments",
@@ -342,7 +342,7 @@ func TestService_CreateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:          testdata.MockMetricName1,
+						Id:          testdata.MockMetricID1,
 						Description: testdata.MockMetricDescription1,
 						Version:     "1.0",
 						Comments:    "Test comments",

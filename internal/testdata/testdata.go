@@ -63,7 +63,6 @@ const (
 
 	// Metric
 	MockMetricID1          = "Mock Metric 1"
-	MockMetricName1        = "Mock Metric Name"
 	MockMetricDescription1 = "This is a mock metric"
 	MockMetricCategory1    = "Mock Category 1"
 	MockMetricVersion1     = "1.0"
