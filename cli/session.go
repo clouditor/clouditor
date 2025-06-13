@@ -343,7 +343,7 @@ func getMetrics(_ string) []string {
 
 	var metrics []string
 	for _, v := range res.Metrics {
-		metrics = append(metrics, fmt.Sprintf("%s\t%s: %s", v.Id, v.Name, v.Description))
+		metrics = append(metrics, fmt.Sprintf("%s\t: %s", v.Id, v.Description))
 	}
 
 	return metrics

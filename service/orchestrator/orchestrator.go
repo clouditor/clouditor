@@ -27,7 +27,6 @@ package orchestrator
 
 import (
 	"context"
-	"embed"
 	"fmt"
 	"sync"
 
@@ -45,10 +44,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-//go:embed *.json
-var f embed.FS
-
-var DefaultMetricsFile = "metrics.json"
+// TODO(immqu): When the catalogs are moved to the policies/security-metrics/catalogs folder, we need to change the path here
 var DefaultCatalogsFolder = "catalogs"
 
 var (
@@ -102,9 +98,7 @@ type Service struct {
 
 	storage persistence.Storage
 
-	metricsFile string
-
-	// loadMetricsFunc is a function that is used to initially load metrics at the start of the orchestrator
+	// loadMetricsFunc is a function used to initially load metrics at the start of the orchestrator
 	loadMetricsFunc func() ([]*assessment.Metric, error)
 
 	catalogsFolder string
@@ -121,20 +115,6 @@ type Service struct {
 
 func init() {
 	log = logrus.WithField("component", "orchestrator")
-}
-
-// WithMetricsFile can be used to load a different metrics file
-func WithMetricsFile(file string) service.Option[*Service] {
-	return func(s *Service) {
-		s.metricsFile = file
-	}
-}
-
-// WithExternalMetrics can be used to load metric definitions from an external source
-func WithExternalMetrics(f func() ([]*assessment.Metric, error)) service.Option[*Service] {
-	return func(s *Service) {
-		s.loadMetricsFunc = f
-	}
 }
 
 // WithCatalogsFolder can be used to load catalog files from a different catalogs folder
@@ -175,7 +155,6 @@ func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Opti
 func NewService(opts ...service.Option[*Service]) *Service {
 	var err error
 	s := Service{
-		metricsFile:    DefaultMetricsFile,
 		catalogsFolder: DefaultCatalogsFolder,
 		events:         make(chan *orchestrator.MetricChangeEvent, 1000),
 	}
