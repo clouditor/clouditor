@@ -109,6 +109,7 @@ type Metric struct {
 	Version string `protobuf:"bytes,3,opt,name=version,proto3" json:"version,omitempty"`
 	// Optional comments that describe the purpose of this metric. They may also describe a scenario in which the metric can be useful.
 	Comments string `protobuf:"bytes,4,opt,name=comments,proto3" json:"comments,omitempty"`
+	// Semantically, the reference to control catalog category or domain; it must conform to the directory structure of the security-metrics respository
 	Category string `protobuf:"bytes,5,opt,name=category,proto3" json:"category,omitempty"`
 	// The implementation of this metric. This ensures that we are modelling an
 	// association between a Metric and its MetricImplementation.
@@ -367,7 +368,7 @@ var File_api_assessment_metric_proto protoreflect.FileDescriptor
 
 const file_api_assessment_metric_proto_rawDesc = "" +
 	"\n" +
-	"\x1bapi/assessment/metric.proto\x12\x17clouditor.assessment.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\xb3\x03\n" +
+	"\x1bapi/assessment/metric.proto\x12\x17clouditor.assessment.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\xbf\x03\n" +
 	"\x06Metric\x12\x1a\n" +
 	"\x02id\x18\x01 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\x12,\n" +
@@ -375,8 +376,9 @@ const file_api_assessment_metric_proto_rawDesc = "" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\vdescription\x12$\n" +
 	"\aversion\x18\x03 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\aversion\x12\x1a\n" +
-	"\bcomments\x18\x04 \x01(\tR\bcomments\x12\x1a\n" +
-	"\bcategory\x18\x05 \x01(\tR\bcategory\x12Z\n" +
+	"\bcomments\x18\x04 \x01(\tR\bcomments\x12&\n" +
+	"\bcategory\x18\x05 \x01(\tB\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bcategory\x12Z\n" +
 	"\x0eimplementation\x18\x06 \x01(\v2-.clouditor.assessment.v1.MetricImplementationH\x00R\x0eimplementation\x88\x01\x01\x12}\n" +
 	"\x10deprecated_since\x18\a \x01(\v2\x1a.google.protobuf.TimestampB1\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"H\x01R\x0fdeprecatedSince\x88\x01\x01B\x11\n" +
 	"\x0f_implementationB\x13\n" +
