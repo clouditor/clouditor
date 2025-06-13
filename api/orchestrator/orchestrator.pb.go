@@ -2261,7 +2261,7 @@ type AuditScope struct {
 	Id                   string `protobuf:"bytes,4,opt,name=id,proto3" json:"id,omitempty" gorm:"primaryKey"`
 	Name                 string `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
 	TargetOfEvaluationId string `protobuf:"bytes,1,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
-	CatalogId            string `protobuf:"bytes,2,opt,name=catalog_id,json=catalogId,proto3" json:"catalog_id,omitempty"`
+	CatalogId            string `protobuf:"bytes,2,opt,name=catalog_id,json=catalogId,proto3" json:"catalog_id,omitempty"` // TODO(lebogg): Add a field for the controls that a user got delegated for. Maybe a map of user_id -> control_ids (Alternatively one could add this to the user model, but I find it more fitting to have it here)
 	// an assurance level is not offered by every catalog, therefore it is
 	// optional
 	AssuranceLevel *string `protobuf:"bytes,3,opt,name=assurance_level,json=assuranceLevel,proto3,oneof" json:"assurance_level,omitempty"`
