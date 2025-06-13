@@ -59,7 +59,11 @@ message Metric {
   // Optional comments that describe the purpose of this metric. They may also describe a scenario in which the metric can be useful.
   string comments = 4;
 
-  string category = 5;
+  // Semantically, the reference to control catalog category or domain; it must conform to the directory structure of the security-metrics respository
+  string category = 5 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // The implementation of this metric. This ensures that we are modelling an
   // association between a Metric and its MetricImplementation.
