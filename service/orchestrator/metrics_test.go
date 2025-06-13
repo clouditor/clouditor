@@ -75,7 +75,7 @@ var (
 	MockMetric1 = &assessment.Metric{
 		Id:          testdata.MockMetricID1,
 		Description: testdata.MockMetricDescription1,
-		Category:    testdata.MockCategoryName,
+		Category:    testdata.MockMetricCategory1,
 		Version:     "1.0",
 		Comments:    "Test comments",
 	}
@@ -104,12 +104,14 @@ func Test_loadMetricsFromRepository(t *testing.T) {
 				{
 					Id:          "TestMetric",
 					Description: "Test Metric 1",
+					Category:    "TestCategory",
 					Version:     "1.0",
 					Comments:    "Test comments",
 				},
 				{
 					Id:          "TestMetric",
 					Description: "Test Metric 2",
+					Category:    "TestCategory",
 					Version:     "1.0",
 					Comments:    "Test comments",
 				},
@@ -225,6 +227,7 @@ func TestService_CreateMetric(t *testing.T) {
 					Metric: &assessment.Metric{
 						Id:          testdata.MockMetricID1,
 						Description: testdata.MockMetricDescription1,
+						Category:    testdata.MockMetricCategory1,
 						Version:     "1.0",
 						Comments:    "Test comments",
 					},
@@ -233,6 +236,7 @@ func TestService_CreateMetric(t *testing.T) {
 			wantMetric: &assessment.Metric{
 				Id:          testdata.MockMetricID1,
 				Description: testdata.MockMetricDescription1,
+				Category:    testdata.MockMetricCategory1,
 				Version:     "1.0",
 				Comments:    "Test comments",
 			},
@@ -265,6 +269,7 @@ func TestService_CreateMetric(t *testing.T) {
 					Metric: &assessment.Metric{
 						Id:              "TLSVersion",
 						Description:     testdata.MockMetricDescription1,
+						Category:        testdata.MockMetricCategory1,
 						Version:         "1.0",
 						Comments:        "Test comments",
 						DeprecatedSince: timestamppb.Now(),
@@ -289,6 +294,7 @@ func TestService_CreateMetric(t *testing.T) {
 					Metric: &assessment.Metric{
 						Id:          "TLSVersion",
 						Description: testdata.MockMetricDescription1,
+						Category:    testdata.MockMetricCategory1,
 						Version:     "1.0",
 						Comments:    "Test comments",
 					},
@@ -310,6 +316,7 @@ func TestService_CreateMetric(t *testing.T) {
 					Metric: &assessment.Metric{
 						Id:          testdata.MockMetricID1,
 						Description: testdata.MockMetricDescription1,
+						Category:    testdata.MockMetricCategory1,
 						Version:     "1.0",
 						Comments:    "Test comments",
 					},
@@ -331,6 +338,7 @@ func TestService_CreateMetric(t *testing.T) {
 					Metric: &assessment.Metric{
 						Id:          testdata.MockMetricID1,
 						Description: testdata.MockMetricDescription1,
+						Category:    testdata.MockMetricCategory1,
 						Version:     "1.0",
 						Comments:    "Test comments",
 					},
@@ -388,6 +396,7 @@ func TestService_UpdateMetric(t *testing.T) {
 					Metric: &assessment.Metric{
 						Id:              "TransportEncryptionEnabled",
 						Description:     testdata.MockMetricDescription1,
+						Category:        testdata.MockMetricCategory1,
 						Version:         "1.0",
 						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
@@ -397,6 +406,7 @@ func TestService_UpdateMetric(t *testing.T) {
 			wantMetric: &assessment.Metric{
 				Id:              "TransportEncryptionEnabled",
 				Description:     testdata.MockMetricDescription1,
+				Category:        testdata.MockMetricCategory1,
 				Version:         "1.0",
 				Comments:        "Test comments",
 				DeprecatedSince: timestamp,
@@ -414,6 +424,7 @@ func TestService_UpdateMetric(t *testing.T) {
 					Metric: &assessment.Metric{
 						Id:              "TransportEncryptionEnabled",
 						Description:     testdata.MockMetricDescription1,
+						Category:        testdata.MockMetricCategory1,
 						Version:         "1.0",
 						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
@@ -434,6 +445,7 @@ func TestService_UpdateMetric(t *testing.T) {
 					Metric: &assessment.Metric{
 						Id:              "TransportEncryptionEnabled",
 						Description:     testdata.MockMetricDescription1,
+						Category:        testdata.MockMetricCategory1,
 						Version:         "1.0",
 						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
@@ -454,6 +466,7 @@ func TestService_UpdateMetric(t *testing.T) {
 					Metric: &assessment.Metric{
 						Id:              "DoesProbablyNotExist",
 						Description:     testdata.MockMetricDescription1,
+						Category:        testdata.MockMetricCategory1,
 						Version:         "1.0",
 						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
@@ -544,6 +557,7 @@ func TestService_GetMetric(t *testing.T) {
 					_ = s.Create(&assessment.Metric{
 						Id:          "TransportEncryptionEnabled",
 						Description: "This metric describes, whether transport encryption is turned on or not",
+						Category:    testdata.MockMetricCategory1,
 						Version:     "1.0",
 						Comments:    "Test comments",
 					})
@@ -558,6 +572,7 @@ func TestService_GetMetric(t *testing.T) {
 			wantMetric: &assessment.Metric{
 				Id:          "TransportEncryptionEnabled",
 				Description: "This metric describes, whether transport encryption is turned on or not",
+				Category:    testdata.MockMetricCategory1,
 				Version:     "1.0",
 				Comments:    "Test comments",
 			},
@@ -632,14 +647,14 @@ func TestService_ListMetrics(t *testing.T) {
 					_ = s.Create(&assessment.Metric{
 						Id:          testdata.MockMetricID1,
 						Description: testdata.MockMetricDescription1,
-						Category:    testdata.MockCategoryName,
+						Category:    testdata.MockMetricCategory1,
 						Version:     "1.0",
 						Comments:    "Test comments",
 					})
 					_ = s.Create(&assessment.Metric{
 						Id:              testdata.MockMetricID2,
 						Description:     testdata.MockMetricDescription2,
-						Category:        testdata.MockCategoryName,
+						Category:        testdata.MockMetricCategory1,
 						Version:         "1.0",
 						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
@@ -661,12 +676,14 @@ func TestService_ListMetrics(t *testing.T) {
 					_ = s.Create(&assessment.Metric{
 						Id:          testdata.MockMetricID1,
 						Description: testdata.MockMetricDescription1,
+						Category:    testdata.MockMetricCategory1,
 						Version:     "1.0",
 						Comments:    "Test comments",
 					})
 					_ = s.Create(&assessment.Metric{
 						Id:              testdata.MockMetricID2,
 						Description:     testdata.MockMetricDescription2,
+						Category:        testdata.MockMetricCategory1,
 						Version:         "1.0",
 						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
@@ -685,12 +702,14 @@ func TestService_ListMetrics(t *testing.T) {
 					{
 						Id:          testdata.MockMetricID1,
 						Description: testdata.MockMetricDescription1,
+						Category:    testdata.MockMetricCategory1,
 						Version:     "1.0",
 						Comments:    "Test comments",
 					},
 					{
 						Id:              testdata.MockMetricID2,
 						Description:     testdata.MockMetricDescription2,
+						Category:        testdata.MockMetricCategory1,
 						Version:         "1.0",
 						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
@@ -1692,6 +1711,7 @@ func TestService_RemoveMetric(t *testing.T) {
 					_ = s.Create(&assessment.Metric{
 						Id:              testdata.MockMetricID1,
 						Description:     testdata.MockMetricDescription1,
+						Category:        testdata.MockMetricCategory1,
 						Version:         "1.0",
 						Comments:        "comments",
 						DeprecatedSince: timestamp,

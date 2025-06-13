@@ -431,6 +431,7 @@ func Test_storage_Update(t *testing.T) {
 			{
 				Id:          testdata.MockMetricID1,
 				Description: testdata.MockMetricDescription1,
+				Category:    testdata.MockMetricCategory1,
 				Version:     testdata.MockMetricVersion1,
 				Comments:    testdata.MockMetricComments1,
 			},
