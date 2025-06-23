@@ -167,7 +167,7 @@ message AssessmentResult {
     (google.api.field_behavior) = REQUIRED
   ];
 
-  // The time of the last update of the assessment result history field″
+  // The time of the last update of the assessment result history field
   google.protobuf.Timestamp history_updated_at = 22 [
     (tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\"",
     (buf.validate.field).required = true,
