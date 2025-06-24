@@ -57,7 +57,7 @@ func TestMain(m *testing.M) {
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 		ToolId:               testdata.MockEvidenceToolID1,
 		Timestamp:            timestamppb.Now(),
-		Resource:             ontology.ProtoResource(&ontology.VirtualMachine{Id: testdata.MockResourceID1, Name: "my name"}),
+		Resource:             ontology.ProtoResource(&ontology.VirtualMachine{Id: testdata.MockVirtualMachineID1, Name: testdata.MockVirtualMachineName1}),
 	}})
 	if err != nil {
 		panic(err)
@@ -81,7 +81,7 @@ func TestAddCommands(t *testing.T) {
 	t.Errorf("No list command was added")
 }
 
-func TestNewListResultsCommand(t *testing.T) {
+func TestNewListEvidencesCommand(t *testing.T) {
 	var b bytes.Buffer
 
 	cli.Output = &b

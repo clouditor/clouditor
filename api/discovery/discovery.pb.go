@@ -37,7 +37,7 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	anypb "google.golang.org/protobuf/types/known/anypb"
+	_ "google.golang.org/protobuf/types/known/anypb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -146,287 +146,11 @@ func (x *StartDiscoveryResponse) GetSuccessful() bool {
 	return false
 }
 
-type ListResourcesRequest struct {
-	state         protoimpl.MessageState       `protogen:"open.v1"`
-	Filter        *ListResourcesRequest_Filter `protobuf:"bytes,1,opt,name=filter,proto3,oneof" json:"filter,omitempty"`
-	PageSize      int32                        `protobuf:"varint,10,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	PageToken     string                       `protobuf:"bytes,11,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
-	OrderBy       string                       `protobuf:"bytes,12,opt,name=order_by,json=orderBy,proto3" json:"order_by,omitempty"`
-	Asc           bool                         `protobuf:"varint,13,opt,name=asc,proto3" json:"asc,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ListResourcesRequest) Reset() {
-	*x = ListResourcesRequest{}
-	mi := &file_api_discovery_discovery_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ListResourcesRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListResourcesRequest) ProtoMessage() {}
-
-func (x *ListResourcesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_discovery_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListResourcesRequest.ProtoReflect.Descriptor instead.
-func (*ListResourcesRequest) Descriptor() ([]byte, []int) {
-	return file_api_discovery_discovery_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *ListResourcesRequest) GetFilter() *ListResourcesRequest_Filter {
-	if x != nil {
-		return x.Filter
-	}
-	return nil
-}
-
-func (x *ListResourcesRequest) GetPageSize() int32 {
-	if x != nil {
-		return x.PageSize
-	}
-	return 0
-}
-
-func (x *ListResourcesRequest) GetPageToken() string {
-	if x != nil {
-		return x.PageToken
-	}
-	return ""
-}
-
-func (x *ListResourcesRequest) GetOrderBy() string {
-	if x != nil {
-		return x.OrderBy
-	}
-	return ""
-}
-
-func (x *ListResourcesRequest) GetAsc() bool {
-	if x != nil {
-		return x.Asc
-	}
-	return false
-}
-
-type ListResourcesResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Results       []*Resource            `protobuf:"bytes,1,rep,name=results,proto3" json:"results,omitempty"`
-	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ListResourcesResponse) Reset() {
-	*x = ListResourcesResponse{}
-	mi := &file_api_discovery_discovery_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ListResourcesResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListResourcesResponse) ProtoMessage() {}
-
-func (x *ListResourcesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_discovery_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListResourcesResponse.ProtoReflect.Descriptor instead.
-func (*ListResourcesResponse) Descriptor() ([]byte, []int) {
-	return file_api_discovery_discovery_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *ListResourcesResponse) GetResults() []*Resource {
-	if x != nil {
-		return x.Results
-	}
-	return nil
-}
-
-func (x *ListResourcesResponse) GetNextPageToken() string {
-	if x != nil {
-		return x.NextPageToken
-	}
-	return ""
-}
-
-// Resource is a wrapper around google.protobuf.Value that is needed for
-// persistence reasons.
-type Resource struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Id contains a unique ID for each resource. This is specific for the cloud
-	// provider this resource was gathered for and can for example be a resource
-	// URL.
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// TargetOfEvaluationId is the UUID for the target of evaluation to which this resource
-	// belongs to.
-	TargetOfEvaluationId string `protobuf:"bytes,2,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
-	// ResourceType contains a comma separated string of resource types according
-	// to our ontology.
-	ResourceType string `protobuf:"bytes,3,opt,name=resource_type,json=resourceType,proto3" json:"resource_type,omitempty"`
-	// Reference to the tool which provided the resource
-	ToolId string `protobuf:"bytes,4,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`
-	// Properties contains a protobuf message that describe the resource in the
-	// terms of our Clouditor ontology.
-	Properties    *anypb.Any `protobuf:"bytes,10,opt,name=properties,proto3" json:"properties,omitempty" gorm:"serializer:anypb;type:json"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Resource) Reset() {
-	*x = Resource{}
-	mi := &file_api_discovery_discovery_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Resource) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Resource) ProtoMessage() {}
-
-func (x *Resource) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_discovery_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Resource.ProtoReflect.Descriptor instead.
-func (*Resource) Descriptor() ([]byte, []int) {
-	return file_api_discovery_discovery_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *Resource) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *Resource) GetTargetOfEvaluationId() string {
-	if x != nil {
-		return x.TargetOfEvaluationId
-	}
-	return ""
-}
-
-func (x *Resource) GetResourceType() string {
-	if x != nil {
-		return x.ResourceType
-	}
-	return ""
-}
-
-func (x *Resource) GetToolId() string {
-	if x != nil {
-		return x.ToolId
-	}
-	return ""
-}
-
-func (x *Resource) GetProperties() *anypb.Any {
-	if x != nil {
-		return x.Properties
-	}
-	return nil
-}
-
-type ListResourcesRequest_Filter struct {
-	state                protoimpl.MessageState `protogen:"open.v1"`
-	Type                 *string                `protobuf:"bytes,1,opt,name=type,proto3,oneof" json:"type,omitempty"`
-	TargetOfEvaluationId *string                `protobuf:"bytes,2,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3,oneof" json:"target_of_evaluation_id,omitempty"`
-	ToolId               *string                `protobuf:"bytes,3,opt,name=tool_id,json=toolId,proto3,oneof" json:"tool_id,omitempty"`
-	unknownFields        protoimpl.UnknownFields
-	sizeCache            protoimpl.SizeCache
-}
-
-func (x *ListResourcesRequest_Filter) Reset() {
-	*x = ListResourcesRequest_Filter{}
-	mi := &file_api_discovery_discovery_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ListResourcesRequest_Filter) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListResourcesRequest_Filter) ProtoMessage() {}
-
-func (x *ListResourcesRequest_Filter) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_discovery_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListResourcesRequest_Filter.ProtoReflect.Descriptor instead.
-func (*ListResourcesRequest_Filter) Descriptor() ([]byte, []int) {
-	return file_api_discovery_discovery_proto_rawDescGZIP(), []int{2, 0}
-}
-
-func (x *ListResourcesRequest_Filter) GetType() string {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return ""
-}
-
-func (x *ListResourcesRequest_Filter) GetTargetOfEvaluationId() string {
-	if x != nil && x.TargetOfEvaluationId != nil {
-		return *x.TargetOfEvaluationId
-	}
-	return ""
-}
-
-func (x *ListResourcesRequest_Filter) GetToolId() string {
-	if x != nil && x.ToolId != nil {
-		return *x.ToolId
-	}
-	return ""
-}
-
 var File_api_discovery_discovery_proto protoreflect.FileDescriptor
 
 const file_api_discovery_discovery_proto_rawDesc = "" +
 	"\n" +
-	"\x1dapi/discovery/discovery.proto\x12\x16clouditor.discovery.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x19google/protobuf/any.proto\x1a\x13tagger/tagger.proto\"\x8c\x01\n" +
+	"\x1dapi/discovery/discovery.proto\x12\x16clouditor.discovery.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x19google/protobuf/any.proto\x1a\x13tagger/tagger.proto\"\x8c\x01\n" +
 	"\x15StartDiscoveryRequest\x12*\n" +
 	"\x0eresource_group\x18\x01 \x01(\tH\x00R\rresourceGroup\x88\x01\x01\x12$\n" +
 	"\vcsaf_domain\x18\x02 \x01(\tH\x01R\n" +
@@ -436,42 +160,9 @@ const file_api_discovery_discovery_proto_rawDesc = "" +
 	"\x16StartDiscoveryResponse\x12\x1e\n" +
 	"\n" +
 	"successful\x18\x01 \x01(\bR\n" +
-	"successful\"\x8b\x03\n" +
-	"\x14ListResourcesRequest\x12P\n" +
-	"\x06filter\x18\x01 \x01(\v23.clouditor.discovery.v1.ListResourcesRequest.FilterH\x00R\x06filter\x88\x01\x01\x12\x1b\n" +
-	"\tpage_size\x18\n" +
-	" \x01(\x05R\bpageSize\x12\x1d\n" +
-	"\n" +
-	"page_token\x18\v \x01(\tR\tpageToken\x12\x19\n" +
-	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
-	"\x03asc\x18\r \x01(\bR\x03asc\x1a\xac\x01\n" +
-	"\x06Filter\x12\x17\n" +
-	"\x04type\x18\x01 \x01(\tH\x00R\x04type\x88\x01\x01\x12:\n" +
-	"\x17target_of_evaluation_id\x18\x02 \x01(\tH\x01R\x14targetOfEvaluationId\x88\x01\x01\x12\x1c\n" +
-	"\atool_id\x18\x03 \x01(\tH\x02R\x06toolId\x88\x01\x01B\a\n" +
-	"\x05_typeB\x1a\n" +
-	"\x18_target_of_evaluation_idB\n" +
-	"\n" +
-	"\b_tool_idB\t\n" +
-	"\a_filter\"\x80\x01\n" +
-	"\x15ListResourcesResponse\x12?\n" +
-	"\aresults\x18\x01 \x03(\v2 .clouditor.discovery.v1.ResourceB\x03\xe0A\x02R\aresults\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xa7\x02\n" +
-	"\bResource\x12\x1a\n" +
-	"\x02id\x18\x01 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\x12B\n" +
-	"\x17target_of_evaluation_id\x18\x02 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12/\n" +
-	"\rresource_type\x18\x03 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\fresourceType\x12#\n" +
-	"\atool_id\x18\x04 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x06toolId\x12e\n" +
-	"\n" +
-	"properties\x18\n" +
-	" \x01(\v2\x14.google.protobuf.AnyB/\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03!gorm:\"serializer:anypb;type:json\"R\n" +
-	"properties2\xa7\x02\n" +
+	"successful2\x97\x01\n" +
 	"\tDiscovery\x12\x89\x01\n" +
-	"\x05Start\x12-.clouditor.discovery.v1.StartDiscoveryRequest\x1a..clouditor.discovery.v1.StartDiscoveryResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*b\x01*\"\x13/v1/discovery/start\x12\x8d\x01\n" +
-	"\rListResources\x12,.clouditor.discovery.v1.ListResourcesRequest\x1a-.clouditor.discovery.v1.ListResourcesResponse\"\x1f\x82\xd3\xe4\x93\x02\x19\x12\x17/v1/discovery/resourcesB)Z'clouditor.io/clouditor/v2/api/discoveryb\x06proto3"
+	"\x05Start\x12-.clouditor.discovery.v1.StartDiscoveryRequest\x1a..clouditor.discovery.v1.StartDiscoveryResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*b\x01*\"\x13/v1/discovery/startB)Z'clouditor.io/clouditor/v2/api/discoveryb\x06proto3"
 
 var (
 	file_api_discovery_discovery_proto_rawDescOnce sync.Once
@@ -485,29 +176,19 @@ func file_api_discovery_discovery_proto_rawDescGZIP() []byte {
 	return file_api_discovery_discovery_proto_rawDescData
 }
 
-var file_api_discovery_discovery_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_api_discovery_discovery_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_api_discovery_discovery_proto_goTypes = []any{
-	(*StartDiscoveryRequest)(nil),       // 0: clouditor.discovery.v1.StartDiscoveryRequest
-	(*StartDiscoveryResponse)(nil),      // 1: clouditor.discovery.v1.StartDiscoveryResponse
-	(*ListResourcesRequest)(nil),        // 2: clouditor.discovery.v1.ListResourcesRequest
-	(*ListResourcesResponse)(nil),       // 3: clouditor.discovery.v1.ListResourcesResponse
-	(*Resource)(nil),                    // 4: clouditor.discovery.v1.Resource
-	(*ListResourcesRequest_Filter)(nil), // 5: clouditor.discovery.v1.ListResourcesRequest.Filter
-	(*anypb.Any)(nil),                   // 6: google.protobuf.Any
+	(*StartDiscoveryRequest)(nil),  // 0: clouditor.discovery.v1.StartDiscoveryRequest
+	(*StartDiscoveryResponse)(nil), // 1: clouditor.discovery.v1.StartDiscoveryResponse
 }
 var file_api_discovery_discovery_proto_depIdxs = []int32{
-	5, // 0: clouditor.discovery.v1.ListResourcesRequest.filter:type_name -> clouditor.discovery.v1.ListResourcesRequest.Filter
-	4, // 1: clouditor.discovery.v1.ListResourcesResponse.results:type_name -> clouditor.discovery.v1.Resource
-	6, // 2: clouditor.discovery.v1.Resource.properties:type_name -> google.protobuf.Any
-	0, // 3: clouditor.discovery.v1.Discovery.Start:input_type -> clouditor.discovery.v1.StartDiscoveryRequest
-	2, // 4: clouditor.discovery.v1.Discovery.ListResources:input_type -> clouditor.discovery.v1.ListResourcesRequest
-	1, // 5: clouditor.discovery.v1.Discovery.Start:output_type -> clouditor.discovery.v1.StartDiscoveryResponse
-	3, // 6: clouditor.discovery.v1.Discovery.ListResources:output_type -> clouditor.discovery.v1.ListResourcesResponse
-	5, // [5:7] is the sub-list for method output_type
-	3, // [3:5] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	0, // 0: clouditor.discovery.v1.Discovery.Start:input_type -> clouditor.discovery.v1.StartDiscoveryRequest
+	1, // 1: clouditor.discovery.v1.Discovery.Start:output_type -> clouditor.discovery.v1.StartDiscoveryResponse
+	1, // [1:2] is the sub-list for method output_type
+	0, // [0:1] is the sub-list for method input_type
+	0, // [0:0] is the sub-list for extension type_name
+	0, // [0:0] is the sub-list for extension extendee
+	0, // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_api_discovery_discovery_proto_init() }
@@ -516,15 +197,13 @@ func file_api_discovery_discovery_proto_init() {
 		return
 	}
 	file_api_discovery_discovery_proto_msgTypes[0].OneofWrappers = []any{}
-	file_api_discovery_discovery_proto_msgTypes[2].OneofWrappers = []any{}
-	file_api_discovery_discovery_proto_msgTypes[5].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_discovery_discovery_proto_rawDesc), len(file_api_discovery_discovery_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
