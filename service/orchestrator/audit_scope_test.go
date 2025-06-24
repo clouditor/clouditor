@@ -37,6 +37,7 @@ import (
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/evaluation"
 	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
@@ -46,6 +47,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -115,7 +117,9 @@ func TestService_CreateAuditScope(t *testing.T) {
 			name: "error: permission denied",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(&orchestrator.TargetOfEvaluation{Id: testdata.MockTargetOfEvaluationID1}))
+					assert.NoError(t, s.Create(&orchestrator.TargetOfEvaluation{
+						Id: testdata.MockTargetOfEvaluationID1,
+					}))
 				}),
 				authz: servicetest.NewAuthorizationStrategy(false),
 			},
@@ -193,7 +197,12 @@ func TestService_CreateAuditScope(t *testing.T) {
 			name: "valid and assurance level set",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					err := s.Create(&orchestrator.TargetOfEvaluation{Id: testdata.MockTargetOfEvaluationID1})
+					s.Create(&orchestrator.User{
+						Id: config.DefaultSystemUserId,
+					})
+					err := s.Create(&orchestrator.TargetOfEvaluation{
+						Id: testdata.MockTargetOfEvaluationID1,
+					})
 					assert.NoError(t, err)
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),
