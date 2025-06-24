@@ -26,9 +26,12 @@
 package policies
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -65,35 +68,50 @@ type mockMetricsSource struct {
 }
 
 func (*mockMetricsSource) Metrics() (metrics []*assessment.Metric, err error) {
-	var (
-		b           []byte
-		metricsFile = "service/orchestrator/metrics.json"
-	)
+	metricsPath := "policies/security-metrics/metrics"
+	metrics = make([]*assessment.Metric, 0)
 
-	b, err = os.ReadFile(metricsFile)
-	if err != nil {
-		return nil, fmt.Errorf("error while loading %s: %w", metricsFile, err)
-	}
-
-	err = json.Unmarshal(b, &metrics)
-	if err != nil {
-		return nil, fmt.Errorf("error in JSON marshal: %w", err)
-	}
-	for _, m := range metrics {
-		if m.Scale == assessment.Metric_SCALE_UNSPECIFIED {
-			return nil, fmt.Errorf("no scale specified for metric '%s'", m.Name)
+	err = filepath.Walk(metricsPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return fmt.Errorf("error accessing path %s: %w", path, err)
 		}
-		if m.Range == nil {
-			return nil, fmt.Errorf("no range specified for metric '%s'", m.Name)
+
+		// Skip directories and non-yaml files
+		if info.IsDir() || (!strings.HasSuffix(info.Name(), ".yaml") && !strings.HasSuffix(info.Name(), ".yml")) {
+			return nil
 		}
+
+		// Read the YAML file
+		b, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("error reading file %s: %w", path, err)
+		}
+
+		var metric assessment.Metric
+
+		dec := yaml.NewDecoder(bytes.NewReader(b))
+		err = dec.Decode(&metric)
+		if err != nil {
+			return fmt.Errorf("error decoding unmarshalling metric %s: %w", path, err)
+		}
+
+		// Set the category automatically, since it is not included in the yaml definition
+		metric.Category = filepath.Base(filepath.Dir(filepath.Dir(path)))
+
+		metrics = append(metrics, &metric)
+		return nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error walking through metrics directory: %w", err)
 	}
 
-	return
+	return metrics, nil
 }
 
 func (m *mockMetricsSource) MetricConfiguration(targetID string, metric *assessment.Metric) (*assessment.MetricConfiguration, error) {
 	// Fetch the metric configuration directly from our file
-	bundle := fmt.Sprintf("policies/bundles/%s/%s/data.json", metric.CategoryID(), metric.Id)
+	bundle := fmt.Sprintf("policies/security-metrics/metrics/%s/%s/data.json", metric.Category, metric.Id)
 
 	b, err := os.ReadFile(bundle)
 	assert.NoError(m.t, err)
@@ -111,7 +129,7 @@ func (m *mockMetricsSource) MetricConfiguration(targetID string, metric *assessm
 
 func (m *mockMetricsSource) MetricImplementation(_ assessment.MetricImplementation_Language, metric *assessment.Metric) (*assessment.MetricImplementation, error) {
 	// Fetch the metric implementation directly from our file
-	bundle := fmt.Sprintf("policies/bundles/%s/%s/metric.rego", metric.CategoryID(), metric.Id)
+	bundle := fmt.Sprintf("policies/security-metrics/metrics/%s/%s/metric.rego", metric.Category, metric.Id)
 
 	b, err := os.ReadFile(bundle)
 	assert.NoError(m.t, err)
