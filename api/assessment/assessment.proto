@@ -127,7 +127,7 @@ message AssessmentResult {
   // Compliant case: true or false
   bool compliant = 5;
 
-  // Reference to the assessed evidence
+  // Reference to the last assessed evidence
   string evidence_id = 6 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED

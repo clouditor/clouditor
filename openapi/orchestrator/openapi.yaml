@@ -1544,7 +1544,7 @@ components:
                     description: 'Compliant case: true or false'
                 evidenceId:
                     type: string
-                    description: Reference to the assessed evidence
+                    description: Reference to the last assessed evidence
                 resourceId:
                     type: string
                     description: Reference to the resource of the assessed evidence
@@ -1569,7 +1569,7 @@ components:
                     description: Reference to the tool which provided the assessment result
                 historyUpdatedAt:
                     type: string
-                    description: The time of the last update of the assessment result history field″
+                    description: The time of the last update of the assessment result history field
                     format: date-time
                 history:
                     type: array

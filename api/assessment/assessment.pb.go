@@ -382,7 +382,7 @@ type AssessmentResult struct {
 	MetricConfiguration *MetricConfiguration `protobuf:"bytes,4,opt,name=metric_configuration,json=metricConfiguration,proto3" json:"metric_configuration,omitempty" gorm:"serializer:json"`
 	// Compliant case: true or false
 	Compliant bool `protobuf:"varint,5,opt,name=compliant,proto3" json:"compliant,omitempty"`
-	// Reference to the assessed evidence
+	// Reference to the last assessed evidence
 	EvidenceId string `protobuf:"bytes,6,opt,name=evidence_id,json=evidenceId,proto3" json:"evidence_id,omitempty"`
 	// Reference to the resource of the assessed evidence
 	ResourceId string `protobuf:"bytes,7,opt,name=resource_id,json=resourceId,proto3" json:"resource_id,omitempty"`
@@ -396,7 +396,7 @@ type AssessmentResult struct {
 	TargetOfEvaluationId string `protobuf:"bytes,20,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
 	// Reference to the tool which provided the assessment result
 	ToolId *string `protobuf:"bytes,21,opt,name=tool_id,json=toolId,proto3,oneof" json:"tool_id,omitempty"`
-	// The time of the last update of the assessment result history field″
+	// The time of the last update of the assessment result history field
 	HistoryUpdatedAt *timestamppb.Timestamp `protobuf:"bytes,22,opt,name=history_updated_at,json=historyUpdatedAt,proto3" json:"history_updated_at,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
 	// Stores the history of evidence IDs and timestamps for evidence that have the same content as the evidence used for this assessment result.
 	History       []*Record `protobuf:"bytes,23,rep,name=history,proto3" json:"history,omitempty" gorm:"serializer:json;constraint:OnDelete:CASCADE"`
