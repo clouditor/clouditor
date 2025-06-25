@@ -183,8 +183,15 @@ message AssessmentResult {
 }
 
 message Record {
-  string evidence_id = 1;
-  google.protobuf.Timestamp evidence_recorded_at = 2 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
+  string evidence_id = 1 [
+    (buf.validate.field).string.uuid = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
+  google.protobuf.Timestamp evidence_recorded_at = 2 [
+    (tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\"",
+    (buf.validate.field).required = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
 }
 
 // An optional structure containing more details how a comparison inside an assessment result was done and if it was successful.

@@ -2151,6 +2151,9 @@ components:
                     description: used for metric scale
             description: A range resource representing the range of values
         Record:
+            required:
+                - evidenceId
+                - evidenceRecordedAt
             type: object
             properties:
                 evidenceId:

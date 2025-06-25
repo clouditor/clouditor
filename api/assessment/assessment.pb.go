@@ -707,11 +707,11 @@ const file_api_assessment_assessment_proto_rawDesc = "" +
 	"\x12history_updated_at\x18\x16 \x01(\v2\x1a.google.protobuf.TimestampB:\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\x10historyUpdatedAt\x12{\n" +
 	"\ahistory\x18\x17 \x03(\v2\x1f.clouditor.assessment.v1.RecordB@\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x032gorm:\"serializer:json;constraint:OnDelete:CASCADE\"R\ahistoryB\n" +
 	"\n" +
-	"\b_tool_id\"\xaa\x01\n" +
-	"\x06Record\x12\x1f\n" +
-	"\vevidence_id\x18\x01 \x01(\tR\n" +
-	"evidenceId\x12\x7f\n" +
-	"\x14evidence_recorded_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB1\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\x12evidenceRecordedAt\"\xb6\x02\n" +
+	"\b_tool_id\"\xc1\x01\n" +
+	"\x06Record\x12,\n" +
+	"\vevidence_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\n" +
+	"evidenceId\x12\x88\x01\n" +
+	"\x14evidence_recorded_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB:\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\x12evidenceRecordedAt\"\xb6\x02\n" +
 	"\x10ComparisonResult\x12&\n" +
 	"\bproperty\x18\x01 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bproperty\x127\n" +
