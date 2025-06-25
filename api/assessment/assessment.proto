@@ -105,7 +105,7 @@ message AssessmentResult {
   ];
 
   // Time of assessment
-  google.protobuf.Timestamp timestamp = 2 [
+  google.protobuf.Timestamp created_at = 2 [
     (tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\"",
     (buf.validate.field).required = true,
     (google.api.field_behavior) = REQUIRED
@@ -127,7 +127,7 @@ message AssessmentResult {
   // Compliant case: true or false
   bool compliant = 5;
 
-  // Reference to the assessed evidence
+  // Reference to the last assessed evidence
   string evidence_id = 6 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
@@ -164,6 +164,32 @@ message AssessmentResult {
   // Reference to the tool which provided the assessment result
   optional string tool_id = 21 [
     (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
+
+  // The time of the last update of the assessment result history field
+  google.protobuf.Timestamp history_updated_at = 22 [
+    (tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\"",
+    (buf.validate.field).required = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
+
+  // Stores the history of evidence IDs and timestamps for evidence that have the same content as the evidence used for this assessment result.
+  repeated Record history = 23 [
+    (tagger.tags) = "gorm:\"serializer:json;constraint:OnDelete:CASCADE\"",
+    (buf.validate.field).required = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message Record {
+  string evidence_id = 1 [
+    (buf.validate.field).string.uuid = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
+  google.protobuf.Timestamp evidence_recorded_at = 2 [
+    (tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\"",
+    (buf.validate.field).required = true,
     (google.api.field_behavior) = REQUIRED
   ];
 }
