@@ -417,6 +417,10 @@ components:
                     type: boolean
                 enabled:
                     type: boolean
+                rotationInterval:
+                    type: integer
+                    description: //Maximum password rotation interval in months
+                    format: int32
             description: CertificateBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         CipherSuite:
             type: object
@@ -2087,6 +2091,10 @@ components:
             properties:
                 contextIsChecked:
                     type: boolean
+                rotationInterval:
+                    type: integer
+                    description: //Maximum password rotation interval in months
+                    format: int32
                 authenticities:
                     type: array
                     items:
@@ -2244,6 +2252,10 @@ components:
             properties:
                 contextIsChecked:
                     type: boolean
+                rotationInterval:
+                    type: integer
+                    description: //Maximum password rotation interval in months
+                    format: int32
             description: NoAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         OSLogging:
             type: object
@@ -2269,6 +2281,10 @@ components:
                     type: boolean
                 contextIsChecked:
                     type: boolean
+                rotationInterval:
+                    type: integer
+                    description: //Maximum password rotation interval in months
+                    format: int32
             description: OTPBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         ObjectStorage:
             type: object
@@ -2404,6 +2420,10 @@ components:
                     type: boolean
                 contextIsChecked:
                     type: boolean
+                rotationInterval:
+                    type: integer
+                    description: //Maximum password rotation interval in months
+                    format: int32
             description: PasswordBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         PasswordPolicy:
             type: object
@@ -3189,6 +3209,10 @@ components:
                     type: boolean
                 enabled:
                     type: boolean
+                rotationInterval:
+                    type: integer
+                    description: //Maximum password rotation interval in months
+                    format: int32
             description: SingleSignOn is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         SourceCodeFile:
             type: object
@@ -3247,6 +3271,10 @@ components:
                     type: boolean
                 enforced:
                     type: boolean
+                rotationInterval:
+                    type: integer
+                    description: //Maximum password rotation interval in months
+                    format: int32
             description: TokenBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         TransportEncryption:
             type: object
