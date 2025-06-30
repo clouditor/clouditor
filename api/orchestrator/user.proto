@@ -1,0 +1,166 @@
+// Copyright 2025 Fraunhofer AISEC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//           $$\                           $$\ $$\   $$\
+//           $$ |                          $$ |\__|  $$ |
+//  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+// $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+// $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+// $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+// \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+//  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+//
+// This file is part of Clouditor Community Edition.
+
+syntax = "proto3";
+
+package clouditor.orchestrator.v1;
+
+import "api/orchestrator/orchestrator.proto";
+import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/empty.proto";
+import "tagger/tagger.proto";
+
+option go_package = "clouditor.io/clouditor/v2/api/orchestrator";
+
+// Manages users in the orchestrator
+service UserService {
+  // Creates a new user
+  rpc CreateUser(CreateUserRequest) returns (User) {
+    option (google.api.http) = {
+      post: "/v1/orchestrator/user"
+      body: "user"
+    };
+  }
+
+  // Deletes a user
+  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/v1/orchestrator/user/{id}"};
+  }
+
+  // Updates a user, e.g. changes access rights
+  rpc UpdateUser(UpdateUserRequest) returns (User) {
+    option (google.api.http) = {
+      patch: "/v1/orchestrator/user/{user.id}"
+      body: "user"
+    };
+  }
+
+  // Retrieves a user by ID
+  rpc getUser(GetUserRequest) returns (User) {
+    option (google.api.http) = {get: "/v1/orchestrator/user/{id}"};
+  }
+
+  // Lists all users
+  rpc listUsers(ListUsersRequest) returns (ListUsersResponse) {
+    option (google.api.http) = {get: "/v1/orchestrator/user"};
+  }
+
+  // TODO(lebogg): Iteration 2 will extend this principle to groups
+}
+
+message CreateUserRequest {
+  // The user to create
+  User user = 1 [
+    (buf.validate.field).required = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+// A user resource
+// TODO(lebogg): Think about adding more fields to the user resource (creation time, expiration time, etc.)
+message User {
+  string id = 1 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED,
+    (tagger.tags) = "gorm:\"primaryKey\""
+  ];
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+
+  repeated clouditor.orchestrator.v1.TargetOfEvaluation permissions = 5 [
+    (tagger.tags) = "gorm:\"many2many:user_permission\"",
+    (buf.validate.field).repeated.items.required = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+enum PermissionType {
+  // The user has no permission
+  PERMISSION_TYPE_UNSPECIFIED = 0;
+  // The user can create the resource
+  CREATE = 1;
+  // The user can read the resource
+  READ = 2;
+  // The user can write to the resource
+  UPDATE = 3;
+  // The user can delete the resource
+  DELETE = 4;
+}
+
+message UserPermission {
+  // UserId is the user this permission belongs to
+  string user_id = 1 [
+    (tagger.tags) = "gorm:\"primaryKey\"",
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
+
+  // TargetOfEvaluationId is the target of evaluation this permission belongs to
+  string target_of_evaluation_id = 2 [
+    (tagger.tags) = "gorm:\"primaryKey\"",
+    (buf.validate.field).string.uuid = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
+
+  // PermissionType is the type of permission this user has on the target of evaluation
+  PermissionType permission_type = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeleteUserRequest {
+  string id = 1 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message UpdateUserRequest {
+  User user = 1 [
+    (buf.validate.field).required = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message GetUserRequest {
+  string id = 1 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message ListUsersRequest {
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
+}
+
+message ListUsersResponse {
+  repeated User users = 1 [(buf.validate.field).repeated.min_items = 0];
+  // The next page token to use for pagination. If not specified, the default is the last page.
+  string next_page_token = 2;
+}
