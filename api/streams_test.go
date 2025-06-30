@@ -28,6 +28,7 @@ package api
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	sync "sync"
 	"testing"
@@ -130,6 +131,40 @@ func TestStreamsOf_GetStream(t *testing.T) {
 				},
 			},
 			wantRcvd: 2,
+		},
+		{
+			name: "error: restarting stream",
+			fields: fields{
+				channels: map[string]*StreamChannelOf[*recordedClientStream, proto.Message]{
+					"mock:1234": {
+						dead: true,
+						channel: func() chan proto.Message {
+							// put 2 left over messages into the channel
+							var c = make(chan proto.Message)
+							go func() {
+								c <- &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{Id: testdata.MockEvidenceID1}}
+							}()
+							go func() {
+								c <- &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{Id: testdata.MockEvidenceID2}}
+							}()
+							return c
+						}(),
+						target:    "mock:1234",
+						component: "mock",
+					},
+				},
+			},
+			args: args{
+				target:    "mock:1234",
+				component: "mock component",
+				init: func(target string, additionalOpts ...grpc.DialOption) (m *recordedClientStream, err error) {
+					return nil, fmt.Errorf("error from init function in test")
+				},
+			},
+			wantRcvd: 2,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not restart stream for ")
+			},
 		},
 	}
 
