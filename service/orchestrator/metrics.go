@@ -27,6 +27,15 @@ package orchestrator
 
 import (
 	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
+
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/orchestrator"
@@ -34,16 +43,8 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
-	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
-	"io"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -51,10 +52,8 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var baseDir = "."
-
 // a slice of metric paths that makes it easy to add new paths to be searched for metrics
-var defaultMetricsPath = fmt.Sprintf("%s/policies/security-metrics/metrics", baseDir)
+var defaultMetricsPath = "./policies/security-metrics/metrics"
 
 // ErrMetricNotFound indicates the certification was not found
 var ErrMetricNotFound = status.Error(codes.NotFound, "metric not found")
@@ -179,9 +178,6 @@ func (svc *Service) loadMetricsFromMetricsRepository() (metrics []*assessment.Me
 		if err != nil {
 			return fmt.Errorf("error decoding metric %s: %w", path, err)
 		}
-
-		// Set the category automatically, since it is not included in the yaml definition
-		metric.Category = filepath.Base(filepath.Dir(filepath.Dir(path)))
 
 		metrics = append(metrics, &metric)
 		return nil
