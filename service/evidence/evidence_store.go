@@ -385,8 +385,8 @@ func (svc *Service) GetEvidence(ctx context.Context, req *evidence.GetEvidenceRe
 	return
 }
 
-// GetSupportedResourceTypes is a method implementation of the evidenceServer interface: It returns the resource types that are supported by this service
-func (svc *Service) GetSupportedResourceTypes(ctx context.Context, req *evidence.GetSupportedResourceTypesRequest) (res *evidence.GetSupportedResourceTypesResponse, err error) {
+// ListSupportedResourceTypes is a method implementation of the evidenceServer interface: It returns the resource types that are supported by this service
+func (svc *Service) ListSupportedResourceTypes(ctx context.Context, req *evidence.ListSupportedResourceTypesRequest) (res *evidence.ListSupportedResourceTypesResponse, err error) {
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
@@ -394,7 +394,7 @@ func (svc *Service) GetSupportedResourceTypes(ctx context.Context, req *evidence
 	}
 
 	// Get the supported resource types
-	res = &evidence.GetSupportedResourceTypesResponse{
+	res = &evidence.ListSupportedResourceTypesResponse{
 		ResourceType: ontology.GetResourceTypes(),
 	}
 

@@ -1283,7 +1283,7 @@ func TestService_handleEvidence(t *testing.T) {
 	}
 }
 
-func TestService_GetSupportedResourceTypes(t *testing.T) {
+func TestService_ListSupportedResourceTypes(t *testing.T) {
 	type fields struct {
 		storage                          persistence.Storage
 		assessmentStreams                *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
@@ -1295,13 +1295,13 @@ func TestService_GetSupportedResourceTypes(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		req *evidence.GetSupportedResourceTypesRequest
+		req *evidence.ListSupportedResourceTypesRequest
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantRes assert.Want[*evidence.GetSupportedResourceTypesResponse]
+		wantRes assert.Want[*evidence.ListSupportedResourceTypesResponse]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -1310,7 +1310,7 @@ func TestService_GetSupportedResourceTypes(t *testing.T) {
 				ctx: context.TODO(),
 				req: nil,
 			},
-			wantRes: assert.Nil[*evidence.GetSupportedResourceTypesResponse],
+			wantRes: assert.Nil[*evidence.ListSupportedResourceTypesResponse],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
 				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
@@ -1320,9 +1320,9 @@ func TestService_GetSupportedResourceTypes(t *testing.T) {
 			name: "Happy path",
 			args: args{
 				ctx: context.TODO(),
-				req: &evidence.GetSupportedResourceTypesRequest{},
+				req: &evidence.ListSupportedResourceTypesRequest{},
 			},
-			wantRes: func(t *testing.T, got *evidence.GetSupportedResourceTypesResponse) bool {
+			wantRes: func(t *testing.T, got *evidence.ListSupportedResourceTypesResponse) bool {
 				assert.NotNil(t, got)
 				return assert.NotEmpty(t, got.ResourceType)
 			},
@@ -1339,7 +1339,7 @@ func TestService_GetSupportedResourceTypes(t *testing.T) {
 				evidenceHooks:     tt.fields.evidenceHooks,
 				authz:             tt.fields.authz,
 			}
-			gotRes, err := svc.GetSupportedResourceTypes(tt.args.ctx, tt.args.req)
+			gotRes, err := svc.ListSupportedResourceTypes(tt.args.ctx, tt.args.req)
 
 			tt.wantRes(t, gotRes)
 			tt.wantErr(t, err)

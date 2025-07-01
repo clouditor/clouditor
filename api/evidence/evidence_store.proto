@@ -60,7 +60,7 @@ service EvidenceStore {
   }
 
   // Returns the resource types that are supported by the EvidenceStore.
-  rpc GetSupportedResourceTypes(GetSupportedResourceTypesRequest) returns (GetSupportedResourceTypesResponse) {
+  rpc ListSupportedResourceTypes(ListSupportedResourceTypesRequest) returns (ListSupportedResourceTypesResponse) {
     option (google.api.http) = {get: "/v1/evidence_store/supported_resource_types"};
   }
 }
@@ -111,8 +111,8 @@ message GetEvidenceRequest {
   string evidence_id = 1 [(buf.validate.field).string.uuid = true];
 }
 
-message GetSupportedResourceTypesRequest {}
+message ListSupportedResourceTypesRequest {}
 
-message GetSupportedResourceTypesResponse {
+message ListSupportedResourceTypesResponse {
   repeated string resource_type = 1 [(buf.validate.field).repeated.min_items = 1];
 }
