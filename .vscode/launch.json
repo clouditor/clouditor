@@ -73,8 +73,18 @@
                 "--discovery-auto-start",
                 "--discovery-provider=openstack",
             ],
-            "env": {},
-            "preLaunchTask": "go: generate"
+            "env": {
+                "OS_AUTH_TYPE":"v3applicationcredential",
+                "OS_AUTH_URL":"https://keystone.cloudferro.com:5000",
+                "OS_IDENTITY_API_VERSION":"3",
+                "OS_REGION_NAME":"WAW3-1",
+                "OS_INTERFACE":"public",
+                "OS_PROJECT_DOMAIN_ID":"cloud_079150",
+                "OS_USER_DOMAIN_NAME":"cloud_079150",
+                "OS_APPLICATION_CREDENTIAL_ID":"755eacd9bb1449219502cb2311d2bd17",
+                "OS_APPLICATION_CREDENTIAL_SECRET":"q5KDs8Uclqkdt_LA79DoYMNESSaTTS9S5-efeU2vdPsMlz-fwHhTHUM1nIOY18eUQdN-SUKGfrj_6d-PUmzwSw"
+            },
+            // "preLaunchTask": "go: generate"
         },
         {
             "name": "Launch engine CSAF (in-memory, dashboard development redirect with CSAF discovery)",
