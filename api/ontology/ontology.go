@@ -97,7 +97,7 @@ func GetResourceTypes() []string {
 	// Accessing the descriptor of the resource message.
 	md := resource.ProtoReflect().Descriptor()
 
-	// Durchlaufen der Felder der Resource
+	// Collect the names of all fields that belong to the oneOf field.
 	for i := 0; i < md.Fields().Len(); i++ {
 		field := md.Fields().Get(i)
 		if field.ContainingOneof() != nil {
