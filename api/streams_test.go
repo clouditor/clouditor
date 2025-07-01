@@ -89,50 +89,6 @@ func TestStreamsOf_GetStream(t *testing.T) {
 			},
 		},
 		{
-			name: "adding new stream to mock client",
-			args: args{
-				target:    "mock:1234",
-				component: "mock component",
-				init: func(target string, additionalOpts ...grpc.DialOption) (m *recordedClientStream, err error) {
-					return &recordedClientStream{}, nil
-				},
-			},
-			fields: fields{
-				channels: map[string]*StreamChannelOf[*recordedClientStream, proto.Message]{},
-			},
-		},
-		{
-			name: "restarting stream",
-			fields: fields{
-				channels: map[string]*StreamChannelOf[*recordedClientStream, proto.Message]{
-					"mock:1234": {
-						dead: true,
-						channel: func() chan proto.Message {
-							// put 2 left over messages into the channel
-							var c = make(chan proto.Message)
-							go func() {
-								c <- &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{Id: testdata.MockEvidenceID1}}
-							}()
-							go func() {
-								c <- &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{Id: testdata.MockEvidenceID2}}
-							}()
-							return c
-						}(),
-						target:    "mock:1234",
-						component: "mock",
-					},
-				},
-			},
-			args: args{
-				target:    "mock:1234",
-				component: "mock component",
-				init: func(target string, additionalOpts ...grpc.DialOption) (m *recordedClientStream, err error) {
-					return &recordedClientStream{}, nil
-				},
-			},
-			wantRcvd: 2,
-		},
-		{
 			name: "error: restarting stream",
 			fields: fields{
 				channels: map[string]*StreamChannelOf[*recordedClientStream, proto.Message]{
@@ -166,6 +122,51 @@ func TestStreamsOf_GetStream(t *testing.T) {
 				return assert.ErrorContains(t, err, "could not restart stream for ")
 			},
 		},
+		{
+			name: "Happy path: adding new stream to mock client",
+			args: args{
+				target:    "mock:1234",
+				component: "mock component",
+				init: func(target string, additionalOpts ...grpc.DialOption) (m *recordedClientStream, err error) {
+					return &recordedClientStream{}, nil
+				},
+			},
+			fields: fields{
+				channels: map[string]*StreamChannelOf[*recordedClientStream, proto.Message]{},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: restarting stream",
+			fields: fields{
+				channels: map[string]*StreamChannelOf[*recordedClientStream, proto.Message]{
+					"mock:1234": {
+						dead: true,
+						channel: func() chan proto.Message {
+							// put 2 left over messages into the channel
+							var c = make(chan proto.Message)
+							go func() {
+								c <- &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{Id: testdata.MockEvidenceID1}}
+							}()
+							go func() {
+								c <- &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{Id: testdata.MockEvidenceID2}}
+							}()
+							return c
+						}(),
+						target:    "mock:1234",
+						component: "mock component",
+					},
+				},
+			},
+			args: args{
+				target:    "mock:1234",
+				component: "mock component",
+				init: func(target string, additionalOpts ...grpc.DialOption) (m *recordedClientStream, err error) {
+					return &recordedClientStream{}, nil
+				},
+			},
+			wantRcvd: 2,
+		},
 	}
 
 	for _, tt := range tests {
@@ -184,6 +185,11 @@ func TestStreamsOf_GetStream(t *testing.T) {
 				// wait until our stream has received the wanted messages
 				c.stream.wg.Add(tt.wantRcvd)
 				c.stream.wg.Wait()
+
+				assert.NotNil(t, c.stream)
+				assert.Equal(t, tt.args.component, c.component)
+				assert.Equal(t, tt.args.target, c.target)
+				assert.NotNil(t, c.stream)
 			}
 		})
 	}
