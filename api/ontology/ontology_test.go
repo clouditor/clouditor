@@ -229,7 +229,7 @@ func TestProtoResource(t *testing.T) {
 	}
 }
 
-func TestGetResourceTypes(t *testing.T) {
+func TestListResourceTypes(t *testing.T) {
 	tests := []struct {
 		name string
 		want assert.Want[[]string]
@@ -243,7 +243,7 @@ func TestGetResourceTypes(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetResourceTypes()
+			got := ListResourceTypes()
 			tt.want(t, got)
 		})
 	}

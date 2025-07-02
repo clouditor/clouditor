@@ -88,8 +88,8 @@ func ResourceTypes(r IsResource) []string {
 	return nil
 }
 
-// GetResourceTypes returns a list of resource types that are supported by the ontology.
-func GetResourceTypes() []string {
+// ListResourceTypes returns a list of resource types that are supported by the ontology.
+func ListResourceTypes() []string {
 	var types []string
 
 	var resource Resource
