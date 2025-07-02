@@ -395,7 +395,7 @@ func (svc *Service) ListSupportedResourceTypes(ctx context.Context, req *evidenc
 
 	// Get the supported resource types
 	res = &evidence.ListSupportedResourceTypesResponse{
-		ResourceType: ontology.GetResourceTypes(),
+		ResourceType: ontology.ListResourceTypes(),
 	}
 
 	return res, nil
