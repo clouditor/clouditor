@@ -43,7 +43,14 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var mockMetricRange = &assessment.Range{Range: &assessment.Range_MinMax{MinMax: &assessment.MinMax{Min: 1, Max: 2}}}
+var MockMetricConfiguration1 = &assessment.MetricConfiguration{
+	MetricId:             testdata.MockMetricID1,
+	TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+	Operator:             "==",
+	TargetValue:          testdata.MockMetricConfigurationTargetValueString,
+	IsDefault:            true,
+	UpdatedAt:            nil,
+}
 
 func TestStorageOptions(t *testing.T) {
 	type args struct {
@@ -121,13 +128,15 @@ func Test_storage_Create(t *testing.T) {
 		err    error
 		s      persistence.Storage
 		metric *assessment.Metric
+		target *orchestrator.TargetOfEvaluation
 	)
 
 	metric = &assessment.Metric{
-		Id:       testdata.MockMetricID1,
-		Category: testdata.MockMetricCategory1,
-		Name:     testdata.MockMetricName1,
-		Range:    mockMetricRange,
+		Id:          testdata.MockMetricID1,
+		Category:    testdata.MockMetricCategory1,
+		Description: testdata.MockMetricDescription1,
+		Version:     testdata.MockMetricVersion1,
+		Comments:    testdata.MockMetricComments1,
 	}
 	// Check if metric has all necessary fields
 	assert.NoError(t, api.Validate(metric))
@@ -136,6 +145,9 @@ func Test_storage_Create(t *testing.T) {
 	s, err = NewStorage()
 	assert.NoError(t, err)
 
+	target = &orchestrator.TargetOfEvaluation{Id: testdata.MockTargetOfEvaluationID1, Name: testdata.MockTargetOfEvaluationName1}
+	err = s.Create(target)
+	assert.NoError(t, err)
 	err = s.Create(metric)
 	assert.NoError(t, err)
 
@@ -185,10 +197,11 @@ func Test_storage_Get(t *testing.T) {
 	assert.Equal(t, target, gotTarget3)
 
 	var metric = &assessment.Metric{
-		Id:       testdata.MockMetricID1,
-		Category: testdata.MockMetricCategory1,
-		Name:     testdata.MockMetricName1,
-		Range:    mockMetricRange,
+		Id:          testdata.MockMetricID1,
+		Category:    testdata.MockMetricCategory1,
+		Description: testdata.MockMetricDescription1,
+		Version:     testdata.MockMetricVersion1,
+		Comments:    testdata.MockMetricComments1,
 	}
 	// Check if metric has all necessary fields
 	assert.NoError(t, api.Validate(metric))
@@ -416,10 +429,11 @@ func Test_storage_Update(t *testing.T) {
 		Description: testdata.MockTargetOfEvaluationDescription1,
 		ConfiguredMetrics: []*assessment.Metric{
 			{
-				Id:       testdata.MockTargetOfEvaluationID1,
-				Category: testdata.MockMetricCategory1,
-				Name:     testdata.MockMetricName1,
-				Range:    mockMetricRange,
+				Id:          testdata.MockMetricID1,
+				Description: testdata.MockMetricDescription1,
+				Category:    testdata.MockMetricCategory1,
+				Version:     testdata.MockMetricVersion1,
+				Comments:    testdata.MockMetricComments1,
 			},
 		},
 	}

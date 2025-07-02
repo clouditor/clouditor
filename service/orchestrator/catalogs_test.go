@@ -27,7 +27,6 @@ package orchestrator
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	"clouditor.io/clouditor/v2/api"
@@ -321,8 +320,6 @@ func TestService_GetCategory(t *testing.T) {
 		TargetOfEvaluationHooks []orchestrator.TargetOfEvaluationHookFunc
 		AssessmentResultHooks   []assessment.ResultHookFunc
 		storage                 persistence.Storage
-		metricsFile             string
-		loadMetricsFunc         func() ([]*assessment.Metric, error)
 		catalogsFile            string
 		loadCatalogsFunc        func() ([]*orchestrator.Catalog, error)
 		events                  chan *orchestrator.MetricChangeEvent
@@ -397,8 +394,6 @@ func TestService_GetCategory(t *testing.T) {
 				TargetOfEvaluationHooks: tt.fields.TargetOfEvaluationHooks,
 				AssessmentResultHooks:   tt.fields.AssessmentResultHooks,
 				storage:                 tt.fields.storage,
-				metricsFile:             tt.fields.metricsFile,
-				loadMetricsFunc:         tt.fields.loadMetricsFunc,
 				catalogsFolder:          tt.fields.catalogsFile,
 				loadCatalogsFunc:        tt.fields.loadCatalogsFunc,
 				events:                  tt.fields.events,
@@ -416,8 +411,6 @@ func TestService_GetControl(t *testing.T) {
 		TargetOfEvaluationHooks []orchestrator.TargetOfEvaluationHookFunc
 		AssessmentResultHooks   []assessment.ResultHookFunc
 		storage                 persistence.Storage
-		metricsFile             string
-		loadMetricsFunc         func() ([]*assessment.Metric, error)
 		catalogsFolder          string
 		loadCatalogsFunc        func() ([]*orchestrator.Catalog, error)
 	}
@@ -483,8 +476,6 @@ func TestService_GetControl(t *testing.T) {
 				TargetOfEvaluationHooks: tt.fields.TargetOfEvaluationHooks,
 				AssessmentResultHooks:   tt.fields.AssessmentResultHooks,
 				storage:                 tt.fields.storage,
-				metricsFile:             tt.fields.metricsFile,
-				loadMetricsFunc:         tt.fields.loadMetricsFunc,
 				catalogsFolder:          tt.fields.catalogsFolder,
 				loadCatalogsFunc:        tt.fields.loadCatalogsFunc,
 			}
@@ -569,8 +560,6 @@ func TestService_loadCatalogs(t *testing.T) {
 	type fields struct {
 		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
-		metricsFile           string
-		loadMetricsFunc       func() ([]*assessment.Metric, error)
 		catalogsFolder        string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
@@ -581,16 +570,6 @@ func TestService_loadCatalogs(t *testing.T) {
 		wantSvc assert.Want[*Service]
 		wantErr assert.ErrorAssertionFunc
 	}{
-		{
-			name: "json not found",
-			fields: fields{
-				metricsFile: "notfound.json",
-			},
-			wantSvc: assert.NotNil[*Service],
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, os.ErrNotExist)
-			},
-		},
 		{
 			name: "storage error",
 			fields: fields{
@@ -637,8 +616,6 @@ func TestService_loadCatalogs(t *testing.T) {
 			svc := &Service{
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
-				metricsFile:           tt.fields.metricsFile,
-				loadMetricsFunc:       tt.fields.loadMetricsFunc,
 				catalogsFolder:        tt.fields.catalogsFolder,
 				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 				events:                tt.fields.events,

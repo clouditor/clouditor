@@ -40,6 +40,60 @@ extend google.protobuf.MessageOptions {
   repeated string resource_type_names = 60000;
 }
 
+// CodeNotebook is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message CodeNotebook {
+  option (resource_type_names) = "CodeNotebook";
+  option (resource_type_names) = "Document";
+  option (resource_type_names) = "Data";
+  option (resource_type_names) = "Resource";
+
+  google.protobuf.Timestamp creation_time = 5373;
+  string description = 14998;
+  string filetype = 8342;
+  string id = 6700 [(buf.validate.field).required = true];
+  map<string, string> labels = 1827;
+  string name = 182 [(buf.validate.field).required = true];
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 14969;
+  repeated string code_ids = 2359;
+  DataLocation data_location = 3783;
+  repeated DocumentChecksum document_checksums = 4526;
+  repeated DocumentSignature document_signatures = 2736;
+  optional string parent_id = 5727;
+  SchemaValidation schema_validation = 5939;
+  repeated SecurityFeature security_features = 15068;
+}
+
+// QPU is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message QPU {
+  option (resource_type_names) = "QPU";
+  option (resource_type_names) = "Compute";
+  option (resource_type_names) = "Infrastructure";
+  option (resource_type_names) = "Resource";
+
+  google.protobuf.Timestamp creation_time = 3446;
+  string description = 4376;
+  bool error_correction_enabled = 12983;
+  string id = 14403 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 9684;
+  map<string, string> labels = 11544;
+  string name = 1538 [(buf.validate.field).required = true];
+  float one_qubit_gate_error_rate = 1147;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 8462;
+  float spam_error_rate = 6763;
+  float two_qubit_gate_error_rate = 12996;
+  EncryptionInUse encryption_in_use = 17838;
+  GeoLocation geo_location = 16558;
+  repeated Logging loggings = 972;
+  repeated string network_interface_ids = 4162;
+  repeated Redundancy redundancies = 10637;
+  RemoteAttestation remote_attestation = 18317;
+  optional string parent_id = 11595;
+  ResourceLogging resource_logging = 14960;
+  UsageStatistics usage_statistics = 11987;
+}
+
 // ABAC is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message ABAC {
   option (resource_type_names) = "ABAC";
@@ -370,6 +424,7 @@ message Infrastructure {
     Job job = 3999;
     Workflow workflow = 8746;
     CodeRepository code_repository = 3431;
+    QPU qpu = 9430;
     Container container = 1659;
     Function function = 14943;
     VirtualMachine virtual_machine = 18360;
@@ -462,6 +517,7 @@ message Component {
 // Compute is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Compute {
   oneof type {
+    QPU qpu = 9430;
     Container container = 1659;
     Function function = 14943;
     VirtualMachine virtual_machine = 18360;
@@ -636,6 +692,7 @@ message DDoSProtection {
 // Data is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Data {
   oneof type {
+    CodeNotebook code_notebook = 17592;
     GenericDocument generic_document = 4992;
     PolicyDocument policy_document = 14953;
     SecurityAdvisoryDocument security_advisory_document = 14717;
@@ -765,6 +822,7 @@ message DeviceProvisioningService {
 // DataLocation: Describes the location as local or remote location
 message Document {
   oneof type {
+    CodeNotebook code_notebook = 17592;
     GenericDocument generic_document = 4992;
     PolicyDocument policy_document = 14953;
     SecurityAdvisoryDocument security_advisory_document = 14717;
@@ -1558,6 +1616,7 @@ message MachineLearningModel {
   float robustness = 13582;
   DataLocation data_location = 2998;
   optional string parent_id = 15494;
+  repeated Vulnerability vulnerabilities = 10821;
 }
 
 // MachineLearningService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -2050,6 +2109,7 @@ message Resource {
     Job job = 3999;
     Workflow workflow = 8746;
     CodeRepository code_repository = 3431;
+    QPU qpu = 9430;
     Container container = 1659;
     Function function = 14943;
     VirtualMachine virtual_machine = 18360;
@@ -2087,6 +2147,7 @@ message Resource {
     DatabaseStorage database_storage = 12299;
     FileStorage file_storage = 2736;
     ObjectStorage object_storage = 10870;
+    CodeNotebook code_notebook = 17592;
     GenericDocument generic_document = 4992;
     PolicyDocument policy_document = 14953;
     SecurityAdvisoryDocument security_advisory_document = 14717;
