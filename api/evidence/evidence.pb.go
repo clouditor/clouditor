@@ -35,9 +35,10 @@ import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	ontology "clouditor.io/clouditor/v2/api/ontology"
 	_ "github.com/srikrsna/protoc-gen-gotag/tagger"
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	_ "google.golang.org/protobuf/types/known/anypb"
+	anypb "google.golang.org/protobuf/types/known/anypb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
@@ -147,18 +148,118 @@ func (x *Evidence) GetExperimentalRelatedResourceIds() []string {
 	return nil
 }
 
+// Resource is a wrapper around google.protobuf.Value that is needed for
+// persistence reasons.
+type Resource struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Id contains a unique ID for each resource. This is specific for the cloud
+	// provider this resource was gathered for and can for example be a resource
+	// URL.
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// TargetOfEvaluationId is the UUID for the target of evaluation to which this resource
+	// belongs to.
+	TargetOfEvaluationId string `protobuf:"bytes,2,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
+	// ResourceType contains a comma separated string of resource types according
+	// to our ontology.
+	ResourceType string `protobuf:"bytes,3,opt,name=resource_type,json=resourceType,proto3" json:"resource_type,omitempty"`
+	// Reference to the tool which provided the resource
+	ToolId string `protobuf:"bytes,4,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`
+	// Properties contains a protobuf message that describe the resource in the
+	// terms of our Clouditor ontology.
+	Properties    *anypb.Any `protobuf:"bytes,10,opt,name=properties,proto3" json:"properties,omitempty" gorm:"serializer:anypb;type:json"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Resource) Reset() {
+	*x = Resource{}
+	mi := &file_api_evidence_evidence_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Resource) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Resource) ProtoMessage() {}
+
+func (x *Resource) ProtoReflect() protoreflect.Message {
+	mi := &file_api_evidence_evidence_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Resource.ProtoReflect.Descriptor instead.
+func (*Resource) Descriptor() ([]byte, []int) {
+	return file_api_evidence_evidence_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Resource) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Resource) GetTargetOfEvaluationId() string {
+	if x != nil {
+		return x.TargetOfEvaluationId
+	}
+	return ""
+}
+
+func (x *Resource) GetResourceType() string {
+	if x != nil {
+		return x.ResourceType
+	}
+	return ""
+}
+
+func (x *Resource) GetToolId() string {
+	if x != nil {
+		return x.ToolId
+	}
+	return ""
+}
+
+func (x *Resource) GetProperties() *anypb.Any {
+	if x != nil {
+		return x.Properties
+	}
+	return nil
+}
+
 var File_api_evidence_evidence_proto protoreflect.FileDescriptor
 
 const file_api_evidence_evidence_proto_rawDesc = "" +
 	"\n" +
-	"\x1bapi/evidence/evidence.proto\x12\x15clouditor.evidence.v1\x1a\x1bapi/ontology/ontology.proto\x1a\x1bbuf/validate/validate.proto\x1a\x19google/protobuf/any.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\xbd\x03\n" +
+	"\x1bapi/evidence/evidence.proto\x12\x15clouditor.evidence.v1\x1a\x1bapi/ontology/ontology.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x19google/protobuf/any.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\xbd\x03\n" +
 	"\bEvidence\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12q\n" +
 	"\ttimestamp\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB7\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\ttimestamp\x12?\n" +
 	"\x17target_of_evaluation_id\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12 \n" +
 	"\atool_id\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06toolId\x12X\n" +
 	"\bresource\x18\x06 \x01(\v2\x1f.clouditor.ontology.v1.ResourceB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\bresource\x12g\n" +
-	"!experimental_related_resource_ids\x18\xe7\a \x03(\tB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\x1eexperimentalRelatedResourceIdsB(Z&clouditor.io/clouditor/v2/api/evidenceb\x06proto3"
+	"!experimental_related_resource_ids\x18\xe7\a \x03(\tB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\x1eexperimentalRelatedResourceIds\"\xa7\x02\n" +
+	"\bResource\x12\x1a\n" +
+	"\x02id\x18\x01 \x01(\tB\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\x12B\n" +
+	"\x17target_of_evaluation_id\x18\x02 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12/\n" +
+	"\rresource_type\x18\x03 \x01(\tB\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\fresourceType\x12#\n" +
+	"\atool_id\x18\x04 \x01(\tB\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x06toolId\x12e\n" +
+	"\n" +
+	"properties\x18\n" +
+	" \x01(\v2\x14.google.protobuf.AnyB/\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03!gorm:\"serializer:anypb;type:json\"R\n" +
+	"propertiesB(Z&clouditor.io/clouditor/v2/api/evidenceb\x06proto3"
 
 var (
 	file_api_evidence_evidence_proto_rawDescOnce sync.Once
@@ -172,20 +273,23 @@ func file_api_evidence_evidence_proto_rawDescGZIP() []byte {
 	return file_api_evidence_evidence_proto_rawDescData
 }
 
-var file_api_evidence_evidence_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_api_evidence_evidence_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_api_evidence_evidence_proto_goTypes = []any{
 	(*Evidence)(nil),              // 0: clouditor.evidence.v1.Evidence
-	(*timestamppb.Timestamp)(nil), // 1: google.protobuf.Timestamp
-	(*ontology.Resource)(nil),     // 2: clouditor.ontology.v1.Resource
+	(*Resource)(nil),              // 1: clouditor.evidence.v1.Resource
+	(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
+	(*ontology.Resource)(nil),     // 3: clouditor.ontology.v1.Resource
+	(*anypb.Any)(nil),             // 4: google.protobuf.Any
 }
 var file_api_evidence_evidence_proto_depIdxs = []int32{
-	1, // 0: clouditor.evidence.v1.Evidence.timestamp:type_name -> google.protobuf.Timestamp
-	2, // 1: clouditor.evidence.v1.Evidence.resource:type_name -> clouditor.ontology.v1.Resource
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	2, // 0: clouditor.evidence.v1.Evidence.timestamp:type_name -> google.protobuf.Timestamp
+	3, // 1: clouditor.evidence.v1.Evidence.resource:type_name -> clouditor.ontology.v1.Resource
+	4, // 2: clouditor.evidence.v1.Resource.properties:type_name -> google.protobuf.Any
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_api_evidence_evidence_proto_init() }
@@ -199,7 +303,7 @@ func file_api_evidence_evidence_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_evidence_evidence_proto_rawDesc), len(file_api_evidence_evidence_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

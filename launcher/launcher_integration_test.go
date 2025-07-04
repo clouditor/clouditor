@@ -73,7 +73,7 @@ func TestNewLauncher(t *testing.T) {
 			},
 			args: args{
 				name:  "component",
-				specs: []launcher.ServiceSpec{discovery.DefaultServiceSpec()},
+				specs: []launcher.ServiceSpec{evidence.DefaultServiceSpec()},
 			},
 			wantL: assert.Nil[*launcher.Launcher],
 			wantErr: func(t *testing.T, err error) bool {

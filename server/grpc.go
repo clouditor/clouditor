@@ -75,11 +75,11 @@ func WithServices(services ...service.Service) StartGRPCServerOption {
 			if s, ok := svc.(evidence.EvidenceStoreServer); ok {
 				c.services[&evidence.EvidenceStore_ServiceDesc] = s
 			}
+			if s, ok := svc.(evidence.ExperimentalResourcesServer); ok {
+				c.services[&evidence.ExperimentalResources_ServiceDesc] = s
+			}
 			if s, ok := svc.(discovery.DiscoveryServer); ok {
 				c.services[&discovery.Discovery_ServiceDesc] = s
-			}
-			if s, ok := svc.(discovery.ExperimentalDiscoveryServer); ok {
-				c.services[&discovery.ExperimentalDiscovery_ServiceDesc] = s
 			}
 			if s, ok := svc.(evaluation.EvaluationServer); ok {
 				c.services[&evaluation.Evaluation_ServiceDesc] = s

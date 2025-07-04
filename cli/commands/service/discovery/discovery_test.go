@@ -26,19 +26,14 @@
 package discovery
 
 import (
-	"bytes"
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/v2/api/discovery"
-	"clouditor.io/clouditor/v2/cli"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest"
 	"clouditor.io/clouditor/v2/server"
 	service_discovery "clouditor.io/clouditor/v2/service/discovery"
-
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func TestMain(m *testing.M) {
@@ -58,44 +53,9 @@ func TestAddCommands(t *testing.T) {
 
 	// Check if NewQueryDiscoveryCommand was added
 	for _, v := range cmd.Commands() {
-		if v.Use == "query" {
+		if v.Use == "start" {
 			return
 		}
 	}
 	t.Errorf("No query command was added")
-}
-
-func TestNewQueryDiscoveryCommandNoArgs(t *testing.T) {
-	var err error
-	var b bytes.Buffer
-
-	cli.Output = &b
-
-	cmd := NewQueryDiscoveryCommand()
-	err = cmd.RunE(nil, []string{})
-	assert.NoError(t, err)
-
-	var response = &discovery.ListResourcesResponse{}
-	err = protojson.Unmarshal(b.Bytes(), response)
-
-	assert.NoError(t, err)
-	assert.NotNil(t, response)
-	assert.NotEmpty(t, response.Results)
-}
-
-func TestNewQueryDiscoveryCommandWithArgs(t *testing.T) {
-	var err error
-	var b bytes.Buffer
-
-	cli.Output = &b
-
-	cmd := NewQueryDiscoveryCommand()
-	err = cmd.RunE(nil, []string{"Test Command"})
-	assert.NoError(t, err)
-
-	var response = &discovery.ListResourcesResponse{}
-	err = protojson.Unmarshal(b.Bytes(), response)
-
-	assert.NoError(t, err)
-	assert.NotNil(t, response)
 }

@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package resource
+package evidence
 
 import (
 	"bytes"
@@ -49,56 +49,73 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
+	_, err = svc.StoreEvidence(context.Background(), &evidence.StoreEvidenceRequest{
+		Evidence: clitest.MockEvidence2,
+	})
+	if err != nil {
+		panic(err)
+	}
 
-	os.Exit(clitest.RunCLITest(m, server.WithServices(svc)))
+	os.Exit(clitest.RunCLITest(m,
+		server.WithServices(svc),
+	))
 }
 
 func TestAddCommands(t *testing.T) {
-	cmd := NewResourceCommand()
+	cmd := NewEvidenceCommand()
 
 	// Check if sub commands were added
 	assert.True(t, cmd.HasSubCommands())
-
-	// Check if NewListResourcesCommand was added
-	for _, v := range cmd.Commands() {
-		if v.Use == "list" {
-			return
-		}
-	}
-	t.Errorf("No list command was added")
 }
 
-func TestNewListResourcesCommandNoArgs(t *testing.T) {
+func TestNewListEvidencesCommandNoArgs(t *testing.T) {
 	var err error
 	var b bytes.Buffer
 
 	cli.Output = &b
 
-	cmd := NewListResourcesCommand()
+	cmd := NewListEvidencesCommand()
 	err = cmd.RunE(nil, []string{})
 	assert.NoError(t, err)
 
-	var response = &evidence.ListResourcesResponse{}
+	var response = &evidence.ListEvidencesResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
-	assert.NotEmpty(t, response.Results)
 }
 
-func TestNewListResourcesCommandWithArgs(t *testing.T) {
+func TestNewListEvidencesCommandWithArgs(t *testing.T) {
 	var err error
 	var b bytes.Buffer
 
 	cli.Output = &b
 
-	cmd := NewListResourcesCommand()
+	cmd := NewListEvidencesCommand()
 	err = cmd.RunE(nil, []string{"Test Command"})
 	assert.NoError(t, err)
 
-	var response = &evidence.ListResourcesResponse{}
+	var response = &evidence.ListEvidencesResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
+}
+
+func TestNewGetEvidenceCommand(t *testing.T) {
+	var b bytes.Buffer
+
+	cli.Output = &b
+
+	cmd := NewGetEvidenceCommand()
+	err := cmd.RunE(nil, []string{clitest.MockEvidence1.Id})
+	assert.NoError(t, err)
+
+	var response = &evidence.Evidence{}
+	err = protojson.Unmarshal(b.Bytes(), response)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, response)
+	assert.NotEmpty(t, response)
+	assert.Equal(t, clitest.MockEvidence1.Id, response.Id)
 }

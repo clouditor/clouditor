@@ -27,9 +27,9 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        (unknown)
-// source: api/discovery/experimental.proto
+// source: api/evidence/experimental.proto
 
-package discovery
+package evidence
 
 import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
@@ -57,7 +57,7 @@ type UpdateResourceRequest struct {
 
 func (x *UpdateResourceRequest) Reset() {
 	*x = UpdateResourceRequest{}
-	mi := &file_api_discovery_experimental_proto_msgTypes[0]
+	mi := &file_api_evidence_experimental_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -69,7 +69,7 @@ func (x *UpdateResourceRequest) String() string {
 func (*UpdateResourceRequest) ProtoMessage() {}
 
 func (x *UpdateResourceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_experimental_proto_msgTypes[0]
+	mi := &file_api_evidence_experimental_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -82,7 +82,7 @@ func (x *UpdateResourceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateResourceRequest.ProtoReflect.Descriptor instead.
 func (*UpdateResourceRequest) Descriptor() ([]byte, []int) {
-	return file_api_discovery_experimental_proto_rawDescGZIP(), []int{0}
+	return file_api_evidence_experimental_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *UpdateResourceRequest) GetResource() *Resource {
@@ -104,7 +104,7 @@ type ListGraphEdgesRequest struct {
 
 func (x *ListGraphEdgesRequest) Reset() {
 	*x = ListGraphEdgesRequest{}
-	mi := &file_api_discovery_experimental_proto_msgTypes[1]
+	mi := &file_api_evidence_experimental_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -116,7 +116,7 @@ func (x *ListGraphEdgesRequest) String() string {
 func (*ListGraphEdgesRequest) ProtoMessage() {}
 
 func (x *ListGraphEdgesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_experimental_proto_msgTypes[1]
+	mi := &file_api_evidence_experimental_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -129,7 +129,7 @@ func (x *ListGraphEdgesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListGraphEdgesRequest.ProtoReflect.Descriptor instead.
 func (*ListGraphEdgesRequest) Descriptor() ([]byte, []int) {
-	return file_api_discovery_experimental_proto_rawDescGZIP(), []int{1}
+	return file_api_evidence_experimental_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ListGraphEdgesRequest) GetPageSize() int32 {
@@ -170,7 +170,7 @@ type ListGraphEdgesResponse struct {
 
 func (x *ListGraphEdgesResponse) Reset() {
 	*x = ListGraphEdgesResponse{}
-	mi := &file_api_discovery_experimental_proto_msgTypes[2]
+	mi := &file_api_evidence_experimental_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -182,7 +182,7 @@ func (x *ListGraphEdgesResponse) String() string {
 func (*ListGraphEdgesResponse) ProtoMessage() {}
 
 func (x *ListGraphEdgesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_experimental_proto_msgTypes[2]
+	mi := &file_api_evidence_experimental_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -195,7 +195,7 @@ func (x *ListGraphEdgesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListGraphEdgesResponse.ProtoReflect.Descriptor instead.
 func (*ListGraphEdgesResponse) Descriptor() ([]byte, []int) {
-	return file_api_discovery_experimental_proto_rawDescGZIP(), []int{2}
+	return file_api_evidence_experimental_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ListGraphEdgesResponse) GetEdges() []*GraphEdge {
@@ -224,7 +224,7 @@ type GraphEdge struct {
 
 func (x *GraphEdge) Reset() {
 	*x = GraphEdge{}
-	mi := &file_api_discovery_experimental_proto_msgTypes[3]
+	mi := &file_api_evidence_experimental_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -236,7 +236,7 @@ func (x *GraphEdge) String() string {
 func (*GraphEdge) ProtoMessage() {}
 
 func (x *GraphEdge) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_experimental_proto_msgTypes[3]
+	mi := &file_api_evidence_experimental_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -249,7 +249,7 @@ func (x *GraphEdge) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GraphEdge.ProtoReflect.Descriptor instead.
 func (*GraphEdge) Descriptor() ([]byte, []int) {
-	return file_api_discovery_experimental_proto_rawDescGZIP(), []int{3}
+	return file_api_evidence_experimental_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GraphEdge) GetId() string {
@@ -280,22 +280,22 @@ func (x *GraphEdge) GetType() string {
 	return ""
 }
 
-var File_api_discovery_experimental_proto protoreflect.FileDescriptor
+var File_api_evidence_experimental_proto protoreflect.FileDescriptor
 
-const file_api_discovery_experimental_proto_rawDesc = "" +
+const file_api_evidence_experimental_proto_rawDesc = "" +
 	"\n" +
-	" api/discovery/experimental.proto\x12\"clouditor.discovery.v1experimental\x1a\x1dapi/discovery/discovery.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\"Z\n" +
-	"\x15UpdateResourceRequest\x12A\n" +
-	"\bresource\x18\x01 \x01(\v2 .clouditor.discovery.v1.ResourceB\x03\xe0A\x02R\bresource\"\x80\x01\n" +
+	"\x1fapi/evidence/experimental.proto\x12!clouditor.evidence.v1experimental\x1a\x1bapi/evidence/evidence.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\"Y\n" +
+	"\x15UpdateResourceRequest\x12@\n" +
+	"\bresource\x18\x01 \x01(\v2\x1f.clouditor.evidence.v1.ResourceB\x03\xe0A\x02R\bresource\"\x80\x01\n" +
 	"\x15ListGraphEdgesRequest\x12\x1b\n" +
 	"\tpage_size\x18\n" +
 	" \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
 	"page_token\x18\v \x01(\tR\tpageToken\x12\x19\n" +
 	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
-	"\x03asc\x18\r \x01(\bR\x03asc\"\x8a\x01\n" +
-	"\x16ListGraphEdgesResponse\x12H\n" +
-	"\x05edges\x18\x01 \x03(\v2-.clouditor.discovery.v1experimental.GraphEdgeB\x03\xe0A\x02R\x05edges\x12&\n" +
+	"\x03asc\x18\r \x01(\bR\x03asc\"\x89\x01\n" +
+	"\x16ListGraphEdgesResponse\x12G\n" +
+	"\x05edges\x18\x01 \x03(\v2,.clouditor.evidence.v1experimental.GraphEdgeB\x03\xe0A\x02R\x05edges\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\x88\x01\n" +
 	"\tGraphEdge\x12\x1a\n" +
 	"\x02id\x18\x01 \x01(\tB\n" +
@@ -305,37 +305,37 @@ const file_api_discovery_experimental_proto_rawDesc = "" +
 	"\x06target\x18\x03 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x06target\x12\x17\n" +
 	"\x04type\x18\x04 \x01(\tB\x03\xe0A\x02R\x04type2\xfe\x02\n" +
-	"\x15ExperimentalDiscovery\x12\xab\x01\n" +
-	"\x0eUpdateResource\x129.clouditor.discovery.v1experimental.UpdateResourceRequest\x1a .clouditor.discovery.v1.Resource\"<\x82\xd3\xe4\x93\x026:\x01*\"1/v1experimental/discovery/resources/{resource.id}\x12\xb6\x01\n" +
-	"\x0eListGraphEdges\x129.clouditor.discovery.v1experimental.ListGraphEdgesRequest\x1a:.clouditor.discovery.v1experimental.ListGraphEdgesResponse\"-\x82\xd3\xe4\x93\x02'\x12%/v1experimental/discovery/graph/edgesB)Z'clouditor.io/clouditor/v2/api/discoveryb\x06proto3"
+	"\x15ExperimentalResources\x12\xae\x01\n" +
+	"\x0eUpdateResource\x128.clouditor.evidence.v1experimental.UpdateResourceRequest\x1a\x1f.clouditor.evidence.v1.Resource\"A\x82\xd3\xe4\x93\x02;:\x01*\"6/v1experimental/evidence_store/resources/{resource.id}\x12\xb3\x01\n" +
+	"\x0eListGraphEdges\x128.clouditor.evidence.v1experimental.ListGraphEdgesRequest\x1a9.clouditor.evidence.v1experimental.ListGraphEdgesResponse\",\x82\xd3\xe4\x93\x02&\x12$/v1experimental/evidence/graph/edgesB(Z&clouditor.io/clouditor/v2/api/evidenceb\x06proto3"
 
 var (
-	file_api_discovery_experimental_proto_rawDescOnce sync.Once
-	file_api_discovery_experimental_proto_rawDescData []byte
+	file_api_evidence_experimental_proto_rawDescOnce sync.Once
+	file_api_evidence_experimental_proto_rawDescData []byte
 )
 
-func file_api_discovery_experimental_proto_rawDescGZIP() []byte {
-	file_api_discovery_experimental_proto_rawDescOnce.Do(func() {
-		file_api_discovery_experimental_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_discovery_experimental_proto_rawDesc), len(file_api_discovery_experimental_proto_rawDesc)))
+func file_api_evidence_experimental_proto_rawDescGZIP() []byte {
+	file_api_evidence_experimental_proto_rawDescOnce.Do(func() {
+		file_api_evidence_experimental_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_evidence_experimental_proto_rawDesc), len(file_api_evidence_experimental_proto_rawDesc)))
 	})
-	return file_api_discovery_experimental_proto_rawDescData
+	return file_api_evidence_experimental_proto_rawDescData
 }
 
-var file_api_discovery_experimental_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
-var file_api_discovery_experimental_proto_goTypes = []any{
-	(*UpdateResourceRequest)(nil),  // 0: clouditor.discovery.v1experimental.UpdateResourceRequest
-	(*ListGraphEdgesRequest)(nil),  // 1: clouditor.discovery.v1experimental.ListGraphEdgesRequest
-	(*ListGraphEdgesResponse)(nil), // 2: clouditor.discovery.v1experimental.ListGraphEdgesResponse
-	(*GraphEdge)(nil),              // 3: clouditor.discovery.v1experimental.GraphEdge
-	(*Resource)(nil),               // 4: clouditor.discovery.v1.Resource
+var file_api_evidence_experimental_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_api_evidence_experimental_proto_goTypes = []any{
+	(*UpdateResourceRequest)(nil),  // 0: clouditor.evidence.v1experimental.UpdateResourceRequest
+	(*ListGraphEdgesRequest)(nil),  // 1: clouditor.evidence.v1experimental.ListGraphEdgesRequest
+	(*ListGraphEdgesResponse)(nil), // 2: clouditor.evidence.v1experimental.ListGraphEdgesResponse
+	(*GraphEdge)(nil),              // 3: clouditor.evidence.v1experimental.GraphEdge
+	(*Resource)(nil),               // 4: clouditor.evidence.v1.Resource
 }
-var file_api_discovery_experimental_proto_depIdxs = []int32{
-	4, // 0: clouditor.discovery.v1experimental.UpdateResourceRequest.resource:type_name -> clouditor.discovery.v1.Resource
-	3, // 1: clouditor.discovery.v1experimental.ListGraphEdgesResponse.edges:type_name -> clouditor.discovery.v1experimental.GraphEdge
-	0, // 2: clouditor.discovery.v1experimental.ExperimentalDiscovery.UpdateResource:input_type -> clouditor.discovery.v1experimental.UpdateResourceRequest
-	1, // 3: clouditor.discovery.v1experimental.ExperimentalDiscovery.ListGraphEdges:input_type -> clouditor.discovery.v1experimental.ListGraphEdgesRequest
-	4, // 4: clouditor.discovery.v1experimental.ExperimentalDiscovery.UpdateResource:output_type -> clouditor.discovery.v1.Resource
-	2, // 5: clouditor.discovery.v1experimental.ExperimentalDiscovery.ListGraphEdges:output_type -> clouditor.discovery.v1experimental.ListGraphEdgesResponse
+var file_api_evidence_experimental_proto_depIdxs = []int32{
+	4, // 0: clouditor.evidence.v1experimental.UpdateResourceRequest.resource:type_name -> clouditor.evidence.v1.Resource
+	3, // 1: clouditor.evidence.v1experimental.ListGraphEdgesResponse.edges:type_name -> clouditor.evidence.v1experimental.GraphEdge
+	0, // 2: clouditor.evidence.v1experimental.ExperimentalResources.UpdateResource:input_type -> clouditor.evidence.v1experimental.UpdateResourceRequest
+	1, // 3: clouditor.evidence.v1experimental.ExperimentalResources.ListGraphEdges:input_type -> clouditor.evidence.v1experimental.ListGraphEdgesRequest
+	4, // 4: clouditor.evidence.v1experimental.ExperimentalResources.UpdateResource:output_type -> clouditor.evidence.v1.Resource
+	2, // 5: clouditor.evidence.v1experimental.ExperimentalResources.ListGraphEdges:output_type -> clouditor.evidence.v1experimental.ListGraphEdgesResponse
 	4, // [4:6] is the sub-list for method output_type
 	2, // [2:4] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
@@ -343,27 +343,27 @@ var file_api_discovery_experimental_proto_depIdxs = []int32{
 	0, // [0:2] is the sub-list for field type_name
 }
 
-func init() { file_api_discovery_experimental_proto_init() }
-func file_api_discovery_experimental_proto_init() {
-	if File_api_discovery_experimental_proto != nil {
+func init() { file_api_evidence_experimental_proto_init() }
+func file_api_evidence_experimental_proto_init() {
+	if File_api_evidence_experimental_proto != nil {
 		return
 	}
-	file_api_discovery_discovery_proto_init()
+	file_api_evidence_evidence_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_discovery_experimental_proto_rawDesc), len(file_api_discovery_experimental_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_evidence_experimental_proto_rawDesc), len(file_api_evidence_experimental_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_api_discovery_experimental_proto_goTypes,
-		DependencyIndexes: file_api_discovery_experimental_proto_depIdxs,
-		MessageInfos:      file_api_discovery_experimental_proto_msgTypes,
+		GoTypes:           file_api_evidence_experimental_proto_goTypes,
+		DependencyIndexes: file_api_evidence_experimental_proto_depIdxs,
+		MessageInfos:      file_api_evidence_experimental_proto_msgTypes,
 	}.Build()
-	File_api_discovery_experimental_proto = out.File
-	file_api_discovery_experimental_proto_goTypes = nil
-	file_api_discovery_experimental_proto_depIdxs = nil
+	File_api_evidence_experimental_proto = out.File
+	file_api_evidence_experimental_proto_goTypes = nil
+	file_api_evidence_experimental_proto_depIdxs = nil
 }

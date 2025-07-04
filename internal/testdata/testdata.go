@@ -83,12 +83,21 @@ const (
 	MockEvidenceID2     = "22222222-2222-2222-2222-222222222222"
 	MockEvidenceToolID2 = "49d85e98-c3da-11ed-afa1-0242ac120002"
 
-	// Resource
-	MockResourceID1         = "my-resource-id"
-	MockResourceName1       = "my-resource-name"
-	MockResourceStorageID   = "some-storage-service-id"
-	MockResourceStorageName = "some-storage-service-name"
-	MockResourceID2         = "my-other-resource"
+	// Virtual Machine
+	MockVirtualMachineID1          = "my-vm-id"
+	MockVirtualMachineName1        = "my-vm-name"
+	MockVirtualMachineDescription1 = "This is a mock virtual machine"
+	MockVirtualMachineID2          = "my-other-vm-id"
+	MockVirtualMachineName2        = "my-other-vm-name"
+	MockVirtualMachineDescription2 = "This is another mock virtual machine"
+
+	// Block Storage
+	MockBlockStorageID1          = "my-block-storage-id"
+	MockBlockStorageName1        = "my-block-storage-name"
+	MockBlockStorageDescription1 = "This is a mock block storage"
+	MockBlockStorageID2          = "my-other-block-storage-id"
+	MockBlockStorageName2        = "my-other-block-storage-name"
+	MockBlockStorageDescription2 = "This is another mock block storage"
 
 	// Properties for a Certificate
 	MockCertificateID          = "1234"
@@ -141,4 +150,8 @@ var (
 			StringValue: "MockTargetValue",
 		},
 	}
+
+	// Resource Types
+	MockVirtualMachineTypes = []string{"VirtualMachine", "Compute", "Infrastructure", "Resource"}
+	MockBlockStorageTypes   = []string{"BlockStorage", "Storage", "Infrastructure", "Resource"}
 )

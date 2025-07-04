@@ -29,6 +29,7 @@ package clouditor.evidence.v1;
 
 import "api/ontology/ontology.proto";
 import "buf/validate/validate.proto";
+import "google/api/field_behavior.proto";
 import "google/protobuf/any.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
@@ -62,4 +63,41 @@ message Evidence {
   // assessment and are recent enough. In the future, this will be replaced with information in the "related" edges in
   // the resource. For now, this needs to be set manually in the evidence.
   repeated string experimental_related_resource_ids = 999 [(tagger.tags) = "gorm:\"serializer:json\""];
+}
+
+// Resource is a wrapper around google.protobuf.Value that is needed for
+// persistence reasons.
+message Resource {
+  // Id contains a unique ID for each resource. This is specific for the cloud
+  // provider this resource was gathered for and can for example be a resource
+  // URL.
+  string id = 1 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
+  // TargetOfEvaluationId is the UUID for the target of evaluation to which this resource
+  // belongs to.
+  string target_of_evaluation_id = 2 [
+    (buf.validate.field).string.uuid = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
+  // ResourceType contains a comma separated string of resource types according
+  // to our ontology.
+  string resource_type = 3 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
+  // Reference to the tool which provided the resource
+  string tool_id = 4 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
+
+  // Properties contains a protobuf message that describe the resource in the
+  // terms of our Clouditor ontology.
+  google.protobuf.Any properties = 10 [
+    (tagger.tags) = "gorm:\"serializer:anypb;type:json\"",
+    (buf.validate.field).required = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
 }
