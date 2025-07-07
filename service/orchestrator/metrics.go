@@ -63,24 +63,28 @@ var ErrMetricNotFound = status.Error(codes.NotFound, "metric not found")
 func (svc *Service) loadMetrics() (err error) {
 	var metrics []*assessment.Metric
 
-	// Default to loading metrics from our standard metrics repository
-	if svc.loadMetricsFunc == nil {
-		svc.loadMetricsFunc = svc.loadMetricsFromMetricsRepository
-	}
-
-	// Execute the metric loading functions if they are set
-	if svc.loadMetricsFunc != nil {
-		metrics, err = svc.loadMetricsFunc()
+	// Load default metrics if the ignore flag is not set
+	if !svc.ignoreDefaultMetrics {
+		metrics, err = svc.loadMetricsFromMetricsRepository()
 		if err != nil {
 			return fmt.Errorf("could not load metrics: %w", err)
 		}
+	}
+
+	// Load external metrics if the loadMetricsFunc is set
+	if svc.loadMetricsFunc != nil {
+		externalMetrics, err := svc.loadMetricsFunc()
+		if err != nil {
+			return fmt.Errorf("could not load metrics: %w", err)
+		}
+		metrics = append(metrics, externalMetrics...)
 	}
 
 	defaultMetricConfigurations = make(map[string]*assessment.MetricConfiguration)
 
 	// Try to prepare the (initial) metric implementations and configurations. We can still continue if they should
 	// fail, since they can still be updated later during runtime. Also, this makes it possible to load metrics of which
-	// we intentionally do not have the implementation, because they are assess outside the Clouditor toolset, but we
+	// we intentionally do not have the implementation, because they are assessed outside the Clouditor toolset, but we
 	// still need to be aware of the particular metric.
 	for _, m := range metrics {
 		// Somehow, we first need to create the metric, otherwise we are running into weird constraint issues.

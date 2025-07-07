@@ -101,6 +101,11 @@ type Service struct {
 	// loadMetricsFunc is a function used to initially load metrics at the start of the orchestrator
 	loadMetricsFunc func() ([]*assessment.Metric, error)
 
+	// ignoreDefaultMetrics is a flag that indicates whether the default metrics should be loaded (true means that the default metrics are not loaded)
+	ignoreDefaultMetrics bool
+
+	defaultMetricsPath string
+
 	catalogsFolder string
 
 	// loadCatalogsFunc is a function that is used to initially load catalogs at the start of the orchestrator
@@ -131,6 +136,13 @@ func WithExternalCatalogs(f func() ([]*orchestrator.Catalog, error)) service.Opt
 	}
 }
 
+// WithExternalMetrics can be used to load metric definitions from an external source
+func WithExternalMetrics(f func() ([]*assessment.Metric, error)) service.Option[*Service] {
+	return func(s *Service) {
+		s.loadMetricsFunc = f
+	}
+}
+
 // WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
 func WithStorage(storage persistence.Storage) service.Option[*Service] {
 	return func(s *Service) {
@@ -155,8 +167,9 @@ func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Opti
 func NewService(opts ...service.Option[*Service]) *Service {
 	var err error
 	s := Service{
-		catalogsFolder: DefaultCatalogsFolder,
-		events:         make(chan *orchestrator.MetricChangeEvent, 1000),
+		catalogsFolder:     DefaultCatalogsFolder,
+		defaultMetricsPath: defaultMetricsPath,
+		events:             make(chan *orchestrator.MetricChangeEvent, 1000),
 	}
 
 	// Apply service options

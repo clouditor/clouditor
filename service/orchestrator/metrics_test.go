@@ -83,7 +83,10 @@ var (
 
 func Test_loadMetricsFromRepository(t *testing.T) {
 	// Create a temporary directory structure for test files
-	var tempDir, err = testdata.MockMetricsDirectory()
+	tempDir, err := testdata.MockMetricsDirectory()
+	assert.NoError(t, err)
+
+	invalidTempDir, err := testdata.InvalidMockMetricsDirectory()
 	assert.NoError(t, err)
 
 	tests := []struct {
@@ -95,6 +98,11 @@ func Test_loadMetricsFromRepository(t *testing.T) {
 		{
 			name:    "Invalid path",
 			path:    "doesnotexist",
+			wantErr: assert.Error,
+		},
+		{
+			name:    "Invalid metric",
+			path:    invalidTempDir,
 			wantErr: assert.Error,
 		},
 		{
@@ -133,7 +141,7 @@ func Test_loadMetricsFromRepository(t *testing.T) {
 			}
 
 			if tt.wantErr(t, err) && err != nil {
-				assert.ErrorContains(t, err, "error accessing path")
+				assert.ErrorContains(t, err, "error reading metrics directory")
 			}
 		})
 	}

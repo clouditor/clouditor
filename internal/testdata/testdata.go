@@ -140,6 +140,7 @@ func MockMetricsDirectory() (string, error) {
 	validYaml := `
 id: TestMetric
 description: Test Metric 1
+category: TestCategory
 version: "1.0"
 comments: Test comments
 properties:
@@ -152,6 +153,7 @@ properties:
 	validYaml2 := `
 id: TestMetric
 description: Test Metric 1
+category: TestCategory
 version: "1.0"
 comments: Test comments
 properties:
@@ -162,6 +164,25 @@ properties:
 
 	err = os.WriteFile(filepath.Join(metricsDir, "valid.yaml"), []byte(validYaml), 0644)
 	err = os.WriteFile(filepath.Join(metricsDir, "valid2.yaml"), []byte(validYaml2), 0644)
+
+	return tempDir, err
+}
+
+func InvalidMockMetricsDirectory() (string, error) {
+	tempDir, err := os.MkdirTemp("", "")
+	metricsDir := filepath.Join(tempDir, "policies", "metrics", "metrics", "TestCategory", "TestMetric")
+	err = os.MkdirAll(metricsDir, 0755)
+
+	// Create invalid YAML file
+	validYaml := `
+this:
+- is
+not
+  valid
+:YAML
+`
+
+	err = os.WriteFile(filepath.Join(metricsDir, "valid.yaml"), []byte(validYaml), 0644)
 
 	return tempDir, err
 }
