@@ -30,6 +30,7 @@ package clouditor.evidence.v1;
 import "api/evidence/evidence.proto";
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
 
 option go_package = "clouditor.io/clouditor/v2/api/evidence";
 
@@ -63,6 +64,11 @@ service EvidenceStore {
   rpc ListSupportedResourceTypes(ListSupportedResourceTypesRequest) returns (ListSupportedResourceTypesResponse) {
     option (google.api.http) = {get: "/v1/evidence_store/supported_resource_types"};
   }
+
+  // Lists all resources collected in the last run, exposed as REST.
+  rpc ListResources(ListResourcesRequest) returns (ListResourcesResponse) {
+    option (google.api.http) = {get: "/v1/evidence_store/resources"};
+  }
 }
 
 message StoreEvidenceRequest {
@@ -76,9 +82,7 @@ enum EvidenceStatus {
 }
 
 // StoreEvidenceResponse belongs to StoreEvidence, which uses a custom unary RPC and therefore requires a response message according to the style convention. Since no return values are required, this is empty.
-message StoreEvidenceResponse {
-  EvidenceStatus status = 1;
-}
+message StoreEvidenceResponse {}
 
 // StoreEvidencesResponse belongs to StoreEvidences, which uses a custom bidirectional streaming RPC and therefore requires a response message according to the style convention. The bidirectional streaming needs the status and its message in the response for error handling.
 message StoreEvidencesResponse {
@@ -115,4 +119,24 @@ message ListSupportedResourceTypesRequest {}
 
 message ListSupportedResourceTypesResponse {
   repeated string resource_type = 1 [(buf.validate.field).repeated.min_items = 1];
+}
+
+message ListResourcesRequest {
+  message Filter {
+    optional string type = 1;
+    optional string target_of_evaluation_id = 2;
+    optional string tool_id = 3;
+  }
+
+  optional Filter filter = 1;
+
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
+}
+
+message ListResourcesResponse {
+  repeated Resource results = 1 [(google.api.field_behavior) = REQUIRED];
+  string next_page_token = 2;
 }

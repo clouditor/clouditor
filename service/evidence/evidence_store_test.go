@@ -30,6 +30,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"reflect"
 	"runtime"
 	"sync"
@@ -42,6 +43,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	"clouditor.io/clouditor/v2/internal/testutil/clitest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/evidencetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
@@ -60,6 +62,17 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	gormio "gorm.io/gorm"
 )
+
+func TestMain(m *testing.M) {
+	clitest.AutoChdir()
+
+	server, _ := startBufConnServer()
+
+	code := m.Run()
+
+	server.Stop()
+	os.Exit(code)
+}
 
 // TestNewService is a simply test for NewService
 func TestNewService(t *testing.T) {
@@ -1340,6 +1353,138 @@ func TestService_ListSupportedResourceTypes(t *testing.T) {
 				authz:             tt.fields.authz,
 			}
 			gotRes, err := svc.ListSupportedResourceTypes(tt.args.ctx, tt.args.req)
+
+			tt.wantRes(t, gotRes)
+			tt.wantErr(t, err)
+		})
+	}
+}
+
+func TestService_ListResources(t *testing.T) {
+	type fields struct {
+		storage           persistence.Storage
+		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
+		assessment        *api.RPCConnection[assessment.AssessmentClient]
+		channelEvidence   chan *evidence.Evidence
+		evidenceHooks     []evidence.EvidenceHookFunc
+		authz             service.AuthorizationStrategy
+	}
+	type args struct {
+		ctx context.Context
+		req *evidence.ListResourcesRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes assert.Want[*evidence.ListResourcesResponse]
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name:    "Request validation error",
+			wantRes: assert.Nil[*evidence.ListResourcesResponse],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
+			},
+		},
+		{
+			name: "Filter: ToE not allowed",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1), // allow only MockTargetOfEvaluationID1
+			},
+			args: args{
+				ctx: context.TODO(),
+				req: &evidence.ListResourcesRequest{
+					Filter: &evidence.ListResourcesRequest_Filter{
+						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID2), // MockTargetOfEvaluationID2 is not allowed
+					},
+				},
+			},
+			wantRes: assert.Nil[*evidence.ListResourcesResponse],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, status.Code(err), codes.PermissionDenied)
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
+			},
+		},
+		{
+			name: "Happy path: all filter options used",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&evidencetest.MockVirtualMachineResource1))
+					assert.NoError(t, s.Create(&evidencetest.MockVirtualMachineResource2))
+					assert.NoError(t, s.Create(&evidencetest.MockBlockStorageResource1))
+					assert.NoError(t, s.Create(&evidencetest.MockBlockStorageResource2))
+				}),
+				authz: servicetest.NewAuthorizationStrategy(true),
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &evidence.ListResourcesRequest{
+					Filter: &evidence.ListResourcesRequest_Filter{
+						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
+						ToolId:               util.Ref(testdata.MockEvidenceToolID2),
+						Type:                 util.Ref("VirtualMachine"),
+					},
+				},
+			},
+			wantRes: func(t *testing.T, got *evidence.ListResourcesResponse) bool {
+				return assert.Equal(t, 1, len(got.Results))
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: list only resources for ToE2",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&evidencetest.MockVirtualMachineResource1))
+					assert.NoError(t, s.Create(&evidencetest.MockVirtualMachineResource2))
+					assert.NoError(t, s.Create(&evidencetest.MockBlockStorageResource1))
+					assert.NoError(t, s.Create(&evidencetest.MockBlockStorageResource2))
+				}),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID2), // allow only MockTargetOfEvaluationID2
+			},
+			args: args{
+				ctx: context.TODO(),
+				req: &evidence.ListResourcesRequest{},
+			},
+			wantRes: func(t *testing.T, got *evidence.ListResourcesResponse) bool {
+				return assert.Equal(t, 2, len(got.Results))
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&evidencetest.MockVirtualMachineResource1))
+					assert.NoError(t, s.Create(&evidencetest.MockVirtualMachineResource2))
+					assert.NoError(t, s.Create(&evidencetest.MockBlockStorageResource1))
+					assert.NoError(t, s.Create(&evidencetest.MockBlockStorageResource2))
+				}),
+				authz: servicetest.NewAuthorizationStrategy(true),
+			},
+			args: args{
+				ctx: context.TODO(),
+				req: &evidence.ListResourcesRequest{},
+			},
+			wantRes: func(t *testing.T, got *evidence.ListResourcesResponse) bool {
+				return assert.Equal(t, 4, len(got.Results))
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				storage:           tt.fields.storage,
+				assessmentStreams: tt.fields.assessmentStreams,
+				assessment:        tt.fields.assessment,
+				channelEvidence:   tt.fields.channelEvidence,
+				evidenceHooks:     tt.fields.evidenceHooks,
+				authz:             tt.fields.authz,
+			}
+			gotRes, err := svc.ListResources(tt.args.ctx, tt.args.req)
 
 			tt.wantRes(t, gotRes)
 			tt.wantErr(t, err)

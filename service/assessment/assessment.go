@@ -35,7 +35,6 @@ import (
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
-	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/api/orchestrator"
@@ -230,7 +229,7 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 	// Retrieve the ontology resource
 	resource = req.Evidence.GetOntologyResource()
 	if resource == nil {
-		err = discovery.ErrNotOntologyResource
+		err = ontology.ErrNotOntologyResource
 		log.Error(err)
 		return nil, err
 	}
@@ -381,7 +380,7 @@ func (svc *Service) handleEvidence(
 	)
 
 	if resource == nil {
-		return nil, status.Errorf(codes.Internal, "invalid embedded resource: %v", discovery.ErrNotOntologyResource)
+		return nil, status.Errorf(codes.Internal, "invalid embedded resource: %v", ontology.ErrNotOntologyResource)
 	}
 
 	log.Debugf("Evaluating evidence %s (%s) collected by %s at %s", ev.Id, resource.GetId(), ev.ToolId, ev.Timestamp.AsTime())
