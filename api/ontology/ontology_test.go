@@ -228,3 +228,23 @@ func TestProtoResource(t *testing.T) {
 		})
 	}
 }
+
+func TestListResourceTypes(t *testing.T) {
+	tests := []struct {
+		name string
+		want assert.Want[[]string]
+	}{
+		{
+			name: "Happy path",
+			want: func(t *testing.T, got []string) bool {
+				return assert.NotEmpty(t, got)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := ListResourceTypes()
+			tt.want(t, got)
+		})
+	}
+}

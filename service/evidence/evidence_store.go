@@ -37,6 +37,7 @@ import (
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/logging"
 	"clouditor.io/clouditor/v2/launcher"
@@ -399,6 +400,22 @@ func (svc *Service) GetEvidence(ctx context.Context, req *evidence.GetEvidenceRe
 	}
 
 	return
+}
+
+// ListSupportedResourceTypes is a method implementation of the evidenceServer interface: It returns the resource types that are supported by this service
+func (svc *Service) ListSupportedResourceTypes(ctx context.Context, req *evidence.ListSupportedResourceTypesRequest) (res *evidence.ListSupportedResourceTypesResponse, err error) {
+	// Validate request
+	err = api.Validate(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the supported resource types
+	res = &evidence.ListSupportedResourceTypesResponse{
+		ResourceType: ontology.ListResourceTypes(),
+	}
+
+	return res, nil
 }
 
 func (svc *Service) ListResources(ctx context.Context, req *evidence.ListResourcesRequest) (res *evidence.ListResourcesResponse, err error) {

@@ -457,6 +457,86 @@ func (x *GetEvidenceRequest) GetEvidenceId() string {
 	return ""
 }
 
+type ListSupportedResourceTypesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListSupportedResourceTypesRequest) Reset() {
+	*x = ListSupportedResourceTypesRequest{}
+	mi := &file_api_evidence_evidence_store_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListSupportedResourceTypesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListSupportedResourceTypesRequest) ProtoMessage() {}
+
+func (x *ListSupportedResourceTypesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_evidence_evidence_store_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListSupportedResourceTypesRequest.ProtoReflect.Descriptor instead.
+func (*ListSupportedResourceTypesRequest) Descriptor() ([]byte, []int) {
+	return file_api_evidence_evidence_store_proto_rawDescGZIP(), []int{7}
+}
+
+type ListSupportedResourceTypesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ResourceType  []string               `protobuf:"bytes,1,rep,name=resource_type,json=resourceType,proto3" json:"resource_type,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListSupportedResourceTypesResponse) Reset() {
+	*x = ListSupportedResourceTypesResponse{}
+	mi := &file_api_evidence_evidence_store_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListSupportedResourceTypesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListSupportedResourceTypesResponse) ProtoMessage() {}
+
+func (x *ListSupportedResourceTypesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_evidence_evidence_store_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListSupportedResourceTypesResponse.ProtoReflect.Descriptor instead.
+func (*ListSupportedResourceTypesResponse) Descriptor() ([]byte, []int) {
+	return file_api_evidence_evidence_store_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *ListSupportedResourceTypesResponse) GetResourceType() []string {
+	if x != nil {
+		return x.ResourceType
+	}
+	return nil
+}
+
 type ListResourcesRequest struct {
 	state         protoimpl.MessageState       `protogen:"open.v1"`
 	Filter        *ListResourcesRequest_Filter `protobuf:"bytes,1,opt,name=filter,proto3,oneof" json:"filter,omitempty"`
@@ -470,7 +550,7 @@ type ListResourcesRequest struct {
 
 func (x *ListResourcesRequest) Reset() {
 	*x = ListResourcesRequest{}
-	mi := &file_api_evidence_evidence_store_proto_msgTypes[7]
+	mi := &file_api_evidence_evidence_store_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -482,7 +562,7 @@ func (x *ListResourcesRequest) String() string {
 func (*ListResourcesRequest) ProtoMessage() {}
 
 func (x *ListResourcesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_evidence_evidence_store_proto_msgTypes[7]
+	mi := &file_api_evidence_evidence_store_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -495,7 +575,7 @@ func (x *ListResourcesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListResourcesRequest.ProtoReflect.Descriptor instead.
 func (*ListResourcesRequest) Descriptor() ([]byte, []int) {
-	return file_api_evidence_evidence_store_proto_rawDescGZIP(), []int{7}
+	return file_api_evidence_evidence_store_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ListResourcesRequest) GetFilter() *ListResourcesRequest_Filter {
@@ -543,7 +623,7 @@ type ListResourcesResponse struct {
 
 func (x *ListResourcesResponse) Reset() {
 	*x = ListResourcesResponse{}
-	mi := &file_api_evidence_evidence_store_proto_msgTypes[8]
+	mi := &file_api_evidence_evidence_store_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -555,7 +635,7 @@ func (x *ListResourcesResponse) String() string {
 func (*ListResourcesResponse) ProtoMessage() {}
 
 func (x *ListResourcesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_evidence_evidence_store_proto_msgTypes[8]
+	mi := &file_api_evidence_evidence_store_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -568,7 +648,7 @@ func (x *ListResourcesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListResourcesResponse.ProtoReflect.Descriptor instead.
 func (*ListResourcesResponse) Descriptor() ([]byte, []int) {
-	return file_api_evidence_evidence_store_proto_rawDescGZIP(), []int{8}
+	return file_api_evidence_evidence_store_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ListResourcesResponse) GetResults() []*Resource {
@@ -596,7 +676,7 @@ type ListResourcesRequest_Filter struct {
 
 func (x *ListResourcesRequest_Filter) Reset() {
 	*x = ListResourcesRequest_Filter{}
-	mi := &file_api_evidence_evidence_store_proto_msgTypes[9]
+	mi := &file_api_evidence_evidence_store_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -608,7 +688,7 @@ func (x *ListResourcesRequest_Filter) String() string {
 func (*ListResourcesRequest_Filter) ProtoMessage() {}
 
 func (x *ListResourcesRequest_Filter) ProtoReflect() protoreflect.Message {
-	mi := &file_api_evidence_evidence_store_proto_msgTypes[9]
+	mi := &file_api_evidence_evidence_store_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -621,7 +701,7 @@ func (x *ListResourcesRequest_Filter) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListResourcesRequest_Filter.ProtoReflect.Descriptor instead.
 func (*ListResourcesRequest_Filter) Descriptor() ([]byte, []int) {
-	return file_api_evidence_evidence_store_proto_rawDescGZIP(), []int{7, 0}
+	return file_api_evidence_evidence_store_proto_rawDescGZIP(), []int{9, 0}
 }
 
 func (x *ListResourcesRequest_Filter) GetType() string {
@@ -676,7 +756,10 @@ const file_api_evidence_evidence_store_proto_rawDesc = "" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"?\n" +
 	"\x12GetEvidenceRequest\x12)\n" +
 	"\vevidence_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\n" +
-	"evidenceId\"\x8a\x03\n" +
+	"evidenceId\"#\n" +
+	"!ListSupportedResourceTypesRequest\"S\n" +
+	"\"ListSupportedResourceTypesResponse\x12-\n" +
+	"\rresource_type\x18\x01 \x03(\tB\b\xbaH\x05\x92\x01\x02\b\x01R\fresourceType\"\x8a\x03\n" +
 	"\x14ListResourcesRequest\x12O\n" +
 	"\x06filter\x18\x01 \x01(\v22.clouditor.evidence.v1.ListResourcesRequest.FilterH\x00R\x06filter\x88\x01\x01\x12\x1b\n" +
 	"\tpage_size\x18\n" +
@@ -700,12 +783,13 @@ const file_api_evidence_evidence_store_proto_rawDesc = "" +
 	"\x0eEvidenceStatus\x12\x1f\n" +
 	"\x1bEVIDENCE_STATUS_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12EVIDENCE_STATUS_OK\x10\x01\x12\x19\n" +
-	"\x15EVIDENCE_STATUS_ERROR\x10\x022\xd5\x05\n" +
+	"\x15EVIDENCE_STATUS_ERROR\x10\x022\x9e\a\n" +
 	"\rEvidenceStore\x12\x99\x01\n" +
 	"\rStoreEvidence\x12+.clouditor.evidence.v1.StoreEvidenceRequest\x1a,.clouditor.evidence.v1.StoreEvidenceResponse\"-\x82\xd3\xe4\x93\x02':\bevidence\"\x1b/v1/evidence_store/evidence\x12r\n" +
 	"\x0eStoreEvidences\x12+.clouditor.evidence.v1.StoreEvidenceRequest\x1a-.clouditor.evidence.v1.StoreEvidencesResponse\"\x00(\x010\x01\x12\x90\x01\n" +
 	"\rListEvidences\x12+.clouditor.evidence.v1.ListEvidencesRequest\x1a,.clouditor.evidence.v1.ListEvidencesResponse\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/evidence_store/evidences\x12\x8d\x01\n" +
-	"\vGetEvidence\x12).clouditor.evidence.v1.GetEvidenceRequest\x1a\x1f.clouditor.evidence.v1.Evidence\"2\x82\xd3\xe4\x93\x02,\x12*/v1/evidence_store/evidences/{evidence_id}\x12\x90\x01\n" +
+	"\vGetEvidence\x12).clouditor.evidence.v1.GetEvidenceRequest\x1a\x1f.clouditor.evidence.v1.Evidence\"2\x82\xd3\xe4\x93\x02,\x12*/v1/evidence_store/evidences/{evidence_id}\x12\xc6\x01\n" +
+	"\x1aListSupportedResourceTypes\x128.clouditor.evidence.v1.ListSupportedResourceTypesRequest\x1a9.clouditor.evidence.v1.ListSupportedResourceTypesResponse\"3\x82\xd3\xe4\x93\x02-\x12+/v1/evidence_store/supported_resource_types\x12\x90\x01\n" +
 	"\rListResources\x12+.clouditor.evidence.v1.ListResourcesRequest\x1a,.clouditor.evidence.v1.ListResourcesResponse\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/evidence_store/resourcesB(Z&clouditor.io/clouditor/v2/api/evidenceb\x06proto3"
 
 var (
@@ -721,41 +805,45 @@ func file_api_evidence_evidence_store_proto_rawDescGZIP() []byte {
 }
 
 var file_api_evidence_evidence_store_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_api_evidence_evidence_store_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_api_evidence_evidence_store_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_api_evidence_evidence_store_proto_goTypes = []any{
-	(EvidenceStatus)(0),                 // 0: clouditor.evidence.v1.EvidenceStatus
-	(*StoreEvidenceRequest)(nil),        // 1: clouditor.evidence.v1.StoreEvidenceRequest
-	(*StoreEvidenceResponse)(nil),       // 2: clouditor.evidence.v1.StoreEvidenceResponse
-	(*StoreEvidencesResponse)(nil),      // 3: clouditor.evidence.v1.StoreEvidencesResponse
-	(*ListEvidencesRequest)(nil),        // 4: clouditor.evidence.v1.ListEvidencesRequest
-	(*Filter)(nil),                      // 5: clouditor.evidence.v1.Filter
-	(*ListEvidencesResponse)(nil),       // 6: clouditor.evidence.v1.ListEvidencesResponse
-	(*GetEvidenceRequest)(nil),          // 7: clouditor.evidence.v1.GetEvidenceRequest
-	(*ListResourcesRequest)(nil),        // 8: clouditor.evidence.v1.ListResourcesRequest
-	(*ListResourcesResponse)(nil),       // 9: clouditor.evidence.v1.ListResourcesResponse
-	(*ListResourcesRequest_Filter)(nil), // 10: clouditor.evidence.v1.ListResourcesRequest.Filter
-	(*Evidence)(nil),                    // 11: clouditor.evidence.v1.Evidence
-	(*Resource)(nil),                    // 12: clouditor.evidence.v1.Resource
+	(EvidenceStatus)(0),                        // 0: clouditor.evidence.v1.EvidenceStatus
+	(*StoreEvidenceRequest)(nil),               // 1: clouditor.evidence.v1.StoreEvidenceRequest
+	(*StoreEvidenceResponse)(nil),              // 2: clouditor.evidence.v1.StoreEvidenceResponse
+	(*StoreEvidencesResponse)(nil),             // 3: clouditor.evidence.v1.StoreEvidencesResponse
+	(*ListEvidencesRequest)(nil),               // 4: clouditor.evidence.v1.ListEvidencesRequest
+	(*Filter)(nil),                             // 5: clouditor.evidence.v1.Filter
+	(*ListEvidencesResponse)(nil),              // 6: clouditor.evidence.v1.ListEvidencesResponse
+	(*GetEvidenceRequest)(nil),                 // 7: clouditor.evidence.v1.GetEvidenceRequest
+	(*ListSupportedResourceTypesRequest)(nil),  // 8: clouditor.evidence.v1.ListSupportedResourceTypesRequest
+	(*ListSupportedResourceTypesResponse)(nil), // 9: clouditor.evidence.v1.ListSupportedResourceTypesResponse
+	(*ListResourcesRequest)(nil),               // 10: clouditor.evidence.v1.ListResourcesRequest
+	(*ListResourcesResponse)(nil),              // 11: clouditor.evidence.v1.ListResourcesResponse
+	(*ListResourcesRequest_Filter)(nil),        // 12: clouditor.evidence.v1.ListResourcesRequest.Filter
+	(*Evidence)(nil),                           // 13: clouditor.evidence.v1.Evidence
+	(*Resource)(nil),                           // 14: clouditor.evidence.v1.Resource
 }
 var file_api_evidence_evidence_store_proto_depIdxs = []int32{
-	11, // 0: clouditor.evidence.v1.StoreEvidenceRequest.evidence:type_name -> clouditor.evidence.v1.Evidence
+	13, // 0: clouditor.evidence.v1.StoreEvidenceRequest.evidence:type_name -> clouditor.evidence.v1.Evidence
 	0,  // 1: clouditor.evidence.v1.StoreEvidencesResponse.status:type_name -> clouditor.evidence.v1.EvidenceStatus
 	5,  // 2: clouditor.evidence.v1.ListEvidencesRequest.filter:type_name -> clouditor.evidence.v1.Filter
-	11, // 3: clouditor.evidence.v1.ListEvidencesResponse.evidences:type_name -> clouditor.evidence.v1.Evidence
-	10, // 4: clouditor.evidence.v1.ListResourcesRequest.filter:type_name -> clouditor.evidence.v1.ListResourcesRequest.Filter
-	12, // 5: clouditor.evidence.v1.ListResourcesResponse.results:type_name -> clouditor.evidence.v1.Resource
+	13, // 3: clouditor.evidence.v1.ListEvidencesResponse.evidences:type_name -> clouditor.evidence.v1.Evidence
+	12, // 4: clouditor.evidence.v1.ListResourcesRequest.filter:type_name -> clouditor.evidence.v1.ListResourcesRequest.Filter
+	14, // 5: clouditor.evidence.v1.ListResourcesResponse.results:type_name -> clouditor.evidence.v1.Resource
 	1,  // 6: clouditor.evidence.v1.EvidenceStore.StoreEvidence:input_type -> clouditor.evidence.v1.StoreEvidenceRequest
 	1,  // 7: clouditor.evidence.v1.EvidenceStore.StoreEvidences:input_type -> clouditor.evidence.v1.StoreEvidenceRequest
 	4,  // 8: clouditor.evidence.v1.EvidenceStore.ListEvidences:input_type -> clouditor.evidence.v1.ListEvidencesRequest
 	7,  // 9: clouditor.evidence.v1.EvidenceStore.GetEvidence:input_type -> clouditor.evidence.v1.GetEvidenceRequest
-	8,  // 10: clouditor.evidence.v1.EvidenceStore.ListResources:input_type -> clouditor.evidence.v1.ListResourcesRequest
-	2,  // 11: clouditor.evidence.v1.EvidenceStore.StoreEvidence:output_type -> clouditor.evidence.v1.StoreEvidenceResponse
-	3,  // 12: clouditor.evidence.v1.EvidenceStore.StoreEvidences:output_type -> clouditor.evidence.v1.StoreEvidencesResponse
-	6,  // 13: clouditor.evidence.v1.EvidenceStore.ListEvidences:output_type -> clouditor.evidence.v1.ListEvidencesResponse
-	11, // 14: clouditor.evidence.v1.EvidenceStore.GetEvidence:output_type -> clouditor.evidence.v1.Evidence
-	9,  // 15: clouditor.evidence.v1.EvidenceStore.ListResources:output_type -> clouditor.evidence.v1.ListResourcesResponse
-	11, // [11:16] is the sub-list for method output_type
-	6,  // [6:11] is the sub-list for method input_type
+	8,  // 10: clouditor.evidence.v1.EvidenceStore.ListSupportedResourceTypes:input_type -> clouditor.evidence.v1.ListSupportedResourceTypesRequest
+	10, // 11: clouditor.evidence.v1.EvidenceStore.ListResources:input_type -> clouditor.evidence.v1.ListResourcesRequest
+	2,  // 12: clouditor.evidence.v1.EvidenceStore.StoreEvidence:output_type -> clouditor.evidence.v1.StoreEvidenceResponse
+	3,  // 13: clouditor.evidence.v1.EvidenceStore.StoreEvidences:output_type -> clouditor.evidence.v1.StoreEvidencesResponse
+	6,  // 14: clouditor.evidence.v1.EvidenceStore.ListEvidences:output_type -> clouditor.evidence.v1.ListEvidencesResponse
+	13, // 15: clouditor.evidence.v1.EvidenceStore.GetEvidence:output_type -> clouditor.evidence.v1.Evidence
+	9,  // 16: clouditor.evidence.v1.EvidenceStore.ListSupportedResourceTypes:output_type -> clouditor.evidence.v1.ListSupportedResourceTypesResponse
+	11, // 17: clouditor.evidence.v1.EvidenceStore.ListResources:output_type -> clouditor.evidence.v1.ListResourcesResponse
+	12, // [12:18] is the sub-list for method output_type
+	6,  // [6:12] is the sub-list for method input_type
 	6,  // [6:6] is the sub-list for extension type_name
 	6,  // [6:6] is the sub-list for extension extendee
 	0,  // [0:6] is the sub-list for field type_name
@@ -769,15 +857,15 @@ func file_api_evidence_evidence_store_proto_init() {
 	file_api_evidence_evidence_proto_init()
 	file_api_evidence_evidence_store_proto_msgTypes[3].OneofWrappers = []any{}
 	file_api_evidence_evidence_store_proto_msgTypes[4].OneofWrappers = []any{}
-	file_api_evidence_evidence_store_proto_msgTypes[7].OneofWrappers = []any{}
 	file_api_evidence_evidence_store_proto_msgTypes[9].OneofWrappers = []any{}
+	file_api_evidence_evidence_store_proto_msgTypes[11].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_evidence_evidence_store_proto_rawDesc), len(file_api_evidence_evidence_store_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   10,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
