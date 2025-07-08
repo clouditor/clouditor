@@ -54,7 +54,7 @@ func (d *ionosDiscovery) discoverServer() (list []ontology.IsResource, err error
 				return nil, fmt.Errorf("could not handle server %s: %w", util.Deref(server.Id), err)
 			}
 
-			log.Debug("Adding resource %+v", r.GetId())
+			log.Debug("Adding resource %+w", r.GetId())
 
 			list = append(list, r)
 		}

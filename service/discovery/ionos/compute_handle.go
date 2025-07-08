@@ -31,12 +31,13 @@ import (
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
-	"github.com/ionos-cloud/sdk-go-bundle/products/compute"
+
+	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // handleServer creates a virtual machine resource based on the Clouditor Ontology
-func (d *ionosDiscovery) handleServer(server compute.Server, dc compute.Datacenter) (ontology.IsResource, error) {
+func (d *ionosDiscovery) handleServer(server ionoscloud.Server, dc ionoscloud.Datacenter) (ontology.IsResource, error) {
 	// Getting labels
 	l, _, err := d.clients.computeClient.LabelsApi.
 		DatacentersServersLabelsGet(context.Background(), util.Deref(dc.GetId()), util.Deref(server.GetId())).

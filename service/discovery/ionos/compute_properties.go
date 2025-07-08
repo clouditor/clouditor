@@ -27,11 +27,11 @@ package ionos
 
 import (
 	"clouditor.io/clouditor/v2/internal/util"
-	"github.com/ionos-cloud/sdk-go-bundle/products/compute"
+	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 )
 
 // getBlockStorageIds lists the block storage IDs attached to the given server
-func getBlockStorageIds(server compute.Server) (blockStorageIds []string) {
+func getBlockStorageIds(server ionoscloud.Server) (blockStorageIds []string) {
 	for _, volume := range util.Deref(server.Entities.Volumes.Items) {
 		blockStorageIds = append(blockStorageIds, util.Deref(volume.GetId()))
 	}
@@ -40,7 +40,7 @@ func getBlockStorageIds(server compute.Server) (blockStorageIds []string) {
 }
 
 // getNetworkInterfaceIds lists the network interface IDs attached to the given server
-func getNetworkInterfaceIds(server compute.Server) (NetworkInterfaceIds []string) {
+func getNetworkInterfaceIds(server ionoscloud.Server) (NetworkInterfaceIds []string) {
 	for _, nic := range util.Deref(server.Entities.Nics.Items) {
 		NetworkInterfaceIds = append(NetworkInterfaceIds, util.Deref(nic.GetId()))
 	}

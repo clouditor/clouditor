@@ -27,11 +27,12 @@ package ionos
 
 import (
 	"clouditor.io/clouditor/v2/internal/util"
-	"github.com/ionos-cloud/sdk-go-bundle/products/compute"
+
+	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 )
 
 // labels converts the compute labels to the ontology label format.
-func labels(labels compute.LabelResources) map[string]string {
+func labels(labels ionoscloud.LabelResources) map[string]string {
 	l := make(map[string]string)
 
 	for _, label := range util.Deref(labels.Items) {
