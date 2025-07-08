@@ -23,10 +23,10 @@
 //
 // This file is part of Clouditor Community Edition.
 
+// package ionos contains a Clouditor discoverer for IONOS Cloud environments.
 package ionos
 
 import (
-	"context"
 	"errors"
 	"fmt"
 
@@ -34,7 +34,6 @@ import (
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/config"
 
-	auth "github.com/ionos-cloud/sdk-go-auth"
 	"github.com/ionos-cloud/sdk-go-bundle/products/compute"
 	"github.com/ionos-cloud/sdk-go-bundle/shared"
 	"github.com/sirupsen/logrus"
@@ -61,9 +60,9 @@ func (*ionosDiscovery) Description() string {
 
 type DiscoveryOption func(d *ionosDiscovery)
 
-func WithAuthorizer(authorizer *auth.APIClient) DiscoveryOption {
+func WithAuthorizer(sharedAuthorizer *shared.Configuration) DiscoveryOption {
 	return func(d *ionosDiscovery) {
-		d.authClient = authorizer
+		d.authConfig = sharedAuthorizer
 	}
 }
 
@@ -85,8 +84,7 @@ func init() {
 }
 
 type ionosDiscovery struct {
-	authClient          *auth.APIClient // authClient contains the configuration for the IONOS Cloud API client
-	sharedConfiguration *shared.Configuration
+	authConfig *shared.Configuration // authConfig contains the IONOS Cloud configuration, which is used to authenticate against the IONOS Cloud API
 	// rg optionally contains the name of a resource group. If this is not nil, all discovery calls will be scoped to the particular resource group.
 	rg *string
 	// discovererComponent string
@@ -166,24 +164,27 @@ func (d *ionosDiscovery) TargetOfEvaluationID() string {
 
 func (d *ionosDiscovery) authorize() (err error) {
 	if d.clients.computeClient == nil {
-		d.clients.computeClient = compute.NewAPIClient(d.sharedConfiguration)
+		d.clients.computeClient = compute.NewAPIClient(d.authConfig)
 	}
 
 	return nil
 }
 
 // NewAuthorizer returns the IONOS Cloud configuration
-func (d *ionosDiscovery) NewAuthorizer() error {
-	d.authClient = auth.NewAPIClient(auth.NewConfigurationFromEnv())
-	jwt, _, err := d.authClient.TokensApi.TokensGenerate(context.Background()).Execute()
-	if err != nil {
-		return fmt.Errorf("error occurred while generating token (%w)", err)
-	}
-	if !jwt.HasToken() {
-		return errors.New("could not generate token")
+func NewAuthorizer() (*shared.Configuration, error) {
+	// authClient := auth.NewAPIClient(auth.NewConfigurationFromEnv())
+	// jwt, _, err := authClient.TokensApi.TokensGenerate(context.Background()).Execute()
+	// if err != nil {
+	// 	return nil, nil, fmt.Errorf("error occurred while generating token (%w)", err)
+	// }
+	// if !jwt.HasToken() {
+	// 	return nil, nil, errors.New("could not generate token")
+	// }
+
+	sharedConfiguration := shared.NewConfigurationFromEnv()
+	if sharedConfiguration == nil {
+		return nil, fmt.Errorf("%w: %s", ErrNoCredentialsConfigured, "IONOS Cloud credentials are not configured in the environment")
 	}
 
-	d.sharedConfiguration = shared.NewConfiguration("", "", *jwt.GetToken(), "")
-
-	return nil
+	return sharedConfiguration, nil
 }
