@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	filepath "path/filepath"
 	"testing"
 	"time"
 
@@ -81,13 +82,17 @@ var (
 	}
 )
 
-func Test_loadMetricsFromRepository(t *testing.T) {
+func Test_loadMetricsFromMetricsRepository(t *testing.T) {
 	// Create a temporary directory structure for test files
-	tempDir, err := testdata.MockMetricsDirectory()
-	assert.NoError(t, err)
+	validDir := filepath.Join("internal", "testdata", "mock_metrics", "valid_metrics")
+	invalidDir := filepath.Join("internal", "testdata", "mock_metrics", "invalid_metrics")
+	unreadableDir := filepath.Join("internal", "testdata", "mock_metrics", "unreadable_metrics")
+	unreadableFile := filepath.Join(unreadableDir, "unreadable_metric.yaml")
 
-	invalidTempDir, err := testdata.InvalidMockMetricsDirectory()
-	assert.NoError(t, err)
+	// Change the file permissions to 0000, so it becomes unreadable
+	if err := os.Chmod(unreadableFile, 0000); err != nil {
+		log.Fatalf("Error changing file permissions: %v", err)
+	}
 
 	tests := []struct {
 		name       string
@@ -96,18 +101,29 @@ func Test_loadMetricsFromRepository(t *testing.T) {
 		wantErr    assert.ErrorAssertionFunc
 	}{
 		{
-			name:    "Invalid path",
-			path:    "doesnotexist",
-			wantErr: assert.Error,
+			name: "Invalid path",
+			path: "doesnotexist",
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "error accessing path")
+			},
 		},
 		{
-			name:    "Invalid metric",
-			path:    invalidTempDir,
-			wantErr: assert.Error,
+			name: "Invalid file",
+			path: unreadableDir,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "error reading file")
+			},
+		},
+		{
+			name: "Invalid metric",
+			path: invalidDir,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "error decoding metric")
+			},
 		},
 		{
 			name: "Happy path",
-			path: tempDir,
+			path: validDir,
 			wantMetric: []*assessment.Metric{
 				{
 					Id:          "TestMetric",
@@ -140,10 +156,12 @@ func Test_loadMetricsFromRepository(t *testing.T) {
 				assert.NoError(t, api.Validate(gotMetrics[1]))
 			}
 
-			if tt.wantErr(t, err) && err != nil {
-				assert.ErrorContains(t, err, "error reading metrics directory")
-			}
+			tt.wantErr(t, err)
 		})
+	}
+	// Change the file permissions back
+	if err := os.Chmod(unreadableFile, 0644); err != nil {
+		log.Fatalf("Error changing file permissions: %v", err)
 	}
 }
 

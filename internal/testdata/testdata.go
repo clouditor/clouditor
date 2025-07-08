@@ -2,8 +2,6 @@ package testdata
 
 import (
 	"google.golang.org/protobuf/types/known/structpb"
-	"os"
-	"path/filepath"
 )
 
 const (
@@ -130,62 +128,6 @@ const (
 	MockEvaluationResult9ID  = "99999999-9999-9999-9999-999999999999"
 	MockEvaluationResult10ID = "11111111-1111-1111-1111-111111111110"
 )
-
-func MockMetricsDirectory() (string, error) {
-	tempDir, err := os.MkdirTemp("", "")
-	metricsDir := filepath.Join(tempDir, "policies", "metrics", "metrics", "TestCategory", "TestMetric")
-	err = os.MkdirAll(metricsDir, 0755)
-
-	// Create test YAML files
-	validYaml := `
-id: TestMetric
-description: Test Metric 1
-category: TestCategory
-version: "1.0"
-comments: Test comments
-properties:
-  prop1:
-    operator: "=="
-    targetValue: "123"
-`
-
-	// Create test YAML files
-	validYaml2 := `
-id: TestMetric
-description: Test Metric 1
-category: TestCategory
-version: "1.0"
-comments: Test comments
-properties:
-  prop1:
-    operator: "=="
-    targetValue: "123"
-`
-
-	err = os.WriteFile(filepath.Join(metricsDir, "valid.yaml"), []byte(validYaml), 0644)
-	err = os.WriteFile(filepath.Join(metricsDir, "valid2.yaml"), []byte(validYaml2), 0644)
-
-	return tempDir, err
-}
-
-func InvalidMockMetricsDirectory() (string, error) {
-	tempDir, err := os.MkdirTemp("", "")
-	metricsDir := filepath.Join(tempDir, "policies", "metrics", "metrics", "TestCategory", "TestMetric")
-	err = os.MkdirAll(metricsDir, 0755)
-
-	// Create invalid YAML file
-	validYaml := `
-this:
-- is
-not
-  valid
-:YAML
-`
-
-	err = os.WriteFile(filepath.Join(metricsDir, "valid.yaml"), []byte(validYaml), 0644)
-
-	return tempDir, err
-}
 
 var (
 	// Catalog
