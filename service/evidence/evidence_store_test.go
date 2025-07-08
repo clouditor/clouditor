@@ -50,7 +50,6 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
-
 	"github.com/google/uuid"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
@@ -1279,6 +1278,70 @@ func TestService_handleEvidence(t *testing.T) {
 				})
 			}
 			err := svc.handleEvidence(tt.args.evidence)
+			tt.wantErr(t, err)
+		})
+	}
+}
+
+func TestService_ListSupportedResourceTypes(t *testing.T) {
+	type fields struct {
+		storage                          persistence.Storage
+		assessmentStreams                *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
+		assessment                       *api.RPCConnection[assessment.AssessmentClient]
+		channelEvidence                  chan *evidence.Evidence
+		evidenceHooks                    []evidence.EvidenceHookFunc
+		authz                            service.AuthorizationStrategy
+		UnimplementedEvidenceStoreServer evidence.UnimplementedEvidenceStoreServer
+	}
+	type args struct {
+		ctx context.Context
+		req *evidence.ListSupportedResourceTypesRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes assert.Want[*evidence.ListSupportedResourceTypesResponse]
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Request is nil",
+			args: args{
+				ctx: context.TODO(),
+				req: nil,
+			},
+			wantRes: assert.Nil[*evidence.ListSupportedResourceTypesResponse],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
+			},
+		},
+		{
+			name: "Happy path",
+			args: args{
+				ctx: context.TODO(),
+				req: &evidence.ListSupportedResourceTypesRequest{},
+			},
+			wantRes: func(t *testing.T, got *evidence.ListSupportedResourceTypesResponse) bool {
+				assert.NotNil(t, got)
+				return assert.NotEmpty(t, got.ResourceType)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				storage:           tt.fields.storage,
+				assessmentStreams: tt.fields.assessmentStreams,
+				assessment:        tt.fields.assessment,
+				channelEvidence:   tt.fields.channelEvidence,
+				evidenceHooks:     tt.fields.evidenceHooks,
+				authz:             tt.fields.authz,
+			}
+			gotRes, err := svc.ListSupportedResourceTypes(tt.args.ctx, tt.args.req)
+
+			tt.wantRes(t, gotRes)
 			tt.wantErr(t, err)
 		})
 	}
