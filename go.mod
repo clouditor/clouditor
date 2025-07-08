@@ -222,7 +222,14 @@ require (
 )
 
 require (
+	github.com/ionos-cloud/sdk-go-bundle/products/auth v0.1.0
 	github.com/vektah/gqlparser/v2 v2.5.28 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.36.0 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
+)
+
+require (
+	github.com/ionos-cloud/sdk-go-auth v1.0.10
+	github.com/ionos-cloud/sdk-go-bundle/products/compute v0.1.0
+	github.com/ionos-cloud/sdk-go-bundle/shared v0.1.0 // indirect
 )

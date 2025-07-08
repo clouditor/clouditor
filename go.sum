@@ -245,6 +245,14 @@ github.com/hexops/gotextdiff v1.0.3 h1:gitA9+qJrrTCsiCl7+kh75nPqQt1cx4ZkudSTLoUq
 github.com/hexops/gotextdiff v1.0.3/go.mod h1:pSWU5MAI3yDq+fZBTazCSJysOMbxWL1BSow5/V2vxeg=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
+github.com/ionos-cloud/sdk-go-auth v1.0.10 h1:aHWstSqtmWZxvNVEye42MBK9WcbTQnbc3GBgPj6tmcE=
+github.com/ionos-cloud/sdk-go-auth v1.0.10/go.mod h1:yVHBsuAWLbcnlgfviCDZ5HE7k3KwkmK7GjgaAvnnKxI=
+github.com/ionos-cloud/sdk-go-bundle/products/auth v0.1.0 h1:70q2tKsvlixRnCknBMOyJThVIs/Ykc0xVSk2dBdk7Fo=
+github.com/ionos-cloud/sdk-go-bundle/products/auth v0.1.0/go.mod h1:lH/h1gNMsWD02eLGOUEl5PM7WMUT7JCCt4etK3LdmSo=
+github.com/ionos-cloud/sdk-go-bundle/products/compute v0.1.0 h1:dCGO+qxciVse5IBxiAQ0V90XNDHzOL3RvwbzepyLr9k=
+github.com/ionos-cloud/sdk-go-bundle/products/compute v0.1.0/go.mod h1:NP2b4y179BlEtaKKuKUActP544eQq81wNge5x5h7Mys=
+github.com/ionos-cloud/sdk-go-bundle/shared v0.1.0 h1:1psLbSn+i/wK0Samy8XqLxsqEnhTshz3Py1lbp5F/ao=
+github.com/ionos-cloud/sdk-go-bundle/shared v0.1.0/go.mod h1:hDQ5fhujYFaYr1fD8bmmf4rlCKAsqKwczuBS0Z5PNBQ=
 github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
 github.com/jackc/pgpassfile v1.0.0/go.mod h1:CEx0iS5ambNFdcRtxPj5JhEz+xB6uRky5eyVu/W2HEg=
 github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 h1:iCEnooe7UlwOQYpKFhBabPMi4aNAfoODPEFNiAnClxo=
