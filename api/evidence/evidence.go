@@ -94,7 +94,7 @@ func (r *Resource) ToOntologyResource() (or ontology.IsResource, err error) {
 
 	m, err = r.Properties.UnmarshalNew()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not unmarshal resource properties: %w", err)
 	}
 
 	or, ok = m.(ontology.IsResource)
