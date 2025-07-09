@@ -134,7 +134,7 @@ func (s *StreamsOf[StreamType, MsgType]) GetStream(target string, component stri
 		// We could have a dead stream that we need to restart. in this case, we can recycle a few things, e.g. the channel
 		c, err = s.restartStream(c, init, opts...)
 		if err != nil {
-			return nil, fmt.Errorf("could not restart stream for %s with target '%s': %w", c.component, c.target, err)
+			return nil, fmt.Errorf("could not restart stream for %s with target '%s': %w", component, target, err)
 		}
 	}
 

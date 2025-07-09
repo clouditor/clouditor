@@ -29,25 +29,20 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 	"sync"
 	"testing"
 	"time"
 
 	"clouditor.io/clouditor/v2/api"
-	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
-	"clouditor.io/clouditor/v2/internal/testutil"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"clouditor.io/clouditor/v2/internal/testutil/clitest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest"
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/launcher"
-	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
 	"github.com/go-co-op/gocron"
 	"github.com/spf13/viper"
@@ -55,17 +50,6 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
-
-func TestMain(m *testing.M) {
-	clitest.AutoChdir()
-
-	server, _ := startBufConnServer()
-
-	code := m.Run()
-
-	server.Stop()
-	os.Exit(code)
-}
 
 func TestNewService(t *testing.T) {
 	type args struct {
@@ -77,14 +61,14 @@ func TestNewService(t *testing.T) {
 		want assert.Want[*Service]
 	}{
 		{
-			name: "Create service with option 'WithAssessmentAddress'",
+			name: "Create service with option 'WithEvidenceStoreAddress'",
 			args: args{
 				opts: []service.Option[*Service]{
-					WithAssessmentAddress("localhost:9091"),
+					WithEvidenceStoreAddress("localhost:9091"),
 				},
 			},
 			want: func(t *testing.T, got *Service) bool {
-				return assert.Equal(t, "localhost:9091", got.assessment.Target)
+				return assert.Equal(t, "localhost:9091", got.evidenceStore.Target)
 			},
 		},
 		{
@@ -140,17 +124,6 @@ func TestNewService(t *testing.T) {
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Equal(t, []string{}, got.providers)
-			},
-		},
-		{
-			name: "Create service with option 'WithStorage'",
-			args: args{
-				opts: []service.Option[*Service]{
-					WithStorage(testutil.NewInMemoryStorage(t)),
-				},
-			},
-			want: func(t *testing.T, got *Service) bool {
-				return assert.NotNil(t, got.storage)
 			},
 		},
 		{
@@ -226,17 +199,17 @@ func TestService_StartDiscovery(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockStream := &mockAssessmentStream{connectionEstablished: true, expected: 2}
+			mockStream := &mockEvidenceStoreStream{connectionEstablished: true, expected: 2}
 			mockStream.Prepare()
 
 			svc := NewService()
 			svc.ctID = tt.fields.ctID
 			svc.collectorID = tt.fields.collectorID
-			svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]()
-			_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
+			svc.evidenceStoreStreams = api.NewStreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]()
+			_, _ = svc.evidenceStoreStreams.GetStream("mock", "Evidence Store", func(target string, additionalOpts ...grpc.DialOption) (stream evidence.EvidenceStore_StoreEvidencesClient, err error) {
 				return mockStream, nil
 			})
-			svc.assessment = &api.RPCConnection[assessment.AssessmentClient]{Target: "mock"}
+			svc.evidenceStore = &api.RPCConnection[evidence.EvidenceStoreClient]{Target: "mock"}
 			go svc.StartDiscovery(tt.fields.discoverer)
 
 			if tt.checkEvidence {
@@ -266,148 +239,6 @@ func TestService_StartDiscovery(t *testing.T) {
 	}
 }
 
-func TestService_ListResources(t *testing.T) {
-	type fields struct {
-		authz       service.AuthorizationStrategy
-		ctID        string
-		collectorID string
-	}
-	type args struct {
-		req *discovery.ListResourcesRequest
-	}
-	tests := []struct {
-		name                     string
-		fields                   fields
-		args                     args
-		numberOfQueriedResources int
-		secondDiscoverer         bool
-		wantErr                  assert.WantErr
-	}{
-		{
-			name: "Filter type, allow all",
-			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(true),
-				ctID:  testdata.MockTargetOfEvaluationID1,
-			},
-			args: args{req: &discovery.ListResourcesRequest{
-				Filter: &discovery.ListResourcesRequest_Filter{
-					// TODO(oxisto): This is a problem now, since we are only persisting the leaf node type, so we cannot "see" the inherited resource types anymore
-					Type: util.Ref("Storage"),
-				},
-			}},
-			numberOfQueriedResources: 1,
-			wantErr:                  assert.Nil[error],
-		},
-		{
-			name: "Filter target of evaluation, allow",
-			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1),
-				ctID:  testdata.MockTargetOfEvaluationID1,
-			},
-			args: args{req: &discovery.ListResourcesRequest{
-				Filter: &discovery.ListResourcesRequest_Filter{
-					TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
-				},
-			}},
-			numberOfQueriedResources: 2,
-			wantErr:                  assert.Nil[error],
-		},
-		{
-			name: "Filter target of evaluation, not allowed",
-			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1),
-				ctID:  testdata.MockTargetOfEvaluationID1,
-			},
-			args: args{req: &discovery.ListResourcesRequest{
-				Filter: &discovery.ListResourcesRequest_Filter{
-					TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID2),
-				},
-			}},
-			numberOfQueriedResources: 0,
-			wantErr: func(t *testing.T, gotErr error) bool {
-				return assert.ErrorIs(t, gotErr, service.ErrPermissionDenied)
-			},
-		},
-		{
-			name: "Filter toolID, allow",
-			fields: fields{
-				authz:       servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1),
-				ctID:        testdata.MockTargetOfEvaluationID1,
-				collectorID: testdata.MockEvidenceToolID1,
-			},
-			args: args{req: &discovery.ListResourcesRequest{
-				Filter: &discovery.ListResourcesRequest_Filter{
-					TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
-					ToolId:               util.Ref(testdata.MockEvidenceToolID1),
-				},
-			}},
-			numberOfQueriedResources: 2,
-			secondDiscoverer:         true,
-			wantErr:                  assert.Nil[error],
-		},
-		{
-			name: "Filter toolID, not allowed",
-			fields: fields{
-				authz:       servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1),
-				ctID:        testdata.MockTargetOfEvaluationID1,
-				collectorID: testdata.MockEvidenceToolID1,
-			},
-			args: args{req: &discovery.ListResourcesRequest{
-				Filter: &discovery.ListResourcesRequest_Filter{
-					ToolId: util.Ref(testdata.MockEvidenceToolID1),
-				},
-			}},
-			numberOfQueriedResources: 0,
-			wantErr: func(t *testing.T, gotErr error) bool {
-				return assert.ErrorIs(t, gotErr, service.ErrPermissionDenied)
-			},
-		},
-		{
-			name: "No filtering, allow all",
-			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(true),
-				ctID:  testdata.MockTargetOfEvaluationID1,
-			},
-			args:                     args{req: &discovery.ListResourcesRequest{}},
-			numberOfQueriedResources: 2,
-			wantErr:                  assert.Nil[error],
-		},
-		{
-			name: "No filtering, allow different target of evaluation, empty result",
-			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID2),
-				ctID:  testdata.MockTargetOfEvaluationID1,
-			},
-			args:                     args{req: &discovery.ListResourcesRequest{}},
-			numberOfQueriedResources: 0,
-			wantErr:                  assert.Nil[error],
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(WithAssessmentAddress(testdata.MockGRPCTarget, grpc.WithContextDialer(bufConnDialer)))
-			s.authz = tt.fields.authz
-			s.ctID = tt.fields.ctID
-			s.collectorID = tt.fields.collectorID
-			s.StartDiscovery(&discoverytest.TestDiscoverer{TestCase: 2, ServiceId: tt.fields.ctID})
-
-			// We start a second discoverer for the 2 tests "Filter toolID, allow". For this tests we want resources with different toolIDs. One discoverer has only one toolID, so we have to start a second discoverer for resources with a different toolID.
-			if tt.secondDiscoverer {
-				s.collectorID = "second discoverer for a different toolID"
-				s.StartDiscovery(&discoverytest.TestDiscoverer{TestCase: 2, ServiceId: tt.fields.ctID})
-			}
-
-			response, err := s.ListResources(context.TODO(), tt.args.req)
-			tt.wantErr(t, err)
-
-			if err == nil {
-				assert.Equal(t, tt.numberOfQueriedResources, len(response.Results))
-			}
-		})
-	}
-}
-
 func TestService_Shutdown(t *testing.T) {
 	service := NewService()
 	service.Shutdown()
@@ -416,8 +247,8 @@ func TestService_Shutdown(t *testing.T) {
 
 }
 
-// mockAssessmentStream implements Assessment_AssessEvidencesClient interface
-type mockAssessmentStream struct {
+// mockEvidenceStoreStream implements Evidence_StoreEvidenceClient interface
+type mockEvidenceStoreStream struct {
 	// We add sentEvidence field to test the evidence that would be sent over gRPC
 	sentEvidences []*evidence.Evidence
 	// We add connectionEstablished to differentiate between the case where evidences can be sent and not
@@ -427,57 +258,57 @@ type mockAssessmentStream struct {
 	wg                    sync.WaitGroup
 }
 
-func (m *mockAssessmentStream) Prepare() {
+func (m *mockEvidenceStoreStream) Prepare() {
 	m.wg.Add(m.expected)
 }
 
-func (m *mockAssessmentStream) Wait() {
+func (m *mockEvidenceStoreStream) Wait() {
 	m.wg.Wait()
 }
 
-func (m *mockAssessmentStream) Recv() (*assessment.AssessEvidencesResponse, error) {
+func (m *mockEvidenceStoreStream) Recv() (*evidence.StoreEvidencesResponse, error) {
 	if m.counter == 0 {
 		m.counter++
-		return &assessment.AssessEvidencesResponse{
-			Status:        assessment.AssessmentStatus_ASSESSMENT_STATUS_FAILED,
+		return &evidence.StoreEvidencesResponse{
+			Status:        evidence.EvidenceStatus_EVIDENCE_STATUS_ERROR,
 			StatusMessage: "mockError1",
 		}, nil
 	} else if m.counter == 1 {
 		m.counter++
-		return &assessment.AssessEvidencesResponse{
-			Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_ASSESSED,
+		return &evidence.StoreEvidencesResponse{
+			Status: evidence.EvidenceStatus_EVIDENCE_STATUS_OK,
 		}, nil
 	} else {
 		return nil, io.EOF
 	}
 }
 
-func (m *mockAssessmentStream) Send(req *assessment.AssessEvidenceRequest) (err error) {
+func (m *mockEvidenceStoreStream) Send(req *evidence.StoreEvidenceRequest) (err error) {
 	return m.SendMsg(req)
 }
 
-func (*mockAssessmentStream) CloseAndRecv() (*emptypb.Empty, error) {
+func (*mockEvidenceStoreStream) CloseAndRecv() (*emptypb.Empty, error) {
 	return nil, nil
 }
 
-func (*mockAssessmentStream) Header() (metadata.MD, error) {
+func (*mockEvidenceStoreStream) Header() (metadata.MD, error) {
 	return nil, nil
 }
 
-func (*mockAssessmentStream) Trailer() metadata.MD {
+func (*mockEvidenceStoreStream) Trailer() metadata.MD {
 	return nil
 }
 
-func (*mockAssessmentStream) CloseSend() error {
+func (*mockEvidenceStoreStream) CloseSend() error {
 	return nil
 }
 
-func (*mockAssessmentStream) Context() context.Context {
+func (*mockEvidenceStoreStream) Context() context.Context {
 	return nil
 }
 
-func (m *mockAssessmentStream) SendMsg(req interface{}) (err error) {
-	e := req.(*assessment.AssessEvidenceRequest).Evidence
+func (m *mockEvidenceStoreStream) SendMsg(req interface{}) (err error) {
+	e := req.(*evidence.StoreEvidenceRequest).Evidence
 	if m.connectionEstablished {
 		m.sentEvidences = append(m.sentEvidences, e)
 	} else {
@@ -489,7 +320,7 @@ func (m *mockAssessmentStream) SendMsg(req interface{}) (err error) {
 	return
 }
 
-func (*mockAssessmentStream) RecvMsg(_ interface{}) error {
+func (*mockEvidenceStoreStream) RecvMsg(_ interface{}) error {
 	return nil
 }
 
@@ -500,16 +331,15 @@ func TestService_Start(t *testing.T) {
 		envVariableValue string
 	}
 	type fields struct {
-		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
-		assessment        *api.RPCConnection[assessment.AssessmentClient]
-		storage           persistence.Storage
-		scheduler         *gocron.Scheduler
-		authz             service.AuthorizationStrategy
-		providers         []string
-		discoveryInterval time.Duration
-		Events            chan *DiscoveryEvent
-		ctID              string
-		envVariables      []envVariable
+		evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
+		evidenceStore        *api.RPCConnection[evidence.EvidenceStoreClient]
+		scheduler            *gocron.Scheduler
+		authz                service.AuthorizationStrategy
+		providers            []string
+		discoveryInterval    time.Duration
+		Events               chan *DiscoveryEvent
+		ctID                 string
+		envVariables         []envVariable
 	}
 	type args struct {
 		ctx context.Context
@@ -755,15 +585,14 @@ func TestService_Start(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				assessmentStreams: tt.fields.assessmentStreams,
-				assessment:        tt.fields.assessment,
-				storage:           tt.fields.storage,
-				scheduler:         tt.fields.scheduler,
-				authz:             tt.fields.authz,
-				providers:         tt.fields.providers,
-				discoveryInterval: tt.fields.discoveryInterval,
-				Events:            tt.fields.Events,
-				ctID:              tt.fields.ctID,
+				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
+				evidenceStore:        tt.fields.evidenceStore,
+				scheduler:            tt.fields.scheduler,
+				authz:                tt.fields.authz,
+				providers:            tt.fields.providers,
+				discoveryInterval:    tt.fields.discoveryInterval,
+				Events:               tt.fields.Events,
+				ctID:                 tt.fields.ctID,
 			}
 
 			// Set env variables

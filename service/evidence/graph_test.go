@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package discovery
+package evidence
 
 import (
 	"context"
@@ -31,7 +31,7 @@ import (
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
-	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
@@ -41,7 +41,6 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
 
-	"github.com/go-co-op/gocron"
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
 )
@@ -51,21 +50,19 @@ func TestService_ListGraphEdges(t *testing.T) {
 		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
 		assessment        *api.RPCConnection[assessment.AssessmentClient]
 		storage           persistence.Storage
-		scheduler         *gocron.Scheduler
 		authz             service.AuthorizationStrategy
-		providers         []string
-		Events            chan *DiscoveryEvent
-		ctID              string
+		channelEvidence   chan *evidence.Evidence
+		evidenceHooks     []evidence.EvidenceHookFunc
 	}
 	type args struct {
 		ctx context.Context
-		req *discovery.ListGraphEdgesRequest
+		req *evidence.ListGraphEdgesRequest
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantRes *discovery.ListGraphEdgesResponse
+		wantRes *evidence.ListGraphEdgesResponse
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -103,10 +100,10 @@ func TestService_ListGraphEdges(t *testing.T) {
 				}),
 			},
 			args: args{
-				req: &discovery.ListGraphEdgesRequest{},
+				req: &evidence.ListGraphEdgesRequest{},
 			},
-			wantRes: &discovery.ListGraphEdgesResponse{
-				Edges: []*discovery.GraphEdge{
+			wantRes: &evidence.ListGraphEdgesResponse{
+				Edges: []*evidence.GraphEdge{
 					{
 						Type:   "storage",
 						Id:     "some-storage-account-id-some-id",
@@ -144,10 +141,10 @@ func TestService_ListGraphEdges(t *testing.T) {
 				}),
 			},
 			args: args{
-				req: &discovery.ListGraphEdgesRequest{},
+				req: &evidence.ListGraphEdgesRequest{},
 			},
-			wantRes: &discovery.ListGraphEdgesResponse{
-				Edges: []*discovery.GraphEdge{
+			wantRes: &evidence.ListGraphEdgesResponse{
+				Edges: []*evidence.GraphEdge{
 					{
 						Id:     "some-id-some-storage-account-id",
 						Source: "some-id",
@@ -171,11 +168,9 @@ func TestService_ListGraphEdges(t *testing.T) {
 				assessmentStreams: tt.fields.assessmentStreams,
 				assessment:        tt.fields.assessment,
 				storage:           tt.fields.storage,
-				scheduler:         tt.fields.scheduler,
 				authz:             tt.fields.authz,
-				providers:         tt.fields.providers,
-				Events:            tt.fields.Events,
-				ctID:              tt.fields.ctID,
+				channelEvidence:   tt.fields.channelEvidence,
+				evidenceHooks:     tt.fields.evidenceHooks,
 			}
 			gotRes, err := svc.ListGraphEdges(tt.args.ctx, tt.args.req)
 			assert.Equal(t, tt.wantRes, gotRes)
@@ -184,8 +179,8 @@ func TestService_ListGraphEdges(t *testing.T) {
 	}
 }
 
-func panicToDiscoveryResource(t *testing.T, resource ontology.IsResource, ctID, collectorID string) *discovery.Resource {
-	r, err := discovery.ToDiscoveryResource(resource, ctID, collectorID)
+func panicToDiscoveryResource(t *testing.T, resource ontology.IsResource, ctID, collectorID string) *evidence.Resource {
+	r, err := evidence.ToEvidenceResource(resource, ctID, collectorID)
 	assert.NoError(t, err)
 
 	return r
@@ -196,21 +191,19 @@ func TestService_UpdateResource(t *testing.T) {
 		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
 		assessment        *api.RPCConnection[assessment.AssessmentClient]
 		storage           persistence.Storage
-		scheduler         *gocron.Scheduler
 		authz             service.AuthorizationStrategy
-		providers         []string
-		Events            chan *DiscoveryEvent
-		ctID              string
+		channelEvidence   chan *evidence.Evidence
+		evidenceHooks     []evidence.EvidenceHookFunc
 	}
 	type args struct {
 		ctx context.Context
-		req *discovery.UpdateResourceRequest
+		req *evidence.UpdateResourceRequest
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantRes *discovery.Resource
+		wantRes *evidence.Resource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -219,7 +212,7 @@ func TestService_UpdateResource(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID2),
 			},
 			args: args{
-				req: &discovery.UpdateResourceRequest{
+				req: &evidence.UpdateResourceRequest{
 					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
 						Name: "some-name",
 					}, testdata.MockTargetOfEvaluationID1, testdata.MockEvidenceToolID1),
@@ -235,7 +228,7 @@ func TestService_UpdateResource(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID2),
 			},
 			args: args{
-				req: &discovery.UpdateResourceRequest{
+				req: &evidence.UpdateResourceRequest{
 					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
 						Id:   "my-id",
 						Name: "some-name",
@@ -253,7 +246,7 @@ func TestService_UpdateResource(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t),
 			},
 			args: args{
-				req: &discovery.UpdateResourceRequest{
+				req: &evidence.UpdateResourceRequest{
 					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
 						Id:   "my-id",
 						Name: "some-name",
@@ -273,11 +266,9 @@ func TestService_UpdateResource(t *testing.T) {
 				assessmentStreams: tt.fields.assessmentStreams,
 				assessment:        tt.fields.assessment,
 				storage:           tt.fields.storage,
-				scheduler:         tt.fields.scheduler,
 				authz:             tt.fields.authz,
-				providers:         tt.fields.providers,
-				Events:            tt.fields.Events,
-				ctID:              tt.fields.ctID,
+				channelEvidence:   tt.fields.channelEvidence,
+				evidenceHooks:     tt.fields.evidenceHooks,
 			}
 			gotRes, err := svc.UpdateResource(tt.args.ctx, tt.args.req)
 			assert.Empty(t, cmp.Diff(gotRes, tt.wantRes, protocmp.Transform()))

@@ -35,7 +35,6 @@ import (
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
-	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/api/orchestrator"
@@ -75,7 +74,6 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 		},
 		WithOAuth2Authorizer(config.ClientCredentials()),
 		WithOrchestratorAddress(viper.GetString(config.OrchestratorURLFlag)),
-		WithEvidenceStoreAddress(viper.GetString(config.EvidenceStoreURLFlag)),
 	)
 }
 
@@ -98,12 +96,6 @@ type cachedConfiguration struct {
 type Service struct {
 	// Embedded for FWD compatibility
 	assessment.UnimplementedAssessmentServer
-
-	// isEvidenceStoreDisabled specifies if evidences shall be discarded (when true).
-	isEvidenceStoreDisabled bool
-	// evidenceStoreStream sends evidences to the Evidence Store
-	evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
-	evidenceStore        *api.RPCConnection[evidence.EvidenceStoreClient]
 
 	// orchestratorStream sends assessment results to the Orchestrator
 	orchestratorStreams *api.StreamsOf[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest]
@@ -143,31 +135,6 @@ type Service struct {
 	evalPkg string
 }
 
-const (
-	// DefaultEvidenceStoreAddress specifies the default gRPC address of the evidence store.
-	DefaultEvidenceStoreAddress = "localhost:9090"
-
-	// DefaultOrchestratorAddress specifies the default gRPC address of the orchestrator.
-	DefaultOrchestratorAddress = "localhost:9090"
-)
-
-// WithoutEvidenceStore is a service option to discard evidences and don't send them to an evidence store
-func WithoutEvidenceStore() service.Option[*Service] {
-	return func(svc *Service) {
-		svc.isEvidenceStoreDisabled = true
-	}
-}
-
-// WithEvidenceStoreAddress is an option to configure the evidence store gRPC address.
-func WithEvidenceStoreAddress(address string, opts ...grpc.DialOption) service.Option[*Service] {
-	return func(svc *Service) {
-		log.Infof("Evidence Store URL is set to %s", address)
-
-		svc.evidenceStore.Target = address
-		svc.evidenceStore.Opts = opts
-	}
-}
-
 // WithOrchestratorAddress is an option to configure the orchestrator gRPC address.
 func WithOrchestratorAddress(target string, opts ...grpc.DialOption) service.Option[*Service] {
 	return func(svc *Service) {
@@ -182,7 +149,6 @@ func WithOrchestratorAddress(target string, opts ...grpc.DialOption) service.Opt
 func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[*Service] {
 	return func(s *Service) {
 		auth := api.NewOAuthAuthorizerFromClientCredentials(config)
-		s.evidenceStore.SetAuthorizer(auth)
 		s.orchestrator.SetAuthorizer(auth)
 	}
 }
@@ -190,7 +156,6 @@ func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[*Serv
 // WithAuthorizer is an option to use a pre-created authorizer
 func WithAuthorizer(auth api.Authorizer) service.Option[*Service] {
 	return func(s *Service) {
-		s.evidenceStore.SetAuthorizer(auth)
 		s.orchestrator.SetAuthorizer(auth)
 	}
 }
@@ -212,13 +177,11 @@ func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Opti
 // NewService creates a new assessment service with default values.
 func NewService(opts ...service.Option[*Service]) *Service {
 	svc := &Service{
-		evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 		orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
 		cachedConfigurations: make(map[string]cachedConfiguration),
 		requests:             make(map[string]waitingRequest),
 		evidenceResourceMap:  make(map[string]*evidence.Evidence),
-		evidenceStore:        api.NewRPCConnection(DefaultEvidenceStoreAddress, evidence.NewEvidenceStoreClient),
-		orchestrator:         api.NewRPCConnection(DefaultOrchestratorAddress, orchestrator.NewOrchestratorClient),
+		orchestrator:         api.NewRPCConnection(config.DefaultOrchestratorURL, orchestrator.NewOrchestratorClient),
 	}
 
 	// Apply any options
@@ -266,7 +229,7 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 	// Retrieve the ontology resource
 	resource = req.Evidence.GetOntologyResource()
 	if resource == nil {
-		err = discovery.ErrNotOntologyResource
+		err = ontology.ErrNotOntologyResource
 		log.Error(err)
 		return nil, err
 	}
@@ -417,7 +380,7 @@ func (svc *Service) handleEvidence(
 	)
 
 	if resource == nil {
-		return nil, status.Errorf(codes.Internal, "invalid embedded resource: %v", discovery.ErrNotOntologyResource)
+		return nil, status.Errorf(codes.Internal, "invalid embedded resource: %v", ontology.ErrNotOntologyResource)
 	}
 
 	log.Debugf("Evaluating evidence %s (%s) collected by %s at %s", ev.Id, resource.GetId(), ev.ToolId, ev.Timestamp.AsTime())
@@ -430,20 +393,6 @@ func (svc *Service) handleEvidence(
 		go svc.informHooks(ctx, nil, newError)
 
 		return nil, status.Errorf(codes.Internal, "%v", err)
-	}
-
-	// Send evidence via Evidence Store stream if sending evidences is not disabled
-	if !svc.isEvidenceStoreDisabled {
-		// Get Evidence Store stream
-		channelEvidenceStore, err := svc.evidenceStoreStreams.GetStream(svc.evidenceStore.Target, "Evidence Store", svc.initEvidenceStoreStream, svc.evidenceStore.Opts...)
-		if err != nil {
-			err = fmt.Errorf("could not get stream to evidence store (%s): %w", svc.evidenceStore.Target, err)
-
-			go svc.informHooks(ctx, nil, err)
-
-			return nil, status.Errorf(codes.Internal, "%v", err)
-		}
-		channelEvidenceStore.Send(&evidence.StoreEvidenceRequest{Evidence: ev})
 	}
 
 	// Get Orchestrator stream
@@ -525,23 +474,6 @@ func (svc *Service) RegisterAssessmentResultHook(assessmentResultsHook func(ctx 
 	svc.hookMutex.Lock()
 	defer svc.hookMutex.Unlock()
 	svc.resultHooks = append(svc.resultHooks, assessmentResultsHook)
-}
-
-// initEvidenceStoreStream initializes the stream to the Evidence Store
-func (svc *Service) initEvidenceStoreStream(target string, _ ...grpc.DialOption) (stream evidence.EvidenceStore_StoreEvidencesClient, err error) {
-	log.Infof("Trying to establish a stream to evidence store service @ %v", target)
-
-	// Make sure, that we re-connect
-	svc.evidenceStore.ForceReconnect()
-
-	stream, err = svc.evidenceStore.Client.StoreEvidences(context.Background())
-	if err != nil {
-		return nil, fmt.Errorf("could not set up stream to evidence store for storing evidences: %w", err)
-	}
-
-	log.Infof("Connected to Evidence Store")
-
-	return
 }
 
 // initOrchestratorStream initializes the stream to the Orchestrator
@@ -645,7 +577,6 @@ func (svc *Service) MetricConfiguration(TargetOfEvaluationID string, metric *ass
 }
 
 func (svc *Service) Shutdown() {
-	svc.evidenceStoreStreams.CloseAll()
 	svc.orchestratorStreams.CloseAll()
 }
 

@@ -96,9 +96,10 @@ func NewCatalog() *orchestrator.Catalog {
 }
 
 // NewAuditScope creates a new Audit Scope. The assurance level is set if available. A different audit scope id is set, if available.
-func NewAuditScope(assuranceLevel, auditScopeId, targetOfEvaluationID string) *orchestrator.AuditScope {
+func NewAuditScope(assuranceLevel, auditScopeId, targetOfEvaluationID, auditScopeName string) *orchestrator.AuditScope {
 	var auditScope = &orchestrator.AuditScope{
 		Id:                   auditScopeId,
+		Name:                 auditScopeName,
 		TargetOfEvaluationId: targetOfEvaluationID,
 		CatalogId:            testdata.MockCatalogID1,
 	}
@@ -140,6 +141,7 @@ var (
 	// MockAuditScopeCertTargetID1 has the Id 'MockAuditScopeID1' and TargetOfEvaluationID 'TargetOfEvaluationID1'
 	MockAuditScopeCertTargetID1 = &orchestrator.AuditScope{
 		Id:                   testdata.MockAuditScopeID1,
+		Name:                 testdata.MockAuditScopeName1,
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 		CatalogId:            testdata.MockCatalogID1,
 		AssuranceLevel:       &testdata.AssuranceLevelBasic,
@@ -148,6 +150,7 @@ var (
 	// MockAuditScopeCertTargetID2 has the Id 'MockAuditScopeID2' and TargetOfEvaluationID 'TargetOfEvaluationID1'
 	MockAuditScopeCertTargetID2 = &orchestrator.AuditScope{
 		Id:                   testdata.MockAuditScopeID2,
+		Name:                 testdata.MockAuditScopeName2,
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 		CatalogId:            testdata.MockCatalogID2,
 		AssuranceLevel:       &testdata.AssuranceLevelBasic,
@@ -156,6 +159,7 @@ var (
 	// MockAuditScopeCertTargetID3 has the Id 'MockAuditScopeID3' and TargetOfEvaluationID 'TargetOfEvaluationID2'
 	MockAuditScopeCertTargetID3 = &orchestrator.AuditScope{
 		Id:                   testdata.MockAuditScopeID3,
+		Name:                 testdata.MockAuditScopeName3,
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 		CatalogId:            testdata.MockCatalogID1,
 		AssuranceLevel:       &testdata.AssuranceLevelBasic,
@@ -174,8 +178,8 @@ var (
 		MetricId:             testdata.MockMetricID1,
 		Compliant:            true,
 		EvidenceId:           testdata.MockEvidenceID1,
-		ResourceId:           testdata.MockResourceID1,
-		ResourceTypes:        []string{"Resource"},
+		ResourceId:           testdata.MockVirtualMachineID1,
+		ResourceTypes:        testdata.MockVirtualMachineTypes,
 		ComplianceComment:    assessment.DefaultCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:             "==",
@@ -200,8 +204,8 @@ var (
 		MetricId:             testdata.MockMetricID1,
 		Compliant:            true,
 		EvidenceId:           testdata.MockEvidenceID1,
-		ResourceId:           testdata.MockResourceID1,
-		ResourceTypes:        []string{"Resource"},
+		ResourceId:           testdata.MockVirtualMachineID1,
+		ResourceTypes:        testdata.MockVirtualMachineTypes,
 		ComplianceComment:    assessment.DefaultCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:             "==",
@@ -226,8 +230,8 @@ var (
 		MetricId:             testdata.MockMetricID2,
 		Compliant:            false,
 		EvidenceId:           testdata.MockEvidenceID1,
-		ResourceId:           testdata.MockResourceID1,
-		ResourceTypes:        []string{"Resource"},
+		ResourceId:           testdata.MockVirtualMachineID1,
+		ResourceTypes:        testdata.MockVirtualMachineTypes,
 		ComplianceComment:    assessment.DefaultNonCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:             "==",
@@ -252,8 +256,8 @@ var (
 		MetricId:             testdata.MockMetricID2,
 		Compliant:            false,
 		EvidenceId:           testdata.MockEvidenceID1,
-		ResourceId:           testdata.MockResourceID2,
-		ResourceTypes:        []string{"Resource"},
+		ResourceId:           testdata.MockVirtualMachineID2,
+		ResourceTypes:        testdata.MockVirtualMachineTypes,
 		ComplianceComment:    assessment.DefaultNonCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:             "==",

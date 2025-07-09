@@ -124,6 +124,7 @@ func TestService_CreateAuditScope(t *testing.T) {
 				req: &orchestrator.CreateAuditScopeRequest{
 					AuditScope: &orchestrator.AuditScope{
 						CatalogId:            testdata.MockCatalogID1,
+						Name:                 testdata.MockAuditScopeName1,
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 					},
 				},
@@ -146,6 +147,7 @@ func TestService_CreateAuditScope(t *testing.T) {
 				req: &orchestrator.CreateAuditScopeRequest{
 					AuditScope: &orchestrator.AuditScope{
 						CatalogId:            testdata.MockCatalogID1,
+						Name:                 testdata.MockAuditScopeName1,
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 					},
 				},
@@ -164,7 +166,7 @@ func TestService_CreateAuditScope(t *testing.T) {
 				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: &orchestrator.CreateAuditScopeRequest{
-				AuditScope: orchestratortest.NewAuditScope("", testdata.MockAuditScopeID1, ""),
+				AuditScope: orchestratortest.NewAuditScope("", testdata.MockAuditScopeID1, "", testdata.MockAuditScopeName1),
 			}},
 			wantSvc: func(t *testing.T, svc *Service) bool {
 				auditScope := []*orchestrator.AuditScope{}
@@ -175,6 +177,7 @@ func TestService_CreateAuditScope(t *testing.T) {
 
 				want := &orchestrator.AuditScope{
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+					Name:                 testdata.MockAuditScopeName1,
 					CatalogId:            testdata.MockCatalogID1,
 				}
 
@@ -196,7 +199,7 @@ func TestService_CreateAuditScope(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: &orchestrator.CreateAuditScopeRequest{
-				AuditScope: orchestratortest.NewAuditScope(testdata.AssuranceLevelHigh, testdata.MockAuditScopeID1, ""),
+				AuditScope: orchestratortest.NewAuditScope(testdata.AssuranceLevelHigh, testdata.MockAuditScopeID1, "", testdata.MockAuditScopeName1),
 			}},
 			wantSvc: func(t *testing.T, svc *Service) bool {
 				auditScope := []*orchestrator.AuditScope{}
@@ -208,6 +211,7 @@ func TestService_CreateAuditScope(t *testing.T) {
 				want := &orchestrator.AuditScope{
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 					CatalogId:            testdata.MockCatalogID1,
+					Name:                 testdata.MockAuditScopeName1,
 					AssuranceLevel:       &testdata.AssuranceLevelHigh,
 				}
 
@@ -278,7 +282,7 @@ func TestService_GetAuditScope(t *testing.T) {
 			name: "Error: auditScope not found",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					err := s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, "", ""))
+					err := s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, "", "", testdata.MockAuditScopeName1))
 					assert.NoError(t, err)
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),
@@ -296,7 +300,7 @@ func TestService_GetAuditScope(t *testing.T) {
 			name: "Error: permission denied",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					err := s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1))
+					err := s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1, testdata.MockAuditScopeName1))
 					assert.NoError(t, err)
 				}),
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID2),
@@ -330,7 +334,7 @@ func TestService_GetAuditScope(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 
-					err := s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, ""))
+					err := s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, "", testdata.MockAuditScopeName1))
 					assert.NoError(t, err)
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),
@@ -339,7 +343,7 @@ func TestService_GetAuditScope(t *testing.T) {
 				AuditScopeId: testdata.MockAuditScopeID1,
 			}},
 			wantResponse: func(t *testing.T, got *orchestrator.AuditScope) bool {
-				want := orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, "")
+				want := orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, "", testdata.MockAuditScopeName1)
 
 				return assert.NoError(t, api.Validate(got)) &&
 					assert.Equal(t, want.TargetOfEvaluationId, got.TargetOfEvaluationId) &&
@@ -419,6 +423,7 @@ func TestToeHook(t *testing.T) {
 				req: &orchestrator.UpdateAuditScopeRequest{
 					AuditScope: &orchestrator.AuditScope{
 						Id:                   testdata.MockAuditScopeID1,
+						Name:                 testdata.MockAuditScopeName1,
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 						CatalogId:            testdata.MockCatalogID1,
 						AssuranceLevel:       &testdata.AssuranceLevelSubstantial,
@@ -428,6 +433,7 @@ func TestToeHook(t *testing.T) {
 			wantErr: assert.Nil[error],
 			wantRes: &orchestrator.AuditScope{
 				Id:                   testdata.MockAuditScopeID1,
+				Name:                 testdata.MockAuditScopeName1,
 				TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 				CatalogId:            testdata.MockCatalogID1,
 				AssuranceLevel:       &testdata.AssuranceLevelSubstantial,
@@ -442,7 +448,7 @@ func TestToeHook(t *testing.T) {
 			s := svc
 
 			// Create Audit Scope in DB
-			err := s.storage.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, ""))
+			err := s.storage.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, "", testdata.MockAuditScopeName1))
 			assert.NoError(t, err)
 
 			gotRes, err := s.UpdateAuditScope(tt.args.ctx, tt.args.req)
@@ -732,8 +738,8 @@ func TestService_RemoveAuditScope(t *testing.T) {
 				svc: NewService(
 					WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{}),
 					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID1, "")))
-						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID2, "")))
+						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID1, "", testdata.MockAuditScopeName1)))
+						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID2, "", testdata.MockAuditScopeName2)))
 					})),
 				),
 			},
@@ -759,8 +765,8 @@ func TestService_RemoveAuditScope(t *testing.T) {
 				svc: NewService(
 					WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{}),
 					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID1, "")))
-						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID2, "")))
+						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID1, "", testdata.MockAuditScopeName1)))
+						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID2, "", testdata.MockAuditScopeName2)))
 						assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
 						assert.NoError(t, s.Create(&evaluation.EvaluationResult{
 							Id:                   testdata.MockEvaluationResult10ID,
@@ -810,8 +816,8 @@ func TestService_RemoveAuditScope(t *testing.T) {
 				svc: NewService(
 					WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{}),
 					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID1, "")))
-						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID2, "")))
+						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID1, "", testdata.MockAuditScopeName1)))
+						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID2, "", testdata.MockAuditScopeName2)))
 					})),
 				),
 			},
@@ -841,8 +847,8 @@ func TestService_RemoveAuditScope(t *testing.T) {
 				svc: NewService(
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID2)),
 					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1)))
-						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID2, testdata.MockTargetOfEvaluationID2)))
+						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1, testdata.MockAuditScopeName1)))
+						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID2, testdata.MockTargetOfEvaluationID2, testdata.MockAuditScopeName2)))
 					})),
 				),
 			},

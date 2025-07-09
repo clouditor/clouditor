@@ -719,8 +719,8 @@ func TestStoreAssessmentResult(t *testing.T) {
 						},
 						ComplianceComment: testdata.MockAssessmentResultNonComplianceComment,
 						Compliant:         true,
-						ResourceId:        testdata.MockResourceID1,
-						ResourceTypes:     []string{"ResourceType"},
+						ResourceId:        testdata.MockVirtualMachineID1,
+						ResourceTypes:     testdata.MockVirtualMachineTypes,
 						ToolId:            util.Ref(assessment.AssessmentToolId),
 						HistoryUpdatedAt:  timestamp,
 						History: []*assessment.Record{
@@ -923,8 +923,8 @@ func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAss
 				},
 				ComplianceComment: testdata.MockAssessmentResultNonComplianceComment,
 				Compliant:         true,
-				ResourceId:        testdata.MockResourceID1,
-				ResourceTypes:     []string{"ResourceType"},
+				ResourceId:        testdata.MockVirtualMachineID1,
+				ResourceTypes:     testdata.MockVirtualMachineTypes,
 				ToolId:            util.Ref(assessment.AssessmentToolId),
 				HistoryUpdatedAt:  timestamp,
 				History: []*assessment.Record{
