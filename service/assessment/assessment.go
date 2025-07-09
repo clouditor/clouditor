@@ -437,7 +437,7 @@ func (svc *Service) handleEvidence(
 			ComplianceDetails:    data.ComparisonResult,
 			ToolId:               util.Ref(assessment.AssessmentToolId),
 			HistoryUpdatedAt:     timestamppb.Now(),
-			History: []*assessment.Record{{
+			History: []*assessment.Record{{ // TODO(all): Update history in another PR, see Issue #1724
 				EvidenceId:         ev.GetId(),
 				EvidenceRecordedAt: timestamppb.Now(),
 			}},
