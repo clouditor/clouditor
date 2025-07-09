@@ -272,6 +272,20 @@ func (s *Service) GetTargetOfEvaluationStatistics(ctx context.Context, req *orch
 	return response, nil
 }
 
+// createSystemUser creates a new system user with the ID [config.DefaultSystemUserId].
+func (s *Service) createSystemUser() (system *orchestrator.User, err error) {
+	system = &orchestrator.User{
+		Id: config.DefaultSystemUserId,
+	}
+
+	err = s.storage.Save(system)
+	if err != nil {
+		return nil, fmt.Errorf("error while creating system user: %w", err)
+	}
+
+	return
+}
+
 // CreateDefaultTargetOfEvaluation creates a new "default" target of evaluation,
 // if no target of evaluation exists in the database.
 //
