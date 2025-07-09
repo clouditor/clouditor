@@ -146,26 +146,27 @@ func (p *TrustedProvider) handleFeed(w http.ResponseWriter, r *http.Request) {
 
 	file := filepath.Base(r.URL.Path)
 
-	if file == "index.txt" {
+	switch file {
+	case "index.txt":
 		p.idxw.handleIndexTxt(w, r, advisories, p)
-	} else if file == "changes.csv" {
+	case "changes.csv":
 		p.idxw.handleChangesCsv(w, r, advisories, p)
-	} else {
-		ext := filepath.Ext(file)
+	default:
 		var id string
 		var handler func(http.ResponseWriter, *http.Request, *csaf.Advisory, *TrustedProvider)
 
-		if ext == ".sha256" {
-			id = strings.TrimSuffix(file, ".json"+filepath.Ext(file))
+		switch ext := filepath.Ext(file); ext {
+		case ".sha256":
+			id = strings.TrimSuffix(file, ".json"+ext)
 			handler = p.idxw.handleSHA256
-		} else if ext == ".sha512" {
-			id = strings.TrimSuffix(file, ".json"+filepath.Ext(file))
+		case ".sha512":
+			id = strings.TrimSuffix(file, ".json"+ext)
 			handler = p.idxw.handleSHA512
-		} else if ext == ".asc" {
-			id = strings.TrimSuffix(file, ".json"+filepath.Ext(file))
+		case ".asc":
+			id = strings.TrimSuffix(file, ".json"+ext)
 			handler = p.idxw.handleSignature
-		} else {
-			id = strings.TrimSuffix(file, filepath.Ext(file))
+		default:
+			id = strings.TrimSuffix(file, ext)
 			handler = p.idxw.handleAdvisory
 		}
 
