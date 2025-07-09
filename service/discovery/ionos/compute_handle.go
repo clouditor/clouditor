@@ -72,3 +72,56 @@ func (d *ionosDiscovery) handleServer(server ionoscloud.Server, dc ionoscloud.Da
 
 	return r, nil
 }
+
+// handleBlockStorage creates a block storage resource based on the Clouditor Ontology
+func (d *ionosDiscovery) handleBlockStorage(blockStorage ionoscloud.Volume, dc ionoscloud.Datacenter) (ontology.IsResource, error) {
+	// Getting labels
+	l, _, err := d.clients.computeClient.LabelsApi.
+		DatacentersServersLabelsGet(context.Background(), util.Deref(dc.GetId()), util.Deref(blockStorage.GetId())).
+		Execute()
+	if err != nil {
+		log.Errorf("error getting labels for server %s: %s", util.Deref(blockStorage.Id), err)
+	}
+
+	r := &ontology.BlockStorage{
+		Id:           util.Deref(blockStorage.Id),
+		Name:         util.Deref(blockStorage.Properties.Name),
+		CreationTime: timestamppb.New(*blockStorage.Metadata.GetCreatedDate()),
+		GeoLocation: &ontology.GeoLocation{
+			Region: util.Deref(dc.Properties.Location),
+		},
+		Labels:   labels(l),
+		ParentId: dc.GetId(),
+		Raw:      discovery.Raw(blockStorage, dc),
+		// AtRestEncryption: ,
+		// Backups: ,
+
+	}
+
+	return r, nil
+}
+
+// handleLoadBalancer creates a load balancer resource based on the Clouditor Ontology
+func (d *ionosDiscovery) handleLoadBalancer(loadBalancer ionoscloud.Loadbalancer, dc ionoscloud.Datacenter) (ontology.IsResource, error) {
+	// Getting labels
+	l, _, err := d.clients.computeClient.LabelsApi.
+		DatacentersServersLabelsGet(context.Background(), util.Deref(dc.GetId()), util.Deref(loadBalancer.GetId())).
+		Execute()
+	if err != nil {
+		log.Errorf("error getting labels for load balancer %s: %s", util.Deref(loadBalancer.Id), err)
+	}
+	r := &ontology.LoadBalancer{
+		Id:           util.Deref(loadBalancer.Id),
+		Name:         util.Deref(loadBalancer.Properties.Name),
+		CreationTime: timestamppb.New(*loadBalancer.Metadata.GetCreatedDate()),
+		GeoLocation: &ontology.GeoLocation{
+			Region: util.Deref(dc.Properties.Location),
+		},
+		Labels:   labels(l),
+		ParentId: dc.GetId(),
+		Raw:      discovery.Raw(loadBalancer, dc),
+		// Description: , // Not available
+	}
+
+	return r, nil
+}

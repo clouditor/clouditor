@@ -33,6 +33,7 @@ import (
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/config"
+	"clouditor.io/clouditor/v2/internal/util"
 
 	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 	"github.com/sirupsen/logrus"
@@ -117,42 +118,58 @@ func (d *ionosDiscovery) List() (list []ontology.IsResource, err error) {
 		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
 	}
 
-	// Discover storage resources
-	log.Info("Discover IONOS Cloud storage resources...")
-
-	// Discover storage accounts
-	// storageAccounts, err := d.discoverStorage()
-	// if err != nil {
-	// 	return nil, fmt.Errorf("could not discover storage accounts: %w", err)
-	// }
-	// list = append(list, storageAccounts...)
-
-	// Discover compute resources
-	log.Info("Discover IONOS Cloud compute resources...")
-
-	// Discover block storage
-	// storage, err := d.discoverBlockStorages()
-	// if err != nil {
-	// 	return nil, fmt.Errorf("could not discover block storage: %w", err)
-	// }
-	// list = append(list, storage...)
-
-	// Discover virtual machines
-	virtualMachines, err := d.discoverServer()
+	// For IONOS Cloud, we have to discover the datacenters first and then the resources within those datacenters.
+	// Discover datacenters
+	dc, err := d.discoverDatacenters()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover virtual machines: %w", err)
+		return nil, fmt.Errorf("could not discover datacenters: %w", err)
 	}
-	list = append(list, virtualMachines...)
 
-	// Discover network resources
-	log.Info("Discover IONOS Cloud network resources...")
+	for _, datacenter := range util.Deref(dc.Items) {
+		// Discover storage resources
+		log.Info("Discover IONOS Cloud storage resources...")
 
-	// Discover network interfaces
-	// networkInterfaces, err := d.discoverNetworkInterfaces()
-	// if err != nil {
-	// 	return nil, fmt.Errorf("could not discover network interfaces: %w", err)
-	// }
-	// list = append(list, networkInterfaces...)
+		// Discover storage accounts
+		// storageAccounts, err := d.discoverStorage()
+		// if err != nil {
+		// 	return nil, fmt.Errorf("could not discover storage accounts: %w", err)
+		// }
+		// list = append(list, storageAccounts...)
+
+		// Discover compute resources
+		log.Info("Discover IONOS Cloud compute resources...")
+
+		// Discover block storage
+		storage, err := d.discoverBlockStorages(datacenter)
+		if err != nil {
+			return nil, fmt.Errorf("could not discover block storage: %w", err)
+		}
+		list = append(list, storage...)
+
+		// Discover virtual machines
+		virtualMachines, err := d.discoverServer(datacenter)
+		if err != nil {
+			return nil, fmt.Errorf("could not discover virtual machines: %w", err)
+		}
+		list = append(list, virtualMachines...)
+
+		// Discover load balancers
+		loadBalancer, err := d.discoverLoadBalancers(datacenter)
+		if err != nil {
+			return nil, fmt.Errorf("could not discover load balancers: %w", err)
+		}
+		list = append(list, loadBalancer...)
+
+		// Discover network resources
+		log.Info("Discover IONOS Cloud network resources...")
+
+		// Discover network interfaces
+		// networkInterfaces, err := d.discoverNetworkInterfaces()
+		// if err != nil {
+		// 	return nil, fmt.Errorf("could not discover network interfaces: %w", err)
+		// }
+		// list = append(list, networkInterfaces...)
+	}
 
 	return list, nil
 }
