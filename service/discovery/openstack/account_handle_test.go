@@ -28,6 +28,7 @@ package openstack
 import (
 	"testing"
 
+	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
@@ -162,6 +163,106 @@ func Test_openstackDiscovery_handleDomain(t *testing.T) {
 
 			tt.want(t, got)
 			tt.wantErr(t, err)
+		})
+	}
+}
+
+func Test_openstackDiscovery_checkAndHandleManualCreatedProject(t *testing.T) {
+	type fields struct {
+		ctID     string
+		clients  clients
+		authOpts *gophercloud.AuthOptions
+		region   string
+		domain   *domain
+		project  *project
+		projects map[string]ontology.IsResource
+	}
+	type args struct {
+		id     string
+		name   string
+		domain string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   assert.Want[*openstackDiscovery]
+	}{
+		{
+			name: "error: no new  id, name, or domain is empty",
+			fields: fields{
+				projects: map[string]ontology.IsResource{},
+			},
+			args: args{},
+			want: func(t *testing.T, d *openstackDiscovery) bool {
+				return assert.Empty(t, d.projects)
+			},
+		},
+		{
+			name: "ResourceGroup already exists",
+			fields: fields{
+				projects: map[string]ontology.IsResource{
+					testdata.MockProjectID1: &ontology.ResourceGroup{
+						Id:       testdata.MockProjectID1,
+						Name:     testdata.MockProjectName1,
+						ParentId: util.Ref(testdata.MockDomainID1),
+						Raw:      discovery.Raw("Project/Tenant information manually added."),
+					},
+				},
+			},
+			args: args{
+				id:     testdata.MockProjectID1,
+				name:   testdata.MockProjectName1,
+				domain: testdata.MockDomainID1,
+			},
+			want: func(t *testing.T, d *openstackDiscovery) bool {
+				want := &ontology.ResourceGroup{
+					Id:       testdata.MockProjectID1,
+					Name:     testdata.MockProjectName1,
+					ParentId: util.Ref(testdata.MockDomainID1),
+					Raw:      discovery.Raw("Project/Tenant information manually added."),
+				}
+				got := d.projects[testdata.MockProjectID1].(*ontology.ResourceGroup)
+
+				return assert.Equal(t, want, got)
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				projects: map[string]ontology.IsResource{},
+			},
+			args: args{
+				id:     testdata.MockProjectID1,
+				name:   testdata.MockProjectName1,
+				domain: testdata.MockDomainID1,
+			},
+			want: func(t *testing.T, d *openstackDiscovery) bool {
+				want := &ontology.ResourceGroup{
+					Id:       testdata.MockProjectID1,
+					Name:     testdata.MockProjectName1,
+					ParentId: util.Ref(testdata.MockDomainID1),
+					Raw:      discovery.Raw("Project/Tenant information manually added."),
+				}
+				got := d.projects[testdata.MockProjectID1].(*ontology.ResourceGroup)
+
+				return assert.Equal(t, want, got)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &openstackDiscovery{
+				ctID:     tt.fields.ctID,
+				clients:  tt.fields.clients,
+				authOpts: tt.fields.authOpts,
+				region:   tt.fields.region,
+				domain:   tt.fields.domain,
+				project:  tt.fields.project,
+				projects: tt.fields.projects,
+			}
+			d.checkAndHandleManualCreatedProject(tt.args.id, tt.args.name, tt.args.domain)
+			tt.want(t, d)
 		})
 	}
 }

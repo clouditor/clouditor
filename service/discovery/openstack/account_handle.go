@@ -79,6 +79,11 @@ func (d *openstackDiscovery) checkAndHandleManualCreatedProject(id, name, domain
 		return
 	}
 
+	if _, ok := d.projects[id]; ok {
+		log.Debugf("Project with ID '%s' already exists, skipping creation", id)
+		return
+	}
+
 	r := &ontology.ResourceGroup{
 		Id:       id,
 		Name:     name,

@@ -350,6 +350,13 @@ func Test_openstackDiscovery_List(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
+			name: "error authorization",
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not authorize openstack:")
+			},
+		},
+		{
 			name: "error discover server",
 			fields: fields{
 				testhelper: "server",
@@ -432,6 +439,10 @@ func Test_openstackDiscovery_List(t *testing.T) {
 				return assert.ErrorContains(t, err, "could not discover block storage:")
 			},
 		},
+		// {
+		// name: "error discover projects",
+		// Not possible to test. The method discoverServer() is called before discoverProjects() and adds the project ID which is the only possibility to get an error.
+		// },
 		{
 			name: "error discover projects: but there is no error, as a resource is added based on other information discovered before.",
 			fields: fields{
