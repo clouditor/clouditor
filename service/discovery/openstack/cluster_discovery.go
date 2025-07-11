@@ -27,6 +27,7 @@ package openstack
 
 import (
 	"clouditor.io/clouditor/v2/api/ontology"
+
 	"github.com/gophercloud/gophercloud/v2/openstack/containerinfra/v1/clusters"
 )
 
