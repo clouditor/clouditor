@@ -52,6 +52,7 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 		region   string
 		domain   *domain
 		project  *project
+		projects map[string]ontology.IsResource
 	}
 	tests := []struct {
 		name     string
@@ -77,9 +78,13 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 					},
 					networkClient: client.ServiceClient(),
 				},
-				region:  "test region",
-				domain:  &domain{},
-				project: &project{},
+				region: "test region",
+				domain: &domain{
+					domainID:   testdata.MockOpenStackDomainID,
+					domainName: testdata.MockOpenStackDomainName,
+				},
+				project:  &project{},
+				projects: map[string]ontology.IsResource{},
 			},
 			wantList: func(t *testing.T, got []ontology.IsResource) bool {
 				assert.Equal(t, 2, len(got))
@@ -116,6 +121,7 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 				region:   tt.fields.region,
 				domain:   tt.fields.domain,
 				project:  tt.fields.project,
+				projects: tt.fields.projects,
 			}
 			gotList, err := d.discoverNetworkInterfaces()
 

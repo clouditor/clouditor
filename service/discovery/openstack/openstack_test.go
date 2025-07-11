@@ -339,6 +339,7 @@ func Test_openstackDiscovery_List(t *testing.T) {
 		authOpts *gophercloud.AuthOptions
 		domain   *domain
 		project  *project
+		projects map[string]ontology.IsResource
 
 		testhelper string
 	}
@@ -394,8 +395,9 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					},
 					identityClient: client.ServiceClient(),
 				},
-				project: &project{},
-				domain:  &domain{},
+				project:  &project{},
+				domain:   &domain{},
+				projects: map[string]ontology.IsResource{},
 			},
 			want: assert.Nil[[]ontology.IsResource],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -421,8 +423,9 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					},
 					identityClient: client.ServiceClient(),
 				},
-				project: &project{},
-				domain:  &domain{},
+				project:  &project{},
+				domain:   &domain{},
+				projects: map[string]ontology.IsResource{},
 			},
 			want: assert.Nil[[]ontology.IsResource],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -452,6 +455,7 @@ func Test_openstackDiscovery_List(t *testing.T) {
 				domain: &domain{
 					domainID: "test domain ID",
 				},
+				projects: map[string]ontology.IsResource{},
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {
 				want := &ontology.ResourceGroup{
@@ -461,7 +465,8 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					Raw:      "",
 				}
 
-				got0 := got[7].(*ontology.ResourceGroup)
+				// We only check one resource
+				got0 := got[8].(*ontology.ResourceGroup)
 				assert.NotEmpty(t, got0.GetRaw())
 				got0.Raw = ""
 				return assert.Equal(t, want, got0)
@@ -487,8 +492,9 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					},
 					identityClient: client.ServiceClient(),
 				},
-				project: &project{},
-				domain:  &domain{},
+				project:  &project{},
+				domain:   &domain{},
+				projects: map[string]ontology.IsResource{},
 			},
 			want: assert.Nil[[]ontology.IsResource],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -518,9 +524,10 @@ func Test_openstackDiscovery_List(t *testing.T) {
 				domain: &domain{
 					domainID: "test domain ID",
 				},
+				projects: map[string]ontology.IsResource{},
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {
-				return assert.Equal(t, 9, len(got))
+				return assert.Equal(t, 12, len(got))
 			},
 			wantErr: assert.NoError,
 		},
@@ -535,6 +542,7 @@ func Test_openstackDiscovery_List(t *testing.T) {
 				authOpts: tt.fields.authOpts,
 				domain:   tt.fields.domain,
 				project:  tt.fields.project,
+				projects: tt.fields.projects,
 			}
 
 			switch tt.fields.testhelper {

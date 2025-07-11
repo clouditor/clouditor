@@ -96,8 +96,3 @@ func (d *openstackDiscovery) setProjectInfo(x interface{}) {
 		log.Debugf("no known resource type found")
 	}
 }
-
-// findOrCreateResourceGroupResource This method checks if a resourceGroup resource already is available in the list. Otherwise, it creates a new one.
-func (d *openstackDiscovery) findOrCreateResourceGroupResource() {
-
-}

@@ -48,6 +48,7 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 		region   string
 		domain   *domain
 		project  *project
+		projects map[string]ontology.IsResource
 	}
 	type args struct {
 		volume *volumes.Volume
@@ -63,6 +64,11 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 			name: "Happy path: volume name missing",
 			fields: fields{
 				region: "test region",
+				domain: &domain{
+					domainID:   testdata.MockDomainID1,
+					domainName: testdata.MockDomainName1,
+				},
+				projects: map[string]ontology.IsResource{},
 			},
 			args: args{
 				volume: &volumes.Volume{
@@ -95,6 +101,11 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 			name: "Happy path: volume name available",
 			fields: fields{
 				region: "test region",
+				domain: &domain{
+					domainID:   testdata.MockDomainID1,
+					domainName: testdata.MockDomainName1,
+				},
+				projects: map[string]ontology.IsResource{},
 			},
 			args: args{
 				volume: &volumes.Volume{
@@ -133,6 +144,7 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 				region:   tt.fields.region,
 				domain:   tt.fields.domain,
 				project:  tt.fields.project,
+				projects: tt.fields.projects,
 			}
 			got, err := d.handleBlockStorage(tt.args.volume)
 

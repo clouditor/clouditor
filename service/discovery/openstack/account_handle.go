@@ -74,6 +74,10 @@ func (d *openstackDiscovery) handleProject(project *projects.Project) (ontology.
 }
 
 func (d *openstackDiscovery) checkAndHandleManualCreatedProject(id, name, domain string) {
+	if id == "" || name == "" || domain == "" {
+		log.Warnf("Cannot create project resource: id, name, or domain is empty")
+		return
+	}
 
 	r := &ontology.ResourceGroup{
 		Id:       id,

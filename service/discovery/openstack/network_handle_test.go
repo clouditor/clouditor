@@ -48,6 +48,7 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 		region   string
 		domain   *domain
 		project  *project
+		projects map[string]ontology.IsResource
 	}
 	type args struct {
 		network *networks.Network
@@ -63,6 +64,11 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				region: "test region",
+				domain: &domain{
+					domainID:   testdata.MockOpenStackDomainID,
+					domainName: testdata.MockOpenStackDomainName,
+				},
+				projects: map[string]ontology.IsResource{},
 			},
 			args: args{
 				network: &networks.Network{
@@ -101,6 +107,7 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 				region:   tt.fields.region,
 				domain:   tt.fields.domain,
 				project:  tt.fields.project,
+				projects: tt.fields.projects,
 			}
 			got, err := d.handleNetworkInterfaces(tt.args.network)
 

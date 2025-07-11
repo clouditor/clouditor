@@ -61,6 +61,8 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 		clients  clients
 		authOpts *gophercloud.AuthOptions
 		region   string
+		projects map[string]ontology.IsResource
+		domain   *domain
 	}
 	type args struct {
 		server *servers.Server
@@ -127,7 +129,12 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 					},
 					computeClient: client.ServiceClient(),
 				},
-				region: "test region",
+				region:   "test region",
+				projects: map[string]ontology.IsResource{},
+				domain: &domain{
+					domainID:   "test-domain-id",
+					domainName: "test-domain-name",
+				},
 			},
 			args: args{
 				server: &servers.Server{
@@ -177,6 +184,8 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 				clients:  tt.fields.clients,
 				authOpts: tt.fields.authOpts,
 				region:   tt.fields.region,
+				projects: tt.fields.projects,
+				domain:   tt.fields.domain,
 			}
 
 			got, err := d.handleServer(tt.args.server)
