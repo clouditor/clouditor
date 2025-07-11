@@ -74,14 +74,8 @@ func (d *openstackDiscovery) discoverProjects() (list []ontology.IsResource, err
 			return nil, err
 		}
 
-		r := &ontology.ResourceGroup{
-			Id:       d.project.projectID,
-			Name:     d.project.projectName,
-			ParentId: &d.domain.domainID,
-			Raw:      discovery.Raw("Project/Tenant information manually added."),
-		}
-
-		list = append(list, r)
+		// Create and add manual created project resource to the list of projects
+		d.checkAndHandleManualCreatedProject(d.project.projectID, d.project.projectName, d.domain.domainID)
 	}
 
 	return list, nil

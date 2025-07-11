@@ -72,3 +72,16 @@ func (d *openstackDiscovery) handleProject(project *projects.Project) (ontology.
 
 	return r, nil
 }
+
+func (d *openstackDiscovery) checkAndHandleManualCreatedProject(id, name, domain string) {
+
+	r := &ontology.ResourceGroup{
+		Id:       id,
+		Name:     name,
+		ParentId: util.Ref(domain),
+		Raw:      discovery.Raw("Project/Tenant information manually added."),
+	}
+
+	// Add project to the list of projects
+	d.projects[r.GetId()] = r
+}

@@ -55,6 +55,9 @@ func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontolog
 		Raw:      discovery.Raw(volume),
 	}
 
+	// Create project resource for the parentId if not available
+	d.checkAndHandleManualCreatedProject(volume.TenantID, volume.TenantID, d.domain.domainID)
+
 	log.Infof("Adding block storage '%s", volume.Name)
 
 	return r, nil
