@@ -15,6 +15,10 @@ const (
 	MockResourceGroupID        = "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"
 	MockResourceGroup          = "TestResourceGroup"
 
+	// OpenStack
+	MockOpenStackDomainID   = "00000000-0000-0000-0000-000000000001"
+	MockOpenStackDomainName = "TestOpenStackDomain"
+
 	// Audit Scope
 	MockAuditScopeID1   = "11111111-1111-1111-1111-111111111123"
 	MockAuditScopeName1 = "Mock Audit Scope 1"

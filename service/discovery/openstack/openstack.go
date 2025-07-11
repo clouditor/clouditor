@@ -60,8 +60,12 @@ type openstackDiscovery struct {
 	clients  clients
 	authOpts *gophercloud.AuthOptions
 	region   string
-	domain   *domain
-	project  *project
+	// domain is used to store the domain ID and name from the environment variables
+	domain *domain
+	// project is used to store the project ID and name from the environment variables
+	project *project
+	// projects is used to store the discovered projects/tenants. If it is not possible to get the projects from the OpenStack API, the project resources are created while discovering the other resources (e.g., servers, networks, etc.) and added to this map.
+	projects map[string]ontology.IsResource
 }
 
 type domain struct {
@@ -128,7 +132,8 @@ func NewOpenstackDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 			domainName: os.Getenv(DomainName),
 		},
 		// Currently, the project ID cannot be specified as an environment variable in conjunction with application credentials.
-		project: &project{},
+		project:  &project{},
+		projects: make(map[string]ontology.IsResource),
 	}
 
 	// Apply options
@@ -264,6 +269,15 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 		return nil, fmt.Errorf("could not discover domains: %v", err)
 	}
 	list = append(list, domains...)
+
+	// Add all discovered projects/tenants while discovering the other resources and add them to the list
+	for _, p := range d.projects {
+		if p == nil {
+			log.Warnf("Project resource is nil, skipping")
+			continue
+		}
+		list = append(list, p)
+	}
 
 	return
 }

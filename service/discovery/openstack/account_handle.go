@@ -72,3 +72,25 @@ func (d *openstackDiscovery) handleProject(project *projects.Project) (ontology.
 
 	return r, nil
 }
+
+func (d *openstackDiscovery) checkAndHandleManualCreatedProject(id, name, domain string) {
+	if id == "" || name == "" || domain == "" {
+		log.Warnf("Cannot create project resource: id, name, or domain is empty")
+		return
+	}
+
+	if _, ok := d.projects[id]; ok {
+		log.Debugf("Project with ID '%s' already exists, skipping creation", id)
+		return
+	}
+
+	r := &ontology.ResourceGroup{
+		Id:       id,
+		Name:     name,
+		ParentId: util.Ref(domain),
+		Raw:      discovery.Raw("Project/Tenant information manually added."),
+	}
+
+	// Add project to the list of projects
+	d.projects[r.GetId()] = r
+}

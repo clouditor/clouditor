@@ -59,6 +59,18 @@ func Test_openstackDiscovery_discoverProjects(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
+			name: "Project ID not available",
+			fields: fields{
+				project: &project{
+					projectID: "",
+				},
+			},
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "project ID is not available:")
+			},
+		},
+		{
 			name: "Happy path",
 			fields: fields{
 				authOpts: &gophercloud.AuthOptions{
