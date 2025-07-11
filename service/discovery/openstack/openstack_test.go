@@ -513,6 +513,38 @@ func Test_openstackDiscovery_List(t *testing.T) {
 			},
 		},
 		{
+			name: "Happy path: with one project in map that is nil",
+			fields: fields{
+				testhelper: "all",
+				authOpts: &gophercloud.AuthOptions{
+					IdentityEndpoint: testdata.MockOpenstackIdentityEndpoint,
+					Username:         testdata.MockOpenstackUsername,
+					Password:         testdata.MockOpenstackPassword,
+					TenantName:       testdata.MockOpenstackTenantName,
+				},
+				clients: clients{
+					provider: &gophercloud.ProviderClient{
+						TokenID: client.TokenID,
+						EndpointLocator: func(eo gophercloud.EndpointOpts) (string, error) {
+							return testhelper.Endpoint(), nil
+						},
+					},
+					identityClient: client.ServiceClient(),
+				},
+				project: &project{},
+				domain: &domain{
+					domainID: "test domain ID",
+				},
+				projects: map[string]ontology.IsResource{
+					testdata.MockProjectID1: nil,
+				},
+			},
+			want: func(t *testing.T, got []ontology.IsResource) bool {
+				return assert.Equal(t, 12, len(got))
+			},
+			wantErr: assert.NoError,
+		},
+		{
 			name: "Happy path",
 			fields: fields{
 				testhelper: "all",
