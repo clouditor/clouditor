@@ -27,6 +27,7 @@ package ionos
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -36,6 +37,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
+
 	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 )
 
@@ -82,6 +84,12 @@ func createResponse(req *http.Request, body any, status int) (*http.Response, er
 
 type mockAuthorizer struct{}
 
+func (*mockAuthorizer) GetConfiguration(_ context.Context) (ionoscloud.Configuration, error) {
+	var config ionoscloud.Configuration
+
+	return config, nil
+}
+
 func Test_ionosDiscovery_Name(t *testing.T) {
 	d := NewIonosDiscovery()
 
@@ -113,6 +121,22 @@ func TestNewIonosDiscovery(t *testing.T) {
 			},
 			want: &ionosDiscovery{
 				ctID: testdata.MockTargetOfEvaluationID1,
+			},
+		},
+		{
+			name: "Happy path: with authorizer",
+			args: args{
+				opts: []DiscoveryOption{
+					WithAuthorizer(&ionoscloud.Configuration{
+						HTTPClient: http.DefaultClient,
+					}),
+				},
+			},
+			want: &ionosDiscovery{
+				ctID: config.DefaultTargetOfEvaluationID,
+				authConfig: &ionoscloud.Configuration{
+					HTTPClient: http.DefaultClient,
+				},
 			},
 		},
 	}
