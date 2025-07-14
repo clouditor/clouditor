@@ -30,6 +30,12 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"testing"
+
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/internal/config"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 )
 
 type mockSender struct {
@@ -74,3 +80,9 @@ func createResponse(req *http.Request, body any, status int) (*http.Response, er
 }
 
 type mockAuthorizer struct{}
+
+func Test_ionosDiscovery_Name(t *testing.T) {
+	d := NewIonosDiscovery()
+
+	assert.Equal(t, "IONOS Cloud", d.Name())
+}
