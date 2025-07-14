@@ -86,3 +86,39 @@ func Test_ionosDiscovery_Name(t *testing.T) {
 
 	assert.Equal(t, "IONOS Cloud", d.Name())
 }
+
+func TestNewIonosDiscovery(t *testing.T) {
+	type args struct {
+		opts []DiscoveryOption
+	}
+	tests := []struct {
+		name string
+		args args
+		want discovery.Discoverer
+	}{
+		{
+			name: "Happy path",
+			args: args{},
+			want: &ionosDiscovery{
+				ctID: config.DefaultTargetOfEvaluationID,
+			},
+		},
+		{
+			name: "Happy path: with target of evaluation id",
+			args: args{
+				opts: []DiscoveryOption{
+					WithTargetOfEvaluationID(testdata.MockTargetOfEvaluationID1),
+				},
+			},
+			want: &ionosDiscovery{
+				ctID: testdata.MockTargetOfEvaluationID1,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewIonosDiscovery(tt.args.opts...)
+			assert.Equal(t, tt.want, got, assert.CompareAllUnexported())
+		})
+	}
+}
