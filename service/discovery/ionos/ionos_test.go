@@ -36,6 +36,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 )
 
 type mockSender struct {
@@ -119,6 +120,39 @@ func TestNewIonosDiscovery(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewIonosDiscovery(tt.args.opts...)
 			assert.Equal(t, tt.want, got, assert.CompareAllUnexported())
+		})
+	}
+}
+
+func Test_ionosDiscovery_TargetOfEvaluationID(t *testing.T) {
+	type fields struct {
+		authConfig *ionoscloud.Configuration
+		clients    clients
+		ctID       string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				ctID: config.DefaultTargetOfEvaluationID,
+			},
+			want: config.DefaultTargetOfEvaluationID,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &ionosDiscovery{
+				authConfig: tt.fields.authConfig,
+				clients:    tt.fields.clients,
+				ctID:       tt.fields.ctID,
+			}
+			if got := d.TargetOfEvaluationID(); got != tt.want {
+				t.Errorf("ionosDiscovery.TargetOfEvaluationID() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
