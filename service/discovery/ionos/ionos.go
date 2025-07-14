@@ -72,24 +72,14 @@ func WithTargetOfEvaluationID(ctID string) DiscoveryOption {
 	}
 }
 
-// WithResourceGroup is a [DiscoveryOption] that scopes the discovery to a specific resource group.
-func WithResourceGroup(rg string) DiscoveryOption {
-	return func(d *ionosDiscovery) {
-		d.rg = &rg
-	}
-}
-
 func init() {
 	log = logrus.WithField("component", "azure-discovery")
 }
 
 type ionosDiscovery struct {
 	authConfig *ionoscloud.Configuration // authConfig contains the IONOS Cloud configuration, which is used to authenticate against the IONOS Cloud API
-	// rg optionally contains the name of a resource group. If this is not nil, all discovery calls will be scoped to the particular resource group.
-	rg *string
-	// discovererComponent string
-	clients clients
-	ctID    string
+	clients    clients
+	ctID       string
 }
 
 type clients struct {
