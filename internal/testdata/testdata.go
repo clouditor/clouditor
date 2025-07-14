@@ -15,6 +15,12 @@ const (
 	MockResourceGroupID        = "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"
 	MockResourceGroup          = "TestResourceGroup"
 
+	// IONOS Cloud
+	MockIonosVolumeID1 = "39d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosVolumeID2 = "49d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosNicID1    = "59d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosNicID2    = "69d85e98-c3da-11ed-afa1-0242ac120002"
+
 	// Audit Scope
 	MockAuditScopeID1   = "11111111-1111-1111-1111-111111111123"
 	MockAuditScopeName1 = "Mock Audit Scope 1"
