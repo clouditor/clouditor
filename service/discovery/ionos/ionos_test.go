@@ -34,6 +34,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
@@ -279,6 +280,36 @@ func Test_ionosDiscovery_authorize(t *testing.T) {
 			}
 			err := d.authorize()
 
+			tt.wantErr(t, err)
+		})
+	}
+}
+
+// TODO(anatheka): Add test
+func Test_ionosDiscovery_List(t *testing.T) {
+	type fields struct {
+		authConfig *ionoscloud.Configuration
+		clients    clients
+		ctID       string
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		wantList assert.Want[[]ontology.IsResource]
+		wantErr  assert.ErrorAssertionFunc
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &ionosDiscovery{
+				authConfig: tt.fields.authConfig,
+				clients:    tt.fields.clients,
+				ctID:       tt.fields.ctID,
+			}
+			gotList, err := d.List()
+
+			tt.wantList(t, gotList)
 			tt.wantErr(t, err)
 		})
 	}
