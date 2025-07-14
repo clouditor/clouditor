@@ -37,7 +37,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-
 	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 )
 
@@ -177,6 +176,110 @@ func Test_ionosDiscovery_TargetOfEvaluationID(t *testing.T) {
 			if got := d.TargetOfEvaluationID(); got != tt.want {
 				t.Errorf("ionosDiscovery.TargetOfEvaluationID() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestNewAuthorizer(t *testing.T) {
+	type envVariable struct {
+		hasEnvVariable   bool
+		envVariableKey   string
+		envVariableValue string
+	}
+	type fields struct {
+		envVariables []envVariable
+	}
+
+	tests := []struct {
+		name    string
+		fields  fields
+		want    assert.Want[*ionoscloud.Configuration]
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				envVariables: []envVariable{
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "IONOS_USERNAME",
+						envVariableValue: "test_username",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "IONOS_PASSWORD",
+						envVariableValue: "test_password",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "IONOS_TOKEN",
+						envVariableValue: "test_token",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "IONOS_API_URL",
+						envVariableValue: "test_api_url",
+					},
+				},
+			},
+			want: func(t *testing.T, got *ionoscloud.Configuration) bool {
+				assert.Equal(t, "test_username", got.Username)
+				assert.Equal(t, "test_password", got.Password)
+				assert.Equal(t, "test_token", got.Token)
+				return assert.Equal(t, "test_api_url", got.Host)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set env variables
+			for _, env := range tt.fields.envVariables {
+				if env.hasEnvVariable {
+					t.Setenv(env.envVariableKey, env.envVariableValue)
+				}
+			}
+
+			got, err := NewAuthorizer()
+
+			tt.want(t, got)
+			tt.wantErr(t, err)
+		})
+	}
+}
+
+func Test_ionosDiscovery_authorize(t *testing.T) {
+	type fields struct {
+		authConfig *ionoscloud.Configuration
+		clients    clients
+		ctID       string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				authConfig: &ionoscloud.Configuration{
+					HTTPClient: http.DefaultClient,
+				},
+				clients: clients{},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &ionosDiscovery{
+				authConfig: tt.fields.authConfig,
+				clients:    tt.fields.clients,
+				ctID:       tt.fields.ctID,
+			}
+			err := d.authorize()
+
+			tt.wantErr(t, err)
 		})
 	}
 }
