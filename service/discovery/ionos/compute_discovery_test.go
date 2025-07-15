@@ -41,7 +41,7 @@ func Test_ionosDiscovery_discoverDatacenters(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    assert.Want[ionoscloud.Datacenters]
+		want    assert.Want[*ionoscloud.Datacenters]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -49,7 +49,7 @@ func Test_ionosDiscovery_discoverDatacenters(t *testing.T) {
 			fields: fields{
 				ionosDiscovery: NewMockIonosDiscovery(newMockErrorSender()),
 			},
-			want: assert.Empty[ionoscloud.Datacenters],
+			want: assert.Empty[*ionoscloud.Datacenters],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "could not list datacenters:")
 			},
@@ -59,7 +59,7 @@ func Test_ionosDiscovery_discoverDatacenters(t *testing.T) {
 			fields: fields{
 				ionosDiscovery: NewMockIonosDiscovery(newMockSender()),
 			},
-			want: func(t *testing.T, got ionoscloud.Datacenters) bool {
+			want: func(t *testing.T, got *ionoscloud.Datacenters) bool {
 				return assert.Equal(t, 2, len(util.Deref(got.Items)))
 			},
 			wantErr: assert.NoError,

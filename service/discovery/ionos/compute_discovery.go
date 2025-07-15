@@ -35,14 +35,14 @@ import (
 	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 )
 
-func (d *ionosDiscovery) discoverDatacenters() (dc ionoscloud.Datacenters, err error) {
+func (d *ionosDiscovery) discoverDatacenters() (*ionoscloud.Datacenters, error) {
 	// List all datacenters
-	dc, _, err = d.clients.computeClient.DataCentersApi.DatacentersGet(context.Background()).Execute()
+	dc, _, err := d.clients.computeClient.DataCentersApi.DatacentersGet(context.Background()).Execute()
 	if err != nil {
-		return ionoscloud.Datacenters{}, fmt.Errorf("could not list datacenters: %w", err)
+		return util.Ref(dc), fmt.Errorf("could not list datacenters: %w", err)
 	}
 
-	return
+	return util.Ref(dc), err
 }
 
 func (d *ionosDiscovery) discoverServer(dc ionoscloud.Datacenter) (list []ontology.IsResource, err error) {
