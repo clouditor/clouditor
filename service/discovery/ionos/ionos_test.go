@@ -110,6 +110,73 @@ func (mockSender) RoundTrip(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
+	case "/datacenters/99d85e98-c3da-11ed-afa1-0242ac120002/servers":
+		return createResponse(req, map[string]interface{}{
+			"items": []map[string]interface{}{
+				{
+					"id": testdata.MockIonosVMID1,
+					"properties": map[string]interface{}{
+						"name": testdata.MockIonosVMName1,
+					},
+					"metadata": map[string]interface{}{
+						"createdDate": testdata.CreationTime,
+					},
+					"entities": map[string]interface{}{
+						"volumes": map[string]interface{}{
+							"items": []map[string]interface{}{
+								{
+									"id": testdata.MockIonosVolumeID1,
+									"properties": map[string]interface{}{
+										"name": testdata.MockIonosVolumeName1,
+									},
+								},
+							},
+						},
+						"nics": map[string]interface{}{
+							"items": []map[string]interface{}{
+								{
+									"id": testdata.MockIonosNicID1,
+									"properties": map[string]interface{}{
+										"name": testdata.MockIonosNicName1,
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					"id": testdata.MockIonosVMID2,
+					"properties": map[string]interface{}{
+						"name": testdata.MockIonosVMName2,
+					},
+					"metadata": map[string]interface{}{
+						"createdDate": testdata.CreationTime,
+					},
+					"entities": map[string]interface{}{
+						"volumes": map[string]interface{}{
+							"items": []map[string]interface{}{
+								{
+									"id": testdata.MockIonosVolumeID2,
+									"properties": map[string]interface{}{
+										"name": testdata.MockIonosVolumeName2,
+									},
+								},
+							},
+						},
+						"nics": map[string]interface{}{
+							"items": []map[string]interface{}{
+								{
+									"id": testdata.MockIonosNicID2,
+									"properties": map[string]interface{}{
+										"name": testdata.MockIonosNicName2,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}, 200)
 	default:
 		res, err = createResponse(req, map[string]interface{}{}, 404)
 		log.Errorf("Not handling mock for %s yet", req.URL.Path)

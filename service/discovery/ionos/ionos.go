@@ -137,7 +137,7 @@ func (d *ionosDiscovery) List() (list []ontology.IsResource, err error) {
 		list = append(list, storage...)
 
 		// Discover virtual machines
-		virtualMachines, err := d.discoverServer(datacenter)
+		virtualMachines, err := d.discoverServers(datacenter)
 		if err != nil {
 			return nil, fmt.Errorf("could not discover virtual machines: %w", err)
 		}

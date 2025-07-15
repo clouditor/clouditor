@@ -45,7 +45,7 @@ func (d *ionosDiscovery) discoverDatacenters() (*ionoscloud.Datacenters, error) 
 	return util.Ref(dc), err
 }
 
-func (d *ionosDiscovery) discoverServer(dc ionoscloud.Datacenter) (list []ontology.IsResource, err error) {
+func (d *ionosDiscovery) discoverServers(dc ionoscloud.Datacenter) (list []ontology.IsResource, err error) {
 	// List all servers in the datacenter
 	servers, _, err := d.clients.computeClient.ServersApi.DatacentersServersGet(context.Background(), util.Deref(dc.Id)).Depth(3).Execute() // Depth(3) to include the volumes and NICs
 	if err != nil {

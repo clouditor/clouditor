@@ -28,9 +28,10 @@ package ionos
 import (
 	"testing"
 
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
-
 	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 )
 
@@ -69,6 +70,69 @@ func Test_ionosDiscovery_discoverDatacenters(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d := tt.fields.ionosDiscovery
 			got, err := d.discoverDatacenters()
+
+			tt.want(t, got)
+			tt.wantErr(t, err)
+		})
+	}
+}
+
+func Test_ionosDiscovery_discoverServer(t *testing.T) {
+	type fields struct {
+		ionosDiscovery *ionosDiscovery
+	}
+	type args struct {
+		dc ionoscloud.Datacenter
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    assert.Want[[]ontology.IsResource]
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "error: listing servers",
+			fields: fields{
+				ionosDiscovery: NewMockIonosDiscovery(newMockErrorSender()),
+			},
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not list servers for datacenter")
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				ionosDiscovery: NewMockIonosDiscovery(newMockSender()),
+			},
+			args: args{
+				dc: ionoscloud.Datacenter{
+					Id: util.Ref(testdata.MockIonosDatacenterID1),
+					Properties: &ionoscloud.DatacenterProperties{
+						Name: util.Ref(testdata.MockIonosDatacenterName1),
+					},
+					Metadata: &ionoscloud.DatacenterElementMetadata{
+						CreatedDate: &ionoscloud.IonosTime{testdata.CreationTime},
+					},
+				},
+			},
+			want: func(t *testing.T, got []ontology.IsResource) bool {
+				assert.Equal(t, 2, len(got))
+				_, ok := got[0].(*ontology.VirtualMachine)
+				_, ok1 := got[1].(*ontology.VirtualMachine)
+				if !ok || !ok1 {
+					return assert.Fail(t, "expected both resources to be VirtualMachine")
+				}
+				return true
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := tt.fields.ionosDiscovery
+			got, err := d.discoverServers(tt.args.dc)
 
 			tt.want(t, got)
 			tt.wantErr(t, err)
