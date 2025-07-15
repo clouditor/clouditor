@@ -30,7 +30,6 @@ import (
 
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
-
 	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 )
 
@@ -77,6 +76,40 @@ func Test_labels(t *testing.T) {
 			got := labels(tt.args.labels)
 
 			tt.want(t, got)
+		})
+	}
+}
+
+func Test_hasEmptySegment(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Empty segment at the end",
+			args: args{s: "us/ionos//datacenter1"},
+			want: true,
+		},
+		{
+			name: "Empty segment at the beginnning",
+			args: args{s: "us//ionos/datacenter1"},
+			want: true,
+		},
+		{
+			name: "No empty segment",
+			args: args{s: "us/ionos/datacenter1"},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := hasEmptySegment(tt.args.s); got != tt.want {
+				t.Errorf("hasEmptySegment() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
