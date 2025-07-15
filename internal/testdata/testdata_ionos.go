@@ -26,6 +26,10 @@
 package testdata
 
 const (
+	// location
+	MockIonosDatacenterLocation1 = "us/las"
+	MockIonosDatacenterLocation2 = "us/dfw"
+
 	// volume
 	MockIonosVolumeID1   = "39d85e98-c3da-11ed-afa1-0242ac120002"
 	MockIonosVolumeID2   = "49d85e98-c3da-11ed-afa1-0242ac120002"
@@ -33,8 +37,12 @@ const (
 	MockIonosVolumeName2 = "Mock IONOS Block Storage 2"
 
 	// datacenter
-	MockIonosDatacenterID1 = "99d85e98-c3da-11ed-afa1-0242ac120002"
-	MockIonosDatacenterID2 = "a9d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosDatacenterID1          = "99d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosDatacenterID2          = "a9d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosDatacenterName1        = "Mock IONOS Datacenter 1"
+	MockIonosDatacenterName2        = "Mock IONOS Datacenter 2"
+	MockIonosDatacenterDescription1 = "Mock IONOS Datacenter 1 Description"
+	MockIonosDatacenterDescription2 = "Mock IONOS Datacenter 2 Description"
 
 	// server
 	MockIonosVMID1   = "79d85e98-c3da-11ed-afa1-0242ac120002"

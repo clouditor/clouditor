@@ -27,19 +27,17 @@ package ionos
 
 import (
 	"testing"
-	"time"
 
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
+
 	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func Test_ionosDiscovery_handleServer(t *testing.T) {
-	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
-
 	type fields struct {
 		ionosDiscovery *ionosDiscovery
 	}
@@ -80,7 +78,7 @@ func Test_ionosDiscovery_handleServer(t *testing.T) {
 						Name: util.Ref(testdata.MockIonosVMName1),
 					},
 					Metadata: &ionoscloud.DatacenterElementMetadata{
-						CreatedDate: &ionoscloud.IonosTime{creationTime},
+						CreatedDate: &ionoscloud.IonosTime{testdata.CreationTime},
 					},
 					Entities: &ionoscloud.ServerEntities{
 						Volumes: &ionoscloud.AttachedVolumes{
@@ -108,7 +106,7 @@ func Test_ionosDiscovery_handleServer(t *testing.T) {
 				dc: ionoscloud.Datacenter{
 					Id: util.Ref(testdata.MockIonosDatacenterID1),
 					Properties: &ionoscloud.DatacenterProperties{
-						Location: util.Ref("us/ionos"),
+						Location: util.Ref(testdata.MockIonosDatacenterLocation1),
 					},
 				},
 			},
@@ -120,9 +118,9 @@ func Test_ionosDiscovery_handleServer(t *testing.T) {
 						"label1": "value1",
 						"label2": "value2",
 					},
-					CreationTime: timestamppb.New(creationTime),
+					CreationTime: timestamppb.New(testdata.CreationTime),
 					GeoLocation: &ontology.GeoLocation{
-						Region: "us/ionos",
+						Region: testdata.MockIonosDatacenterLocation1,
 					},
 					ParentId:        util.Ref(testdata.MockIonosDatacenterID1),
 					BlockStorageIds: []string{testdata.MockIonosVolumeID1},
@@ -155,8 +153,6 @@ func Test_ionosDiscovery_handleServer(t *testing.T) {
 }
 
 func Test_ionosDiscovery_handleBlockStorage(t *testing.T) {
-	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
-
 	type fields struct {
 		ionosDiscovery *ionosDiscovery
 	}
@@ -197,13 +193,13 @@ func Test_ionosDiscovery_handleBlockStorage(t *testing.T) {
 						Name: util.Ref(testdata.MockIonosVolumeName1),
 					},
 					Metadata: &ionoscloud.DatacenterElementMetadata{
-						CreatedDate: &ionoscloud.IonosTime{creationTime},
+						CreatedDate: &ionoscloud.IonosTime{testdata.CreationTime},
 					},
 				},
 				dc: ionoscloud.Datacenter{
 					Id: util.Ref(testdata.MockIonosDatacenterID1),
 					Properties: &ionoscloud.DatacenterProperties{
-						Location: util.Ref("us/ionos"),
+						Location: util.Ref(testdata.MockIonosDatacenterLocation2),
 					},
 				},
 			},
@@ -215,9 +211,9 @@ func Test_ionosDiscovery_handleBlockStorage(t *testing.T) {
 						"label1": "value1",
 						"label2": "value2",
 					},
-					CreationTime: timestamppb.New(creationTime),
+					CreationTime: timestamppb.New(testdata.CreationTime),
 					GeoLocation: &ontology.GeoLocation{
-						Region: "us/ionos",
+						Region: testdata.MockIonosDatacenterLocation2,
 					},
 					ParentId: util.Ref(testdata.MockIonosDatacenterID1),
 				}
@@ -244,8 +240,6 @@ func Test_ionosDiscovery_handleBlockStorage(t *testing.T) {
 }
 
 func Test_ionosDiscovery_handleLoadBalancer(t *testing.T) {
-	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
-
 	type fields struct {
 		ionosDiscovery *ionosDiscovery
 	}
@@ -286,13 +280,13 @@ func Test_ionosDiscovery_handleLoadBalancer(t *testing.T) {
 						Name: util.Ref(string(testdata.MockIonosLoadBalancerName1)),
 					},
 					Metadata: &ionoscloud.DatacenterElementMetadata{
-						CreatedDate: &ionoscloud.IonosTime{creationTime},
+						CreatedDate: &ionoscloud.IonosTime{testdata.CreationTime},
 					},
 				},
 				dc: ionoscloud.Datacenter{
 					Id: util.Ref(testdata.MockIonosDatacenterID1),
 					Properties: &ionoscloud.DatacenterProperties{
-						Location: util.Ref("us/ionos"),
+						Location: util.Ref(testdata.MockIonosDatacenterLocation1),
 					},
 				},
 			},
@@ -304,9 +298,9 @@ func Test_ionosDiscovery_handleLoadBalancer(t *testing.T) {
 						"label1": "value1",
 						"label2": "value2",
 					},
-					CreationTime: timestamppb.New(creationTime),
+					CreationTime: timestamppb.New(testdata.CreationTime),
 					GeoLocation: &ontology.GeoLocation{
-						Region: "us/ionos",
+						Region: testdata.MockIonosDatacenterLocation1,
 					},
 					ParentId: util.Ref(testdata.MockIonosDatacenterID1),
 				}
