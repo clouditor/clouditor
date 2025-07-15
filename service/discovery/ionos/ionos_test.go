@@ -39,14 +39,24 @@ import (
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
+
 	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 )
 
 type mockSender struct {
 }
 
+// mockErrorSender is used to simulate errors in the RoundTrip method.
+type mockErrorSender struct {
+}
+
 func newMockSender() *mockSender {
 	m := &mockSender{}
+	return m
+}
+
+func newMockErrorSender() *mockErrorSender {
+	m := &mockErrorSender{}
 	return m
 }
 
@@ -77,14 +87,26 @@ func (mockSender) RoundTrip(req *http.Request) (res *http.Response, err error) {
 	}
 
 	switch req.URL.Path {
-	case "/cloudapi/v6/datacenters":
+	case "/datacenters":
 		return createResponse(req, map[string]interface{}{
 			"items": []map[string]interface{}{
 				{
-					"id":          "dc-1",
-					"name":        "Datacenter 1",
-					"displayName": "DC 1",
-					"properties":  map[string]interface{}{},
+					"id": testdata.MockIonosDatacenterID1,
+					"properties": map[string]interface{}{
+						"name":        testdata.MockIonosDatacenterName1,
+						"desctiption": testdata.MockIonosDatacenterDescription1,
+						"location":    testdata.MockIonosDatacenterLocation1,
+					},
+					"metadata": map[string]interface{}{},
+				},
+				{
+					"id": testdata.MockIonosDatacenterID2,
+					"properties": map[string]interface{}{
+						"name":        testdata.MockIonosDatacenterName2,
+						"desctiption": testdata.MockIonosDatacenterDescription2,
+						"location":    testdata.MockIonosDatacenterLocation2,
+					},
+					"metadata": map[string]interface{}{},
 				},
 			},
 		}, 200)
@@ -94,6 +116,10 @@ func (mockSender) RoundTrip(req *http.Request) (res *http.Response, err error) {
 
 	}
 	return
+}
+
+func (mockErrorSender) RoundTrip(req *http.Request) (res *http.Response, err error) {
+	return createResponse(req, map[string]interface{}{}, 404)
 }
 
 func createResponse(req *http.Request, body any, status int) (*http.Response, error) {
@@ -117,25 +143,27 @@ func (*mockAuthorizer) GetConfiguration(_ context.Context) (ionoscloud.Configura
 	return config, nil
 }
 
-func NewMockIonosDiscovery(rountTrip http.RoundTripper) *ionosDiscovery {
+func NewMockIonosDiscovery(roundTrip http.RoundTripper) *ionosDiscovery {
 	d := &ionosDiscovery{
 		authConfig: &ionoscloud.Configuration{
 			HTTPClient: &http.Client{
-				Transport: rountTrip,
+				Transport: roundTrip,
 			},
 		},
-		clients: clients{
-			computeClient: computeClient(),
-		},
-
 		ctID: config.DefaultTargetOfEvaluationID,
+	}
+
+	if _, ok := d.authConfig.HTTPClient.Transport.(*mockErrorSender); ok {
+		d.clients.computeClient = computeClient(true)
+	} else {
+		d.clients.computeClient = computeClient(false)
 	}
 
 	return d
 }
 
-func computeClient() *ionoscloud.APIClient {
-	return ionoscloud.NewAPIClient(&ionoscloud.Configuration{
+func computeClient(errClient bool) *ionoscloud.APIClient {
+	client := ionoscloud.NewAPIClient(&ionoscloud.Configuration{
 		HTTPClient: &http.Client{
 			Transport: newMockSender(),
 		},
@@ -144,6 +172,12 @@ func computeClient() *ionoscloud.APIClient {
 				URL: "https://mock"},
 		},
 	})
+
+	if errClient {
+		client.GetConfig().HTTPClient.Transport = &mockErrorSender{}
+	}
+
+	return client
 }
 
 func Test_ionosDiscovery_Name(t *testing.T) {

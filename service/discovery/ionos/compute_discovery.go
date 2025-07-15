@@ -31,6 +31,7 @@ import (
 
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
+
 	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 )
 

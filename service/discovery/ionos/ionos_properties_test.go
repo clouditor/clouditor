@@ -30,6 +30,7 @@ import (
 
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
+
 	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 )
 

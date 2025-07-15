@@ -55,11 +55,7 @@ func Test_ionosDiscovery_handleServer(t *testing.T) {
 		{
 			name: "error: getting labels",
 			fields: fields{
-				ionosDiscovery: &ionosDiscovery{
-					clients: clients{
-						computeClient: computeClient(),
-					},
-				},
+				ionosDiscovery: NewMockIonosDiscovery(newMockErrorSender()),
 			},
 			want: assert.Nil[ontology.IsResource],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -170,11 +166,7 @@ func Test_ionosDiscovery_handleBlockStorage(t *testing.T) {
 		{
 			name: "error: getting labels",
 			fields: fields{
-				ionosDiscovery: &ionosDiscovery{
-					clients: clients{
-						computeClient: computeClient(),
-					},
-				},
+				ionosDiscovery: NewMockIonosDiscovery(newMockErrorSender()),
 			},
 			want: assert.Nil[ontology.IsResource],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -257,11 +249,7 @@ func Test_ionosDiscovery_handleLoadBalancer(t *testing.T) {
 		{
 			name: "error: getting labels",
 			fields: fields{
-				ionosDiscovery: &ionosDiscovery{
-					clients: clients{
-						computeClient: computeClient(),
-					},
-				},
+				ionosDiscovery: NewMockIonosDiscovery(newMockErrorSender()),
 			},
 			want: assert.Nil[ontology.IsResource],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
