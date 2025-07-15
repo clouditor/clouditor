@@ -31,6 +31,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strings"
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/discovery"
@@ -48,16 +49,42 @@ func newMockSender() *mockSender {
 	m := &mockSender{}
 	return m
 }
-func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
-	switch req.URL.Path {
-	case "/subscriptions":
+
+// RoundTrip implements http.RoundTripper.
+func (mockSender) RoundTrip(req *http.Request) (res *http.Response, err error) {
+
+	if hasEmptySegment(req.URL.Path) {
+		createResponse(req, map[string]interface{}{}, 404)
+	} else if strings.HasSuffix(req.URL.Path, "/labels") {
 		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
+			"items": []map[string]interface{}{
 				{
-					"id":             "/subscriptions/00000000-0000-0000-0000-000000000000",
-					"subscriptionId": "00000000-0000-0000-0000-000000000000",
-					"name":           "sub1",
-					"displayName":    "displayName",
+					"id": "label-1",
+					"properties": map[string]interface{}{
+						"key":   "label1",
+						"value": "value1",
+					},
+				},
+				{
+					"id": "label-2",
+					"properties": map[string]interface{}{
+						"key":   "label2",
+						"value": "value2",
+					},
+				},
+			},
+		}, 200)
+	}
+
+	switch req.URL.Path {
+	case "/cloudapi/v6/datacenters":
+		return createResponse(req, map[string]interface{}{
+			"items": []map[string]interface{}{
+				{
+					"id":          "dc-1",
+					"name":        "Datacenter 1",
+					"displayName": "DC 1",
+					"properties":  map[string]interface{}{},
 				},
 			},
 		}, 200)
@@ -88,6 +115,35 @@ func (*mockAuthorizer) GetConfiguration(_ context.Context) (ionoscloud.Configura
 	var config ionoscloud.Configuration
 
 	return config, nil
+}
+
+func NewMockIonosDiscovery(rountTrip http.RoundTripper) *ionosDiscovery {
+	d := &ionosDiscovery{
+		authConfig: &ionoscloud.Configuration{
+			HTTPClient: &http.Client{
+				Transport: rountTrip,
+			},
+		},
+		clients: clients{
+			computeClient: computeClient(),
+		},
+
+		ctID: config.DefaultTargetOfEvaluationID,
+	}
+
+	return d
+}
+
+func computeClient() *ionoscloud.APIClient {
+	return ionoscloud.NewAPIClient(&ionoscloud.Configuration{
+		HTTPClient: &http.Client{
+			Transport: newMockSender(),
+		},
+		Servers: ionoscloud.ServerConfigurations{
+			{
+				URL: "https://mock"},
+		},
+	})
 }
 
 func Test_ionosDiscovery_Name(t *testing.T) {

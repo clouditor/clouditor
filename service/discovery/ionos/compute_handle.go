@@ -27,6 +27,7 @@ package ionos
 
 import (
 	"context"
+	"fmt"
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
@@ -43,7 +44,7 @@ func (d *ionosDiscovery) handleServer(server ionoscloud.Server, dc ionoscloud.Da
 		DatacentersServersLabelsGet(context.Background(), util.Deref(dc.GetId()), util.Deref(server.GetId())).
 		Execute()
 	if err != nil {
-		log.Errorf("error getting labels for server %s: %s", util.Deref(server.Id), err)
+		return nil, fmt.Errorf("error getting labels for server %s: %s", util.Deref(server.Id), err)
 	}
 
 	r := &ontology.VirtualMachine{

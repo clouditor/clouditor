@@ -26,6 +26,8 @@
 package ionos
 
 import (
+	"strings"
+
 	"clouditor.io/clouditor/v2/internal/util"
 
 	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
@@ -40,4 +42,8 @@ func labels(labels ionoscloud.LabelResources) map[string]string {
 	}
 
 	return l
+}
+
+func hasEmptySegment(s string) bool {
+	return strings.Contains(s, "//")
 }
