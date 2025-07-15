@@ -39,7 +39,7 @@ func (d *ionosDiscovery) discoverDatacenters() (dc ionoscloud.Datacenters, err e
 	// List all datacenters
 	dc, _, err = d.clients.computeClient.DataCentersApi.DatacentersGet(context.Background()).Execute()
 	if err != nil {
-		return dc, fmt.Errorf("could not list datacenters: %w", err)
+		return ionoscloud.Datacenters{}, fmt.Errorf("could not list datacenters: %w", err)
 	}
 
 	return
