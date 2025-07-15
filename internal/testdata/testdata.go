@@ -16,10 +16,22 @@ const (
 	MockResourceGroup          = "TestResourceGroup"
 
 	// IONOS Cloud
-	MockIonosVolumeID1 = "39d85e98-c3da-11ed-afa1-0242ac120002"
-	MockIonosVolumeID2 = "49d85e98-c3da-11ed-afa1-0242ac120002"
-	MockIonosNicID1    = "59d85e98-c3da-11ed-afa1-0242ac120002"
-	MockIonosNicID2    = "69d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosVolumeID1       = "39d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosVolumeID2       = "49d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosBlockStorageID1 = "59d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosBlockStorageID2 = "69d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosNicID1          = "59d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosNicID2          = "69d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosVMID1           = "79d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosVMName1         = "Mock IONOS VM1"
+	MockIonosVMID2           = "89d85e98-c3da-11ed-afa1-0242ac120002"
+	MOckIonosVMName2         = "Mock IONOS VM2"
+	MockIonosDatacenterID1   = "99d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosDatacenterID2   = "a9d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosLoadBalancerID1 = "b9d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosLoadBalancerID2 = "c9d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosNetworkID1      = "d9d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosNetworkID2      = "e9d85e98-c3da-11ed-afa1-0242ac120002"
 
 	// Audit Scope
 	MockAuditScopeID1   = "11111111-1111-1111-1111-111111111123"
