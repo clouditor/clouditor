@@ -63,6 +63,10 @@ var ErrMetricNotFound = status.Error(codes.NotFound, "metric not found")
 func (svc *Service) loadMetrics() (err error) {
 	var metrics []*assessment.Metric
 
+	if svc.ignoreDefaultMetrics && svc.loadMetricsFunc == nil {
+		return fmt.Errorf("no metrics specified to load")
+	}
+
 	// Load default metrics if the ignore flag is not set
 	if !svc.ignoreDefaultMetrics {
 		metrics, err = svc.loadMetricsFromMetricsRepository()

@@ -72,6 +72,10 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 				}
 			}
 
+			if config.IgnoreDefaultMetrics {
+				svc.ignoreDefaultMetrics = true
+			}
+
 			return nil, nil
 		},
 	)

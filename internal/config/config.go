@@ -111,7 +111,8 @@ const (
 	DefaultDashboardCallbackURL                 = "http://localhost:8080/callback"
 	DefaultLogLevel                             = "info"
 
-	EnvPrefix = "CLOUDITOR"
+	EnvPrefix            = "CLOUDITOR"
+	IgnoreDefaultMetrics = false
 )
 
 var (
