@@ -81,7 +81,7 @@ func (d *ionosDiscovery) handleBlockStorage(blockStorage ionoscloud.Volume, dc i
 		DatacentersServersLabelsGet(context.Background(), util.Deref(dc.GetId()), util.Deref(blockStorage.GetId())).
 		Execute()
 	if err != nil {
-		log.Errorf("error getting labels for server %s: %s", util.Deref(blockStorage.Id), err)
+		return nil, fmt.Errorf("error getting labels for block storage %s: %s", util.Deref(blockStorage.Id), err)
 	}
 
 	r := &ontology.BlockStorage{
@@ -109,7 +109,7 @@ func (d *ionosDiscovery) handleLoadBalancer(loadBalancer ionoscloud.Loadbalancer
 		DatacentersServersLabelsGet(context.Background(), util.Deref(dc.GetId()), util.Deref(loadBalancer.GetId())).
 		Execute()
 	if err != nil {
-		log.Errorf("error getting labels for load balancer %s: %s", util.Deref(loadBalancer.Id), err)
+		return nil, fmt.Errorf("error getting labels for load balancer %s: %s", util.Deref(loadBalancer.Id), err)
 	}
 	r := &ontology.LoadBalancer{
 		Id:           util.Deref(loadBalancer.Id),

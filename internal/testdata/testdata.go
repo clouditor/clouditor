@@ -1,6 +1,8 @@
 package testdata
 
 import (
+	"time"
+
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -33,7 +35,9 @@ const (
 	MockIonosDatacenterID1     = "99d85e98-c3da-11ed-afa1-0242ac120002"
 	MockIonosDatacenterID2     = "a9d85e98-c3da-11ed-afa1-0242ac120002"
 	MockIonosLoadBalancerID1   = "b9d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosLoadBalancerName1 = "Mock IONOS Load Balancer 1"
 	MockIonosLoadBalancerID2   = "c9d85e98-c3da-11ed-afa1-0242ac120002"
+	MockIonosLoadBalancerName2 = "Mock IONOS Load Balancer 2"
 	MockIonosNetworkID1        = "d9d85e98-c3da-11ed-afa1-0242ac120002"
 	MockIonosNetworkID2        = "e9d85e98-c3da-11ed-afa1-0242ac120002"
 
@@ -152,6 +156,8 @@ const (
 )
 
 var (
+	CreationTime = time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
+
 	// Catalog
 	AssuranceLevelBasic       = "basic"
 	AssuranceLevelSubstantial = "substantial"
