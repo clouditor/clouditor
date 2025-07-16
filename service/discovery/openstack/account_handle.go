@@ -26,6 +26,8 @@
 package openstack
 
 import (
+	"fmt"
+
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
@@ -73,15 +75,16 @@ func (d *openstackDiscovery) handleProject(project *projects.Project) (ontology.
 	return r, nil
 }
 
-func (d *openstackDiscovery) checkAndHandleManualCreatedProject(projectID, projectName, domainID string) {
+// checkAndHandleManualCreatedProject checks if the project information is available and adds it to the list of projects.
+// If the project is already in the list, it will skip the creation.
+func (d *openstackDiscovery) checkAndHandleManualCreatedProject(projectID, projectName, domainID string) error {
 	if projectID == "" || projectName == "" || domainID == "" {
-		log.Warnf("Cannot create project resource: project ID, project name, or domain ID is empty")
-		return
+		return fmt.Errorf("cannot create project resource: project ID, project name, or domain ID is empty")
 	}
 
 	if _, ok := d.projects[projectID]; ok {
 		log.Debugf("Project with ID '%s' already exists, skipping creation", projectID)
-		return
+		return nil
 	}
 
 	r := &ontology.ResourceGroup{
@@ -93,4 +96,6 @@ func (d *openstackDiscovery) checkAndHandleManualCreatedProject(projectID, proje
 
 	// Add project to the list of projects
 	d.projects[r.GetId()] = r
+
+	return nil
 }

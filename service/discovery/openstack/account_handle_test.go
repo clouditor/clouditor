@@ -183,10 +183,11 @@ func Test_openstackDiscovery_checkAndHandleManualCreatedProject(t *testing.T) {
 		domain string
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   assert.Want[*openstackDiscovery]
+		name    string
+		fields  fields
+		args    args
+		want    assert.Want[*openstackDiscovery]
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "error: no new  id, name, or domain is empty",
@@ -196,6 +197,9 @@ func Test_openstackDiscovery_checkAndHandleManualCreatedProject(t *testing.T) {
 			args: args{},
 			want: func(t *testing.T, d *openstackDiscovery) bool {
 				return assert.Empty(t, d.projects)
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "cannot create project resource: project ID, project name, or domain ID is empty")
 			},
 		},
 		{
@@ -226,6 +230,7 @@ func Test_openstackDiscovery_checkAndHandleManualCreatedProject(t *testing.T) {
 
 				return assert.Equal(t, want, got)
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "Happy path",
@@ -248,6 +253,7 @@ func Test_openstackDiscovery_checkAndHandleManualCreatedProject(t *testing.T) {
 
 				return assert.Equal(t, want, got)
 			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -261,8 +267,10 @@ func Test_openstackDiscovery_checkAndHandleManualCreatedProject(t *testing.T) {
 				project:  tt.fields.project,
 				projects: tt.fields.projects,
 			}
-			d.checkAndHandleManualCreatedProject(tt.args.id, tt.args.name, tt.args.domain)
+			err := d.checkAndHandleManualCreatedProject(tt.args.id, tt.args.name, tt.args.domain)
+
 			tt.want(t, d)
+			tt.wantErr(t, err)
 		})
 	}
 }
