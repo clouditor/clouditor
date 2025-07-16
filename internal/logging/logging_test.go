@@ -188,6 +188,21 @@ func TestLogRequest(t *testing.T) {
 			},
 			want: "level=debug msg=Evidence with ID '11111111-1111-1111-1111-111111111111' stored for Target of Evaluation '11111111-1111-1111-1111-111111111111' back into queue for orchestrator (localhost).\n",
 		},
+		{
+			name: "StoreEvidence()",
+			args: args{
+				level:   logrus.DebugLevel,
+				reqType: Store,
+				req: &evidence.StoreEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Id:                   testdata.MockEvidenceID1,
+						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+						ToolId:               testdata.MockEvidenceToolID1,
+					},
+				},
+			},
+			want: "level=debug msg=Evidence with ID '11111111-1111-1111-1111-111111111111' stored for Target of Evaluation '11111111-1111-1111-1111-111111111111' and Tool ID '39d85e98-c3da-11ed-afa1-0242ac120002'.\n",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
