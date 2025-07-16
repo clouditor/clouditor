@@ -77,7 +77,7 @@ func (svc *Service) loadMetrics() (err error) {
 	// still need to be aware of the particular metric.
 	for _, m := range metrics {
 		// Somehow, we first need to create the metric, otherwise we are running into weird constraint issues.
-		// We use Save() instead of Create()because it may be that the metrics already exist in the database and just need to be updated.
+		// We use Save() instead of Create() because it may be that the metrics already exist in the database and just need to be updated.
 		err = svc.storage.Save(m, "id = ? ", m.Id)
 		if err != nil {
 			log.Errorf("Error while saving metric `%s`: %v", m.Id, err)

@@ -33,8 +33,9 @@ import (
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testutil"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-
+	"clouditor.io/clouditor/v2/persistence"
 	"github.com/golang-jwt/jwt/v5"
 	"google.golang.org/grpc/metadata"
 )
@@ -368,6 +369,46 @@ func TestAuthorizationStrategyJWT_AllowedTargetOfEvaluations(t *testing.T) {
 			gotAll, gotList := a.AllowedTargetOfEvaluations(tt.args.ctx)
 			assert.Equal(t, tt.wantAll, gotAll)
 			assert.Equal(t, tt.wantList, gotList)
+		})
+	}
+}
+
+func TestAuthorizationStrategyStorage_CheckAccess(t *testing.T) {
+	type fields struct {
+		DB persistence.Storage
+	}
+	type args struct {
+		ctx context.Context
+		in1 RequestType
+		req api.TargetOfEvaluationRequest
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   bool
+	}{
+		{
+			name: "valid context, user not yet created",
+			fields: fields{
+				DB: testutil.NewInMemoryStorage(t),
+			},
+			args: args{
+				ctx: TestContextOnlyService1,
+				req: &orchestrator.GetTargetOfEvaluationRequest{TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1},
+			},
+			want: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := &AuthorizationStrategyStorage{
+				DB: tt.fields.DB,
+			}
+			if got := a.CheckAccess(tt.args.ctx, tt.args.in1, tt.args.req); got != tt.want {
+				t.Errorf("AuthorizationStrategyStorage.CheckAccess() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

@@ -242,7 +242,14 @@ func TestGetMetricConfiguration(t *testing.T) {
 		cli.Output = &b
 
 		// create a new target service
-		target, err = svc.CreateTargetOfEvaluation(context.TODO(), &orchestrator.CreateTargetOfEvaluationRequest{TargetOfEvaluation: &orchestrator.TargetOfEvaluation{Name: "myTarget"}})
+		target, err = svc.CreateTargetOfEvaluation(
+			context.TODO(),
+			&orchestrator.CreateTargetOfEvaluationRequest{
+				TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+					Name: "myTarget",
+				},
+			},
+		)
 
 		assert.NotNil(t, target)
 		assert.NoError(t, err)
