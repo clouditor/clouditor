@@ -72,21 +72,21 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 			},
 			args: args{
 				network: &networks.Network{
-					ID:        testdata.MockNetworkID1,
-					Name:      testdata.MockNetworkName1,
-					ProjectID: testdata.MockServerTenantID,
+					ID:        testdata.MockOpenstackNetworkID1,
+					Name:      testdata.MockOpenstackNetworkName1,
+					ProjectID: testdata.MockOpenstackServerTenantID,
 					CreatedAt: testTime,
 				},
 			},
 			want: func(t *testing.T, got ontology.IsResource) bool {
 				want := &ontology.NetworkInterface{
-					Id:           testdata.MockNetworkID1,
-					Name:         testdata.MockNetworkName1,
+					Id:           testdata.MockOpenstackNetworkID1,
+					Name:         testdata.MockOpenstackNetworkName1,
 					CreationTime: timestamppb.New(testTime),
 					GeoLocation: &ontology.GeoLocation{
 						Region: "test region",
 					},
-					ParentId: util.Ref(testdata.MockServerTenantID),
+					ParentId: util.Ref(testdata.MockOpenstackServerTenantID),
 				}
 
 				gotNew := got.(*ontology.NetworkInterface)

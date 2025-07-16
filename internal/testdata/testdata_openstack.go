@@ -33,27 +33,27 @@ const (
 	MockOpenstackTenantName       = "openstackTenant"
 
 	// domain
-	MockDomainID1          = "00000000000000000000000000000000"
-	MockDomainName1        = "Domain 1"
-	MockDomainDescription1 = "This is a mock domain description (1)"
+	MockOpenstackDomainID1          = "00000000000000000000000000000000"
+	MockOpenstackDomainName1        = "Domain 1"
+	MockOpenstackDomainDescription1 = "This is a mock domain description (1)"
 
 	// project
-	MockProjectID1          = "00000000000000000000000000000001"
-	MockProjectName1        = "Project 1"
-	MockProjectDescription1 = "This is a mock project description (1)."
-	MockProjectParentID1    = MockDomainID1
+	MockOpenstackProjectID1          = "00000000000000000000000000000001"
+	MockOpenstackProjectName1        = "Project 1"
+	MockOpenstackProjectDescription1 = "This is a mock project description (1)."
+	MockOpenstackProjectParentID1    = MockOpenstackDomainID1
 
 	// server
-	MockServerID1      = "00000000000000000000000000000002"
-	MockServerName1    = "Server 1"
-	MockServerTenantID = MockDomainID1
+	MockOpenstackServerID1      = "00000000000000000000000000000002"
+	MockOpenstackServerName1    = "Server 1"
+	MockOpenstackServerTenantID = MockOpenstackDomainID1
 
 	// volume
-	MockVolumeID1      = "00000000000000000000000000000003"
-	MockVolumeName1    = "Volume 1"
-	MockVolumeTenantID = MockDomainID1
+	MockOpenstackVolumeID1      = "00000000000000000000000000000003"
+	MockOpenstackVolumeName1    = "Volume 1"
+	MockOpenstackVolumeTenantID = MockOpenstackDomainID1
 
 	// network
-	MockNetworkID1   = "00000000000000000000000000000004"
-	MockNetworkName1 = "Network 1"
+	MockOpenstackNetworkID1   = "00000000000000000000000000000004"
+	MockOpenstackNetworkName1 = "Network 1"
 )

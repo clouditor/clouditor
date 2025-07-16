@@ -64,23 +64,23 @@ func Test_openstackDiscovery_handleProject(t *testing.T) {
 			},
 			args: args{
 				project: &projects.Project{
-					ID:          testdata.MockProjectID1,
-					Name:        testdata.MockProjectName1,
-					Description: testdata.MockProjectDescription1,
+					ID:          testdata.MockOpenstackProjectID1,
+					Name:        testdata.MockOpenstackProjectName1,
+					Description: testdata.MockOpenstackProjectDescription1,
 					Tags:        []string{},
-					ParentID:    testdata.MockProjectParentID1,
+					ParentID:    testdata.MockOpenstackProjectParentID1,
 				},
 			},
 			want: func(t *testing.T, got ontology.IsResource) bool {
 				want := &ontology.ResourceGroup{
-					Id:   testdata.MockProjectID1,
-					Name: testdata.MockProjectName1,
+					Id:   testdata.MockOpenstackProjectID1,
+					Name: testdata.MockOpenstackProjectName1,
 					GeoLocation: &ontology.GeoLocation{
 						Region: "test region",
 					},
-					Description: testdata.MockProjectDescription1,
+					Description: testdata.MockOpenstackProjectDescription1,
 					Labels:      labels(util.Ref([]string{})),
-					ParentId:    util.Ref(testdata.MockProjectParentID1),
+					ParentId:    util.Ref(testdata.MockOpenstackProjectParentID1),
 				}
 
 				gotNew := got.(*ontology.ResourceGroup)
@@ -130,16 +130,16 @@ func Test_openstackDiscovery_handleDomain(t *testing.T) {
 			name: "Happy path",
 			args: args{
 				domain: &domains.Domain{
-					ID:          testdata.MockDomainID1,
-					Name:        testdata.MockDomainName1,
-					Description: testdata.MockDomainDescription1,
+					ID:          testdata.MockOpenstackDomainID1,
+					Name:        testdata.MockOpenstackDomainName1,
+					Description: testdata.MockOpenstackDomainDescription1,
 				},
 			},
 			want: func(t *testing.T, got ontology.IsResource) bool {
 				want := &ontology.Account{
-					Id:          testdata.MockDomainID1,
-					Name:        testdata.MockDomainName1,
-					Description: testdata.MockDomainDescription1,
+					Id:          testdata.MockOpenstackDomainID1,
+					Name:        testdata.MockOpenstackDomainName1,
+					Description: testdata.MockOpenstackDomainDescription1,
 				}
 
 				gotNew := got.(*ontology.Account)
@@ -202,27 +202,27 @@ func Test_openstackDiscovery_checkAndHandleManualCreatedProject(t *testing.T) {
 			name: "ResourceGroup already exists",
 			fields: fields{
 				projects: map[string]ontology.IsResource{
-					testdata.MockProjectID1: &ontology.ResourceGroup{
-						Id:       testdata.MockProjectID1,
-						Name:     testdata.MockProjectName1,
-						ParentId: util.Ref(testdata.MockDomainID1),
+					testdata.MockOpenstackProjectID1: &ontology.ResourceGroup{
+						Id:       testdata.MockOpenstackProjectID1,
+						Name:     testdata.MockOpenstackProjectName1,
+						ParentId: util.Ref(testdata.MockOpenstackDomainID1),
 						Raw:      discovery.Raw("Project/Tenant information manually added."),
 					},
 				},
 			},
 			args: args{
-				id:     testdata.MockProjectID1,
-				name:   testdata.MockProjectName1,
-				domain: testdata.MockDomainID1,
+				id:     testdata.MockOpenstackProjectID1,
+				name:   testdata.MockOpenstackProjectName1,
+				domain: testdata.MockOpenstackDomainID1,
 			},
 			want: func(t *testing.T, d *openstackDiscovery) bool {
 				want := &ontology.ResourceGroup{
-					Id:       testdata.MockProjectID1,
-					Name:     testdata.MockProjectName1,
-					ParentId: util.Ref(testdata.MockDomainID1),
+					Id:       testdata.MockOpenstackProjectID1,
+					Name:     testdata.MockOpenstackProjectName1,
+					ParentId: util.Ref(testdata.MockOpenstackDomainID1),
 					Raw:      discovery.Raw("Project/Tenant information manually added."),
 				}
-				got := d.projects[testdata.MockProjectID1].(*ontology.ResourceGroup)
+				got := d.projects[testdata.MockOpenstackProjectID1].(*ontology.ResourceGroup)
 
 				return assert.Equal(t, want, got)
 			},
@@ -233,18 +233,18 @@ func Test_openstackDiscovery_checkAndHandleManualCreatedProject(t *testing.T) {
 				projects: map[string]ontology.IsResource{},
 			},
 			args: args{
-				id:     testdata.MockProjectID1,
-				name:   testdata.MockProjectName1,
-				domain: testdata.MockDomainID1,
+				id:     testdata.MockOpenstackProjectID1,
+				name:   testdata.MockOpenstackProjectName1,
+				domain: testdata.MockOpenstackDomainID1,
 			},
 			want: func(t *testing.T, d *openstackDiscovery) bool {
 				want := &ontology.ResourceGroup{
-					Id:       testdata.MockProjectID1,
-					Name:     testdata.MockProjectName1,
-					ParentId: util.Ref(testdata.MockDomainID1),
+					Id:       testdata.MockOpenstackProjectID1,
+					Name:     testdata.MockOpenstackProjectName1,
+					ParentId: util.Ref(testdata.MockOpenstackDomainID1),
 					Raw:      discovery.Raw("Project/Tenant information manually added."),
 				}
-				got := d.projects[testdata.MockProjectID1].(*ontology.ResourceGroup)
+				got := d.projects[testdata.MockOpenstackProjectID1].(*ontology.ResourceGroup)
 
 				return assert.Equal(t, want, got)
 			},

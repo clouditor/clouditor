@@ -294,11 +294,11 @@ func TestNewAuthorizer(t *testing.T) {
 					},
 					{
 						envVariableKey:   "OS_TENANT_ID",
-						envVariableValue: testdata.MockProjectID1,
+						envVariableValue: testdata.MockOpenstackProjectID1,
 					},
 					{
 						envVariableKey:   "OS_PROJECT_ID",
-						envVariableValue: testdata.MockProjectID1,
+						envVariableValue: testdata.MockOpenstackProjectID1,
 					},
 				},
 			},
@@ -307,7 +307,7 @@ func TestNewAuthorizer(t *testing.T) {
 					IdentityEndpoint: testdata.MockOpenstackIdentityEndpoint,
 					Username:         testdata.MockOpenstackUsername,
 					Password:         testdata.MockOpenstackPassword,
-					TenantID:         testdata.MockProjectID1,
+					TenantID:         testdata.MockOpenstackProjectID1,
 				}
 				return assert.Equal(t, want, got)
 			},
@@ -536,7 +536,7 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					domainID: "test domain ID",
 				},
 				projects: map[string]ontology.IsResource{
-					testdata.MockProjectID1: nil,
+					testdata.MockOpenstackProjectID1: nil,
 				},
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {

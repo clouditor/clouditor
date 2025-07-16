@@ -90,8 +90,17 @@ func (d *openstackDiscovery) setProjectInfo(x interface{}) {
 		d.project.projectID = v[0].TenantID
 		d.project.projectName = v[0].TenantID // it is not possible to extract the project name
 	case []networks.Network:
-		d.project.projectID = v[0].TenantID
-		d.project.projectName = v[0].TenantID // it is not possible to extract the project name
+		id := ""
+		if v[0].TenantID != "" {
+			id = v[0].TenantID
+		} else if v[0].ProjectID != "" {
+			id = v[0].ProjectID
+			d.project.projectName = v[0].ProjectID
+		} else {
+			log.Warnf("Network %s has no tenant or project ID, cannot set project information", v[0].ID)
+		}
+		d.project.projectID = id
+		d.project.projectName = id // it is not possible to extract the project name
 	default:
 		log.Debugf("no known resource type found")
 	}
