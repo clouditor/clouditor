@@ -72,7 +72,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 				}
 			}
 
-			if config.IgnoreDefaultMetrics {
+			if viper.GetBool(config.IgnoreDefaultMetricsFlag) {
 				svc.ignoreDefaultMetrics = true
 			}
 
