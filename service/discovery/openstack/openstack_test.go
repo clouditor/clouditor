@@ -403,12 +403,15 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					identityClient: client.ServiceClient(),
 				},
 				project: &project{},
-				domain:  &domain{},
+				domain: &domain{
+					domainID: testdata.MockOpenStackDomainID,
+				},
+				projects: map[string]ontology.IsResource{},
 			},
-			want: func(t *testing.T, got []ontology.IsResource) bool {
-				return assert.Equal(t, 0, len(got))
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not discover servers:")
 			},
-			wantErr: assert.NoError,
 		},
 		{
 			name: "error discover network interfaces",
@@ -429,14 +432,19 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					},
 					identityClient: client.ServiceClient(),
 				},
-				project:  &project{},
-				domain:   &domain{},
+				project: &project{
+					projectID:   testdata.MockOpenstackProjectID1,
+					projectName: testdata.MockOpenstackProjectName1,
+				},
+				domain: &domain{
+					domainID: testdata.MockOpenStackDomainID,
+				},
 				projects: map[string]ontology.IsResource{},
 			},
-			want: func(t *testing.T, got []ontology.IsResource) bool {
-				return assert.Equal(t, 4, len(got))
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not discover network interfaces:")
 			},
-			wantErr: assert.NoError,
 		},
 		{
 			name: "error discover block storage",
@@ -457,14 +465,19 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					},
 					identityClient: client.ServiceClient(),
 				},
-				project:  &project{},
-				domain:   &domain{},
+				project: &project{
+					projectID:   testdata.MockOpenstackProjectID1,
+					projectName: testdata.MockOpenstackProjectName1,
+				},
+				domain: &domain{
+					domainID: testdata.MockOpenStackDomainID,
+				},
 				projects: map[string]ontology.IsResource{},
 			},
-			want: func(t *testing.T, got []ontology.IsResource) bool {
-				return assert.Equal(t, 6, len(got))
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not discover block storage:")
 			},
-			wantErr: assert.NoError,
 		},
 		{
 			name: "error discover clusters",
@@ -485,13 +498,19 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					},
 					identityClient: client.ServiceClient(),
 				},
-				project: &project{},
-				domain:  &domain{},
+				project: &project{
+					projectID:   testdata.MockOpenstackProjectID1,
+					projectName: testdata.MockOpenstackProjectName1,
+				},
+				domain: &domain{
+					domainID: testdata.MockOpenStackDomainID,
+				},
+				projects: map[string]ontology.IsResource{},
 			},
-			want: func(t *testing.T, got []ontology.IsResource) bool {
-				return assert.Equal(t, 8, len(got))
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not discover clusters:")
 			},
-			wantErr: assert.NoError,
 		},
 		// {
 		// name: "error discover projects",
@@ -523,45 +542,21 @@ func Test_openstackDiscovery_List(t *testing.T) {
 				projects: map[string]ontology.IsResource{},
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {
-				_, ok := got[8].(*ontology.ResourceGroup)
-				assert.True(t, ok)
-				_, ok = got[9].(*ontology.ResourceGroup)
-				assert.True(t, ok)
-				_, ok = got[10].(*ontology.ResourceGroup)
+				_, ok := got[10].(*ontology.ResourceGroup)
 				assert.True(t, ok)
 				_, ok = got[11].(*ontology.ResourceGroup)
+				assert.True(t, ok)
+				_, ok = got[12].(*ontology.ResourceGroup)
+				assert.True(t, ok)
+				_, ok = got[13].(*ontology.ResourceGroup)
 				return assert.True(t, ok)
 			},
 			wantErr: assert.NoError,
 		},
-		{
-			name: "error discover domains",
-			fields: fields{
-				testhelper: "domain",
-				authOpts: &gophercloud.AuthOptions{
-					IdentityEndpoint: testdata.MockOpenstackIdentityEndpoint,
-					Username:         testdata.MockOpenstackUsername,
-					Password:         testdata.MockOpenstackPassword,
-					TenantName:       testdata.MockOpenstackTenantName,
-				},
-				clients: clients{
-					provider: &gophercloud.ProviderClient{
-						TokenID: client.TokenID,
-						EndpointLocator: func(eo gophercloud.EndpointOpts) (string, error) {
-							return testhelper.Endpoint(), nil
-						},
-					},
-					identityClient: client.ServiceClient(),
-				},
-				project:  &project{},
-				domain:   &domain{},
-				projects: map[string]ontology.IsResource{},
-			},
-			want: func(t *testing.T, got []ontology.IsResource) bool {
-				return assert.Equal(t, 10, len(got))
-			},
-			wantErr: assert.NoError,
-		},
+		// {
+		// 	name: "error discover domains",
+		// We can’t test this, because the domain is still added when domainID is unset—and in that case, server discovery fails which is done before.
+		// },
 		{
 			name: "Happy path: with one project in map that is nil",
 			fields: fields{
@@ -581,16 +576,19 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					},
 					identityClient: client.ServiceClient(),
 				},
-				project: &project{},
+				project: &project{
+					projectID:   testdata.MockOpenstackProjectID1,
+					projectName: testdata.MockOpenstackProjectName1,
+				},
 				domain: &domain{
-					domainID: "test domain ID",
+					domainID: testdata.MockOpenStackDomainID,
 				},
 				projects: map[string]ontology.IsResource{
 					testdata.MockOpenstackProjectID1: nil,
 				},
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {
-				return assert.Equal(t, 12, len(got))
+				return assert.Equal(t, 14, len(got))
 			},
 			wantErr: assert.NoError,
 		},
@@ -620,7 +618,7 @@ func Test_openstackDiscovery_List(t *testing.T) {
 				projects: map[string]ontology.IsResource{},
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {
-				return assert.Equal(t, 12, len(got))
+				return assert.Equal(t, 14, len(got))
 			},
 			wantErr: assert.NoError,
 		},

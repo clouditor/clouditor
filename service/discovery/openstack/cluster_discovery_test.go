@@ -77,9 +77,14 @@ func Test_openstackDiscovery_discoverCluster(t *testing.T) {
 					},
 					clusterClient: client.ServiceClient(),
 				},
-				region:  "test region",
-				domain:  &domain{},
-				project: &project{},
+				region: "test region",
+				domain: &domain{
+					domainID: testdata.MockOpenstackDomainID1,
+				},
+				project: &project{
+					projectID:   testdata.MockOpenstackProjectID1,
+					projectName: testdata.MockOpenstackProjectName1,
+				},
 			},
 			wantList: func(t *testing.T, got []ontology.IsResource) bool {
 				assert.Equal(t, 2, len(got))

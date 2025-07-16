@@ -72,8 +72,7 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 			},
 			args: args{
 				volume: &volumes.Volume{
-					ID: testdata.MockOpenstackVolumeID1,
-					// Name:      testdata.MockVolumeName1,
+					ID:        testdata.MockOpenstackVolumeID1,
 					TenantID:  testdata.MockOpenstackVolumeTenantID,
 					CreatedAt: testTime,
 				},

@@ -79,9 +79,14 @@ func Test_openstackDiscovery_discoverBlockStorage(t *testing.T) {
 					},
 					storageClient: client.ServiceClient(),
 				},
-				region:   "test region",
-				domain:   &domain{},
-				project:  &project{},
+				region: "test region",
+				domain: &domain{
+					domainID: testdata.MockOpenStackDomainID,
+				},
+				project: &project{
+					projectID:   testdata.MockOpenstackProjectID1,
+					projectName: testdata.MockOpenstackProjectName1,
+				},
 				projects: map[string]ontology.IsResource{},
 			},
 			wantList: func(t *testing.T, got []ontology.IsResource) bool {

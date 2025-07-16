@@ -84,9 +84,14 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 					},
 					computeClient: client.ServiceClient(),
 				},
-				region:   "test region",
-				domain:   &domain{},
-				project:  &project{},
+				region: "test region",
+				domain: &domain{
+					domainID: testdata.MockOpenstackDomainID1,
+				},
+				project: &project{
+					projectID:   testdata.MockOpenstackProjectID1,
+					projectName: testdata.MockOpenstackProjectName1,
+				},
 				projects: map[string]ontology.IsResource{},
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {

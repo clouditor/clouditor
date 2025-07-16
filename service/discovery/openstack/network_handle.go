@@ -26,6 +26,8 @@
 package openstack
 
 import (
+	"fmt"
+
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
@@ -59,9 +61,12 @@ func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) 
 	}
 
 	// Create project resource for the parentId if not available
-	d.checkAndHandleManualCreatedProject(projectId, projectId, d.domain.domainID)
+	err := d.checkAndHandleManualCreatedProject(projectId, projectId, d.domain.domainID)
+	if err != nil {
+		return nil, fmt.Errorf("could not handle project for network interface '%s': %w", network.Name, err)
+	}
 
-	log.Infof("Adding network interface '%s", network.Name)
+	log.Infof("Adding network interface '%s", r.Name)
 
 	return r, nil
 }

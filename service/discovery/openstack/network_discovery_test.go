@@ -83,7 +83,10 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 					domainID:   testdata.MockOpenStackDomainID,
 					domainName: testdata.MockOpenStackDomainName,
 				},
-				project:  &project{},
+				project: &project{
+					projectID:   testdata.MockOpenstackProjectID1,
+					projectName: testdata.MockOpenstackProjectName1,
+				},
 				projects: map[string]ontology.IsResource{},
 			},
 			wantList: func(t *testing.T, got []ontology.IsResource) bool {

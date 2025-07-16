@@ -59,7 +59,7 @@ func Test_openstackDiscovery_discoverProjects(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Project ID not available",
+			name: "error: Project ID not available",
 			fields: fields{
 				project: &project{
 					projectID: "",
@@ -68,6 +68,20 @@ func Test_openstackDiscovery_discoverProjects(t *testing.T) {
 			want: assert.Nil[[]ontology.IsResource],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "project ID is not available:")
+			},
+		},
+		{
+			name: "error: Project name not available",
+			fields: fields{
+				project: &project{
+					projectID:   testdata.MockOpenstackProjectID1,
+					projectName: "",
+				},
+				domain: &domain{},
+			},
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not handle project")
 			},
 		},
 		{
