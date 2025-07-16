@@ -200,6 +200,29 @@ func (mockSender) RoundTrip(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
+	case "/datacenters/99d85e98-c3da-11ed-afa1-0242ac120002/loadbalancers":
+		return createResponse(req, map[string]interface{}{
+			"items": []map[string]interface{}{
+				{
+					"id": testdata.MockIonosLoadBalancerID1,
+					"properties": map[string]interface{}{
+						"name": testdata.MockIonosLoadBalancerName1,
+					},
+					"metadata": map[string]interface{}{
+						"createdDate": testdata.CreationTime,
+					},
+				},
+				{
+					"id": testdata.MockIonosLoadBalancerID2,
+					"properties": map[string]interface{}{
+						"name": testdata.MockIonosLoadBalancerName2,
+					},
+					"metadata": map[string]interface{}{
+						"createdDate": testdata.CreationTime,
+					},
+				},
+			},
+		}, 200)
 	default:
 		res, err = createResponse(req, map[string]interface{}{}, 404)
 		log.Errorf("Not handling mock for %s yet", req.URL.Path)

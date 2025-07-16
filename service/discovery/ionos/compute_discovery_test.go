@@ -196,3 +196,66 @@ func Test_ionosDiscovery_discoverBlockStorages(t *testing.T) {
 		})
 	}
 }
+
+func Test_ionosDiscovery_discoverLoadBalancers(t *testing.T) {
+	type fields struct {
+		ionosDiscovery *ionosDiscovery
+	}
+	type args struct {
+		dc ionoscloud.Datacenter
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    assert.Want[[]ontology.IsResource]
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "error: listing servers",
+			fields: fields{
+				ionosDiscovery: NewMockIonosDiscovery(newMockErrorSender()),
+			},
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not list load balancers for datacenter")
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				ionosDiscovery: NewMockIonosDiscovery(newMockSender()),
+			},
+			args: args{
+				dc: ionoscloud.Datacenter{
+					Id: util.Ref(testdata.MockIonosDatacenterID1),
+					Properties: &ionoscloud.DatacenterProperties{
+						Name: util.Ref(testdata.MockIonosDatacenterName1),
+					},
+					Metadata: &ionoscloud.DatacenterElementMetadata{
+						CreatedDate: &ionoscloud.IonosTime{testdata.CreationTime},
+					},
+				},
+			},
+			want: func(t *testing.T, got []ontology.IsResource) bool {
+				assert.Equal(t, 2, len(got))
+				_, ok := got[0].(*ontology.LoadBalancer)
+				_, ok1 := got[1].(*ontology.LoadBalancer)
+				if !ok || !ok1 {
+					return assert.Fail(t, "expected both resources to be LoadBalancer")
+				}
+				return true
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := tt.fields.ionosDiscovery
+			gotList, err := d.discoverLoadBalancers(tt.args.dc)
+
+			tt.want(t, gotList)
+			tt.wantErr(t, err)
+		})
+	}
+}
