@@ -224,6 +224,18 @@ func (mockSender) RoundTrip(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
+	case "/datacenters/a9d85e98-c3da-11ed-afa1-0242ac120002/servers":
+		return createResponse(req, map[string]interface{}{
+			"items": []map[string]interface{}{},
+		}, 200)
+	case "/datacenters/a9d85e98-c3da-11ed-afa1-0242ac120002/volumes":
+		return createResponse(req, map[string]interface{}{
+			"items": []map[string]interface{}{},
+		}, 200)
+	case "/datacenters/a9d85e98-c3da-11ed-afa1-0242ac120002/loadbalancers":
+		return createResponse(req, map[string]interface{}{
+			"items": []map[string]interface{}{},
+		}, 200)
 	default:
 		res, err = createResponse(req, map[string]interface{}{}, 404)
 		log.Errorf("Not handling mock for %s yet", req.URL.Path)
@@ -481,31 +493,53 @@ func Test_ionosDiscovery_authorize(t *testing.T) {
 	}
 }
 
-// TODO(anatheka): Add test
 func Test_ionosDiscovery_List(t *testing.T) {
 	type fields struct {
-		authConfig *ionoscloud.Configuration
-		clients    clients
-		ctID       string
+		ionosDiscovery *ionosDiscovery
 	}
 	tests := []struct {
-		name     string
-		fields   fields
-		wantList assert.Want[[]ontology.IsResource]
-		wantErr  assert.ErrorAssertionFunc
+		name    string
+		fields  fields
+		want    assert.Want[[]ontology.IsResource]
+		wantErr assert.WantErr
 	}{
-		// TODO: Add test cases.
+		{
+			name: "error: discover datacenters",
+			fields: fields{
+				ionosDiscovery: NewMockIonosDiscovery(newMockErrorSender()),
+			},
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(t *testing.T, err error) bool {
+				return assert.ErrorContains(t, err, "could not discover datacenters:")
+			},
+		},
+		{
+			name: "error: discover block storage",
+			fields: fields{
+				ionosDiscovery: NewMockIonosDiscovery(newMockErrorSender()),
+			},
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(t *testing.T, err error) bool {
+				return assert.ErrorContains(t, err, "could not discover block storage:")
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				ionosDiscovery: NewMockIonosDiscovery(newMockSender()),
+			},
+			want: func(t *testing.T, gotList []ontology.IsResource) bool {
+				return assert.Equal(t, 6, len(gotList))
+			},
+			wantErr: assert.Nil[error],
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &ionosDiscovery{
-				authConfig: tt.fields.authConfig,
-				clients:    tt.fields.clients,
-				ctID:       tt.fields.ctID,
-			}
+			d := tt.fields.ionosDiscovery
 			gotList, err := d.List()
 
-			tt.wantList(t, gotList)
+			tt.want(t, gotList)
 			tt.wantErr(t, err)
 		})
 	}
