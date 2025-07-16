@@ -38,6 +38,13 @@ import (
 func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) (ontology.IsResource, error) {
 	var projectId string
 
+	// Get project/tenant ID
+	if network.ProjectID != "" {
+		projectId = network.ProjectID
+	} else if network.TenantID != "" {
+		projectId = network.TenantID
+	}
+
 	r := &ontology.NetworkInterface{
 		Id:           network.ID,
 		Name:         network.Name,
@@ -47,15 +54,8 @@ func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) 
 			Region: d.region,
 		},
 		Labels:   labels(util.Ref(network.Tags)),
-		ParentId: util.Ref(network.ProjectID),
+		ParentId: util.Ref(projectId),
 		Raw:      discovery.Raw(network),
-	}
-
-	// Get project/tenant ID
-	if network.ProjectID != "" {
-		projectId = network.ProjectID
-	} else if network.TenantID != "" {
-		projectId = network.TenantID
 	}
 
 	// Create project resource for the parentId if not available

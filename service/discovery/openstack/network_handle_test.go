@@ -61,7 +61,7 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Happy path",
+			name: "Happy path: projectID available",
 			fields: fields{
 				region: "test region",
 				domain: &domain{
@@ -75,6 +75,43 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 					ID:        testdata.MockOpenstackNetworkID1,
 					Name:      testdata.MockOpenstackNetworkName1,
 					ProjectID: testdata.MockOpenstackServerTenantID,
+					CreatedAt: testTime,
+				},
+			},
+			want: func(t *testing.T, got ontology.IsResource) bool {
+				want := &ontology.NetworkInterface{
+					Id:           testdata.MockOpenstackNetworkID1,
+					Name:         testdata.MockOpenstackNetworkName1,
+					CreationTime: timestamppb.New(testTime),
+					GeoLocation: &ontology.GeoLocation{
+						Region: "test region",
+					},
+					ParentId: util.Ref(testdata.MockOpenstackServerTenantID),
+				}
+
+				gotNew := got.(*ontology.NetworkInterface)
+
+				assert.NotEmpty(t, gotNew.GetRaw())
+				gotNew.Raw = ""
+				return assert.Equal(t, want, gotNew)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: tenantID available",
+			fields: fields{
+				region: "test region",
+				domain: &domain{
+					domainID:   testdata.MockOpenStackDomainID,
+					domainName: testdata.MockOpenStackDomainName,
+				},
+				projects: map[string]ontology.IsResource{},
+			},
+			args: args{
+				network: &networks.Network{
+					ID:        testdata.MockOpenstackNetworkID1,
+					Name:      testdata.MockOpenstackNetworkName1,
+					TenantID:  testdata.MockOpenstackServerTenantID,
 					CreatedAt: testTime,
 				},
 			},
