@@ -750,6 +750,23 @@ func TestService_Start(t *testing.T) {
 			},
 			wantErr: assert.Nil[error],
 		},
+		{
+			name: "Happy path: Ionos",
+			fields: fields{
+				authz:             servicetest.NewAuthorizationStrategy(true),
+				scheduler:         gocron.NewScheduler(time.UTC),
+				providers:         []string{ProviderIonos},
+				discoveryInterval: time.Duration(5 * time.Minute),
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &discovery.StartDiscoveryRequest{},
+			},
+			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
+				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, got)
+			},
+			wantErr: assert.Nil[error],
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
