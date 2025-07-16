@@ -27,7 +27,6 @@ package ionos
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -62,10 +61,12 @@ func newMockErrorSender() *mockErrorSender {
 
 // RoundTrip implements http.RoundTripper.
 func (mockSender) RoundTrip(req *http.Request) (res *http.Response, err error) {
-
-	if hasEmptySegment(req.URL.Path) {
-		createResponse(req, map[string]interface{}{}, 404)
+	// Check if the URL contains an empty segment
+	// (e.g., "http://example.com//path") and return a 404 response if it does.
+	if hasEmptySegmentinURL(req.URL.Path) {
+		return createResponse(req, map[string]interface{}{}, 404)
 	} else if strings.HasSuffix(req.URL.Path, "/labels") {
+		// Mock response for labels endpoint
 		return createResponse(req, map[string]interface{}{
 			"items": []map[string]interface{}{
 				{
@@ -246,14 +247,6 @@ func createResponse(req *http.Request, body any, status int) (*http.Response, er
 		Request:    req,
 		Header:     http.Header{"Content-Type": []string{"application/json"}},
 	}, nil
-}
-
-type mockAuthorizer struct{}
-
-func (*mockAuthorizer) GetConfiguration(_ context.Context) (ionoscloud.Configuration, error) {
-	var config ionoscloud.Configuration
-
-	return config, nil
 }
 
 func NewMockIonosDiscovery(roundTrip http.RoundTripper) *ionosDiscovery {

@@ -372,6 +372,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 			}
 			// Add authorizer and TargetOfEvaluationID
 			optsIonos = append(optsIonos, ionos.WithAuthorizer(sharedAuthorizer), ionos.WithTargetOfEvaluationID(svc.ctID))
+			svc.discoverers = append(svc.discoverers, ionos.NewIonosDiscovery(optsIonos...))
 		case provider == ProviderCSAF:
 			var (
 				domain string

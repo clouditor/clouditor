@@ -108,7 +108,7 @@ func Test_hasEmptySegment(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := hasEmptySegment(tt.args.s); got != tt.want {
+			if got := hasEmptySegmentinURL(tt.args.s); got != tt.want {
 				t.Errorf("hasEmptySegment() = %v, want %v", got, tt.want)
 			}
 		})
