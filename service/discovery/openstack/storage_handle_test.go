@@ -89,7 +89,8 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 					ParentId: util.Ref(testdata.MockOpenstackVolumeTenantID),
 				}
 
-				gotNew := got.(*ontology.BlockStorage)
+				gotNew, ok := got.(*ontology.BlockStorage)
+				assert.True(t, ok)
 
 				assert.NotEmpty(t, gotNew.GetRaw())
 				gotNew.Raw = ""
@@ -126,7 +127,8 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 					ParentId: util.Ref(testdata.MockOpenstackVolumeTenantID),
 				}
 
-				gotNew := got.(*ontology.BlockStorage)
+				gotNew, ok := got.(*ontology.BlockStorage)
+				assert.True(t, ok)
 
 				assert.NotEmpty(t, gotNew.GetRaw())
 				gotNew.Raw = ""

@@ -109,8 +109,8 @@ func Test_openstackDiscovery_discoverProjects(t *testing.T) {
 					ParentId: util.Ref(""),
 				}
 
-				got0 := got[0].(*ontology.ResourceGroup)
-
+				got0, ok := got[0].(*ontology.ResourceGroup)
+				assert.True(t, ok)
 				assert.NotEmpty(t, got0.GetRaw())
 				got0.Raw = ""
 				return assert.Equal(t, want, got0)
@@ -185,7 +185,8 @@ func Test_openstackDiscovery_discoverDomain(t *testing.T) {
 					Description: "some description",
 				}
 
-				got0 := got[0].(*ontology.Account)
+				got0, ok := got[0].(*ontology.Account)
+				assert.True(t, ok)
 
 				assert.NotEmpty(t, got0.GetRaw())
 				got0.Raw = ""

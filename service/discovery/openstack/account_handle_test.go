@@ -83,7 +83,8 @@ func Test_openstackDiscovery_handleProject(t *testing.T) {
 					ParentId:    util.Ref(testdata.MockOpenstackProjectParentID1),
 				}
 
-				gotNew := got.(*ontology.ResourceGroup)
+				gotNew, ok := got.(*ontology.ResourceGroup)
+				assert.True(t, ok)
 				assert.NotEmpty(t, gotNew.GetRaw())
 				gotNew.Raw = ""
 				return assert.Equal(t, want, gotNew)
@@ -142,7 +143,8 @@ func Test_openstackDiscovery_handleDomain(t *testing.T) {
 					Description: testdata.MockOpenstackDomainDescription1,
 				}
 
-				gotNew := got.(*ontology.Account)
+				gotNew, ok := got.(*ontology.Account)
+				assert.True(t, ok)
 				assert.NotEmpty(t, gotNew.GetRaw())
 				gotNew.Raw = ""
 				return assert.Equal(t, want, gotNew)
@@ -226,7 +228,8 @@ func Test_openstackDiscovery_checkAndHandleManualCreatedProject(t *testing.T) {
 					ParentId: util.Ref(testdata.MockOpenstackDomainID1),
 					Raw:      discovery.Raw("Project/Tenant information manually added."),
 				}
-				got := d.projects[testdata.MockOpenstackProjectID1].(*ontology.ResourceGroup)
+				got, ok := d.projects[testdata.MockOpenstackProjectID1].(*ontology.ResourceGroup)
+				assert.True(t, ok)
 
 				return assert.Equal(t, want, got)
 			},
@@ -249,8 +252,8 @@ func Test_openstackDiscovery_checkAndHandleManualCreatedProject(t *testing.T) {
 					ParentId: util.Ref(testdata.MockOpenstackDomainID1),
 					Raw:      discovery.Raw("Project/Tenant information manually added."),
 				}
-				got := d.projects[testdata.MockOpenstackProjectID1].(*ontology.ResourceGroup)
-
+				got, ok := d.projects[testdata.MockOpenstackProjectID1].(*ontology.ResourceGroup)
+				assert.True(t, ok)
 				return assert.Equal(t, want, got)
 			},
 			wantErr: assert.NoError,

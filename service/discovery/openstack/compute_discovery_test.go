@@ -131,12 +131,14 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 					BootLogging:         &ontology.BootLogging{Enabled: false},
 				}
 
-				got0 := got[0].(*ontology.VirtualMachine)
+				got0, ok := got[0].(*ontology.VirtualMachine)
+				assert.True(t, ok)
 				assert.NotEmpty(t, got0.GetRaw())
 				got0.Raw = ""
 				assert.Equal(t, want, got0)
 
-				got1 := got[1].(*ontology.VirtualMachine)
+				got1, ok := got[1].(*ontology.VirtualMachine)
+				assert.True(t, ok)
 				assert.NotEmpty(t, got1.GetRaw())
 				got1.Raw = ""
 

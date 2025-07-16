@@ -477,7 +477,8 @@ func Test_openstackDiscovery_List(t *testing.T) {
 				}
 
 				// We only check one resource
-				got0 := got[8].(*ontology.ResourceGroup)
+				got0, ok := got[8].(*ontology.ResourceGroup)
+				assert.True(t, ok)
 				assert.NotEmpty(t, got0.GetRaw())
 				got0.Raw = ""
 				return assert.Equal(t, want, got0)

@@ -102,7 +102,8 @@ func Test_openstackDiscovery_discoverBlockStorage(t *testing.T) {
 					Labels:   map[string]string{},
 				}
 
-				got0 := got[0].(*ontology.BlockStorage)
+				got0, ok := got[0].(*ontology.BlockStorage)
+				assert.True(t, ok)
 
 				assert.NotEmpty(t, got0.GetRaw())
 				got0.Raw = ""

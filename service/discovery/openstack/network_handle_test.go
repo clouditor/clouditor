@@ -89,7 +89,8 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 					ParentId: util.Ref(testdata.MockOpenstackServerTenantID),
 				}
 
-				gotNew := got.(*ontology.NetworkInterface)
+				gotNew, ok := got.(*ontology.NetworkInterface)
+				assert.True(t, ok)
 
 				assert.NotEmpty(t, gotNew.GetRaw())
 				gotNew.Raw = ""
@@ -126,7 +127,8 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 					ParentId: util.Ref(testdata.MockOpenstackServerTenantID),
 				}
 
-				gotNew := got.(*ontology.NetworkInterface)
+				gotNew, ok := got.(*ontology.NetworkInterface)
+				assert.True(t, ok)
 
 				assert.NotEmpty(t, gotNew.GetRaw())
 				gotNew.Raw = ""

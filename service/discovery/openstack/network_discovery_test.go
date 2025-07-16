@@ -103,7 +103,8 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 					ParentId: util.Ref("4fd44f30292945e481c7b8a0c8908869"),
 				}
 
-				got0 := got[0].(*ontology.NetworkInterface)
+				got0, ok := got[0].(*ontology.NetworkInterface)
+				assert.True(t, ok)
 
 				assert.NotEmpty(t, got0.GetRaw())
 				got0.Raw = ""
