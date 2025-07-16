@@ -425,7 +425,7 @@ func (svc *Service) handleEvidence(
 
 		result := &assessment.AssessmentResult{
 			Id:                   uuid.NewString(),
-			Timestamp:            timestamppb.Now(),
+			CreatedAt:            timestamppb.Now(),
 			TargetOfEvaluationId: ev.GetTargetOfEvaluationId(),
 			MetricId:             metricID,
 			MetricConfiguration:  data.Config,
@@ -436,6 +436,11 @@ func (svc *Service) handleEvidence(
 			ComplianceComment:    data.Message,
 			ComplianceDetails:    data.ComparisonResult,
 			ToolId:               util.Ref(assessment.AssessmentToolId),
+			HistoryUpdatedAt:     timestamppb.Now(),
+			History: []*assessment.Record{{ // TODO(all): Update history in another PR, see Issue #1724
+				EvidenceId:         ev.GetId(),
+				EvidenceRecordedAt: timestamppb.Now(),
+			}},
 		}
 
 		// Inform hooks about new assessment result
