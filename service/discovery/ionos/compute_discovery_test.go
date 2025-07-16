@@ -139,3 +139,60 @@ func Test_ionosDiscovery_discoverServer(t *testing.T) {
 		})
 	}
 }
+
+func Test_ionosDiscovery_discoverBlockStorages(t *testing.T) {
+	type fields struct {
+		ionosDiscovery *ionosDiscovery
+	}
+	type args struct {
+		dc ionoscloud.Datacenter
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		wantList assert.Want[[]ontology.IsResource]
+		wantErr  assert.ErrorAssertionFunc
+	}{
+		{
+			name: "error: listing servers",
+			fields: fields{
+				ionosDiscovery: NewMockIonosDiscovery(newMockErrorSender()),
+			},
+			wantList: assert.Nil[[]ontology.IsResource],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not list block storages for datacenter")
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				ionosDiscovery: NewMockIonosDiscovery(newMockSender()),
+			},
+			args: args{
+				dc: ionoscloud.Datacenter{
+					Id: util.Ref(testdata.MockIonosDatacenterID1),
+					Properties: &ionoscloud.DatacenterProperties{
+						Name: util.Ref(testdata.MockIonosDatacenterName1),
+					},
+					Metadata: &ionoscloud.DatacenterElementMetadata{
+						CreatedDate: &ionoscloud.IonosTime{testdata.CreationTime},
+					},
+				},
+			},
+			wantList: func(t *testing.T, gotList []ontology.IsResource) bool {
+				return assert.Equal(t, 2, len(gotList))
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := tt.fields.ionosDiscovery
+			gotList, err := d.discoverBlockStorages(tt.args.dc)
+
+			tt.wantList(t, gotList)
+			tt.wantErr(t, err)
+		})
+	}
+}
