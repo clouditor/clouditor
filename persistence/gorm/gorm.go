@@ -67,6 +67,7 @@ var DefaultTypes = []any{
 	&assessment.MetricImplementation{},
 	&assessment.Metric{},
 	&assessment.AssessmentResult{},
+	&assessment.Record{},
 	&evidence.Resource{},
 	&evidence.Evidence{},
 	&orchestrator.TargetOfEvaluation{},

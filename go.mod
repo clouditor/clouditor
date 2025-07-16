@@ -30,7 +30,7 @@ require (
 	go.opentelemetry.io/otel/sdk v1.36.0 // indirect
 	go.opentelemetry.io/otel/trace v1.36.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
-	golang.org/x/sync v0.15.0
+	golang.org/x/sync v0.16.0
 )
 
 // runtime dependencies (logging)
@@ -46,7 +46,7 @@ require (
 	github.com/MicahParks/keyfunc/v2 v2.1.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/oxisto/oauth2go v0.14.0
-	golang.org/x/crypto v0.38.0 // indirect
+	golang.org/x/crypto v0.39.0 // indirect
 	golang.org/x/oauth2 v0.30.0
 )
 
@@ -104,7 +104,7 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f // indirect
-	golang.org/x/text v0.26.0
+	golang.org/x/text v0.27.0
 )
 
 // runtime dependencies (Azure)
@@ -127,7 +127,7 @@ require (
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.4.2 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
-	golang.org/x/net v0.40.0 // indirect
+	golang.org/x/net v0.41.0 // indirect
 )
 
 // runtime dependencies (AWS)
@@ -141,7 +141,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.36 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.2 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.36 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.230.0
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.231.0
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.7.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.17 // indirect
@@ -194,11 +194,10 @@ require (
 	github.com/Intevation/jsonpath v0.2.1 // indirect
 	github.com/ProtonMail/go-crypto v1.3.0
 	github.com/cloudflare/circl v1.6.1 // indirect
-	github.com/gocsaf/csaf/v3 v3.2.0
-	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1 // indirect
+	github.com/gocsaf/csaf/v3 v3.3.0
 	github.com/shopspring/decimal v1.4.0 // indirect
-	go.etcd.io/bbolt v1.4.0 // indirect
-	golang.org/x/time v0.11.0 // indirect
+	go.etcd.io/bbolt v1.4.1 // indirect
+	golang.org/x/time v0.12.0 // indirect
 )
 
 // testing dependencies (core)
@@ -222,6 +221,7 @@ require (
 )
 
 require (
+	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2 // indirect
 	github.com/vektah/gqlparser/v2 v2.5.28 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.36.0 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect

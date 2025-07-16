@@ -33,6 +33,7 @@ import (
 	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/attachinterfaces"
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/v2/openstack/containerinfra/v1/clusters"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/v2/pagination"
 )
@@ -101,6 +102,9 @@ func (d *openstackDiscovery) setProjectInfo(x interface{}) {
 		}
 		d.project.projectID = id
 		d.project.projectName = id // it is not possible to extract the project name
+	case []clusters.Cluster:
+		d.project.projectID = v[0].ProjectID
+		d.project.projectName = v[0].ProjectID // it is not possible to extract the project name
 	default:
 		log.Debugf("no known resource type found")
 	}
