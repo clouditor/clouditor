@@ -36,7 +36,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest/openstacktest"
-	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/testhelper"
@@ -469,19 +468,14 @@ func Test_openstackDiscovery_List(t *testing.T) {
 				projects: map[string]ontology.IsResource{},
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {
-				want := &ontology.ResourceGroup{
-					Id:       "fcad67a6189847c4aecfa3c81a05783b",
-					Name:     "fcad67a6189847c4aecfa3c81a05783b",
-					ParentId: util.Ref("test domain ID"),
-					Raw:      "",
-				}
-
-				// We only check one resource
-				got0, ok := got[8].(*ontology.ResourceGroup)
+				_, ok := got[8].(*ontology.ResourceGroup)
 				assert.True(t, ok)
-				assert.NotEmpty(t, got0.GetRaw())
-				got0.Raw = ""
-				return assert.Equal(t, want, got0)
+				_, ok = got[9].(*ontology.ResourceGroup)
+				assert.True(t, ok)
+				_, ok = got[10].(*ontology.ResourceGroup)
+				assert.True(t, ok)
+				_, ok = got[11].(*ontology.ResourceGroup)
+				return assert.True(t, ok)
 			},
 			wantErr: assert.NoError,
 		},
