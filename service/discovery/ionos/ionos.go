@@ -104,9 +104,7 @@ func NewIonosDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 // - Compute resource
 // - Network resource
 func (d *ionosDiscovery) List() (list []ontology.IsResource, err error) {
-	if err = d.authorize(); err != nil {
-		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
-	}
+	d.authorize()
 
 	// For IONOS Cloud, we have to discover the datacenters first and then the resources within those datacenters.
 	// Discover datacenters
@@ -168,12 +166,10 @@ func (d *ionosDiscovery) TargetOfEvaluationID() string {
 	return d.ctID
 }
 
-func (d *ionosDiscovery) authorize() (err error) {
+func (d *ionosDiscovery) authorize() {
 	if d.clients.computeClient == nil {
 		d.clients.computeClient = ionoscloud.NewAPIClient(d.authConfig)
 	}
-
-	return nil
 }
 
 // NewAuthorizer returns the IONOS Cloud configuration

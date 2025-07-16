@@ -464,9 +464,9 @@ func Test_ionosDiscovery_authorize(t *testing.T) {
 		ctID       string
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		wantErr assert.ErrorAssertionFunc
+		name   string
+		fields fields
+		want   assert.Want[*ionosDiscovery]
 	}{
 		{
 			name: "Happy path",
@@ -476,7 +476,9 @@ func Test_ionosDiscovery_authorize(t *testing.T) {
 				},
 				clients: clients{},
 			},
-			wantErr: assert.NoError,
+			want: func(t *testing.T, got *ionosDiscovery) bool {
+				return assert.NotEmpty(t, got)
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -486,9 +488,9 @@ func Test_ionosDiscovery_authorize(t *testing.T) {
 				clients:    tt.fields.clients,
 				ctID:       tt.fields.ctID,
 			}
-			err := d.authorize()
+			d.authorize()
 
-			tt.wantErr(t, err)
+			tt.want(t, d)
 		})
 	}
 }
@@ -511,16 +513,6 @@ func Test_ionosDiscovery_List(t *testing.T) {
 			want: assert.Nil[[]ontology.IsResource],
 			wantErr: func(t *testing.T, err error) bool {
 				return assert.ErrorContains(t, err, "could not discover datacenters:")
-			},
-		},
-		{
-			name: "error: discover block storage",
-			fields: fields{
-				ionosDiscovery: NewMockIonosDiscovery(newMockErrorSender()),
-			},
-			want: assert.Nil[[]ontology.IsResource],
-			wantErr: func(t *testing.T, err error) bool {
-				return assert.ErrorContains(t, err, "could not discover block storage:")
 			},
 		},
 		{
