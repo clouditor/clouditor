@@ -81,21 +81,24 @@ func (d *openstackDiscovery) getAttachedNetworkInterfaces(serverID string) ([]st
 
 // setProjectInfo stores the project ID and name based on the given resource
 func (d *openstackDiscovery) setProjectInfo(x interface{}) error {
-	var projectID string
+	var (
+		projectID string
+		err       error
+	)
 
 	switch resource := x.(type) {
 	case []servers.Server:
-		projectID = getProjectID(resource[0])
+		projectID, err = getProjectID(resource[0])
 	case []networks.Network:
-		projectID = getProjectID(resource[0])
+		projectID, err = getProjectID(resource[0])
 	case []volumes.Volume:
-		projectID = getProjectID(resource[0])
+		projectID, err = getProjectID(resource[0])
 	default:
 		return fmt.Errorf("unknown resource type: %T", resource)
 	}
 
-	if projectID == "" {
-		return fmt.Errorf("unknown resource type: %T, no tenant or project ID available", x)
+	if err != nil {
+		return fmt.Errorf("error getting project ID")
 	}
 
 	d.project.projectID = projectID
@@ -104,20 +107,53 @@ func (d *openstackDiscovery) setProjectInfo(x interface{}) error {
 	return nil
 }
 
+type resourceTypes interface {
+	servers.Server | *servers.Server |
+		networks.Network | *networks.Network |
+		volumes.Volume | *volumes.Volume
+}
+
 // getProjectID returns the project/tenant ID from the given ionoscloud resouce object
-func getProjectID(resource interface{}) string {
-	switch v := resource.(type) {
+func getProjectID[T resourceTypes](r T) (string, error) {
+	switch v := any(r).(type) {
 	case volumes.Volume:
-		return v.TenantID
+		if v.TenantID != "" {
+			return v.TenantID, nil
+		}
+	case *volumes.Volume:
+		if v != nil && v.TenantID != "" {
+			return v.TenantID, nil
+		}
+
 	case servers.Server:
-		return v.TenantID
+		if v.TenantID != "" {
+			return v.TenantID, nil
+		}
+	case *servers.Server:
+		if v != nil && v.TenantID != "" {
+			return v.TenantID, nil
+		}
+
 	case networks.Network:
 		if v.TenantID != "" {
-			return v.TenantID
+			return v.TenantID, nil
 		}
-		return v.ProjectID
+		if v.ProjectID != "" {
+			return v.ProjectID, nil
+		}
+	case *networks.Network:
+		if v != nil {
+			if v.TenantID != "" {
+				return v.TenantID, nil
+			}
+			if v.ProjectID != "" {
+				return v.ProjectID, nil
+			}
+		}
 	default:
-		log.Warnf("unknown resource type: %T, no tenant or project ID available", resource)
-		return ""
+		return "", fmt.Errorf("unknown resource type: %T", r)
 	}
+
+	return "", fmt.Errorf("no tenant or project ID available")
+
 }

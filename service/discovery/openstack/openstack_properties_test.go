@@ -205,7 +205,7 @@ func Test_openstackDiscovery_setProjectInfo(t *testing.T) {
 				return assert.Empty(t, d.project)
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "unknown resource type: []networks.Network, no tenant or project ID available")
+				return assert.ErrorContains(t, err, "error getting project ID")
 			},
 		},
 		{
@@ -302,72 +302,131 @@ func Test_openstackDiscovery_setProjectInfo(t *testing.T) {
 
 func Test_getProjectID(t *testing.T) {
 	type args struct {
-		resource interface{}
+		call func() (string, error)
 	}
 	tests := []struct {
-		name string
-		args args
-		want assert.Want[string]
+		name    string
+		args    args
+		want    assert.Want[string]
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "error: unknown resource type",
+			name: "error: no tenant or project ID available",
 			args: args{
-				resource: "unknown resource type",
+				call: func() (string, error) {
+					return getProjectID(volumes.Volume{})
+				},
 			},
-			want: func(t *testing.T, got string) bool {
-				return assert.Equal(t, "", got)
+			want: assert.Empty[string],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "no tenant or project ID available")
 			},
 		},
 		{
 			name: "Happy path: volume",
 			args: args{
-				resource: volumes.Volume{
-					TenantID: testdata.MockOpenstackProjectID1,
+				call: func() (string, error) {
+					return getProjectID(volumes.Volume{
+						TenantID: testdata.MockOpenstackProjectID1,
+					})
 				},
 			},
 			want: func(t *testing.T, got string) bool {
 				return assert.Equal(t, testdata.MockOpenstackProjectID1, got)
 			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: *volume",
+			args: args{
+				call: func() (string, error) {
+					return getProjectID(&volumes.Volume{
+						TenantID: testdata.MockOpenstackProjectID1,
+					})
+				},
+			},
+			want: func(t *testing.T, got string) bool {
+				return assert.Equal(t, testdata.MockOpenstackProjectID1, got)
+			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "Happy path: networks project ID",
 			args: args{
-				resource: networks.Network{
-					ProjectID: testdata.MockOpenstackProjectID1,
+				call: func() (string, error) {
+					return getProjectID(networks.Network{
+						TenantID: testdata.MockOpenstackProjectID1,
+					})
 				},
 			},
 			want: func(t *testing.T, got string) bool {
 				return assert.Equal(t, testdata.MockOpenstackProjectID1, got)
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "Happy path: networks tenant ID",
 			args: args{
-				resource: networks.Network{
-					TenantID: testdata.MockOpenstackProjectID1,
+				call: func() (string, error) {
+					return getProjectID(networks.Network{
+						ProjectID: testdata.MockOpenstackProjectID1,
+					})
 				},
 			},
 			want: func(t *testing.T, got string) bool {
 				return assert.Equal(t, testdata.MockOpenstackProjectID1, got)
 			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: *networks tenant ID",
+			args: args{
+				call: func() (string, error) {
+					return getProjectID(&networks.Network{
+						ProjectID: testdata.MockOpenstackProjectID1,
+					})
+				},
+			},
+			want: func(t *testing.T, got string) bool {
+				return assert.Equal(t, testdata.MockOpenstackProjectID1, got)
+			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "Happy path: servers",
 			args: args{
-				resource: servers.Server{
-					TenantID: testdata.MockOpenstackProjectID1,
+				call: func() (string, error) {
+					return getProjectID(servers.Server{
+						TenantID: testdata.MockOpenstackProjectID1,
+					})
 				},
 			},
 			want: func(t *testing.T, got string) bool {
 				return assert.Equal(t, testdata.MockOpenstackProjectID1, got)
 			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: *servers",
+			args: args{
+				call: func() (string, error) {
+					return getProjectID(&servers.Server{
+						TenantID: testdata.MockOpenstackProjectID1,
+					})
+				},
+			},
+			want: func(t *testing.T, got string) bool {
+				return assert.Equal(t, testdata.MockOpenstackProjectID1, got)
+			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := getProjectID(tt.args.resource)
+			got, err := tt.args.call()
 
 			tt.want(t, got)
+			tt.wantErr(t, err)
 		})
 	}
 }

@@ -38,13 +38,10 @@ import (
 
 // handleNetworkInterfaces creates a network interface resource based on the Clouditor Ontology
 func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) (ontology.IsResource, error) {
-	var projectId string
-
 	// Get project/tenant ID
-	if network.ProjectID != "" {
-		projectId = network.ProjectID
-	} else if network.TenantID != "" {
-		projectId = network.TenantID
+	projectId, err := getProjectID(network)
+	if err != nil {
+		return nil, fmt.Errorf("could not get project ID for network interface '%s': %w", network.Name, err)
 	}
 
 	r := &ontology.NetworkInterface{
@@ -61,7 +58,7 @@ func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) 
 	}
 
 	// Create project resource for the parentId if not available
-	err := d.checkAndHandleManualCreatedProject(projectId, projectId, d.domain.domainID)
+	err = d.checkAndHandleManualCreatedProject(projectId, projectId, d.domain.domainID)
 	if err != nil {
 		return nil, fmt.Errorf("could not handle project for network interface '%s': %w", network.Name, err)
 	}
