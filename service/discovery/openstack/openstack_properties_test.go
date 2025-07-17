@@ -185,10 +185,11 @@ func Test_openstackDiscovery_setProjectInfo(t *testing.T) {
 		x interface{}
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   assert.Want[*openstackDiscovery]
+		name    string
+		fields  fields
+		args    args
+		want    assert.Want[*openstackDiscovery]
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "error networks: no tenant or project ID available",
@@ -202,6 +203,9 @@ func Test_openstackDiscovery_setProjectInfo(t *testing.T) {
 			},
 			want: func(t *testing.T, d *openstackDiscovery) bool {
 				return assert.Empty(t, d.project)
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "unknown resource type: []networks.Network, no tenant or project ID available")
 			},
 		},
 		{
@@ -220,6 +224,7 @@ func Test_openstackDiscovery_setProjectInfo(t *testing.T) {
 				assert.Equal(t, testdata.MockOpenstackProjectID1, d.project.projectID)
 				return assert.Equal(t, testdata.MockOpenstackProjectID1, d.project.projectName)
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "Happy path: networks TenantID",
@@ -237,6 +242,7 @@ func Test_openstackDiscovery_setProjectInfo(t *testing.T) {
 				assert.Equal(t, testdata.MockOpenstackProjectID1, d.project.projectID)
 				return assert.Equal(t, testdata.MockOpenstackProjectID1, d.project.projectName)
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "Happy path: networks ProjectID",
@@ -254,6 +260,7 @@ func Test_openstackDiscovery_setProjectInfo(t *testing.T) {
 				assert.Equal(t, testdata.MockOpenstackProjectID1, d.project.projectID)
 				return assert.Equal(t, testdata.MockOpenstackProjectID1, d.project.projectName)
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "Happy path: volumes",
@@ -271,6 +278,7 @@ func Test_openstackDiscovery_setProjectInfo(t *testing.T) {
 				assert.Equal(t, testdata.MockOpenstackProjectID1, d.project.projectID)
 				return assert.Equal(t, testdata.MockOpenstackProjectID1, d.project.projectName)
 			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -284,9 +292,82 @@ func Test_openstackDiscovery_setProjectInfo(t *testing.T) {
 				project:  tt.fields.project,
 				projects: tt.fields.projects,
 			}
-			d.setProjectInfo(tt.args.x)
+			err := d.setProjectInfo(tt.args.x)
 
 			tt.want(t, d)
+			tt.wantErr(t, err)
+		})
+	}
+}
+
+func Test_getProjectID(t *testing.T) {
+	type args struct {
+		resource interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want assert.Want[string]
+	}{
+		{
+			name: "error: unknown resource type",
+			args: args{
+				resource: "unknown resource type",
+			},
+			want: func(t *testing.T, got string) bool {
+				return assert.Equal(t, "", got)
+			},
+		},
+		{
+			name: "Happy path: volume",
+			args: args{
+				resource: volumes.Volume{
+					TenantID: testdata.MockOpenstackProjectID1,
+				},
+			},
+			want: func(t *testing.T, got string) bool {
+				return assert.Equal(t, testdata.MockOpenstackProjectID1, got)
+			},
+		},
+		{
+			name: "Happy path: networks project ID",
+			args: args{
+				resource: networks.Network{
+					ProjectID: testdata.MockOpenstackProjectID1,
+				},
+			},
+			want: func(t *testing.T, got string) bool {
+				return assert.Equal(t, testdata.MockOpenstackProjectID1, got)
+			},
+		},
+		{
+			name: "Happy path: networks tenant ID",
+			args: args{
+				resource: networks.Network{
+					TenantID: testdata.MockOpenstackProjectID1,
+				},
+			},
+			want: func(t *testing.T, got string) bool {
+				return assert.Equal(t, testdata.MockOpenstackProjectID1, got)
+			},
+		},
+		{
+			name: "Happy path: servers",
+			args: args{
+				resource: servers.Server{
+					TenantID: testdata.MockOpenstackProjectID1,
+				},
+			},
+			want: func(t *testing.T, got string) bool {
+				return assert.Equal(t, testdata.MockOpenstackProjectID1, got)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := getProjectID(tt.args.resource)
+
+			tt.want(t, got)
 		})
 	}
 }

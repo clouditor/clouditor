@@ -33,7 +33,6 @@ import (
 	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/attachinterfaces"
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
-	"github.com/gophercloud/gophercloud/v2/openstack/containerinfra/v1/clusters"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/v2/pagination"
 )
@@ -81,31 +80,44 @@ func (d *openstackDiscovery) getAttachedNetworkInterfaces(serverID string) ([]st
 }
 
 // setProjectInfo stores the project ID and name based on the given resource
-func (d *openstackDiscovery) setProjectInfo(x interface{}) {
+func (d *openstackDiscovery) setProjectInfo(x interface{}) error {
+	var projectID string
 
-	switch v := x.(type) {
-	case []volumes.Volume:
-		d.project.projectID = v[0].TenantID
-		d.project.projectName = v[0].TenantID // it is not possible to extract the project name
+	switch resource := x.(type) {
 	case []servers.Server:
-		d.project.projectID = v[0].TenantID
-		d.project.projectName = v[0].TenantID // it is not possible to extract the project name
+		projectID = getProjectID(resource[0])
 	case []networks.Network:
-		id := ""
-		if v[0].TenantID != "" {
-			id = v[0].TenantID
-		} else if v[0].ProjectID != "" {
-			id = v[0].ProjectID
-			d.project.projectName = v[0].ProjectID
-		} else {
-			log.Warnf("Network %s has no tenant or project ID, cannot set project information", v[0].ID)
-		}
-		d.project.projectID = id
-		d.project.projectName = id // it is not possible to extract the project name
-	case []clusters.Cluster:
-		d.project.projectID = v[0].ProjectID
-		d.project.projectName = v[0].ProjectID // it is not possible to extract the project name
+		projectID = getProjectID(resource[0])
+	case []volumes.Volume:
+		projectID = getProjectID(resource[0])
 	default:
-		log.Debugf("no known resource type found")
+		return fmt.Errorf("unknown resource type: %T", resource)
+	}
+
+	if projectID == "" {
+		return fmt.Errorf("unknown resource type: %T, no tenant or project ID available", x)
+	}
+
+	d.project.projectID = projectID
+	d.project.projectName = projectID // it is not possible to extract the project name
+
+	return nil
+}
+
+// getProjectID returns the project/tenant ID from the given ionoscloud resouce object
+func getProjectID(resource interface{}) string {
+	switch v := resource.(type) {
+	case volumes.Volume:
+		return v.TenantID
+	case servers.Server:
+		return v.TenantID
+	case networks.Network:
+		if v.TenantID != "" {
+			return v.TenantID
+		}
+		return v.ProjectID
+	default:
+		log.Warnf("unknown resource type: %T, no tenant or project ID available", resource)
+		return ""
 	}
 }
