@@ -111,9 +111,9 @@ const (
 	DefaultCSAFDomain                           = ""
 	DefaultDashboardCallbackURL                 = "http://localhost:8080/callback"
 	DefaultLogLevel                             = "info"
+	DefaultIgnoreDefaultMetrics                 = false
 
-	EnvPrefix                   = "CLOUDITOR"
-	DefaultIgnoreDefaultMetrics = false
+	EnvPrefix = "CLOUDITOR"
 )
 
 var (
