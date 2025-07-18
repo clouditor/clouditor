@@ -33,6 +33,8 @@ import (
 	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/attachinterfaces"
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/domains"
+	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/projects"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/v2/pagination"
 )
@@ -82,17 +84,27 @@ func (d *openstackDiscovery) getAttachedNetworkInterfaces(serverID string) ([]st
 // setProjectInfo stores the project ID and name based on the given resource
 func (d *openstackDiscovery) setProjectInfo(x interface{}) error {
 	var (
-		projectID string
-		err       error
+		projectID   string
+		projectName string
+		err         error
 	)
 
 	switch resource := x.(type) {
 	case []servers.Server:
 		projectID, err = getProjectID(resource[0])
+		projectName = projectID // it is not possible to extract the project name
 	case []networks.Network:
 		projectID, err = getProjectID(resource[0])
+		projectName = projectID // it is not possible to extract the project name
 	case []volumes.Volume:
 		projectID, err = getProjectID(resource[0])
+		projectName = projectID // it is not possible to extract the project name
+	case []projects.Project:
+		projectID = resource[0].ID
+		projectName = resource[0].Name
+	case []domains.Domain:
+		// Domain does not have a project ID or name, so we skip this
+		return nil
 	default:
 		return fmt.Errorf("unknown resource type: %T", resource)
 	}
@@ -102,8 +114,7 @@ func (d *openstackDiscovery) setProjectInfo(x interface{}) error {
 	}
 
 	d.project.projectID = projectID
-	d.project.projectName = projectID // it is not possible to extract the project name
-
+	d.project.projectName = projectName
 	return nil
 }
 
