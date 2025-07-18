@@ -336,7 +336,10 @@ func genericList[T any, O any, R ontology.IsResource](d *openstackDiscovery,
 
 		// Check if project/tenant ID is already stored
 		if d.project.projectID == "" {
-			d.setProjectInfo(x)
+			err := d.setProjectInfo(x)
+			if err != nil {
+				return false, fmt.Errorf("could not set project info: %w", err)
+			}
 		}
 
 		for _, s := range x {
