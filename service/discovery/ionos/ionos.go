@@ -84,6 +84,8 @@ type ionosDiscovery struct {
 
 type clients struct {
 	computeClient *ionoscloud.APIClient
+	storageClient *ionoscloud.APIClient
+	networkClient *ionoscloud.APIClient
 }
 
 func NewIonosDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
