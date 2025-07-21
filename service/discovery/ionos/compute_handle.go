@@ -50,7 +50,7 @@ func (d *ionosDiscovery) handleServer(server ionoscloud.Server, dc ionoscloud.Da
 	r := &ontology.VirtualMachine{
 		Id:           util.Deref(server.Id),
 		Name:         util.Deref(server.Properties.Name),
-		CreationTime: timestamppb.New(*server.Metadata.GetCreatedDate()),
+		CreationTime: timestamppb.New(util.Deref(server.Metadata.GetCreatedDate())),
 		GeoLocation: &ontology.GeoLocation{
 			Region: util.Deref(dc.Properties.GetLocation()),
 		},
