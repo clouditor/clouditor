@@ -348,8 +348,6 @@ func genericList[T any, O any, R ontology.IsResource](d *openstackDiscovery,
 				return false, fmt.Errorf("could not convert into Clouditor ontology: %w", err)
 			}
 
-			log.Debugf("Adding resource %+v", s)
-
 			list = append(list, r)
 		}
 
