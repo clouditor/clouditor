@@ -113,7 +113,7 @@ func Test_ionosDiscovery_discoverServer(t *testing.T) {
 						Name: util.Ref(testdata.MockIonosDatacenterName1),
 					},
 					Metadata: &ionoscloud.DatacenterElementMetadata{
-						CreatedDate: &ionoscloud.IonosTime{testdata.CreationTime},
+						CreatedDate: &ionoscloud.IonosTime{Time: testdata.CreationTime},
 					},
 				},
 			},
@@ -176,7 +176,7 @@ func Test_ionosDiscovery_discoverBlockStorages(t *testing.T) {
 						Name: util.Ref(testdata.MockIonosDatacenterName1),
 					},
 					Metadata: &ionoscloud.DatacenterElementMetadata{
-						CreatedDate: &ionoscloud.IonosTime{testdata.CreationTime},
+						CreatedDate: &ionoscloud.IonosTime{Time: testdata.CreationTime},
 					},
 				},
 			},
@@ -233,7 +233,7 @@ func Test_ionosDiscovery_discoverLoadBalancers(t *testing.T) {
 						Name: util.Ref(testdata.MockIonosDatacenterName1),
 					},
 					Metadata: &ionoscloud.DatacenterElementMetadata{
-						CreatedDate: &ionoscloud.IonosTime{testdata.CreationTime},
+						CreatedDate: &ionoscloud.IonosTime{Time: testdata.CreationTime},
 					},
 				},
 			},
