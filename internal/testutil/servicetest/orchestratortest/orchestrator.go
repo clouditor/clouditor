@@ -173,13 +173,13 @@ var (
 	}
 	MockAssessmentResult1 = &assessment.AssessmentResult{
 		Id:                   testdata.MockAssessmentResult1ID,
-		Timestamp:            timestamppb.New(time.Unix(1, 0)),
+		CreatedAt:            timestamppb.New(time.Unix(1, 0)),
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 		MetricId:             testdata.MockMetricID1,
 		Compliant:            true,
 		EvidenceId:           testdata.MockEvidenceID1,
-		ResourceId:           testdata.MockResourceID1,
-		ResourceTypes:        []string{"Resource"},
+		ResourceId:           testdata.MockVirtualMachineID1,
+		ResourceTypes:        testdata.MockVirtualMachineTypes,
 		ComplianceComment:    assessment.DefaultCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:             "==",
@@ -188,17 +188,24 @@ var (
 			MetricId:             testdata.MockMetricID1,
 			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 		},
-		ToolId: util.Ref(assessment.AssessmentToolId),
+		ToolId:           util.Ref(assessment.AssessmentToolId),
+		HistoryUpdatedAt: timestamppb.New(time.Unix(1, 0)),
+		History: []*assessment.Record{
+			{
+				EvidenceRecordedAt: timestamppb.New(time.Unix(1, 0)),
+				EvidenceId:         testdata.MockEvidenceID1,
+			},
+		},
 	}
 	MockAssessmentResult2 = &assessment.AssessmentResult{
 		Id:                   testdata.MockAssessmentResult2ID,
-		Timestamp:            timestamppb.New(time.Unix(1, 0)),
+		CreatedAt:            timestamppb.New(time.Unix(1, 0)),
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 		MetricId:             testdata.MockMetricID1,
 		Compliant:            true,
 		EvidenceId:           testdata.MockEvidenceID1,
-		ResourceId:           testdata.MockResourceID1,
-		ResourceTypes:        []string{"Resource"},
+		ResourceId:           testdata.MockVirtualMachineID1,
+		ResourceTypes:        testdata.MockVirtualMachineTypes,
 		ComplianceComment:    assessment.DefaultCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:             "==",
@@ -207,17 +214,24 @@ var (
 			MetricId:             testdata.MockMetricID1,
 			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 		},
-		ToolId: util.Ref(assessment.AssessmentToolId),
+		ToolId:           util.Ref(assessment.AssessmentToolId),
+		HistoryUpdatedAt: timestamppb.New(time.Unix(1, 0)),
+		History: []*assessment.Record{
+			{
+				EvidenceRecordedAt: timestamppb.New(time.Unix(1, 0)),
+				EvidenceId:         testdata.MockEvidenceID1,
+			},
+		},
 	}
 	MockAssessmentResult3 = &assessment.AssessmentResult{
 		Id:                   testdata.MockAssessmentResult3ID,
-		Timestamp:            timestamppb.New(time.Unix(1, 0)),
+		CreatedAt:            timestamppb.New(time.Unix(1, 0)),
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 		MetricId:             testdata.MockMetricID2,
 		Compliant:            false,
 		EvidenceId:           testdata.MockEvidenceID1,
-		ResourceId:           testdata.MockResourceID1,
-		ResourceTypes:        []string{"Resource"},
+		ResourceId:           testdata.MockVirtualMachineID1,
+		ResourceTypes:        testdata.MockVirtualMachineTypes,
 		ComplianceComment:    assessment.DefaultNonCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:             "==",
@@ -226,17 +240,24 @@ var (
 			MetricId:             testdata.MockMetricID2,
 			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 		},
-		ToolId: util.Ref(assessment.AssessmentToolId),
+		ToolId:           util.Ref(assessment.AssessmentToolId),
+		HistoryUpdatedAt: timestamppb.New(time.Unix(1, 0)),
+		History: []*assessment.Record{
+			{
+				EvidenceRecordedAt: timestamppb.New(time.Unix(1, 0)),
+				EvidenceId:         testdata.MockEvidenceID1,
+			},
+		},
 	}
 	MockAssessmentResult4 = &assessment.AssessmentResult{
 		Id:                   testdata.MockAssessmentResult4ID,
-		Timestamp:            timestamppb.New(time.Unix(1, 0)),
+		CreatedAt:            timestamppb.New(time.Unix(1, 0)),
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 		MetricId:             testdata.MockMetricID2,
 		Compliant:            false,
 		EvidenceId:           testdata.MockEvidenceID1,
-		ResourceId:           testdata.MockResourceID2,
-		ResourceTypes:        []string{"Resource"},
+		ResourceId:           testdata.MockVirtualMachineID2,
+		ResourceTypes:        testdata.MockVirtualMachineTypes,
 		ComplianceComment:    assessment.DefaultNonCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:             "==",
@@ -245,7 +266,14 @@ var (
 			MetricId:             testdata.MockMetricID2,
 			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 		},
-		ToolId: util.Ref(testdata.MockAssessmentResultToolID),
+		ToolId:           util.Ref(testdata.MockAssessmentResultToolID),
+		HistoryUpdatedAt: timestamppb.New(time.Unix(1, 0)),
+		History: []*assessment.Record{
+			{
+				EvidenceRecordedAt: timestamppb.New(time.Unix(1, 0)),
+				EvidenceId:         testdata.MockEvidenceID1,
+			},
+		},
 	}
 	MockAssessmentResults = []*assessment.AssessmentResult{MockAssessmentResult1, MockAssessmentResult2, MockAssessmentResult3, MockAssessmentResult4}
 

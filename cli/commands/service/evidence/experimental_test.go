@@ -23,13 +23,13 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package discovery
+package evidence
 
 import (
 	"bytes"
 	"testing"
 
-	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/cli"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 
@@ -46,7 +46,7 @@ func TestNewListGraphEdgesCommandNoArgs(t *testing.T) {
 	err = cmd.RunE(nil, []string{})
 	assert.NoError(t, err)
 
-	var response = &discovery.ListGraphEdgesResponse{}
+	var response = &evidence.ListGraphEdgesResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
 	assert.NoError(t, err)
@@ -64,7 +64,7 @@ func TestNewUpdateResourceCommand(t *testing.T) {
 	err = cmd.RunE(nil, []string{`{"id": "MyApplication", "targetOfEvaluationId": "00000000-0000-0000-0000-000000000000", "toolId":"test collector id", "resourceType": "Application,Resource", "properties":{"@type":"type.googleapis.com/clouditor.ontology.v1.Application", "id": "MyApplication", "name": "MyApplication"}}`})
 	assert.NoError(t, err)
 
-	var response = &discovery.Resource{}
+	var response = &evidence.Resource{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
 	assert.NoError(t, err)

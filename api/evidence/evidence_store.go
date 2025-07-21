@@ -26,8 +26,21 @@
 
 package evidence
 
+import "google.golang.org/protobuf/proto"
+
 // GetTargetOfEvaluationId is a shortcut to implement TargetOfEvaluationRequest. It returns
 // the target of evaluation ID of the inner object.
 func (req *StoreEvidenceRequest) GetTargetOfEvaluationId() string {
 	return req.GetEvidence().GetTargetOfEvaluationId()
+}
+
+// GetPayload is a shortcut to implement EvidenceRequest. It returns the Evidence of the request.
+func (req *StoreEvidenceRequest) GetPayload() proto.Message {
+	return req.Evidence
+}
+
+// GetTargetOfEvaluationId is a shortcut to implement TargetOfEvaluationRequest. It returns
+// the target of evaluation ID of the inner object.
+func (req *UpdateResourceRequest) GetTargetOfEvaluationId() string {
+	return req.Resource.GetTargetOfEvaluationId()
 }

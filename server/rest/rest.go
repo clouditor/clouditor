@@ -220,10 +220,6 @@ func RunServer(ctx context.Context, grpcPort uint16, port uint16, serverOpts ...
 		return fmt.Errorf("failed to connect to discovery gRPC service %w", err)
 	}
 
-	if err := discovery.RegisterExperimentalDiscoveryHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), cnf.opts); err != nil {
-		return fmt.Errorf("failed to connect to discovery gRPC service %w", err)
-	}
-
 	if err := assessment.RegisterAssessmentHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), cnf.opts); err != nil {
 		return fmt.Errorf("failed to connect to assessment gRPC service %w", err)
 	}
@@ -237,6 +233,10 @@ func RunServer(ctx context.Context, grpcPort uint16, port uint16, serverOpts ...
 	}
 
 	if err := evidence.RegisterEvidenceStoreHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), cnf.opts); err != nil {
+		return fmt.Errorf("failed to connect to evidence gRPC service %w", err)
+	}
+
+	if err := evidence.RegisterExperimentalResourcesHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), cnf.opts); err != nil {
 		return fmt.Errorf("failed to connect to evidence gRPC service %w", err)
 	}
 

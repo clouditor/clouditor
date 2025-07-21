@@ -31,7 +31,6 @@ import (
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
-	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/config"
@@ -523,11 +522,11 @@ func TestService_GetTargetOfEvaluationStatistics(t *testing.T) {
 					assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", "", testdata.MockTargetOfEvaluationID1, "Second Audit Scope for ToE1")))
 
 					// Store resources
-					assert.NoError(t, s.Create(&discovery.Resource{
+					assert.NoError(t, s.Create(&evidence.Resource{
 						Id:                   uuid.NewString(),
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 					}))
-					assert.NoError(t, s.Create(&discovery.Resource{
+					assert.NoError(t, s.Create(&evidence.Resource{
 						Id:                   uuid.NewString(),
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 					}))

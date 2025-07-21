@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,32 +23,42 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package discovery
+package evidence
 
 import (
-	"encoding/json"
-	"reflect"
+	"clouditor.io/clouditor/v2/api/assessment"
+	service_assessment "clouditor.io/clouditor/v2/service/assessment"
 
-	"clouditor.io/clouditor/v2/api/ontology"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/test/bufconn"
 )
 
-// Discoverer is a part of the discovery service that takes care of the actual discovering and translation into
-// ontology objects.
-type Discoverer interface {
-	Name() string
-	List() ([]ontology.IsResource, error)
-	TargetOfEvaluationID() string
-}
+const DefaultBufferSize = 1024 * 1024
 
-func Raw(raws ...any) string {
-	var rawMap = make(map[string][]any)
+var (
+	bufConnListener *bufconn.Listener
+)
 
-	for _, raw := range raws {
-		typ := reflect.TypeOf(raw).String()
+// func bufConnDialer(context.Context, string) (net.Conn, error) {
+// 	return bufConnListener.Dial()
+// }
 
-		rawMap[typ] = append(rawMap[typ], raw)
-	}
+// startBufConnServer starts an gRPC listening on a bufconn listener. It exposes
+// real functionality of the following services for testing purposes:
+// * Assessment Service
+func startBufConnServer() (*grpc.Server, *service_assessment.Service) {
+	bufConnListener = bufconn.Listen(DefaultBufferSize)
 
-	b, _ := json.Marshal(rawMap)
-	return string(b)
+	server := grpc.NewServer()
+
+	assessmentService := service_assessment.NewService()
+	assessment.RegisterAssessmentServer(server, assessmentService)
+
+	go func() {
+		if err := server.Serve(bufConnListener); err != nil {
+			log.Fatalf("Server exited with error: %v", err)
+		}
+	}()
+
+	return server, assessmentService
 }

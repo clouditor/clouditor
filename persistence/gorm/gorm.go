@@ -31,7 +31,6 @@ import (
 	"strings"
 
 	"clouditor.io/clouditor/v2/api/assessment"
-	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evaluation"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/orchestrator"
@@ -68,7 +67,8 @@ var DefaultTypes = []any{
 	&assessment.MetricImplementation{},
 	&assessment.Metric{},
 	&assessment.AssessmentResult{},
-	&discovery.Resource{},
+	&assessment.Record{},
+	&evidence.Resource{},
 	&evidence.Evidence{},
 	&orchestrator.TargetOfEvaluation{},
 	&orchestrator.Certificate{},

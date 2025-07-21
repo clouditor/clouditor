@@ -1504,7 +1504,7 @@ components:
         AssessmentResult:
             required:
                 - id
-                - timestamp
+                - createdAt
                 - metricId
                 - metricConfiguration
                 - evidenceId
@@ -1513,12 +1513,14 @@ components:
                 - complianceComment
                 - targetOfEvaluationId
                 - toolId
+                - historyUpdatedAt
+                - history
             type: object
             properties:
                 id:
                     type: string
                     description: Assessment result id
-                timestamp:
+                createdAt:
                     type: string
                     description: Time of assessment
                     format: date-time
@@ -1534,7 +1536,7 @@ components:
                     description: 'Compliant case: true or false'
                 evidenceId:
                     type: string
-                    description: Reference to the assessed evidence
+                    description: Reference to the last assessed evidence
                 resourceId:
                     type: string
                     description: Reference to the resource of the assessed evidence
@@ -1557,6 +1559,15 @@ components:
                 toolId:
                     type: string
                     description: Reference to the tool which provided the assessment result
+                historyUpdatedAt:
+                    type: string
+                    description: The time of the last update of the assessment result history field
+                    format: date-time
+                history:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Record'
+                    description: Stores the history of evidence IDs and timestamps for evidence that have the same content as the evidence used for this assessment result.
             description: |-
                 A result resource, representing the result after assessing the cloud resource
                  with id resource_id.
@@ -2084,6 +2095,17 @@ components:
                     items:
                         type: string
             description: OSLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        Record:
+            required:
+                - evidenceId
+                - evidenceRecordedAt
+            type: object
+            properties:
+                evidenceId:
+                    type: string
+                evidenceRecordedAt:
+                    type: string
+                    format: date-time
         Redundancy:
             type: object
             properties:

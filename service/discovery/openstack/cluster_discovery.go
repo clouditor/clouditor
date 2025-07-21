@@ -1,4 +1,4 @@
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2025 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,45 +23,18 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package discovery
+package openstack
 
 import (
-	"context"
-	"net"
+	"clouditor.io/clouditor/v2/api/ontology"
 
-	"clouditor.io/clouditor/v2/api/assessment"
-	service_assessment "clouditor.io/clouditor/v2/service/assessment"
-
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/test/bufconn"
+	"github.com/gophercloud/gophercloud/v2/openstack/containerinfra/v1/clusters"
 )
 
-const DefaultBufferSize = 1024 * 1024
+// discoverCluster discovers OpenStack clusters and returns a list of resources
+func (d *openstackDiscovery) discoverCluster() (list []ontology.IsResource, err error) {
+	var opts clusters.ListOptsBuilder = &clusters.ListOpts{}
+	list, err = genericList(d, d.clusterClient, clusters.List, d.handleCluster, clusters.ExtractClusters, opts)
 
-var (
-	bufConnListener *bufconn.Listener
-)
-
-func bufConnDialer(context.Context, string) (net.Conn, error) {
-	return bufConnListener.Dial()
-}
-
-// startBufConnServer starts an gRPC listening on a bufconn listener. It exposes
-// real functionality of the following services for testing purposes:
-// * Assessment Service
-func startBufConnServer() (*grpc.Server, *service_assessment.Service) {
-	bufConnListener = bufconn.Listen(DefaultBufferSize)
-
-	server := grpc.NewServer()
-
-	assessmentService := service_assessment.NewService()
-	assessment.RegisterAssessmentServer(server, assessmentService)
-
-	go func() {
-		if err := server.Serve(bufConnListener); err != nil {
-			log.Fatalf("Server exited with error: %v", err)
-		}
-	}()
-
-	return server, assessmentService
+	return
 }

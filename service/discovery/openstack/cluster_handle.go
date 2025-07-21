@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2025 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,62 +23,32 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package discovery
+package openstack
 
 import (
-	"context"
-	"fmt"
-
 	"clouditor.io/clouditor/v2/api/discovery"
-	"clouditor.io/clouditor/v2/cli"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/util"
 
-	"github.com/spf13/cobra"
+	"github.com/gophercloud/gophercloud/v2/openstack/containerinfra/v1/clusters"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// NewStartDiscoveryCommand returns a cobra command for the `start` subcommand
-func NewStartDiscoveryCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "start",
-		Short: "Starts the discovery",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			var (
-				err     error
-				session *cli.Session
-				client  discovery.DiscoveryClient
-				res     *discovery.StartDiscoveryResponse
-			)
-
-			if session, err = cli.ContinueSession(); err != nil {
-				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
-				return nil
-			}
-
-			client = discovery.NewDiscoveryClient(session)
-
-			res, err = client.Start(context.Background(), &discovery.StartDiscoveryRequest{})
-
-			return session.HandleResponse(res, err)
+// handleCluster creates a container resource based on the Clouditor Ontology
+func (d *openstackDiscovery) handleCluster(cluster *clusters.Cluster) (ontology.IsResource, error) {
+	r := &ontology.ContainerOrchestration{
+		Id:           cluster.UUID,
+		Name:         cluster.Name,
+		CreationTime: timestamppb.New(cluster.CreatedAt),
+		GeoLocation: &ontology.GeoLocation{
+			Region: d.region,
 		},
+		Labels:   cluster.Labels,
+		ParentId: util.Ref(cluster.ProjectID),
+		Raw:      discovery.Raw(cluster),
 	}
 
-	return cmd
-}
+	log.Infof("Adding cluster '%s", cluster.Name)
 
-// NewDiscoveryCommand returns a cobra command for `discovery` subcommands
-func NewDiscoveryCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "discovery",
-		Short: "Discovery service commands",
-	}
-
-	AddCommands(cmd)
-
-	return cmd
-}
-
-// AddCommands adds all subcommands
-func AddCommands(cmd *cobra.Command) {
-	cmd.AddCommand(
-		NewStartDiscoveryCommand(),
-	)
+	return r, nil
 }
