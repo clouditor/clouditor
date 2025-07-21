@@ -28,7 +28,7 @@ package api
 import (
 	"clouditor.io/clouditor/v2/internal/util"
 
-	"github.com/bufbuild/protovalidate-go"
+	"buf.build/go/protovalidate"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"

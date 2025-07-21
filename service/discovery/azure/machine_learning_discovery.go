@@ -54,7 +54,6 @@ func (d *azureDiscovery) discoverMLWorkspaces() ([]ontology.IsResource, error) {
 			return list, err
 		}
 
-		// TODO(anatheka): New Resource to Cloud Ontology, but where?
 		// Add storage, atRestEncryption (keyVault), ...?
 		for _, value := range pageResponse.Value {
 			// Add ML compute resources

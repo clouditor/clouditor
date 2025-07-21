@@ -7,15 +7,89 @@ import (
 	"net"
 	"os"
 	"testing"
+	"time"
 
 	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/cli"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/server"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+)
+
+var MockAssessmentResult1 = &assessment.AssessmentResult{
+	Id:                   testdata.MockAssessmentResult1ID,
+	CreatedAt:            timestamppb.New(time.Unix(1, 0)),
+	TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+	MetricId:             testdata.MockMetricID1,
+	Compliant:            true,
+	EvidenceId:           testdata.MockEvidenceID1,
+	ResourceId:           testdata.MockVirtualMachineID1,
+	ResourceTypes:        testdata.MockVirtualMachineTypes,
+	ComplianceComment:    assessment.DefaultCompliantMessage,
+	MetricConfiguration: &assessment.MetricConfiguration{
+		Operator:             "==",
+		TargetValue:          structpb.NewBoolValue(true),
+		IsDefault:            true,
+		MetricId:             testdata.MockMetricID1,
+		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+	},
+	ToolId:           util.Ref(assessment.AssessmentToolId),
+	HistoryUpdatedAt: timestamppb.New(time.Unix(1, 0)),
+	History: []*assessment.Record{
+		{
+			EvidenceId:         testdata.MockEvidenceID1,
+			EvidenceRecordedAt: timestamppb.New(time.Unix(1, 0)),
+		},
+	},
+}
+
+var (
+	MockEvidence1 = &evidence.Evidence{
+		Id:                   testdata.MockEvidenceID1,
+		Timestamp:            timestamppb.New(time.Unix(1, 0)),
+		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+		ToolId:               testdata.MockEvidenceToolID1,
+		Resource: &ontology.Resource{
+			Type: &ontology.Resource_VirtualMachine{
+				VirtualMachine: &ontology.VirtualMachine{
+					Id:           testdata.MockVirtualMachineID1,
+					Name:         testdata.MockVirtualMachineName1,
+					Description:  "Mock evidence for Virtual Machine",
+					CreationTime: timestamppb.New(time.Unix(1, 0)),
+					AutomaticUpdates: &ontology.AutomaticUpdates{
+						Enabled: true,
+					},
+					BlockStorageIds: []string{testdata.MockVirtualMachineID2},
+				},
+			},
+		},
+	}
+
+	MockEvidence2 = &evidence.Evidence{
+		Id:                   testdata.MockEvidenceID2,
+		Timestamp:            timestamppb.New(time.Unix(1, 0)),
+		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+		ToolId:               testdata.MockEvidenceToolID1,
+		Resource: &ontology.Resource{
+			Type: &ontology.Resource_BlockStorage{
+				BlockStorage: &ontology.BlockStorage{
+					Id:           testdata.MockBlockStorageID1,
+					Name:         testdata.MockBlockStorageName1,
+					Description:  "Mock evidence for Block Storage",
+					CreationTime: timestamppb.New(time.Unix(1, 0)),
+				},
+			},
+		},
+	}
 )
 
 // PrepareSession prepares a session for unit tests. It creates a temporary folder to save

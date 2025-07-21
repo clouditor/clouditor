@@ -40,8 +40,8 @@ func Test_csafDiscovery_handleAdvisory(t *testing.T) {
 			},
 			args: args{
 				label: csaf.TLPLabelWhite,
-				file: csaf.HashedAdvisoryFile{
-					0: goodProvider.URL + "/.well-known/csaf/white/2020/some-id.json",
+				file: csaf.DirectoryAdvisoryFile{
+					Path: goodProvider.URL + "/.well-known/csaf/white/2020/some-id.json",
 				},
 				keyring: goodProvider.Keyring,
 			},

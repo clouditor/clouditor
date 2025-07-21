@@ -57,10 +57,11 @@ func NewOrchestratorCommand() *cobra.Command {
 }
 
 func BindFlags(cmd *cobra.Command) {
-	cmd.Flags().Bool(config.CreateDefaultTargetOfEvaluationFlag, config.DefaultCreateDefaultTarget, "Creates a default target target of evaluation if it does not exist")
-	cmd.Flags().String(config.DefaultTargetOfEvaluationNameFlag, config.DefaultTargetOfEvaluationName, "Name of the default target target of evaluation")
-	cmd.Flags().String(config.DefaultTargetOfEvaluationDescriptionFlag, config.DefaultTargetOfEvaluationDescription, "Description of the default target target of evaluation")
-	cmd.Flags().Int32(config.DefaultTargetOfEvaluationTypeFlag, int32(config.DefaultTargetOfEvaluationType), "Type of the default target target of evaluation; (1=cloud, 2=product, 3=organisation)")
+	cmd.Flags().Bool(config.CreateDefaultTargetOfEvaluationFlag, config.DefaultCreateDefaultTarget, "Creates a default target of evaluation if it does not exist")
+	cmd.Flags().String(config.DefaultTargetOfEvaluationNameFlag, config.DefaultTargetOfEvaluationName, "Name of the default target of evaluation")
+	cmd.Flags().String(config.DefaultTargetOfEvaluationDescriptionFlag, config.DefaultTargetOfEvaluationDescription, "Description of the default target of evaluation")
+	cmd.Flags().Int32(config.DefaultTargetOfEvaluationTypeFlag, int32(config.DefaultTargetOfEvaluationType), "Type of the default target of evaluation; (1=cloud, 2=product, 3=organisation)")
+	cmd.Flags().Bool(config.IgnoreDefaultMetricsFlag, config.DefaultIgnoreDefaultMetrics, "Ignores loading default metrics if set to true")
 	if cmd.Flag(config.APIgRPCPortFlag) == nil {
 		cmd.Flags().Uint16(config.APIgRPCPortFlag, config.DefaultAPIgRPCPortOrchestrator, "Specifies the port used for the Clouditor gRPC API")
 	}
@@ -72,6 +73,7 @@ func BindFlags(cmd *cobra.Command) {
 	_ = viper.BindPFlag(config.DefaultTargetOfEvaluationNameFlag, cmd.Flags().Lookup(config.DefaultTargetOfEvaluationNameFlag))
 	_ = viper.BindPFlag(config.DefaultTargetOfEvaluationDescriptionFlag, cmd.Flags().Lookup(config.DefaultTargetOfEvaluationDescriptionFlag))
 	_ = viper.BindPFlag(config.DefaultTargetOfEvaluationTypeFlag, cmd.Flags().Lookup(config.DefaultTargetOfEvaluationTypeFlag))
+	_ = viper.BindPFlag(config.IgnoreDefaultMetricsFlag, cmd.Flags().Lookup(config.IgnoreDefaultMetricsFlag))
 	_ = viper.BindPFlag(config.APIgRPCPortFlag, cmd.Flags().Lookup(config.APIgRPCPortFlag))
 	_ = viper.BindPFlag(config.APIHTTPPortFlag, cmd.Flags().Lookup(config.APIHTTPPortFlag))
 

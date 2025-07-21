@@ -37,6 +37,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/machinelearning/armmachinelearning"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
@@ -246,6 +247,13 @@ func (d *azureDiscovery) initMachineLearningComputeClient() (err error) {
 // initMLWorkspaceClient creates the client if not already exists
 func (d *azureDiscovery) initMLWorkspaceClient() (err error) {
 	d.clients.mlWorkspaceClient, err = initClientWithSubID(d.clients.mlWorkspaceClient, d, armmachinelearning.NewWorkspacesClient)
+
+	return
+}
+
+// initDiagnosticsSettingsClient creates the client if not already exists
+func (d *azureDiscovery) initDiagnosticsSettingsClient() (err error) {
+	d.clients.diagnosticSettingsClient, err = initClientWithoutSubID(d.clients.diagnosticSettingsClient, d, armmonitor.NewDiagnosticSettingsClient)
 
 	return
 }

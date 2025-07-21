@@ -1,0 +1,91 @@
+// Copyright 2016-2022 Fraunhofer AISEC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//           $$\                           $$\ $$\   $$\
+//           $$ |                          $$ |\__|  $$ |
+//  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+// $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+// $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+// $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+// \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+//  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+//
+// This file is part of Clouditor Community Edition.
+
+syntax = "proto3";
+
+package clouditor.evidence.v1experimental;
+
+import "api/evidence/evidence.proto";
+import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+
+option go_package = "clouditor.io/clouditor/v2/api/evidence";
+
+// Maps cloud resources and its properties to the format of the
+// ontology
+service ExperimentalResources {
+  // UpdateResource updates a resource (or creates it, if it does not exist).
+  // This is used to give third-party tools the possibility to add something to
+  // the resource graph.
+  //
+  // Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
+  rpc UpdateResource(UpdateResourceRequest) returns (clouditor.evidence.v1.Resource) {
+    option (google.api.http) = {
+      post: "/v1experimental/evidence_store/resources/{resource.id}"
+      body: "*"
+    };
+  }
+
+  // ListGraphEdges returns the edges (relationship) between resources in our
+  // resource graph.
+  //
+  // Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
+  rpc ListGraphEdges(ListGraphEdgesRequest) returns (ListGraphEdgesResponse) {
+    option (google.api.http) = {get: "/v1experimental/evidence/graph/edges"};
+  }
+}
+
+message UpdateResourceRequest {
+  clouditor.evidence.v1.Resource resource = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ListGraphEdgesRequest {
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
+}
+
+message ListGraphEdgesResponse {
+  repeated GraphEdge edges = 1 [(google.api.field_behavior) = REQUIRED];
+  string next_page_token = 2;
+}
+
+message GraphEdge {
+  string id = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (buf.validate.field).string.min_len = 1
+  ];
+  string source = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (buf.validate.field).string.min_len = 1
+  ];
+  string target = 3 [
+    (google.api.field_behavior) = REQUIRED,
+    (buf.validate.field).string.min_len = 1
+  ];
+  string type = 4 [(google.api.field_behavior) = REQUIRED];
+}

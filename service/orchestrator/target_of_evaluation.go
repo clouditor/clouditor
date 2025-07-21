@@ -32,7 +32,6 @@ import (
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
-	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/config"
@@ -247,7 +246,7 @@ func (s *Service) GetTargetOfEvaluationStatistics(ctx context.Context, req *orch
 	response.NumberOfSelectedCatalogs = int64(len(auditScopes.AuditScopes))
 
 	// Get number of discovered resources
-	resources := new(discovery.Resource)
+	resources := new(evidence.Resource)
 	count, err := s.storage.Count(resources, "target_of_evaluation_id = ?", req.TargetOfEvaluationId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error counting resources: %s", err)
@@ -304,10 +303,10 @@ func (s *Service) CreateDefaultTargetOfEvaluation() (target *orchestrator.Target
 		if err != nil {
 			return nil, fmt.Errorf("storage error: %w", err)
 		} else {
-			log.Infof("Created new default target target of evaluation: %s", target.Id)
+			log.Infof("Created new default target of evaluation: %s", target.Id)
 		}
 	} else {
-		log.Infof("Default target target of evaluation already exist.")
+		log.Infof("Default target of evaluation already exist.")
 	}
 
 	return

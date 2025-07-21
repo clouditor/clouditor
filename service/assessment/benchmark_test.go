@@ -53,7 +53,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 	}()
 	defer srv.Stop()
 
-	wg.Add(n * m * 7)
+	wg.Add(n * m * 9)
 
 	var count int64 = 0
 
@@ -61,7 +61,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 
 	addr := fmt.Sprintf("localhost:%d", port)
 
-	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
+	svc := NewService(WithOrchestratorAddress(addr))
 
 	orchestratorService.RegisterAssessmentResultHook(func(ctx context.Context, result *assessment.AssessmentResult, err error) {
 		wg.Done()
@@ -75,14 +75,16 @@ func createEvidences(n int, m int, b *testing.B) int {
 			// Create evidences for n resources (1 per resource)
 			for i := 0; i < n; i++ {
 				vm := ontology.ProtoResource(&ontology.VirtualMachine{
-					Id: fmt.Sprintf("%d", i),
+					Id:   fmt.Sprintf("%d", i),
+					Name: fmt.Sprintf("my-vm-%d", i),
 				})
 
 				e := evidence.Evidence{
-					Id:        uuid.NewString(),
-					Timestamp: timestamppb.Now(),
-					ToolId:    "mytool",
-					Resource:  vm,
+					Id:                   uuid.NewString(),
+					Timestamp:            timestamppb.Now(),
+					ToolId:               "mytool",
+					TargetOfEvaluationId: "11111111-1111-1111-1111-111111111111",
+					Resource:             vm,
 				}
 
 				if i%100 == 0 {

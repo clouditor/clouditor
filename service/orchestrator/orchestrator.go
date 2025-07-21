@@ -27,7 +27,6 @@ package orchestrator
 
 import (
 	"context"
-	"embed"
 	"fmt"
 	"sync"
 
@@ -45,10 +44,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-//go:embed *.json
-var f embed.FS
-
-var DefaultMetricsFile = "metrics.json"
+// TODO(immqu): When the catalogs are moved to the policies/security-metrics/catalogs folder, we need to change the path here
 var DefaultCatalogsFolder = "catalogs"
 
 var (
@@ -72,8 +68,12 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 			if viper.GetBool(config.CreateDefaultTargetOfEvaluationFlag) {
 				_, err := svc.CreateDefaultTargetOfEvaluation()
 				if err != nil {
-					return nil, fmt.Errorf("could not register default target target of evaluation: %v", err)
+					return nil, fmt.Errorf("could not register default target of evaluation: %v", err)
 				}
+			}
+
+			if viper.GetBool(config.IgnoreDefaultMetricsFlag) {
+				svc.ignoreDefaultMetrics = true
 			}
 
 			return nil, nil
@@ -102,10 +102,13 @@ type Service struct {
 
 	storage persistence.Storage
 
-	metricsFile string
-
-	// loadMetricsFunc is a function that is used to initially load metrics at the start of the orchestrator
+	// loadMetricsFunc is a function used to initially load metrics at the start of the orchestrator
 	loadMetricsFunc func() ([]*assessment.Metric, error)
+
+	// ignoreDefaultMetrics is a flag that indicates whether the default metrics should be loaded (true means that the default metrics are not loaded)
+	ignoreDefaultMetrics bool
+
+	defaultMetricsPath string
 
 	catalogsFolder string
 
@@ -123,20 +126,6 @@ func init() {
 	log = logrus.WithField("component", "orchestrator")
 }
 
-// WithMetricsFile can be used to load a different metrics file
-func WithMetricsFile(file string) service.Option[*Service] {
-	return func(s *Service) {
-		s.metricsFile = file
-	}
-}
-
-// WithExternalMetrics can be used to load metric definitions from an external source
-func WithExternalMetrics(f func() ([]*assessment.Metric, error)) service.Option[*Service] {
-	return func(s *Service) {
-		s.loadMetricsFunc = f
-	}
-}
-
 // WithCatalogsFolder can be used to load catalog files from a different catalogs folder
 func WithCatalogsFolder(folder string) service.Option[*Service] {
 	return func(s *Service) {
@@ -148,6 +137,13 @@ func WithCatalogsFolder(folder string) service.Option[*Service] {
 func WithExternalCatalogs(f func() ([]*orchestrator.Catalog, error)) service.Option[*Service] {
 	return func(s *Service) {
 		s.loadCatalogsFunc = f
+	}
+}
+
+// WithExternalMetrics can be used to load metric definitions from an external source
+func WithExternalMetrics(f func() ([]*assessment.Metric, error)) service.Option[*Service] {
+	return func(s *Service) {
+		s.loadMetricsFunc = f
 	}
 }
 
@@ -175,9 +171,9 @@ func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Opti
 func NewService(opts ...service.Option[*Service]) *Service {
 	var err error
 	s := Service{
-		metricsFile:    DefaultMetricsFile,
-		catalogsFolder: DefaultCatalogsFolder,
-		events:         make(chan *orchestrator.MetricChangeEvent, 1000),
+		catalogsFolder:     DefaultCatalogsFolder,
+		defaultMetricsPath: defaultMetricsPath,
+		events:             make(chan *orchestrator.MetricChangeEvent, 1000),
 	}
 
 	// Apply service options

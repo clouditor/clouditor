@@ -45,7 +45,7 @@ import (
 )
 
 // DefaultRegoPackage is the default package name for the Rego files
-const DefaultRegoPackage = "clouditor.metrics"
+const DefaultRegoPackage = "cch.metrics"
 
 type regoEval struct {
 	// qc contains cached Rego queries
@@ -224,7 +224,7 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 		prefix string
 	)
 
-	// We need to check, if the metric configuration has been changed.
+	// We need to check if the metric configuration has been changed.
 	config, err := src.MetricConfiguration(targetID, metric)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch metric configuration for metric %s: %w", metric.Id, err)
@@ -243,8 +243,12 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 		)
 
 		// Create paths for bundle directory and utility functions file
-		bundle := fmt.Sprintf("%s/policies/bundles/%s/%s/", baseDir, metric.CategoryID(), metric.Id)
-		operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
+		bundle := fmt.Sprintf("%s/policies/security-metrics/metrics/%s/%s/", baseDir, metric.Category, metric.Id)
+		if err != nil {
+			return nil, fmt.Errorf("could not find metric: %w", err)
+		}
+
+		operators := fmt.Sprintf("%s/policies/security-metrics/metrics/operators.rego", baseDir)
 
 		// The contents of the data map is available as the data variable within the Rego evaluation
 		data := map[string]interface{}{
@@ -286,9 +290,9 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 			output = data.%s.%s;
 			applicable = data.%s.%s.applicable;
 			compliant = data.%s.%s.compliant;
-			operator = data.clouditor.operator;
-			target_value = data.clouditor.target_value;
-			config = data.clouditor.config`, prefix, pkg, prefix, pkg, prefix, pkg)),
+			operator = data.cch.operator;
+			target_value = data.cch.target_value;
+			config = data.cch.config`, prefix, pkg, prefix, pkg, prefix, pkg)),
 			rego.Package(prefix),
 			rego.Store(store),
 			rego.Transaction(tx),

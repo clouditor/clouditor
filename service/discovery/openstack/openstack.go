@@ -81,6 +81,7 @@ type clients struct {
 	computeClient  *gophercloud.ServiceClient
 	networkClient  *gophercloud.ServiceClient
 	storageClient  *gophercloud.ServiceClient
+	clusterClient  *gophercloud.ServiceClient
 }
 
 func (*openstackDiscovery) Name() string {
@@ -197,6 +198,16 @@ func (d *openstackDiscovery) authorize() (err error) {
 		}
 	}
 
+	// Cluster client
+	if d.clients.clusterClient == nil {
+		d.clients.clusterClient, err = openstack.NewContainerInfraV1(d.clients.provider, gophercloud.EndpointOpts{
+			Region: d.region,
+		})
+		if err != nil {
+			return fmt.Errorf("could not create cluster client: %w", err)
+		}
+	}
+
 	return
 }
 
@@ -205,6 +216,8 @@ func NewAuthorizer() (gophercloud.AuthOptions, error) {
 	if err != nil {
 		log.Error("%w: %w", ErrGettingAuthOptionsFromEnv, err)
 	}
+
+	ao.AllowReauth = true // Allow re-authentication if the token expires
 	return ao, err
 
 }
@@ -222,6 +235,7 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 		storages []ontology.IsResource
 		projects []ontology.IsResource
 		domains  []ontology.IsResource
+		clusters []ontology.IsResource
 	)
 
 	if err = d.authorize(); err != nil {
@@ -233,39 +247,46 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 	// Discover servers
 	servers, err = d.discoverServer()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover servers: %w", err)
+		log.Errorf("could not discover servers: %v", err)
 	}
 	list = append(list, servers...)
 
 	// Discover networks interfaces
 	networks, err = d.discoverNetworkInterfaces()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover network interfaces: %w", err)
+		log.Errorf("could not discover network interfaces: %v", err)
 	}
 	list = append(list, networks...)
 
 	// Discover block storage
 	storages, err = d.discoverBlockStorage()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover block storage: %w", err)
+		log.Errorf("could not discover block storage: %v", err)
 	}
 	list = append(list, storages...)
+
+	// Discover clusters
+	clusters, err = d.discoverCluster()
+	if err != nil {
+		log.Errorf("could not discover clusters: %v", err)
+	}
+	list = append(list, clusters...)
 
 	// Discover project resources
 	projects, err = d.discoverProjects()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover projects/tenants: %v", err)
+		log.Errorf("could not discover projects/tenants: %v", err)
 	}
 	list = append(list, projects...)
 
 	// Discover domains resource
 	domains, err = d.discoverDomains()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover domains: %v", err)
+		log.Errorf("could not discover domains: %v", err)
 	}
 	list = append(list, domains...)
 
-	return
+	return list, nil
 }
 
 type ClientFunc func() (*gophercloud.ServiceClient, error)

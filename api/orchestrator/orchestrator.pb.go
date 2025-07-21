@@ -2259,6 +2259,7 @@ type AuditScope struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Audit Scope ID
 	Id                   string `protobuf:"bytes,4,opt,name=id,proto3" json:"id,omitempty" gorm:"primaryKey"`
+	Name                 string `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
 	TargetOfEvaluationId string `protobuf:"bytes,1,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
 	CatalogId            string `protobuf:"bytes,2,opt,name=catalog_id,json=catalogId,proto3" json:"catalog_id,omitempty"`
 	// an assurance level is not offered by every catalog, therefore it is
@@ -2301,6 +2302,13 @@ func (*AuditScope) Descriptor() ([]byte, []int) {
 func (x *AuditScope) GetId() string {
 	if x != nil {
 		return x.Id
+	}
+	return ""
+}
+
+func (x *AuditScope) GetName() string {
+	if x != nil {
+		return x.Name
 	}
 	return ""
 }
@@ -4482,9 +4490,9 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\n" +
 	"page_token\x18\v \x01(\tR\tpageToken\x12\x19\n" +
 	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
-	"\x03asc\x18\r \x01(\bR\x03asc\"\x9a\x01\n" +
-	"\x1fListTargetsOfEvaluationResponse\x12O\n" +
-	"\atargets\x18\x01 \x03(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB\x06\xe0A\x02\xe0A\x02R\atargets\x12&\n" +
+	"\x03asc\x18\r \x01(\bR\x03asc\"\x97\x01\n" +
+	"\x1fListTargetsOfEvaluationResponse\x12L\n" +
+	"\atargets\x18\x01 \x03(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB\x03\xe0A\x02R\atargets\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"l\n" +
 	"&GetTargetOfEvaluationStatisticsRequest\x12B\n" +
 	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"\x9e\x02\n" +
@@ -4604,10 +4612,12 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x12_parent_control_idB\x1f\n" +
 	"\x1d_parent_control_category_nameB%\n" +
 	"#_parent_control_category_catalog_idB\x12\n" +
-	"\x10_assurance_level\"\xf0\x01\n" +
+	"\x10_assurance_level\"\x90\x02\n" +
 	"\n" +
 	"AuditScope\x121\n" +
-	"\x02id\x18\x04 \x01(\tB!\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\x02id\x12B\n" +
+	"\x02id\x18\x04 \x01(\tB!\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\x02id\x12\x1e\n" +
+	"\x04name\x18\x05 \x01(\tB\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x04name\x12B\n" +
 	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12)\n" +
 	"\n" +
 	"catalog_id\x18\x02 \x01(\tB\n" +

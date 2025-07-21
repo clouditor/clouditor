@@ -646,25 +646,7 @@ func TestAssessmentResultHook(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
-					Result: &assessment.AssessmentResult{
-						Id:                   testdata.MockAssessmentResultID,
-						MetricId:             testdata.MockMetricID1,
-						EvidenceId:           testdata.MockEvidenceID1,
-						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-						Timestamp:            timestamppb.Now(),
-						MetricConfiguration: &assessment.MetricConfiguration{
-							TargetValue:          toStruct(1.0),
-							Operator:             ">=",
-							IsDefault:            true,
-							TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-							MetricId:             testdata.MockMetricID1,
-						},
-						ComplianceComment: testdata.MockAssessmentResultNonComplianceComment,
-						Compliant:         true,
-						ResourceId:        testdata.MockResourceID1,
-						ResourceTypes:     []string{"ResourceType"},
-						ToolId:            util.Ref(assessment.AssessmentToolId),
-					},
+					Result: orchestratortest.MockAssessmentResult1,
 				},
 			},
 			wantErr: assert.Nil[error],
@@ -694,6 +676,8 @@ func TestAssessmentResultHook(t *testing.T) {
 }
 
 func TestStoreAssessmentResult(t *testing.T) {
+	timestamp := timestamppb.Now()
+
 	type args struct {
 		in0        context.Context
 		assessment *orchestrator.StoreAssessmentResultRequest
@@ -717,35 +701,6 @@ func TestStoreAssessmentResult(t *testing.T) {
 			},
 		},
 		{
-			name: "Store assessment to the map",
-			args: args{
-				in0: context.TODO(),
-				assessment: &orchestrator.StoreAssessmentResultRequest{
-					Result: &assessment.AssessmentResult{
-						Id:                   uuid.NewString(),
-						MetricId:             "assessmentResultMetricID",
-						EvidenceId:           testdata.MockEvidenceID1,
-						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-						Timestamp:            timestamppb.Now(),
-						MetricConfiguration: &assessment.MetricConfiguration{
-							TargetValue:          toStruct(1.0),
-							Operator:             "<=",
-							IsDefault:            true,
-							TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-							MetricId:             testdata.MockMetricID1,
-						},
-						ComplianceComment: testdata.MockAssessmentResultNonComplianceComment,
-						Compliant:         true,
-						ResourceId:        testdata.MockResourceID1,
-						ResourceTypes:     []string{"ResourceType"},
-						ToolId:            util.Ref(assessment.AssessmentToolId),
-					},
-				},
-			},
-			wantErr:  assert.NoError,
-			wantResp: &orchestrator.StoreAssessmentResultResponse{},
-		},
-		{
 			name: "Store assessment without metricId to the map",
 			args: args{
 				in0: context.TODO(),
@@ -754,7 +709,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 						Id:                   uuid.NewString(),
 						EvidenceId:           testdata.MockEvidenceID1,
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-						Timestamp:            timestamppb.Now(),
+						CreatedAt:            timestamp,
 						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue:          toStruct(1.0),
 							Operator:             "<=",
@@ -764,9 +719,16 @@ func TestStoreAssessmentResult(t *testing.T) {
 						},
 						ComplianceComment: testdata.MockAssessmentResultNonComplianceComment,
 						Compliant:         true,
-						ResourceId:        testdata.MockResourceID1,
-						ResourceTypes:     []string{"ResourceType"},
+						ResourceId:        testdata.MockVirtualMachineID1,
+						ResourceTypes:     testdata.MockVirtualMachineTypes,
 						ToolId:            util.Ref(assessment.AssessmentToolId),
+						HistoryUpdatedAt:  timestamp,
+						History: []*assessment.Record{
+							{
+								EvidenceRecordedAt: timestamp,
+								EvidenceId:         testdata.MockEvidenceID1,
+							},
+						},
 					},
 				},
 			},
@@ -774,6 +736,17 @@ func TestStoreAssessmentResult(t *testing.T) {
 				return assert.ErrorContains(t, err, "result.metric_id: value length must be at least 1 characters")
 			},
 			wantResp: nil,
+		},
+		{
+			name: "Happy path",
+			args: args{
+				in0: context.TODO(),
+				assessment: &orchestrator.StoreAssessmentResultRequest{
+					Result: orchestratortest.MockAssessmentResult1,
+				},
+			},
+			wantErr:  assert.NoError,
+			wantResp: &orchestrator.StoreAssessmentResultResponse{},
 		},
 	}
 
@@ -928,7 +901,10 @@ func createStoreAssessmentResultRequestMockWithMissingMetricID(count int) []*orc
 
 // createStoreAssessmentResultRequestMocks creates store assessment result requests with random assessment result IDs
 func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAssessmentResultRequest {
-	var mockRequests []*orchestrator.StoreAssessmentResultRequest
+	var (
+		mockRequests []*orchestrator.StoreAssessmentResultRequest
+		timestamp    = timestamppb.Now()
+	)
 
 	for i := 0; i < count; i++ {
 		storeAssessmentResultRequest := &orchestrator.StoreAssessmentResultRequest{
@@ -937,7 +913,7 @@ func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAss
 				MetricId:             fmt.Sprintf("assessmentResultMetricID-%d", i),
 				EvidenceId:           testdata.MockEvidenceID1,
 				TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-				Timestamp:            timestamppb.Now(),
+				CreatedAt:            timestamp,
 				MetricConfiguration: &assessment.MetricConfiguration{
 					TargetValue:          toStruct(1.0),
 					Operator:             "<=",
@@ -947,9 +923,16 @@ func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAss
 				},
 				ComplianceComment: testdata.MockAssessmentResultNonComplianceComment,
 				Compliant:         true,
-				ResourceId:        testdata.MockResourceID1,
-				ResourceTypes:     []string{"ResourceType"},
+				ResourceId:        testdata.MockVirtualMachineID1,
+				ResourceTypes:     testdata.MockVirtualMachineTypes,
 				ToolId:            util.Ref(assessment.AssessmentToolId),
+				HistoryUpdatedAt:  timestamp,
+				History: []*assessment.Record{
+					{
+						EvidenceRecordedAt: timestamp,
+						EvidenceId:         testdata.MockEvidenceID1,
+					},
+				},
 			},
 		}
 

@@ -54,7 +54,6 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/testing/protocmp"
-	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 )
@@ -703,7 +702,7 @@ func TestService_StopEvaluation(t *testing.T) {
 			fields: fields{
 				scheduler: gocron.NewScheduler(time.Local),
 				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1)))
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1, testdata.MockAuditScopeName1)))
 				})))),
 				authz:         &service.AuthorizationStrategyAllowAll{},
 				auditScopeTag: fmt.Sprintf("%s-%s", testdata.MockTargetOfEvaluationID1, testdata.MockCatalogID1),
@@ -727,7 +726,7 @@ func TestService_StopEvaluation(t *testing.T) {
 			},
 			fields: fields{
 				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1)))
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1, testdata.MockAuditScopeName1)))
 				})))),
 
 				scheduler: func() *gocron.Scheduler {
@@ -887,7 +886,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			fields: fields{
 				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1)))
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1, testdata.MockAuditScopeName1)))
 				})))),
 				scheduler: func() *gocron.Scheduler {
 					s := gocron.NewScheduler(time.Local)
@@ -919,7 +918,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			fields: fields{
 				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1)))
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockTargetOfEvaluationID1, testdata.MockAuditScopeName1)))
 				})))),
 				scheduler:       gocron.NewScheduler(time.Local),
 				authz:           &service.AuthorizationStrategyAllowAll{},
@@ -1023,19 +1022,9 @@ func TestService_getAllMetricsFromControl(t *testing.T) {
 				{
 					Id:          testdata.MockMetricID1,
 					Category:    testdata.MockMetricCategory1,
-					Name:        testdata.MockMetricName1,
 					Description: testdata.MockMetricDescription1,
-					Scale:       assessment.Metric_ORDINAL,
-					Range: &assessment.Range{
-						Range: &assessment.Range_AllowedValues{
-							AllowedValues: &assessment.AllowedValues{
-								Values: []*structpb.Value{
-									structpb.NewBoolValue(false),
-									structpb.NewBoolValue(true),
-								},
-							},
-						},
-					},
+					Version:     testdata.MockMetricVersion1,
+					Comments:    testdata.MockMetricComments1,
 				},
 			},
 			wantErr: assert.NoError,

@@ -40,6 +40,60 @@ extend google.protobuf.MessageOptions {
   repeated string resource_type_names = 60000;
 }
 
+// CodeNotebook is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message CodeNotebook {
+  option (resource_type_names) = "CodeNotebook";
+  option (resource_type_names) = "Document";
+  option (resource_type_names) = "Data";
+  option (resource_type_names) = "Resource";
+
+  google.protobuf.Timestamp creation_time = 5373;
+  string description = 14998;
+  string filetype = 8342;
+  string id = 6700 [(buf.validate.field).required = true];
+  map<string, string> labels = 1827;
+  string name = 182 [(buf.validate.field).required = true];
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 14969;
+  repeated string code_ids = 2359;
+  DataLocation data_location = 3783;
+  repeated DocumentChecksum document_checksums = 4526;
+  repeated DocumentSignature document_signatures = 2736;
+  optional string parent_id = 5727;
+  SchemaValidation schema_validation = 5939;
+  repeated SecurityFeature security_features = 15068;
+}
+
+// QPU is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message QPU {
+  option (resource_type_names) = "QPU";
+  option (resource_type_names) = "Compute";
+  option (resource_type_names) = "Infrastructure";
+  option (resource_type_names) = "Resource";
+
+  google.protobuf.Timestamp creation_time = 3446;
+  string description = 4376;
+  bool error_correction_enabled = 12983;
+  string id = 14403 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 9684;
+  map<string, string> labels = 11544;
+  string name = 1538 [(buf.validate.field).required = true];
+  float one_qubit_gate_error_rate = 1147;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 8462;
+  float spam_error_rate = 6763;
+  float two_qubit_gate_error_rate = 12996;
+  EncryptionInUse encryption_in_use = 17838;
+  GeoLocation geo_location = 16558;
+  repeated Logging loggings = 972;
+  repeated string network_interface_ids = 4162;
+  repeated Redundancy redundancies = 10637;
+  RemoteAttestation remote_attestation = 18317;
+  optional string parent_id = 11595;
+  ResourceLogging resource_logging = 14960;
+  UsageStatistics usage_statistics = 11987;
+}
+
 // ABAC is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message ABAC {
   option (resource_type_names) = "ABAC";
@@ -206,6 +260,7 @@ message AutomaticUpdates {
   option (resource_type_names) = "SecurityFeature";
 
   bool enabled = 2283;
+  // The interval refers to the update interval in days.
   google.protobuf.Duration interval = 2309;
   bool security_only = 1034;
 }
@@ -222,6 +277,25 @@ message Availability {
   }
 }
 
+// AwarenessTraining is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message AwarenessTraining {
+  option (resource_type_names) = "AwarenessTraining";
+  option (resource_type_names) = "Training";
+  option (resource_type_names) = "HumanResources";
+  option (resource_type_names) = "Resource";
+
+  bool annual_update_completed = 15890;
+  google.protobuf.Timestamp creation_time = 15810;
+  string description = 345;
+  string id = 6931 [(buf.validate.field).required = true];
+  map<string, string> labels = 4947;
+  string name = 18874 [(buf.validate.field).required = true];
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 8066;
+  bool successfully_completed_percentage = 3826;
+  optional string parent_id = 6137;
+}
+
 // Backup is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 // RetentionPeriod in hours
 message Backup {
@@ -230,65 +304,11 @@ message Backup {
   option (resource_type_names) = "SecurityFeature";
 
   bool enabled = 2815;
+  // The interval refers to the update interval in days.
   google.protobuf.Duration interval = 7186;
   google.protobuf.Duration retention_period = 6795;
   optional string storage_id = 7061;
   TransportEncryption transport_encryption = 1921;
-}
-
-// Resource is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
-message Resource {
-  oneof type {
-    Account account = 11456;
-    Job job = 3999;
-    Workflow workflow = 8746;
-    CodeRepository code_repository = 3431;
-    Container container = 1659;
-    Function function = 14943;
-    VirtualMachine virtual_machine = 18360;
-    ContainerOrchestration container_orchestration = 3211;
-    ContainerRegistry container_registry = 8326;
-    Certificate certificate = 8542;
-    Key key = 5122;
-    Secret secret = 16127;
-    Identity identity = 14693;
-    RoleAssignment role_assignment = 2361;
-    ContainerImage container_image = 17864;
-    VMImage vm_image = 16417;
-    DeviceProvisioningService device_provisioning_service = 14564;
-    MessagingHub messaging_hub = 12819;
-    KeyVault key_vault = 18627;
-    NetworkInterface network_interface = 9859;
-    NetworkSecurityGroup network_security_group = 12647;
-    FunctionService function_service = 4929;
-    GenericNetworkService generic_network_service = 1382;
-    LoadBalancer load_balancer = 4201;
-    LoggingService logging_service = 14131;
-    MachineLearningService machine_learning_service = 16966;
-    SecurityAdvisoryService security_advisory_service = 173;
-    DocumentDatabaseService document_database_service = 17950;
-    KeyValueDatabaseService key_value_database_service = 1004;
-    MultiModalDatabaseService multi_modal_database_service = 2657;
-    RelationalDatabaseService relational_database_service = 12485;
-    FileStorageService file_storage_service = 16814;
-    ObjectStorageService object_storage_service = 6459;
-    VirtualNetwork virtual_network = 2559;
-    VirtualSubNetwork virtual_sub_network = 11314;
-    PasswordPolicy password_policy = 970;
-    ResourceGroup resource_group = 494;
-    BlockStorage block_storage = 10253;
-    DatabaseStorage database_storage = 12299;
-    FileStorage file_storage = 2736;
-    ObjectStorage object_storage = 10870;
-    Application application = 18554;
-    Library library = 14265;
-    CodeModule code_module = 10890;
-    GenericDocument generic_document = 4992;
-    SecurityAdvisoryDocument security_advisory_document = 14717;
-    ServiceMetadataDocument service_metadata_document = 272;
-    MachineLearningDataset machine_learning_dataset = 14811;
-    MachineLearningModel machine_learning_model = 18638;
-  }
 }
 
 // BlockStorage is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -377,6 +397,12 @@ message CertificateBasedAuthentication {
   bool enabled = 11983;
 }
 
+// CertificationTarget is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message CertificationTarget {
+  option (resource_type_names) = "CertificationTarget";
+  option (resource_type_names) = "Core";
+}
+
 // CipherSuite is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message CipherSuite {
   option (resource_type_names) = "CipherSuite";
@@ -398,6 +424,7 @@ message Infrastructure {
     Job job = 3999;
     Workflow workflow = 8746;
     CodeRepository code_repository = 3431;
+    QPU qpu = 9430;
     Container container = 1659;
     Function function = 14943;
     VirtualMachine virtual_machine = 18360;
@@ -442,15 +469,7 @@ message Infrastructure {
 message CloudSDK {
   option (resource_type_names) = "CloudSDK";
   option (resource_type_names) = "Framework";
-}
-
-// Code is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
-message Code {
-  oneof type {
-    Application application = 18554;
-    Library library = 14265;
-    CodeModule code_module = 10890;
-  }
+  option (resource_type_names) = "Core";
 }
 
 // CodeRegion is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -498,6 +517,7 @@ message Component {
 // Compute is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Compute {
   oneof type {
+    QPU qpu = 9430;
     Container container = 1659;
     Function function = 14943;
     VirtualMachine virtual_machine = 18360;
@@ -609,6 +629,19 @@ message ContainerRegistry {
   UsageStatistics usage_statistics = 17864;
 }
 
+// Core is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+message Core {
+  oneof type {
+    CertificationTarget certification_target = 11245;
+    CloudSDK cloud_sdk = 14752;
+    HttpClientLibrary http_client_library = 8816;
+    HttpServer http_server = 7177;
+    Logger logger = 7437;
+    ResourceType resource_type = 5565;
+    Tool tool = 10672;
+  }
+}
+
 // Credential is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Credential {
   oneof type {
@@ -659,11 +692,22 @@ message DDoSProtection {
 // Data is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Data {
   oneof type {
+    CodeNotebook code_notebook = 17592;
     GenericDocument generic_document = 4992;
+    PolicyDocument policy_document = 14953;
     SecurityAdvisoryDocument security_advisory_document = 14717;
     ServiceMetadataDocument service_metadata_document = 272;
-    MachineLearningDataset machine_learning_dataset = 14811;
-    MachineLearningModel machine_learning_model = 18638;
+    MachineLearningDataset machine_learning_dataset = 2040;
+    MachineLearningModel machine_learning_model = 15393;
+  }
+}
+
+// DataLocation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+// path: Describes either local path or path in URL format
+message DataLocation {
+  oneof type {
+    LocalDataLocation local_data_location = 12313;
+    RemoteDataLocation remote_data_location = 13541;
   }
 }
 
@@ -775,10 +819,12 @@ message DeviceProvisioningService {
 }
 
 // Document is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
-// path: Describes either local path or path in URL format
+// DataLocation: Describes the location as local or remote location
 message Document {
   oneof type {
+    CodeNotebook code_notebook = 17592;
     GenericDocument generic_document = 4992;
+    PolicyDocument policy_document = 14953;
     SecurityAdvisoryDocument security_advisory_document = 14717;
     ServiceMetadataDocument service_metadata_document = 272;
   }
@@ -820,14 +866,6 @@ message DocumentDatabaseService {
   UsageStatistics usage_statistics = 10074;
 }
 
-// DataLocation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
-message DataLocation {
-  oneof type {
-    LocalDataLocation local_data_location = 12313;
-    RemoteDataLocation remote_data_location = 13541;
-  }
-}
-
 // EncryptionInUse is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message EncryptionInUse {
   option (resource_type_names) = "EncryptionInUse";
@@ -854,6 +892,13 @@ message Error {
   option (resource_type_names) = "Functionality";
 
   string message = 3497;
+}
+
+// ExplainableResults is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message ExplainableResults {
+  option (resource_type_names) = "ExplainableResults";
+  option (resource_type_names) = "Reliability";
+  option (resource_type_names) = "SecurityFeature";
 }
 
 // FileStorage is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -929,10 +974,10 @@ message Firewall {
 // Framework is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Framework {
   oneof type {
-    CloudSDK cloud_sdk = 776;
-    HttpClientLibrary http_client_library = 12339;
-    HttpServer http_server = 12938;
-    Logger logger = 17354;
+    CloudSDK cloud_sdk = 14752;
+    HttpClientLibrary http_client_library = 8816;
+    HttpServer http_server = 7177;
+    Logger logger = 7437;
   }
 }
 
@@ -1004,7 +1049,6 @@ message Functionality {
     Error error = 6544;
     HttpEndpoint http_endpoint = 4266;
     HttpRequestHandler http_request_handler = 7403;
-    MachineLearning machine_learning = 13840;
     Decryption decryption = 11278;
     Encryption encryption = 2715;
     CryptographicHash cryptographic_hash = 7725;
@@ -1108,6 +1152,7 @@ message CryptographicHash {
 message HttpClientLibrary {
   option (resource_type_names) = "HttpClientLibrary";
   option (resource_type_names) = "Framework";
+  option (resource_type_names) = "Core";
 }
 
 // HttpEndpoint is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1151,8 +1196,17 @@ message HttpRequestHandler {
 message HttpServer {
   option (resource_type_names) = "HttpServer";
   option (resource_type_names) = "Framework";
+  option (resource_type_names) = "Core";
 
-  HttpRequestHandler http_request_handler = 18811;
+  HttpRequestHandler http_request_handler = 7885;
+}
+
+// HumanResources is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+message HumanResources {
+  oneof type {
+    AwarenessTraining awareness_training = 13539;
+    SecurityTraining security_training = 5053;
+  }
 }
 
 // Identifiable is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -1360,7 +1414,7 @@ message L3Firewall {
 
   bool enabled = 9476;
   bool inbound = 1000;
-  repeated string restricted_ports = 7341;
+  string restricted_ports = 7341;
 }
 
 // Library is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1467,6 +1521,7 @@ message LogOperation {
 message Logger {
   option (resource_type_names) = "Logger";
   option (resource_type_names) = "Framework";
+  option (resource_type_names) = "Core";
 }
 
 // Logging is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -1511,48 +1566,57 @@ message LoggingService {
   UsageStatistics usage_statistics = 1203;
 }
 
-// MachineLearning is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+// MachineLearning is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message MachineLearning {
-  option (resource_type_names) = "MachineLearning";
-  option (resource_type_names) = "Functionality";
-
-  optional string machine_learning_dataset_id = 4960;
-  optional string machine_learning_model_id = 16224;
+  oneof type {
+    MachineLearningDataset machine_learning_dataset = 2040;
+    MachineLearningModel machine_learning_model = 15393;
+  }
 }
 
 // MachineLearningDataset is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message MachineLearningDataset {
   option (resource_type_names) = "MachineLearningDataset";
+  option (resource_type_names) = "MachineLearning";
   option (resource_type_names) = "Data";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 3418;
-  string description = 7196;
-  string id = 12191 [(buf.validate.field).required = true];
-  map<string, string> labels = 13845;
-  string name = 2253 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 14589;
+  string description = 4701;
+  string id = 13709 [(buf.validate.field).required = true];
+  map<string, string> labels = 3339;
+  string name = 14431 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 4322;
-  optional string parent_id = 12709;
+  string raw = 6307;
+  int32 size = 7901;
+  string type = 5204;
+  DataLocation data_location = 3137;
+  optional string parent_id = 6542;
 }
 
 // MachineLearningModel is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message MachineLearningModel {
   option (resource_type_names) = "MachineLearningModel";
+  option (resource_type_names) = "MachineLearning";
   option (resource_type_names) = "Data";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 18748;
-  string description = 11870;
-  string expendability = 1776;
-  string id = 15237 [(buf.validate.field).required = true];
-  map<string, string> labels = 9130;
-  string name = 8739 [(buf.validate.field).required = true];
-  float privacy_label = 16623;
+  float adv_robustness = 14185;
+  google.protobuf.Timestamp creation_time = 18005;
+  string description = 5272;
+  float explainability = 1384;
+  string id = 5520 [(buf.validate.field).required = true];
+  map<string, string> labels = 1548;
+  string name = 1575 [(buf.validate.field).required = true];
+  float poison_level = 836;
+  float privacy_label = 8059;
+  float privacy_level = 1262;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 6427;
-  float robustness = 7149;
-  optional string parent_id = 984;
+  string raw = 12454;
+  float robustness = 13582;
+  DataLocation data_location = 2998;
+  optional string parent_id = 15494;
+  repeated Vulnerability vulnerabilities = 10821;
 }
 
 // MachineLearningService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1577,7 +1641,7 @@ message MachineLearningService {
   repeated string compute_ids = 10831;
   GeoLocation geo_location = 3308;
   repeated Logging loggings = 6059;
-  repeated MachineLearning machine_learnings = 6901;
+  repeated string machine_learning_ids = 6901;
   repeated Redundancy redundancies = 16726;
   optional string parent_id = 2223;
   optional string service_metadata_document_id = 10709;
@@ -1633,23 +1697,11 @@ message MessagingHub {
   UsageStatistics usage_statistics = 13729;
 }
 
-// CodeModule is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+// CodeModule is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message CodeModule {
-  option (resource_type_names) = "CodeModule";
-  option (resource_type_names) = "Code";
-  option (resource_type_names) = "Resource";
-
-  google.protobuf.Timestamp creation_time = 4660;
-  string description = 1331;
-  string id = 3225 [(buf.validate.field).required = true];
-  map<string, string> labels = 2688;
-  string name = 16449 [(buf.validate.field).required = true];
-  // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 18119;
-  repeated string code_module_ids = 17307;
-  optional string code_repository_id = 12032;
-  repeated Functionality functionalities = 5976;
-  optional string parent_id = 18719;
+  oneof type {
+    SourceCodeFile source_code_file = 2804;
+  }
 }
 
 // MultiFactorAuthentiation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1938,6 +1990,29 @@ message PasswordPolicy {
   UsageStatistics usage_statistics = 14852;
 }
 
+// PolicyDocument is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message PolicyDocument {
+  option (resource_type_names) = "PolicyDocument";
+  option (resource_type_names) = "Document";
+  option (resource_type_names) = "Data";
+  option (resource_type_names) = "Resource";
+
+  google.protobuf.Timestamp creation_time = 8545;
+  string description = 1423;
+  string filetype = 11838;
+  string id = 6550 [(buf.validate.field).required = true];
+  map<string, string> labels = 5677;
+  string name = 2052 [(buf.validate.field).required = true];
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5038;
+  DataLocation data_location = 8404;
+  repeated DocumentChecksum document_checksums = 18616;
+  repeated DocumentSignature document_signatures = 11914;
+  optional string parent_id = 9358;
+  SchemaValidation schema_validation = 15790;
+  repeated SecurityFeature security_features = 15024;
+}
+
 // RBAC is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message RBAC {
   option (resource_type_names) = "RBAC";
@@ -1995,6 +2070,14 @@ message RelationalDatabaseService {
   UsageStatistics usage_statistics = 9703;
 }
 
+// Reliability is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+message Reliability {
+  oneof type {
+    ExplainableResults explainable_results = 6217;
+    RobustnessScore robustness_score = 12988;
+  }
+}
+
 // RemoteAttestation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message RemoteAttestation {
   option (resource_type_names) = "RemoteAttestation";
@@ -2017,6 +2100,66 @@ message RemoteDataLocation {
   Authenticity authenticity = 2095;
   optional string storage_id = 15169;
   TransportEncryption transport_encryption = 3553;
+}
+
+// Resource is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+message Resource {
+  oneof type {
+    Account account = 11456;
+    Job job = 3999;
+    Workflow workflow = 8746;
+    CodeRepository code_repository = 3431;
+    QPU qpu = 9430;
+    Container container = 1659;
+    Function function = 14943;
+    VirtualMachine virtual_machine = 18360;
+    ContainerOrchestration container_orchestration = 3211;
+    ContainerRegistry container_registry = 8326;
+    Certificate certificate = 8542;
+    Key key = 5122;
+    Secret secret = 16127;
+    Identity identity = 14693;
+    RoleAssignment role_assignment = 2361;
+    ContainerImage container_image = 17864;
+    VMImage vm_image = 16417;
+    DeviceProvisioningService device_provisioning_service = 14564;
+    MessagingHub messaging_hub = 12819;
+    KeyVault key_vault = 18627;
+    NetworkInterface network_interface = 9859;
+    NetworkSecurityGroup network_security_group = 12647;
+    FunctionService function_service = 4929;
+    GenericNetworkService generic_network_service = 1382;
+    LoadBalancer load_balancer = 4201;
+    LoggingService logging_service = 14131;
+    MachineLearningService machine_learning_service = 16966;
+    SecurityAdvisoryService security_advisory_service = 173;
+    DocumentDatabaseService document_database_service = 17950;
+    KeyValueDatabaseService key_value_database_service = 1004;
+    MultiModalDatabaseService multi_modal_database_service = 2657;
+    RelationalDatabaseService relational_database_service = 12485;
+    FileStorageService file_storage_service = 16814;
+    ObjectStorageService object_storage_service = 6459;
+    VirtualNetwork virtual_network = 2559;
+    VirtualSubNetwork virtual_sub_network = 11314;
+    PasswordPolicy password_policy = 970;
+    ResourceGroup resource_group = 494;
+    BlockStorage block_storage = 10253;
+    DatabaseStorage database_storage = 12299;
+    FileStorage file_storage = 2736;
+    ObjectStorage object_storage = 10870;
+    CodeNotebook code_notebook = 17592;
+    GenericDocument generic_document = 4992;
+    PolicyDocument policy_document = 14953;
+    SecurityAdvisoryDocument security_advisory_document = 14717;
+    ServiceMetadataDocument service_metadata_document = 272;
+    MachineLearningDataset machine_learning_dataset = 2040;
+    MachineLearningModel machine_learning_model = 15393;
+    AwarenessTraining awareness_training = 13539;
+    SecurityTraining security_training = 5053;
+    Application application = 18554;
+    Library library = 14265;
+    SourceCodeFile source_code_file = 2804;
+  }
 }
 
 // ResourceGroup is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -2052,6 +2195,19 @@ message ResourceLogging {
   google.protobuf.Duration retention_period = 6776;
   bool security_alerts_enabled = 6099;
   repeated string logging_service_ids = 15310;
+}
+
+// ResourceType is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message ResourceType {
+  option (resource_type_names) = "ResourceType";
+  option (resource_type_names) = "Core";
+}
+
+// RobustnessScore is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message RobustnessScore {
+  option (resource_type_names) = "RobustnessScore";
+  option (resource_type_names) = "Reliability";
+  option (resource_type_names) = "SecurityFeature";
 }
 
 // RoleAssignment is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -2218,7 +2374,28 @@ message SecurityFeature {
     DocumentChecksum document_checksum = 16099;
     Immutability immutability = 2008;
     DocumentSignature document_signature = 7943;
+    ExplainableResults explainable_results = 6217;
+    RobustnessScore robustness_score = 12988;
   }
+}
+
+// SecurityTraining is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message SecurityTraining {
+  option (resource_type_names) = "SecurityTraining";
+  option (resource_type_names) = "Training";
+  option (resource_type_names) = "HumanResources";
+  option (resource_type_names) = "Resource";
+
+  bool annual_update_completed = 10234;
+  google.protobuf.Timestamp creation_time = 6650;
+  string description = 9993;
+  string id = 16985 [(buf.validate.field).required = true];
+  map<string, string> labels = 2918;
+  string name = 12019 [(buf.validate.field).required = true];
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 8671;
+  bool successfully_completed_percentage = 12251;
+  optional string parent_id = 13946;
 }
 
 // ServiceMetadataDocument is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -2264,6 +2441,35 @@ message SingleSignOn {
   bool enabled = 10569;
 }
 
+// Code is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+message Code {
+  oneof type {
+    Application application = 18554;
+    Library library = 14265;
+    SourceCodeFile source_code_file = 2804;
+  }
+}
+
+// SourceCodeFile is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message SourceCodeFile {
+  option (resource_type_names) = "SourceCodeFile";
+  option (resource_type_names) = "CodeModule";
+  option (resource_type_names) = "Code";
+  option (resource_type_names) = "Resource";
+
+  google.protobuf.Timestamp creation_time = 7260;
+  string description = 14944;
+  string id = 10519 [(buf.validate.field).required = true];
+  map<string, string> labels = 7345;
+  string name = 14615 [(buf.validate.field).required = true];
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 16625;
+  repeated string code_module_ids = 1921;
+  optional string code_repository_id = 4795;
+  repeated Functionality functionalities = 6180;
+  optional string parent_id = 7227;
+}
+
 // Storage is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Storage {
   oneof type {
@@ -2284,6 +2490,20 @@ message StorageService {
     RelationalDatabaseService relational_database_service = 12485;
     FileStorageService file_storage_service = 16814;
     ObjectStorageService object_storage_service = 6459;
+  }
+}
+
+// Tool is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message Tool {
+  option (resource_type_names) = "Tool";
+  option (resource_type_names) = "Core";
+}
+
+// Training is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+message Training {
+  oneof type {
+    AwarenessTraining awareness_training = 13539;
+    SecurityTraining security_training = 5053;
   }
 }
 
