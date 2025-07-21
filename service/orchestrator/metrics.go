@@ -26,12 +26,15 @@
 package orchestrator
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
@@ -41,6 +44,7 @@ import (
 	"clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
 	"github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -48,32 +52,43 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+// a slice of metric paths that makes it easy to add new paths to be searched for metrics
+var defaultMetricsPath = "./policies/security-metrics/metrics"
+
 // ErrMetricNotFound indicates the certification was not found
 var ErrMetricNotFound = status.Error(codes.NotFound, "metric not found")
 
 // loadMetrics takes care of loading the metric definitions from the (embedded) metrics.json as
 // well as the default metric implementations from the Rego files.
 func (svc *Service) loadMetrics() (err error) {
-	var (
-		metrics []*assessment.Metric
-	)
+	var metrics []*assessment.Metric
 
-	// Default to loading metrics from our embedded file system
-	if svc.loadMetricsFunc == nil {
-		svc.loadMetricsFunc = svc.loadEmbeddedMetrics
+	if svc.ignoreDefaultMetrics && svc.loadMetricsFunc == nil {
+		return fmt.Errorf("no metrics specified to load")
 	}
 
-	// Execute our metric loading function
-	metrics, err = svc.loadMetricsFunc()
-	if err != nil {
-		return fmt.Errorf("could not load metrics: %w", err)
+	// Load default metrics if the ignore flag is not set
+	if !svc.ignoreDefaultMetrics {
+		metrics, err = svc.loadMetricsFromMetricsRepository()
+		if err != nil {
+			return fmt.Errorf("could not load metrics: %w", err)
+		}
+	}
+
+	// Load external metrics if the loadMetricsFunc is set
+	if svc.loadMetricsFunc != nil {
+		externalMetrics, err := svc.loadMetricsFunc()
+		if err != nil {
+			return fmt.Errorf("could not load metrics: %w", err)
+		}
+		metrics = append(metrics, externalMetrics...)
 	}
 
 	defaultMetricConfigurations = make(map[string]*assessment.MetricConfiguration)
 
 	// Try to prepare the (initial) metric implementations and configurations. We can still continue if they should
 	// fail, since they can still be updated later during runtime. Also, this makes it possible to load metrics of which
-	// we intentionally do not have the implementation, because they are assess outside the Clouditor toolset, but we
+	// we intentionally do not have the implementation, because they are assessed outside the Clouditor toolset, but we
 	// still need to be aware of the particular metric.
 	for _, m := range metrics {
 		// Somehow, we first need to create the metric, otherwise we are running into weird constraint issues.
@@ -112,17 +127,18 @@ func prepareMetric(m *assessment.Metric) (err error) {
 	)
 
 	// Load the Rego file
-	file := fmt.Sprintf("policies/bundles/%s/%s/metric.rego", m.CategoryID(), m.Id)
-	m.Implementation, err = loadMetricImplementation(m.Id, file)
+	metricPath := fmt.Sprintf("%s/%s/%s/metric.rego", defaultMetricsPath, m.Category, m.Id)
+
+	m.Implementation, err = loadMetricImplementation(m.Id, metricPath)
 	if err != nil {
 		return fmt.Errorf("could not load metric implementation: %w", err)
 	}
 
-	// Look for the data.json to include default metric configurations
-	fileName := fmt.Sprintf("policies/bundles/%s/%s/data.json", m.CategoryID(), m.Id)
+	// Take the data.json to include default metric configurations
+	dataJsonPath := strings.Replace(metricPath, "metric.rego", "data.json", 1)
 
 	// Load the default configuration file
-	b, err := os.ReadFile(fileName)
+	b, err := os.ReadFile(dataJsonPath)
 	if err != nil {
 		return fmt.Errorf("could not retrieve default configuration for metric %s: %w", m.Id, err)
 	}
@@ -140,22 +156,46 @@ func prepareMetric(m *assessment.Metric) (err error) {
 	return
 }
 
-// loadEmbeddedMetrics loads the metric definitions from the embedded file system using the path specified in
-// the service's metricsFile.
-func (svc *Service) loadEmbeddedMetrics() (metrics []*assessment.Metric, err error) {
-	var b []byte
+// loadMetricsFromMetricsRepository loads metric definitions by walking through YAML files
+// in the policies/security-metrics/metrics directory.
+// it uses all given paths or the default path if none are provided.
+func (svc *Service) loadMetricsFromMetricsRepository() (metrics []*assessment.Metric, err error) {
+	metrics = make([]*assessment.Metric, 0)
 
-	b, err = f.ReadFile(svc.metricsFile)
+	// Walk through the provided paths and import metrics
+	err = filepath.Walk(defaultMetricsPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return fmt.Errorf("error accessing path %s: %w", path, err)
+		}
+
+		// Skip directories and non-yaml files
+		if info.IsDir() || (!strings.HasSuffix(info.Name(), ".yaml") && !strings.HasSuffix(info.Name(), ".yml")) {
+			return nil
+		}
+
+		// Read the YAML file
+		b, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("error reading file %s: %w", path, err)
+		}
+
+		var metric assessment.Metric
+
+		dec := yaml.NewDecoder(bytes.NewReader(b))
+		err = dec.Decode(&metric)
+		if err != nil {
+			return fmt.Errorf("error decoding metric %s: %w", path, err)
+		}
+
+		metrics = append(metrics, &metric)
+		return nil
+	})
+
 	if err != nil {
-		return nil, fmt.Errorf("error while loading %s: %w", svc.metricsFile, err)
+		return nil, fmt.Errorf("error reading metrics directory: %w", err)
 	}
 
-	err = json.Unmarshal(b, &metrics)
-	if err != nil {
-		return nil, fmt.Errorf("error in JSON marshal: %w", err)
-	}
-
-	return
+	return metrics, nil
 }
 
 // loadMetricImplementation loads a metric implementation from a Rego file on a filesystem.
@@ -241,13 +281,8 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 	}
 
 	// Update metric
-	metric.Name = req.Metric.Name
-	metric.Description = req.Metric.Description
-	metric.Category = req.Metric.Category
-	metric.Range = req.Metric.Range
-	metric.Scale = req.Metric.Scale
-	metric.DeprecatedSince = req.Metric.DeprecatedSince
-
+	metric = req.Metric
+	// TODO Save or Update?
 	err = svc.storage.Save(metric, "id = ? ", metric.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)

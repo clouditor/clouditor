@@ -56,12 +56,11 @@ func Test_regoEval_Eval(t *testing.T) {
 		src        MetricsSource
 	}
 	tests := []struct {
-		name       string
-		fields     fields
-		args       args
-		applicable bool
-		compliant  map[string]bool
-		wantErr    assert.WantErr
+		name      string
+		fields    fields
+		args      args
+		compliant map[string]bool
+		wantErr   assert.WantErr
 	}{
 		{
 			name: "ObjectStorage: Compliant Case",
@@ -70,6 +69,11 @@ func Test_regoEval_Eval(t *testing.T) {
 				mrtc:    &metricsCache{m: make(map[string][]*assessment.Metric)},
 				storage: testutil.NewInMemoryStorage(t),
 				pkg:     DefaultRegoPackage,
+			},
+			compliant: map[string]bool{
+				"AtRestEncryptionAlgorithm":         true,
+				"AtRestEncryptionEnabled":           true,
+				"ObjectStoragePublicAccessDisabled": true,
 			},
 			args: args{
 				resource: &ontology.ObjectStorage{
@@ -84,17 +88,10 @@ func Test_regoEval_Eval(t *testing.T) {
 							},
 						},
 					},
+					PublicAccess: false,
 				},
 				evidenceID: mockObjStorage1EvidenceID,
 				src:        &mockMetricsSource{t: t},
-			},
-			applicable: true,
-			compliant: map[string]bool{
-				"AtRestEncryptionAlgorithm":         true,
-				"AtRestEncryptionEnabled":           true,
-				"CustomerKeyEncryption":             true,
-				"ObjectStoragePublicAccessDisabled": true,
-				"ResourceInventory":                 true,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -123,13 +120,10 @@ func Test_regoEval_Eval(t *testing.T) {
 				evidenceID: mockObjStorage2EvidenceID,
 				src:        &mockMetricsSource{t: t},
 			},
-			applicable: true,
 			compliant: map[string]bool{
 				"AtRestEncryptionAlgorithm":         false,
 				"AtRestEncryptionEnabled":           false,
-				"CustomerKeyEncryption":             false,
 				"ObjectStoragePublicAccessDisabled": false,
-				"ResourceInventory":                 true,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -159,13 +153,10 @@ func Test_regoEval_Eval(t *testing.T) {
 				evidenceID: mockObjStorage2EvidenceID,
 				src:        &mockMetricsSource{t: t},
 			},
-			applicable: true,
 			compliant: map[string]bool{
 				"AtRestEncryptionAlgorithm":         false,
 				"AtRestEncryptionEnabled":           false,
-				"CustomerKeyEncryption":             false,
 				"ObjectStoragePublicAccessDisabled": false,
-				"ResourceInventory":                 true,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -209,20 +200,17 @@ func Test_regoEval_Eval(t *testing.T) {
 				},
 				evidenceID: mockVM1EvidenceID,
 			},
-			applicable: true,
 			compliant: map[string]bool{
-				"AutomaticUpdatesEnabled":      true,
-				"AutomaticUpdatesInterval":     true,
-				"AutomaticUpdatesSecurityOnly": true,
-				"BootLoggingEnabled":           true,
-				"BootLoggingOutput":            true,
-				"BootLoggingRetention":         true,
-				"MalwareProtectionEnabled":     true,
-				"MalwareProtectionOutput":      true,
-				"OSLoggingRetention":           true,
-				"OSLoggingOutput":              true,
-				"OSLoggingEnabled":             true,
-				"ResourceInventory":            true,
+				"AutomaticUpdatesEnabled":  true,
+				"AutomaticUpdatesInterval": true,
+				"BootLoggingEnabled":       true,
+				"BootLoggingOutput":        true,
+				"BootLoggingRetention":     true,
+				"MalwareProtectionEnabled": true,
+				"MalwareProtectionOutput":  true,
+				"OSLoggingRetention":       true,
+				"OSLoggingOutput":          true,
+				"OSLoggingEnabled":         true,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -251,19 +239,16 @@ func Test_regoEval_Eval(t *testing.T) {
 				evidenceID: mockVM2EvidenceID,
 				src:        &mockMetricsSource{t: t},
 			},
-			applicable: true,
 			compliant: map[string]bool{
-				"AutomaticUpdatesEnabled":      false,
-				"AutomaticUpdatesInterval":     false,
-				"AutomaticUpdatesSecurityOnly": false,
-				"BootLoggingEnabled":           false,
-				"BootLoggingOutput":            false,
-				"BootLoggingRetention":         false,
-				"MalwareProtectionEnabled":     false,
-				"OSLoggingEnabled":             false,
-				"OSLoggingOutput":              true,
-				"OSLoggingRetention":           false,
-				"ResourceInventory":            true,
+				"AutomaticUpdatesEnabled":  false,
+				"AutomaticUpdatesInterval": false,
+				"BootLoggingEnabled":       false,
+				"BootLoggingOutput":        false,
+				"BootLoggingRetention":     false,
+				"MalwareProtectionEnabled": false,
+				"OSLoggingEnabled":         false,
+				"OSLoggingOutput":          true,
+				"OSLoggingRetention":       false,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -299,7 +284,6 @@ func Test_regoEval_Eval(t *testing.T) {
 			compliant: map[string]bool{
 				"AutomaticUpdatesEnabled":             false,
 				"AutomaticUpdatesInterval":            false,
-				"AutomaticUpdatesSecurityOnly":        false,
 				"BootLoggingEnabled":                  false,
 				"BootLoggingOutput":                   false,
 				"BootLoggingRetention":                false,
@@ -307,7 +291,6 @@ func Test_regoEval_Eval(t *testing.T) {
 				"OSLoggingEnabled":                    false,
 				"OSLoggingOutput":                     false,
 				"OSLoggingRetention":                  false,
-				"ResourceInventory":                   true,
 				"VirtualMachineDiskEncryptionEnabled": false,
 			},
 			wantErr: assert.Nil[error],
@@ -344,7 +327,6 @@ func Test_regoEval_Eval(t *testing.T) {
 			compliant: map[string]bool{
 				"AutomaticUpdatesEnabled":             false,
 				"AutomaticUpdatesInterval":            false,
-				"AutomaticUpdatesSecurityOnly":        false,
 				"BootLoggingEnabled":                  false,
 				"BootLoggingOutput":                   false,
 				"BootLoggingRetention":                false,
@@ -352,7 +334,6 @@ func Test_regoEval_Eval(t *testing.T) {
 				"OSLoggingEnabled":                    false,
 				"OSLoggingOutput":                     false,
 				"OSLoggingRetention":                  false,
-				"ResourceInventory":                   true,
 				"VirtualMachineDiskEncryptionEnabled": true,
 			},
 			wantErr: assert.Nil[error],
@@ -382,11 +363,9 @@ func Test_regoEval_Eval(t *testing.T) {
 				src:        &mockMetricsSource{t: t},
 			},
 			compliant: map[string]bool{
-				"AutomaticUpdatesEnabled":      false,
-				"AutomaticUpdatesInterval":     false,
-				"AutomaticUpdatesSecurityOnly": false,
-				"ResourceInventory":            true,
-				"StrongCryptographicHash":      false,
+				"AutomaticUpdatesEnabled":  false,
+				"AutomaticUpdatesInterval": false,
+				"StrongCryptographicHash":  false,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -452,7 +431,9 @@ func Test_regoEval_evalMap(t *testing.T) {
 				targetID: testdata.MockTargetOfEvaluationID1,
 				metric: &assessment.Metric{
 					Id:       "AutomaticUpdatesEnabled",
-					Category: "Endpoint Security",
+					Category: "EndpointSecurity",
+					Version:  "1.0",
+					Comments: "Test comments",
 				},
 				baseDir: ".",
 				m: map[string]interface{}{
@@ -495,7 +476,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 				targetID: testdata.MockTargetOfEvaluationID1,
 				metric: &assessment.Metric{
 					Id:       "AutomaticUpdatesEnabled",
-					Category: "Endpoint Security",
+					Category: "EndpointSecurity",
 				},
 				baseDir: ".",
 				m: map[string]interface{}{

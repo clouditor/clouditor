@@ -641,7 +641,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
 		wg              sync.WaitGroup
-		hookCounts      = 24
+		hookCounts      = 20
 	)
 
 	wg.Add(hookCounts)
@@ -732,7 +732,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 			// To test the hooks we have to call a function that calls the hook function
 			gotResp, err := s.AssessEvidence(tt.args.in0, tt.args.evidence)
 
-			// wait for all hooks (2 metrics * 2 hooks)
+			// wait for all hooks
 			wg.Wait()
 
 			tt.wantErr(t, err)
@@ -897,7 +897,7 @@ func TestService_handleEvidence(t *testing.T) {
 		wantErr assert.WantErr
 	}{
 		{
-			name: "correct evidence: using metrics which returns comparison results",
+			name: "correct evidence: using metrics which return comparison results",
 			fields: fields{
 				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
 				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
@@ -943,7 +943,7 @@ func TestService_handleEvidence(t *testing.T) {
 					err := api.Validate(result)
 					assert.NoError(t, err)
 				}
-				return assert.Equal(t, 5, len(got))
+				return assert.Equal(t, 3, len(got))
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -982,7 +982,7 @@ func TestService_handleEvidence(t *testing.T) {
 					err := api.Validate(result)
 					assert.NoError(t, err)
 				}
-				return assert.Equal(t, 11, len(got))
+				return assert.Equal(t, 9, len(got))
 			},
 			wantErr: assert.Nil[error],
 		},

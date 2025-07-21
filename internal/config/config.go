@@ -73,6 +73,7 @@ const (
 	DiscoveryCSAFDomainFlag                  = "discovery-csaf-domain"
 	DashboardCallbackURLFlag                 = "dashboard-callback-url"
 	LogLevelFlag                             = "log-level"
+	IgnoreDefaultMetricsFlag                 = "ignore-default-metrics"
 
 	DefaultAPIDefaultUser                       = "clouditor"
 	DefaultAPIDefaultPassword                   = "clouditor"
@@ -110,6 +111,7 @@ const (
 	DefaultCSAFDomain                           = ""
 	DefaultDashboardCallbackURL                 = "http://localhost:8080/callback"
 	DefaultLogLevel                             = "info"
+	DefaultIgnoreDefaultMetrics                 = false
 
 	EnvPrefix = "CLOUDITOR"
 )

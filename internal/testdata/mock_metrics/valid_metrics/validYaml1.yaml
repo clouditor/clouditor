@@ -1,0 +1,11 @@
+# ====== Metadata ======
+id: TestMetric
+description: Test Metric 1
+category: TestCategory
+version: "1.0"
+comments: Test comments
+# ====== Configuration ======
+properties:
+  prop1:
+    operator: "=="
+    targetValue: "123"

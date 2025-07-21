@@ -1,6 +1,0 @@
-{
-    "automaticUpdates": {
-        "_comment": "86400000000000 nanoseconds equals 1 day",
-        "interval": 86400000000000
-    }
-}
