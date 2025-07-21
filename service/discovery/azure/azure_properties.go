@@ -154,11 +154,12 @@ cipher:
 	}
 
 	i++
-	if parts[i] == "SHA256" {
+	switch parts[i] {
+	case "SHA256":
 		cipher.MacAlgorithm = "SHA-256"
-	} else if parts[i] == "SHA384" {
+	case "SHA384":
 		cipher.MacAlgorithm = "SHA-384"
-	} else {
+	default:
 		goto invalid
 	}
 

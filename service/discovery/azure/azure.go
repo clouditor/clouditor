@@ -353,7 +353,7 @@ func (d *azureDiscovery) authorize() (err error) {
 			log.Error(err)
 			return err
 		}
-		subList = append(subList, pageResponse.ListResult.Value...)
+		subList = append(subList, pageResponse.Value...)
 	}
 
 	// check if list of subscriptions is empty
