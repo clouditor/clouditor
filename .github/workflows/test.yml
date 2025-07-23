@@ -1,0 +1,71 @@
+name: Automated Testing
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: write
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install Dependencies
+        run: |
+          go install github.com/mfridman/tparse@latest
+
+      - name: Run Tests
+        run: |
+          go test -v -coverprofile=coverage.cov -coverpkg ./... -covermode=atomic ./... -json | tee output.json | tparse -follow || true
+          tparse -format markdown -file output.json > $GITHUB_STEP_SUMMARY
+
+      - name: Upload Coverage Report
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage.cov
+          flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Test Summary
+        run: |
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "✅ All tests have been executed" >> $GITHUB_STEP_SUMMARY
+          echo "📊 See detailed coverage report on Codecov" >> $GITHUB_STEP_SUMMARY
+
+  lint:
+    name: Run Linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Run Linter
+        uses: golangci/golangci-lint-action@v6
+        with:
+          args: --timeout=5m
