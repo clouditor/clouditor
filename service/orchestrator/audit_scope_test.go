@@ -62,8 +62,6 @@ func TestService_CreateAuditScope(t *testing.T) {
 		TargetOfEvaluationHooks []orchestrator.TargetOfEvaluationHookFunc
 		AssessmentResultHooks   []assessment.ResultHookFunc
 		storage                 persistence.Storage
-		metricsFile             string
-		loadMetricsFunc         func() ([]*assessment.Metric, error)
 		catalogsFolder          string
 		loadCatalogsFunc        func() ([]*orchestrator.Catalog, error)
 		events                  chan *orchestrator.MetricChangeEvent
@@ -231,8 +229,6 @@ func TestService_CreateAuditScope(t *testing.T) {
 				TargetOfEvaluationHooks: tt.fields.TargetOfEvaluationHooks,
 				AssessmentResultHooks:   tt.fields.AssessmentResultHooks,
 				storage:                 tt.fields.storage,
-				metricsFile:             tt.fields.metricsFile,
-				loadMetricsFunc:         tt.fields.loadMetricsFunc,
 				catalogsFolder:          tt.fields.catalogsFolder,
 				loadCatalogsFunc:        tt.fields.loadCatalogsFunc,
 				events:                  tt.fields.events,

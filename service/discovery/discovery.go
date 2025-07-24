@@ -30,7 +30,6 @@ import (
 	"errors"
 	"fmt"
 	"slices"
-	"strings"
 	"time"
 
 	"clouditor.io/clouditor/v2/api"
@@ -40,8 +39,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/launcher"
-	"clouditor.io/clouditor/v2/persistence"
-	"clouditor.io/clouditor/v2/persistence/inmemory"
 	"clouditor.io/clouditor/v2/server/rest"
 	"clouditor.io/clouditor/v2/service"
 	"clouditor.io/clouditor/v2/service/discovery/aws"
@@ -92,7 +89,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 
 	return launcher.NewServiceSpec(
 		NewService,
-		WithStorage,
+		nil,
 		nil,
 		WithOAuth2Authorizer(config.ClientCredentials()),
 		WithTargetOfEvaluationID(viper.GetString(config.TargetOfEvaluationIDFlag)),
@@ -118,12 +115,9 @@ type DiscoveryEvent struct {
 // used directly, but rather the NewService constructor should be used.
 type Service struct {
 	discovery.UnimplementedDiscoveryServer
-	discovery.UnimplementedExperimentalDiscoveryServer
 
 	evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
 	evidenceStore        *api.RPCConnection[evidence.EvidenceStoreClient]
-
-	storage persistence.Storage
 
 	scheduler *gocron.Scheduler
 
@@ -203,13 +197,6 @@ func WithAdditionalDiscoverers(discoverers []discovery.Discoverer) service.Optio
 	}
 }
 
-// WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
-func WithStorage(storage persistence.Storage) service.Option[*Service] {
-	return func(s *Service) {
-		s.storage = storage
-	}
-}
-
 // WithDiscoveryInterval is an option to set the discovery interval. If not set, the discovery is set to 5 minutes.
 func WithDiscoveryInterval(interval time.Duration) service.Option[*Service] {
 	return func(s *Service) {
@@ -225,7 +212,6 @@ func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Opti
 }
 
 func NewService(opts ...service.Option[*Service]) *Service {
-	var err error
 	s := &Service{
 		evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 		evidenceStore:        api.NewRPCConnection(string(config.DefaultEvidenceStoreURL), evidence.NewEvidenceStoreClient),
@@ -240,14 +226,6 @@ func NewService(opts ...service.Option[*Service]) *Service {
 	// Apply any options
 	for _, o := range opts {
 		o(s)
-	}
-
-	// Default to an in-memory storage, if nothing was explicitly set
-	if s.storage == nil {
-		s.storage, err = inmemory.NewStorage()
-		if err != nil {
-			log.Errorf("Could not initialize the storage: %v", err)
-		}
 	}
 
 	return s
@@ -441,20 +419,6 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}()
 
 	for _, resource := range list {
-		// Build a resource struct. This will hold the latest sync state of the
-		// resource for our storage layer.
-		r, err := discovery.ToDiscoveryResource(resource, svc.GetTargetOfEvaluationId(), svc.collectorID)
-		if err != nil {
-			log.Errorf("Could not convert resource: %v", err)
-			continue
-		}
-
-		// Persist the latest state of the resource
-		err = svc.storage.Save(&r, "id = ?", r.Id)
-		if err != nil {
-			log.Errorf("Could not save resource with ID '%s' to storage: %v", r.Id, err)
-		}
-
 		e := &evidence.Evidence{
 			Id:                   uuid.New().String(),
 			TargetOfEvaluationId: svc.GetTargetOfEvaluationId(),
@@ -481,64 +445,6 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 
 		channel.Send(&evidence.StoreEvidenceRequest{Evidence: e})
 	}
-}
-
-func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResourcesRequest) (res *discovery.ListResourcesResponse, err error) {
-	var (
-		query   []string
-		args    []any
-		all     bool
-		allowed []string
-	)
-
-	// Validate request
-	err = api.Validate(req)
-	if err != nil {
-		return nil, err
-	}
-
-	// Filtering the resources by
-	// * target of evaluation ID
-	// * resource type
-	// * tool ID
-	if req.Filter != nil {
-		// Check if target_of_evaluation_id in filter is within allowed or one can access *all* the target of evaluations
-		if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Filter) {
-			return nil, service.ErrPermissionDenied
-		}
-
-		if req.Filter.TargetOfEvaluationId != nil {
-			query = append(query, "target_of_evaluation_id = ?")
-			args = append(args, req.Filter.GetTargetOfEvaluationId())
-		}
-		if req.Filter.Type != nil {
-			query = append(query, "(resource_type LIKE ? OR resource_type LIKE ? OR resource_type LIKE ?)")
-			args = append(args, req.Filter.GetType()+",%", "%,"+req.Filter.GetType()+",%", "%,"+req.Filter.GetType())
-		}
-		if req.Filter.ToolId != nil {
-			query = append(query, "tool_id = ?")
-			args = append(args, req.Filter.GetToolId())
-		}
-	}
-
-	// We need to further restrict our query according to the target of evaluation we are allowed to "see".
-	//
-	// TODO(oxisto): This is suboptimal, since we are now calling AllowedTargetOfEvaluations twice. Once here
-	//  and once above in CheckAccess.
-	all, allowed = svc.authz.AllowedTargetOfEvaluations(ctx)
-	if !all {
-		query = append(query, "target_of_evaluation_id IN ?")
-		args = append(args, allowed)
-	}
-
-	res = new(discovery.ListResourcesResponse)
-
-	// Join query with AND and prepend the query
-	args = append([]any{strings.Join(query, " AND ")}, args...)
-
-	res.Results, res.NextPageToken, err = service.PaginateStorage[*discovery.Resource](req, svc.storage, service.DefaultPaginationOpts, args...)
-
-	return
 }
 
 // GetTargetOfEvaluationId implements TargetOfEvaluationRequest for this service. This is a little trick, so that we can call

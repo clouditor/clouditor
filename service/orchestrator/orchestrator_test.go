@@ -100,15 +100,6 @@ func TestNewService(t *testing.T) {
 			},
 		},
 		{
-			name: "New service with metrics file",
-			args: args{
-				opts: []service.Option[*Service]{WithMetricsFile("metricsfile.json")},
-			},
-			want: func(t *testing.T, got *Service) bool {
-				return assert.Equal(t, "metricsfile.json", got.metricsFile)
-			},
-		},
-		{
 			name: "New service with authorization strategy",
 			args: args{
 				opts: []service.Option[*Service]{WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{})},

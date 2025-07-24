@@ -31,7 +31,6 @@ import (
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
-	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/config"
@@ -283,8 +282,6 @@ func TestService_ListTargetsOfEvaluation(t *testing.T) {
 	type fields struct {
 		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
-		metricsFile           string
-		loadMetricsFunc       func() ([]*assessment.Metric, error)
 		catalogsFolder        string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
@@ -404,8 +401,6 @@ func TestService_ListTargetsOfEvaluation(t *testing.T) {
 			svc := &Service{
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
-				metricsFile:           tt.fields.metricsFile,
-				loadMetricsFunc:       tt.fields.loadMetricsFunc,
 				catalogsFolder:        tt.fields.catalogsFolder,
 				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 				events:                tt.fields.events,
@@ -423,16 +418,13 @@ func TestService_ListTargetsOfEvaluation(t *testing.T) {
 
 func TestService_GetTargetOfEvaluationStatistics(t *testing.T) {
 	type fields struct {
-		TargetOfEvaluationHooks []orchestrator.TargetOfEvaluationHookFunc
-		auditScopeHooks         []orchestrator.AuditScopeHookFunc
-		AssessmentResultHooks   []assessment.ResultHookFunc
-		storage                 persistence.Storage
-		metricsFile             string
-		loadMetricsFunc         func() ([]*assessment.Metric, error)
-		catalogsFolder          string
-		loadCatalogsFunc        func() ([]*orchestrator.Catalog, error)
-		events                  chan *orchestrator.MetricChangeEvent
-		authz                   service.AuthorizationStrategy
+		auditScopeHooks       []orchestrator.AuditScopeHookFunc
+		AssessmentResultHooks []assessment.ResultHookFunc
+		storage               persistence.Storage
+		catalogsFolder        string
+		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
+		events                chan *orchestrator.MetricChangeEvent
+		authz                 service.AuthorizationStrategy
 	}
 	type args struct {
 		ctx context.Context
@@ -530,11 +522,11 @@ func TestService_GetTargetOfEvaluationStatistics(t *testing.T) {
 					assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", "", testdata.MockTargetOfEvaluationID1, "Second Audit Scope for ToE1")))
 
 					// Store resources
-					assert.NoError(t, s.Create(&discovery.Resource{
+					assert.NoError(t, s.Create(&evidence.Resource{
 						Id:                   uuid.NewString(),
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 					}))
-					assert.NoError(t, s.Create(&discovery.Resource{
+					assert.NoError(t, s.Create(&evidence.Resource{
 						Id:                   uuid.NewString(),
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 					}))
@@ -559,16 +551,13 @@ func TestService_GetTargetOfEvaluationStatistics(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				TargetOfEvaluationHooks: tt.fields.TargetOfEvaluationHooks,
-				auditScopeHooks:         tt.fields.auditScopeHooks,
-				AssessmentResultHooks:   tt.fields.AssessmentResultHooks,
-				storage:                 tt.fields.storage,
-				metricsFile:             tt.fields.metricsFile,
-				loadMetricsFunc:         tt.fields.loadMetricsFunc,
-				catalogsFolder:          tt.fields.catalogsFolder,
-				loadCatalogsFunc:        tt.fields.loadCatalogsFunc,
-				events:                  tt.fields.events,
-				authz:                   tt.fields.authz,
+				auditScopeHooks:       tt.fields.auditScopeHooks,
+				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
+				storage:               tt.fields.storage,
+				catalogsFolder:        tt.fields.catalogsFolder,
+				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
+				events:                tt.fields.events,
+				authz:                 tt.fields.authz,
 			}
 			gotRes, err := s.GetTargetOfEvaluationStatistics(tt.args.ctx, tt.args.req)
 			tt.wantErr(t, err)
@@ -584,8 +573,6 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 		auditScopeHooks                 []orchestrator.AuditScopeHookFunc
 		AssessmentResultHooks           []assessment.ResultHookFunc
 		storage                         persistence.Storage
-		metricsFile                     string
-		loadMetricsFunc                 func() ([]*assessment.Metric, error)
 		catalogsFolder                  string
 		loadCatalogsFunc                func() ([]*orchestrator.Catalog, error)
 		events                          chan *orchestrator.MetricChangeEvent
@@ -725,8 +712,6 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 				auditScopeHooks:                 tt.fields.auditScopeHooks,
 				AssessmentResultHooks:           tt.fields.AssessmentResultHooks,
 				storage:                         tt.fields.storage,
-				metricsFile:                     tt.fields.metricsFile,
-				loadMetricsFunc:                 tt.fields.loadMetricsFunc,
 				catalogsFolder:                  tt.fields.catalogsFolder,
 				loadCatalogsFunc:                tt.fields.loadCatalogsFunc,
 				events:                          tt.fields.events,

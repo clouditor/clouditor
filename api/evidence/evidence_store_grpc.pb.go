@@ -44,10 +44,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	EvidenceStore_StoreEvidence_FullMethodName  = "/clouditor.evidence.v1.EvidenceStore/StoreEvidence"
-	EvidenceStore_StoreEvidences_FullMethodName = "/clouditor.evidence.v1.EvidenceStore/StoreEvidences"
-	EvidenceStore_ListEvidences_FullMethodName  = "/clouditor.evidence.v1.EvidenceStore/ListEvidences"
-	EvidenceStore_GetEvidence_FullMethodName    = "/clouditor.evidence.v1.EvidenceStore/GetEvidence"
+	EvidenceStore_StoreEvidence_FullMethodName              = "/clouditor.evidence.v1.EvidenceStore/StoreEvidence"
+	EvidenceStore_StoreEvidences_FullMethodName             = "/clouditor.evidence.v1.EvidenceStore/StoreEvidences"
+	EvidenceStore_ListEvidences_FullMethodName              = "/clouditor.evidence.v1.EvidenceStore/ListEvidences"
+	EvidenceStore_GetEvidence_FullMethodName                = "/clouditor.evidence.v1.EvidenceStore/GetEvidence"
+	EvidenceStore_ListSupportedResourceTypes_FullMethodName = "/clouditor.evidence.v1.EvidenceStore/ListSupportedResourceTypes"
+	EvidenceStore_ListResources_FullMethodName              = "/clouditor.evidence.v1.EvidenceStore/ListResources"
 )
 
 // EvidenceStoreClient is the client API for EvidenceStore service.
@@ -67,6 +69,10 @@ type EvidenceStoreClient interface {
 	// Returns a particular stored evidence. Part of the public API, also exposed
 	// as REST.
 	GetEvidence(ctx context.Context, in *GetEvidenceRequest, opts ...grpc.CallOption) (*Evidence, error)
+	// Returns the resource types that are supported by the EvidenceStore.
+	ListSupportedResourceTypes(ctx context.Context, in *ListSupportedResourceTypesRequest, opts ...grpc.CallOption) (*ListSupportedResourceTypesResponse, error)
+	// Lists all resources collected in the last run, exposed as REST.
+	ListResources(ctx context.Context, in *ListResourcesRequest, opts ...grpc.CallOption) (*ListResourcesResponse, error)
 }
 
 type evidenceStoreClient struct {
@@ -120,6 +126,26 @@ func (c *evidenceStoreClient) GetEvidence(ctx context.Context, in *GetEvidenceRe
 	return out, nil
 }
 
+func (c *evidenceStoreClient) ListSupportedResourceTypes(ctx context.Context, in *ListSupportedResourceTypesRequest, opts ...grpc.CallOption) (*ListSupportedResourceTypesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListSupportedResourceTypesResponse)
+	err := c.cc.Invoke(ctx, EvidenceStore_ListSupportedResourceTypes_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *evidenceStoreClient) ListResources(ctx context.Context, in *ListResourcesRequest, opts ...grpc.CallOption) (*ListResourcesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListResourcesResponse)
+	err := c.cc.Invoke(ctx, EvidenceStore_ListResources_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EvidenceStoreServer is the server API for EvidenceStore service.
 // All implementations must embed UnimplementedEvidenceStoreServer
 // for forward compatibility.
@@ -137,6 +163,10 @@ type EvidenceStoreServer interface {
 	// Returns a particular stored evidence. Part of the public API, also exposed
 	// as REST.
 	GetEvidence(context.Context, *GetEvidenceRequest) (*Evidence, error)
+	// Returns the resource types that are supported by the EvidenceStore.
+	ListSupportedResourceTypes(context.Context, *ListSupportedResourceTypesRequest) (*ListSupportedResourceTypesResponse, error)
+	// Lists all resources collected in the last run, exposed as REST.
+	ListResources(context.Context, *ListResourcesRequest) (*ListResourcesResponse, error)
 	mustEmbedUnimplementedEvidenceStoreServer()
 }
 
@@ -158,6 +188,12 @@ func (UnimplementedEvidenceStoreServer) ListEvidences(context.Context, *ListEvid
 }
 func (UnimplementedEvidenceStoreServer) GetEvidence(context.Context, *GetEvidenceRequest) (*Evidence, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEvidence not implemented")
+}
+func (UnimplementedEvidenceStoreServer) ListSupportedResourceTypes(context.Context, *ListSupportedResourceTypesRequest) (*ListSupportedResourceTypesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListSupportedResourceTypes not implemented")
+}
+func (UnimplementedEvidenceStoreServer) ListResources(context.Context, *ListResourcesRequest) (*ListResourcesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListResources not implemented")
 }
 func (UnimplementedEvidenceStoreServer) mustEmbedUnimplementedEvidenceStoreServer() {}
 func (UnimplementedEvidenceStoreServer) testEmbeddedByValue()                       {}
@@ -241,6 +277,42 @@ func _EvidenceStore_GetEvidence_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _EvidenceStore_ListSupportedResourceTypes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListSupportedResourceTypesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EvidenceStoreServer).ListSupportedResourceTypes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: EvidenceStore_ListSupportedResourceTypes_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EvidenceStoreServer).ListSupportedResourceTypes(ctx, req.(*ListSupportedResourceTypesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _EvidenceStore_ListResources_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListResourcesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EvidenceStoreServer).ListResources(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: EvidenceStore_ListResources_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EvidenceStoreServer).ListResources(ctx, req.(*ListResourcesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // EvidenceStore_ServiceDesc is the grpc.ServiceDesc for EvidenceStore service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -259,6 +331,14 @@ var EvidenceStore_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetEvidence",
 			Handler:    _EvidenceStore_GetEvidence_Handler,
+		},
+		{
+			MethodName: "ListSupportedResourceTypes",
+			Handler:    _EvidenceStore_ListSupportedResourceTypes_Handler,
+		},
+		{
+			MethodName: "ListResources",
+			Handler:    _EvidenceStore_ListResources_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

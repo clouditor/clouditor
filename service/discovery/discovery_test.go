@@ -29,7 +29,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 	"sync"
 	"testing"
 	"time"
@@ -39,14 +38,11 @@ import (
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
-	"clouditor.io/clouditor/v2/internal/testutil"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"clouditor.io/clouditor/v2/internal/testutil/clitest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest"
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/launcher"
-	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
 	"github.com/go-co-op/gocron"
 	"github.com/spf13/viper"
@@ -54,17 +50,6 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
-
-func TestMain(m *testing.M) {
-	clitest.AutoChdir()
-
-	server, _ := startBufConnServer()
-
-	code := m.Run()
-
-	server.Stop()
-	os.Exit(code)
-}
 
 func TestNewService(t *testing.T) {
 	type args struct {
@@ -139,17 +124,6 @@ func TestNewService(t *testing.T) {
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Equal(t, []string{}, got.providers)
-			},
-		},
-		{
-			name: "Create service with option 'WithStorage'",
-			args: args{
-				opts: []service.Option[*Service]{
-					WithStorage(testutil.NewInMemoryStorage(t)),
-				},
-			},
-			want: func(t *testing.T, got *Service) bool {
-				return assert.NotNil(t, got.storage)
 			},
 		},
 		{
@@ -265,148 +239,6 @@ func TestService_StartDiscovery(t *testing.T) {
 	}
 }
 
-func TestService_ListResources(t *testing.T) {
-	type fields struct {
-		authz       service.AuthorizationStrategy
-		ctID        string
-		collectorID string
-	}
-	type args struct {
-		req *discovery.ListResourcesRequest
-	}
-	tests := []struct {
-		name                     string
-		fields                   fields
-		args                     args
-		numberOfQueriedResources int
-		secondDiscoverer         bool
-		wantErr                  assert.WantErr
-	}{
-		{
-			name: "Filter type, allow all",
-			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(true),
-				ctID:  testdata.MockTargetOfEvaluationID1,
-			},
-			args: args{req: &discovery.ListResourcesRequest{
-				Filter: &discovery.ListResourcesRequest_Filter{
-					// TODO(oxisto): This is a problem now, since we are only persisting the leaf node type, so we cannot "see" the inherited resource types anymore
-					Type: util.Ref("Storage"),
-				},
-			}},
-			numberOfQueriedResources: 1,
-			wantErr:                  assert.Nil[error],
-		},
-		{
-			name: "Filter target of evaluation, allow",
-			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1),
-				ctID:  testdata.MockTargetOfEvaluationID1,
-			},
-			args: args{req: &discovery.ListResourcesRequest{
-				Filter: &discovery.ListResourcesRequest_Filter{
-					TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
-				},
-			}},
-			numberOfQueriedResources: 2,
-			wantErr:                  assert.Nil[error],
-		},
-		{
-			name: "Filter target of evaluation, not allowed",
-			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1),
-				ctID:  testdata.MockTargetOfEvaluationID1,
-			},
-			args: args{req: &discovery.ListResourcesRequest{
-				Filter: &discovery.ListResourcesRequest_Filter{
-					TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID2),
-				},
-			}},
-			numberOfQueriedResources: 0,
-			wantErr: func(t *testing.T, gotErr error) bool {
-				return assert.ErrorIs(t, gotErr, service.ErrPermissionDenied)
-			},
-		},
-		{
-			name: "Filter toolID, allow",
-			fields: fields{
-				authz:       servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1),
-				ctID:        testdata.MockTargetOfEvaluationID1,
-				collectorID: testdata.MockEvidenceToolID1,
-			},
-			args: args{req: &discovery.ListResourcesRequest{
-				Filter: &discovery.ListResourcesRequest_Filter{
-					TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
-					ToolId:               util.Ref(testdata.MockEvidenceToolID1),
-				},
-			}},
-			numberOfQueriedResources: 2,
-			secondDiscoverer:         true,
-			wantErr:                  assert.Nil[error],
-		},
-		{
-			name: "Filter toolID, not allowed",
-			fields: fields{
-				authz:       servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID1),
-				ctID:        testdata.MockTargetOfEvaluationID1,
-				collectorID: testdata.MockEvidenceToolID1,
-			},
-			args: args{req: &discovery.ListResourcesRequest{
-				Filter: &discovery.ListResourcesRequest_Filter{
-					ToolId: util.Ref(testdata.MockEvidenceToolID1),
-				},
-			}},
-			numberOfQueriedResources: 0,
-			wantErr: func(t *testing.T, gotErr error) bool {
-				return assert.ErrorIs(t, gotErr, service.ErrPermissionDenied)
-			},
-		},
-		{
-			name: "No filtering, allow all",
-			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(true),
-				ctID:  testdata.MockTargetOfEvaluationID1,
-			},
-			args:                     args{req: &discovery.ListResourcesRequest{}},
-			numberOfQueriedResources: 2,
-			wantErr:                  assert.Nil[error],
-		},
-		{
-			name: "No filtering, allow different target of evaluation, empty result",
-			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockTargetOfEvaluationID2),
-				ctID:  testdata.MockTargetOfEvaluationID1,
-			},
-			args:                     args{req: &discovery.ListResourcesRequest{}},
-			numberOfQueriedResources: 0,
-			wantErr:                  assert.Nil[error],
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(WithEvidenceStoreAddress(testdata.MockGRPCTarget, grpc.WithContextDialer(bufConnDialer)))
-			s.authz = tt.fields.authz
-			s.ctID = tt.fields.ctID
-			s.collectorID = tt.fields.collectorID
-			s.StartDiscovery(&discoverytest.TestDiscoverer{TestCase: 2, ServiceId: tt.fields.ctID})
-
-			// We start a second discoverer for the 2 tests "Filter toolID, allow". For this tests we want resources with different toolIDs. One discoverer has only one toolID, so we have to start a second discoverer for resources with a different toolID.
-			if tt.secondDiscoverer {
-				s.collectorID = "second discoverer for a different toolID"
-				s.StartDiscovery(&discoverytest.TestDiscoverer{TestCase: 2, ServiceId: tt.fields.ctID})
-			}
-
-			response, err := s.ListResources(context.TODO(), tt.args.req)
-			tt.wantErr(t, err)
-
-			if err == nil {
-				assert.Equal(t, tt.numberOfQueriedResources, len(response.Results))
-			}
-		})
-	}
-}
-
 func TestService_Shutdown(t *testing.T) {
 	service := NewService()
 	service.Shutdown()
@@ -501,7 +333,6 @@ func TestService_Start(t *testing.T) {
 	type fields struct {
 		evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
 		evidenceStore        *api.RPCConnection[evidence.EvidenceStoreClient]
-		storage              persistence.Storage
 		scheduler            *gocron.Scheduler
 		authz                service.AuthorizationStrategy
 		providers            []string
@@ -773,7 +604,6 @@ func TestService_Start(t *testing.T) {
 			svc := &Service{
 				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
 				evidenceStore:        tt.fields.evidenceStore,
-				storage:              tt.fields.storage,
 				scheduler:            tt.fields.scheduler,
 				authz:                tt.fields.authz,
 				providers:            tt.fields.providers,

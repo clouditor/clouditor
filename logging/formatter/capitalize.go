@@ -26,8 +26,9 @@
 package formatter
 
 import (
-	"github.com/sirupsen/logrus"
 	"unicode"
+
+	"github.com/sirupsen/logrus"
 )
 
 // CapitalizeFormatter implements the Formatter interface for customizing the logging to our needs

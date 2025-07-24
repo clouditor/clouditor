@@ -2,6 +2,7 @@ package ontology
 
 import (
 	"encoding/json"
+	"errors"
 	"slices"
 	"strings"
 
@@ -12,6 +13,8 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+var ErrNotOntologyResource = errors.New("protobuf message is not a valid ontology resource")
 
 type IsResource interface {
 	proto.Message
@@ -86,6 +89,26 @@ func ResourceTypes(r IsResource) []string {
 	}
 
 	return nil
+}
+
+// ListResourceTypes returns a list of resource types that are supported by the ontology.
+func ListResourceTypes() []string {
+	var types []string
+
+	var resource Resource
+
+	// Accessing the descriptor of the resource message.
+	md := resource.ProtoReflect().Descriptor()
+
+	// Collect the names of all fields that belong to the oneOf field.
+	for i := 0; i < md.Fields().Len(); i++ {
+		field := md.Fields().Get(i)
+		if field.ContainingOneof() != nil {
+			types = append(types, string(field.Name()))
+		}
+	}
+
+	return types
 }
 
 func HasType(r IsResource, typ string) bool {

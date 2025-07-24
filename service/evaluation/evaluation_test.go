@@ -54,7 +54,6 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/testing/protocmp"
-	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 )
@@ -1023,19 +1022,9 @@ func TestService_getAllMetricsFromControl(t *testing.T) {
 				{
 					Id:          testdata.MockMetricID1,
 					Category:    testdata.MockMetricCategory1,
-					Name:        testdata.MockMetricName1,
 					Description: testdata.MockMetricDescription1,
-					Scale:       assessment.Metric_ORDINAL,
-					Range: &assessment.Range{
-						Range: &assessment.Range_AllowedValues{
-							AllowedValues: &assessment.AllowedValues{
-								Values: []*structpb.Value{
-									structpb.NewBoolValue(false),
-									structpb.NewBoolValue(true),
-								},
-							},
-						},
-					},
+					Version:     testdata.MockMetricVersion1,
+					Comments:    testdata.MockMetricComments1,
 				},
 			},
 			wantErr: assert.NoError,
