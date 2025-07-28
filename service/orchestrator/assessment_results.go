@@ -111,6 +111,7 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 	// * metric ID
 	// * tool ID
 	// * assessment result ID(s)
+	// * evidence ID in the history field
 	if req.Filter != nil {
 		if req.Filter.TargetOfEvaluationId != nil {
 			query = append(query, "target_of_evaluation_id = ?")
@@ -131,6 +132,16 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 		if req.Filter.ToolId != nil {
 			query = append(query, "tool_id = ?")
 			args = append(args, req.Filter.ToolId)
+		}
+		if req.Filter.HistoryEvidenceId != nil {
+			query = append(query,
+				`EXISTS (
+					SELECT 1
+					FROM json_each(history)
+					WHERE json_extract(json_each.value, '$.evidence_id') = ?
+				)`,
+			)
+			args = append(args, req.Filter.GetHistoryEvidenceId())
 		}
 	}
 

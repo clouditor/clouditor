@@ -413,7 +413,6 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
-
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),
 			},
@@ -503,6 +502,32 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				Results: []*assessment.AssessmentResult{
 					orchestratortest.MockAssessmentResult1,
 					orchestratortest.MockAssessmentResult2,
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "return filtered by history_evidence_ID",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResult5))
+				}),
+				authz: servicetest.NewAuthorizationStrategy(true),
+			},
+			args: args{
+				ctx: context.TODO(),
+				req: &orchestrator.ListAssessmentResultsRequest{
+					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
+						HistoryEvidenceId: util.Ref(testdata.MockEvidenceID1),
+					},
+				},
+			},
+			wantRes: &orchestrator.ListAssessmentResultsResponse{
+				Results: []*assessment.AssessmentResult{
+					orchestratortest.MockAssessmentResult1,
+					orchestratortest.MockAssessmentResult2,
+					orchestratortest.MockAssessmentResult5,
 				},
 			},
 			wantErr: assert.NoError,

@@ -47,6 +47,11 @@ paths:
                     type: array
                     items:
                         type: string
+                - name: filter.historyEvidenceId
+                  in: query
+                  description: 'Optional: List only the assessment results for a specific evidence ID in the history field.'
+                  schema:
+                    type: string
                 - name: latestByResourceId
                   in: query
                   description: Optional. Latest results grouped by resource_id and metric_id.

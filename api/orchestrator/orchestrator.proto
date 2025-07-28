@@ -844,6 +844,8 @@ message ListAssessmentResultsRequest {
     optional string tool_id = 5 [(buf.validate.field).string.min_len = 1];
     // Optional. List only assessment result from a specific list of IDs.
     repeated string assessment_result_ids = 6 [(buf.validate.field).repeated.items.string.min_len = 1];
+    // Optional: List only the assessment results for a specific evidence ID in the history field.
+    optional string history_evidence_id = 7 [(buf.validate.field).string.min_len = 1];
   }
   optional Filter filter = 1;
   // Optional. Latest results grouped by resource_id and metric_id.
