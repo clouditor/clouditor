@@ -11,11 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-<<<<<<< HEAD
 // Evidence requests for testing
-=======
-// Mock Requests
->>>>>>> main
 var (
 	MockListEvidenceRequest1 = &evidence.ListEvidencesRequest{
 		Filter: &evidence.Filter{
@@ -31,11 +27,7 @@ var (
 	}
 )
 
-<<<<<<< HEAD
 // Evidences for testing
-=======
-// Mock Evidence and Resource
->>>>>>> main
 var (
 	MockEvidence1 = &evidence.Evidence{
 		Id:                   testdata.MockEvidenceID1,
