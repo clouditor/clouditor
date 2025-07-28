@@ -95,8 +95,8 @@ github.com/aws/aws-sdk-go-v2/internal/ini v1.8.2 h1:Pg9URiobXy85kgFev3og2CuOZ8JZ
 github.com/aws/aws-sdk-go-v2/internal/ini v1.8.2/go.mod h1:FbtygfRFze9usAadmnGJNc8KsP346kEe+y2/oyhGAGc=
 github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.37 h1:XTZZ0I3SZUHAtBLBU6395ad+VOblE0DwQP6MuaNeics=
 github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.37/go.mod h1:Pi6ksbniAWVwu2S8pEzcYPyhUkAcLaufxN7PfAUQjBk=
-github.com/aws/aws-sdk-go-v2/service/ec2 v1.233.1 h1:1KYEVBXApGIQnXChtqKTZSN6jerkfiFhOApi8TcGs2w=
-github.com/aws/aws-sdk-go-v2/service/ec2 v1.233.1/go.mod h1:K7qdQFo+lbGM48aPEyoPfy/VN/xNOA4o8GGczfSXNcQ=
+github.com/aws/aws-sdk-go-v2/service/ec2 v1.236.0 h1:p9VAk1AO/UDMq4sYtsxMbZqoJIXtCZmLolsPTc3rP/w=
+github.com/aws/aws-sdk-go-v2/service/ec2 v1.236.0/go.mod h1:K7qdQFo+lbGM48aPEyoPfy/VN/xNOA4o8GGczfSXNcQ=
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.4 h1:CXV68E2dNqhuynZJPB80bhPQwAKqBWVer887figW6Jc=
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.4/go.mod h1:/xFi9KtvBXP97ppCz1TAEvU1Uf66qvid89rbem3wCzQ=
 github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.7.5 h1:M5/B8JUaCI8+9QD+u3S/f4YHpvqE9RpSkV3rf0Iks2w=
@@ -105,8 +105,8 @@ github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.18 h1:vvbXsA2T
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.18/go.mod h1:m2JJHledjBGNMsLOF1g9gbAxprzq3KjC8e4lxtn+eWg=
 github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.18.18 h1:OS2e0SKqsU2LiJPqL8u9x41tKc6MMEHrWjLVLn3oysg=
 github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.18.18/go.mod h1:+Yrk+MDGzlNGxCXieljNeWpoZTCQUQVL+Jk9hGGJ8qM=
-github.com/aws/aws-sdk-go-v2/service/lambda v1.72.0 h1:2LerDz2Lz22IDfdpR/RpSZIFoBoAh1tdHUaiUzG2z0k=
-github.com/aws/aws-sdk-go-v2/service/lambda v1.72.0/go.mod h1:vahA7MiX/fQE9J5o1PKbgn8KoXz7ogSFLAQQLdLUvM8=
+github.com/aws/aws-sdk-go-v2/service/lambda v1.73.0 h1:5rog6aSAcNved2uO45dU+Xeag3UJKfhLJlQi9tjz7h4=
+github.com/aws/aws-sdk-go-v2/service/lambda v1.73.0/go.mod h1:JE2aLHT2ZIj9Ep5mBJ9jWUnrce6twtmVsWIbuGFL4xg=
 github.com/aws/aws-sdk-go-v2/service/s3 v1.84.1 h1:RkHXU9jP0DptGy7qKI8CBGsUJruWz0v5IgwBa2DwWcU=
 github.com/aws/aws-sdk-go-v2/service/s3 v1.84.1/go.mod h1:3xAOf7tdKF+qbb+XpU+EPhNXAdun3Lu1RcDrj8KC24I=
 github.com/aws/aws-sdk-go-v2/service/sso v1.24.14 h1:c5WJ3iHz7rLIgArznb3JCSQT3uUMiz9DLZhIX+1G8ok=
