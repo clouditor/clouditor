@@ -82,9 +82,7 @@ enum EvidenceStatus {
 }
 
 // StoreEvidenceResponse belongs to StoreEvidence, which uses a custom unary RPC and therefore requires a response message according to the style convention. Since no return values are required, this is empty.
-message StoreEvidenceResponse {
-  EvidenceStatus status = 1;
-}
+message StoreEvidenceResponse {}
 
 // StoreEvidencesResponse belongs to StoreEvidences, which uses a custom bidirectional streaming RPC and therefore requires a response message according to the style convention. The bidirectional streaming needs the status and its message in the response for error handling.
 message StoreEvidencesResponse {
@@ -117,6 +115,12 @@ message GetEvidenceRequest {
   string evidence_id = 1 [(buf.validate.field).string.uuid = true];
 }
 
+message ListSupportedResourceTypesRequest {}
+
+message ListSupportedResourceTypesResponse {
+  repeated string resource_type = 1 [(buf.validate.field).repeated.min_items = 1];
+}
+
 message ListResourcesRequest {
   message Filter {
     optional string type = 1;
@@ -135,10 +139,4 @@ message ListResourcesRequest {
 message ListResourcesResponse {
   repeated Resource results = 1 [(google.api.field_behavior) = REQUIRED];
   string next_page_token = 2;
-}
-
-message ListSupportedResourceTypesRequest {}
-
-message ListSupportedResourceTypesResponse {
-  repeated string resource_type = 1 [(buf.validate.field).repeated.min_items = 1];
 }
