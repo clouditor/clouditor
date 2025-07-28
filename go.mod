@@ -62,7 +62,7 @@ require (
 	github.com/stoewer/go-strcase v1.3.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250603155806-513f23925822
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250603155806-513f23925822 // indirect
-	google.golang.org/grpc v1.73.0
+	google.golang.org/grpc v1.74.2
 	google.golang.org/protobuf v1.36.6
 )
 
@@ -211,7 +211,7 @@ require (
 
 // tools dependencies
 require (
-	cel.dev/expr v0.23.1 // indirect
+	cel.dev/expr v0.24.0 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.0.2 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/google/addlicense v1.1.0
@@ -223,6 +223,5 @@ require (
 require (
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2 // indirect
 	github.com/vektah/gqlparser/v2 v2.5.28 // indirect
-	go.opentelemetry.io/otel/sdk/metric v1.36.0 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 )
