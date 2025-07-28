@@ -1245,24 +1245,24 @@ func TestService_handleEvidence(t *testing.T) {
 		args    args
 		wantErr assert.ErrorAssertionFunc
 	}{
-		// {
-		// 	name: "Error getting stream",
-		// 	fields: fields{
-		// 		storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-		// 		}),
-		// 		assessment: &api.RPCConnection[assessment.AssessmentClient]{
-		// 			Client: &mockAssessmentClient{failStream: true},
-		// 		},
-		// 	},
-		// 	args: args{
-		// 		addStream: true,
-		// 		evidence:  evidencetest.MockEvidence1,
-		// 		target:    "error",
-		// 	},
-		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		// 		return assert.ErrorContains(t, err, "could not get stream to assessment service")
-		// 	},
-		// },
+		{
+			name: "Error getting stream",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+				}),
+				assessment: &api.RPCConnection[assessment.AssessmentClient]{
+					Client: &mockAssessmentClient{failStream: true},
+				},
+			},
+			args: args{
+				addStream: true,
+				evidence:  evidencetest.MockEvidence1,
+				target:    "error",
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not get stream to assessment service")
+			},
+		},
 		{
 			name: "Happy path: do not trigger new assessment",
 			fields: fields{
