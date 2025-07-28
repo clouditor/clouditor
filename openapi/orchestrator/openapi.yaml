@@ -1484,14 +1484,6 @@ components:
                     items:
                         type: string
             description: ActivityLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
-        AllowedValues:
-            type: object
-            properties:
-                values:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/GoogleProtobufValue'
-            description: Defines a range
         ApplicationLogging:
             type: object
             properties:
@@ -1512,7 +1504,7 @@ components:
         AssessmentResult:
             required:
                 - id
-                - timestamp
+                - createdAt
                 - metricId
                 - metricConfiguration
                 - evidenceId
@@ -1521,12 +1513,14 @@ components:
                 - complianceComment
                 - targetOfEvaluationId
                 - toolId
+                - historyUpdatedAt
+                - history
             type: object
             properties:
                 id:
                     type: string
                     description: Assessment result id
-                timestamp:
+                createdAt:
                     type: string
                     description: Time of assessment
                     format: date-time
@@ -1542,7 +1536,7 @@ components:
                     description: 'Compliant case: true or false'
                 evidenceId:
                     type: string
-                    description: Reference to the assessed evidence
+                    description: Reference to the last assessed evidence
                 resourceId:
                     type: string
                     description: Reference to the resource of the assessed evidence
@@ -1565,6 +1559,15 @@ components:
                 toolId:
                     type: string
                     description: Reference to the tool which provided the assessment result
+                historyUpdatedAt:
+                    type: string
+                    description: The time of the last update of the assessment result history field
+                    format: date-time
+                history:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Record'
+                    description: Stores the history of evidence IDs and timestamps for evidence that have the same content as the evidence used for this assessment result.
             description: |-
                 A result resource, representing the result after assessing the cloud resource
                  with id resource_id.
@@ -1591,6 +1594,7 @@ components:
         AuditScope:
             required:
                 - id
+                - name
                 - targetOfEvaluationId
                 - catalogId
             type: object
@@ -1598,6 +1602,8 @@ components:
                 id:
                     type: string
                     description: Audit Scope ID
+                name:
+                    type: string
                 targetOfEvaluationId:
                     type: string
                 catalogId:
@@ -1985,40 +1991,26 @@ components:
         Metric:
             required:
                 - id
-                - name
+                - description
+                - version
+                - category
             type: object
             properties:
                 id:
                     type: string
                     description: Required. The unique identifier of the metric.
-                name:
-                    type: string
-                    description: Required. The human readable name of the metric.
                 description:
                     type: string
                     description: The description of the metric
+                version:
+                    type: string
+                    description: The version of this metric
+                comments:
+                    type: string
+                    description: Optional comments that describe the purpose of this metric. They may also describe a scenario in which the metric can be useful.
                 category:
                     type: string
-                    description: The reference to control catalog category or domain
-                scale:
-                    enum:
-                        - SCALE_UNSPECIFIED
-                        - NOMINAL
-                        - ORDINAL
-                        - METRIC
-                    type: string
-                    description: The scale of this metric, e.g. categories, ranked data or metric values.
-                    format: enum
-                range:
-                    allOf:
-                        - $ref: '#/components/schemas/Range'
-                    description: The range of this metric. Depending on the scale.
-                interval:
-                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
-                    type: string
-                    description: |-
-                        The interval in seconds the evidences must be collected for the respective
-                         metric.
+                    description: Semantically, the reference to control catalog category or domain; it must conform to the directory structure of the security-metrics respository
                 implementation:
                     allOf:
                         - $ref: '#/components/schemas/MetricImplementation'
@@ -2086,16 +2078,6 @@ components:
                     description: The last time of update
                     format: date-time
             description: MetricImplementation defines the implementation of an individual metric.
-        MinMax:
-            type: object
-            properties:
-                min:
-                    type: string
-                    description: Required.
-                max:
-                    type: string
-                    description: Required.
-            description: Defines a range of values through a (inclusive) minimum and a maximum
         OSLogging:
             type: object
             properties:
@@ -2113,32 +2095,17 @@ components:
                     items:
                         type: string
             description: OSLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
-        Order:
+        Record:
+            required:
+                - evidenceId
+                - evidenceRecordedAt
             type: object
             properties:
-                values:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/GoogleProtobufValue'
-            description: |-
-                Defines a range of values in a pre-defined order from the lowest to the
-                 highest.
-        Range:
-            type: object
-            properties:
-                allowedValues:
-                    allOf:
-                        - $ref: '#/components/schemas/AllowedValues'
-                    description: used for nominal scale
-                order:
-                    allOf:
-                        - $ref: '#/components/schemas/Order'
-                    description: used for ordinal scale
-                minMax:
-                    allOf:
-                        - $ref: '#/components/schemas/MinMax'
-                    description: used for metric scale
-            description: A range resource representing the range of values
+                evidenceId:
+                    type: string
+                evidenceRecordedAt:
+                    type: string
+                    format: date-time
         Redundancy:
             type: object
             properties:

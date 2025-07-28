@@ -81,7 +81,7 @@ func TestAddCommands(t *testing.T) {
 	t.Errorf("No list command was added")
 }
 
-func TestNewListResultsCommand(t *testing.T) {
+func TestNewListEvidencesCommand(t *testing.T) {
 	var b bytes.Buffer
 
 	cli.Output = &b

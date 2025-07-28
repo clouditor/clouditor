@@ -1,14 +1,21 @@
 package evidencetest
 
 import (
+	"strings"
+
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/util"
+	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+<<<<<<< HEAD
 // Evidence requests for testing
+=======
+// Mock Requests
+>>>>>>> main
 var (
 	MockListEvidenceRequest1 = &evidence.ListEvidencesRequest{
 		Filter: &evidence.Filter{
@@ -24,7 +31,11 @@ var (
 	}
 )
 
+<<<<<<< HEAD
 // Evidences for testing
+=======
+// Mock Evidence and Resource
+>>>>>>> main
 var (
 	MockEvidence1 = &evidence.Evidence{
 		Id:                   testdata.MockEvidenceID1,
@@ -61,6 +72,34 @@ var (
 				},
 			},
 		},
+	}
+	MockVirtualMachineResource1 = &evidence.Resource{
+		Id:                   testdata.MockVirtualMachineID1,
+		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+		ResourceType:         strings.Join(testdata.MockVirtualMachineTypes, ","),
+		ToolId:               testdata.MockEvidenceToolID2,
+		Properties:           &anypb.Any{},
+	}
+	MockVirtualMachineResource2 = &evidence.Resource{
+		Id:                   testdata.MockVirtualMachineID2,
+		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
+		ResourceType:         strings.Join(testdata.MockVirtualMachineTypes, ","),
+		ToolId:               testdata.MockEvidenceToolID1,
+		Properties:           &anypb.Any{},
+	}
+	MockBlockStorageResource1 = &evidence.Resource{
+		Id:                   testdata.MockBlockStorageID1,
+		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+		ResourceType:         strings.Join(testdata.MockBlockStorageTypes, ","),
+		ToolId:               testdata.MockEvidenceToolID1,
+		Properties:           &anypb.Any{},
+	}
+	MockBlockStorageResource2 = &evidence.Resource{
+		Id:                   testdata.MockBlockStorageID2,
+		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
+		ResourceType:         strings.Join(testdata.MockBlockStorageTypes, ","),
+		ToolId:               testdata.MockEvidenceToolID1,
+		Properties:           &anypb.Any{},
 	}
 )
 

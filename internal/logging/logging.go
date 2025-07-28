@@ -128,6 +128,11 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 		buffer.WriteString(fmt.Sprintf(" for Target of Evaluation '%s'", ctreq.GetTargetOfEvaluationId()))
 	}
 
+	toolreq, ok := payload.(interface{ GetToolId() string })
+	if ok && toolreq.GetToolId() != "" {
+		buffer.WriteString(fmt.Sprintf(" and Tool ID '%s'", toolreq.GetToolId()))
+	}
+
 	// If params is not empty, the elements are joined and added to the message
 	if len(params) > 0 {
 		buffer.WriteString(" " + strings.Join(params, " "))

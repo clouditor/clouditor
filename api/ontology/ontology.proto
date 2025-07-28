@@ -1,6 +1,6 @@
 // Auto-generated code by owl2proto (https://github.com/oxisto/owl2proto)
 
-// Copyright 2024 Fraunhofer AISEC
+// Copyright 2025 Cybersecurity Certification Hub
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,16 +14,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-//           $$\                           $$\ $$\   $$\
-//           $$ |                          $$ |\__|  $$ |
-//  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
-// $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
-// $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
-// $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
-// \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
-//  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+//  $$$$$$\   $$$$$$\   $$$$$$\        $$\   $$\           $$\
+// $$  __$$\ $$  __$$\ $$  __$$\       $$ |  $$ |          $$ |
+// $$ /  \__|$$ /  \__|$$ /  \__|      $$ |  $$ |$$\   $$\ $$$$$$$\
+// $$ |      \$$$$$$\  $$ |            $$$$$$$$ |$$ |  $$ |$$  __$$\
+// $$ |       \____$$\ $$ |            $$  __$$ |$$ |  $$ |$$ |  $$ |
+// $$ |  $$\ $$\   $$ |$$ |  $$\       $$ |  $$ |$$ |  $$ |$$ |  $$ |
+// \$$$$$$  |\$$$$$$  |\$$$$$$  |      $$ |  $$ |\$$$$$$  |$$$$$$$  |
+//  \______/  \______/  \______/       \__|  \__| \______/ \_______/
 //
-// This file is part of Clouditor Community Edition.
 
 syntax = "proto3";
 
@@ -341,12 +340,8 @@ message CertificateBasedAuthentication {
 
   bool context_is_checked = 14958;
   bool enabled = 11983;
-}
-
-// CertificationTarget is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
-message CertificationTarget {
-  option (resource_type_names) = "CertificationTarget";
-  option (resource_type_names) = "Core";
+  // Maximum password rotation interval in months
+  int32 rotation_interval = 9404;
 }
 
 // CipherSuite is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -372,6 +367,7 @@ message Infrastructure {
     CodeRepository code_repository = 3431;
     Container container = 1659;
     Function function = 14943;
+    QPU qpu = 9430;
     VirtualMachine virtual_machine = 18360;
     ContainerOrchestration container_orchestration = 3211;
     ContainerRegistry container_registry = 8326;
@@ -464,6 +460,7 @@ message Compute {
   oneof type {
     Container container = 1659;
     Function function = 14943;
+    QPU qpu = 9430;
     VirtualMachine virtual_machine = 18360;
   }
 }
@@ -576,13 +573,11 @@ message ContainerRegistry {
 // Core is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Core {
   oneof type {
-    CertificationTarget certification_target = 11245;
     CloudSDK cloud_sdk = 14752;
     HttpClientLibrary http_client_library = 8816;
     HttpServer http_server = 7177;
     Logger logger = 7437;
     ResourceType resource_type = 5565;
-    Tool tool = 10672;
   }
 }
 
@@ -1257,6 +1252,8 @@ message TokenBasedAuthentication {
   bool context_is_checked = 1232;
   bool enabled = 10600;
   bool enforced = 6934;
+  // Maximum password rotation interval in months
+  int32 rotation_interval = 17587;
 }
 
 // Key is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1558,6 +1555,7 @@ message MachineLearningModel {
   float robustness = 13582;
   DataLocation data_location = 2998;
   optional string parent_id = 15494;
+  repeated Vulnerability vulnerabilities = 10821;
 }
 
 // MachineLearningService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1652,6 +1650,8 @@ message MultiFactorAuthentiation {
   option (resource_type_names) = "SecurityFeature";
 
   bool context_is_checked = 17335;
+  // Maximum password rotation interval in months
+  int32 rotation_interval = 11722;
   repeated Authenticity authenticities = 14915;
 }
 
@@ -1787,6 +1787,8 @@ message NoAuthentication {
   option (resource_type_names) = "SecurityFeature";
 
   bool context_is_checked = 12023;
+  // Maximum password rotation interval in months
+  int32 rotation_interval = 11214;
 }
 
 // OSLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1811,6 +1813,8 @@ message OTPBasedAuthentication {
 
   bool activated = 7456;
   bool context_is_checked = 18913;
+  // Maximum password rotation interval in months
+  int32 rotation_interval = 12621;
 }
 
 // ObjectStorage is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1908,6 +1912,8 @@ message PasswordBasedAuthentication {
 
   bool activated = 11798;
   bool context_is_checked = 1362;
+  // Maximum password rotation interval in months
+  int32 rotation_interval = 9048;
 }
 
 // PasswordPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1952,6 +1958,36 @@ message PolicyDocument {
   optional string parent_id = 9358;
   SchemaValidation schema_validation = 15790;
   repeated SecurityFeature security_features = 15024;
+}
+
+// QPU is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message QPU {
+  option (resource_type_names) = "QPU";
+  option (resource_type_names) = "Compute";
+  option (resource_type_names) = "Infrastructure";
+  option (resource_type_names) = "Resource";
+
+  float one_qubit_error_rate = 3838;
+  float spam_error_rate = 2960;
+  float two_qubit_error_rate = 6385;
+  google.protobuf.Timestamp creation_time = 3446;
+  string description = 4376;
+  bool error_correction_enabled = 12983;
+  string id = 14403 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 9684;
+  map<string, string> labels = 11544;
+  string name = 1538 [(buf.validate.field).required = true];
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 8462;
+  EncryptionInUse encryption_in_use = 17838;
+  GeoLocation geo_location = 16558;
+  repeated Logging loggings = 972;
+  repeated string network_interface_ids = 4162;
+  repeated Redundancy redundancies = 10637;
+  RemoteAttestation remote_attestation = 18317;
+  optional string parent_id = 11595;
+  ResourceLogging resource_logging = 14960;
+  UsageStatistics usage_statistics = 11987;
 }
 
 // RBAC is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -2052,6 +2088,7 @@ message Resource {
     CodeRepository code_repository = 3431;
     Container container = 1659;
     Function function = 14943;
+    QPU qpu = 9430;
     VirtualMachine virtual_machine = 18360;
     ContainerOrchestration container_orchestration = 3211;
     ContainerRegistry container_registry = 8326;
@@ -2378,6 +2415,8 @@ message SingleSignOn {
 
   bool context_is_checked = 14488;
   bool enabled = 10569;
+  // Maximum password rotation interval in months
+  int32 rotation_interval = 9185;
 }
 
 // Code is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -2430,12 +2469,6 @@ message StorageService {
     FileStorageService file_storage_service = 16814;
     ObjectStorageService object_storage_service = 6459;
   }
-}
-
-// Tool is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
-message Tool {
-  option (resource_type_names) = "Tool";
-  option (resource_type_names) = "Core";
 }
 
 // Training is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".

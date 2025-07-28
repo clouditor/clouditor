@@ -36,6 +36,3018 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/assessment/result:
+        post:
+            tags:
+                - Assessment
+            description: Updates the AssessmentResult field history with the new evidence or creates a new AssessmentResult for the evidence.
+            operationId: Assessment_UpdateOrAssessNewAssessmentResult
+            parameters:
+                - name: newEvidence.id
+                  in: query
+                  description: the ID in a uuid format
+                  schema:
+                    type: string
+                - name: newEvidence.timestamp
+                  in: query
+                  description: time of evidence creation
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.targetOfEvaluationId
+                  in: query
+                  description: Reference to a target of evaluation (e.g., service, organization) this evidence was gathered from
+                  schema:
+                    type: string
+                - name: newEvidence.toolId
+                  in: query
+                  description: Reference to the tool which provided the evidence
+                  schema:
+                    type: string
+                - name: newEvidence.resource.account.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.account.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.account.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.account.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.account.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.account.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.account.geoLocation.region
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.account.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.account.usageStatistics.apiHitsPerMonth
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.job.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.job.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.job.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.job.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.job.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.job.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.job.geoLocation.region
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.job.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.job.usageStatistics.apiHitsPerMonth
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.workflow.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.workflow.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.workflow.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.workflow.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.workflow.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.workflow.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.workflow.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.codeRepository.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.codeRepository.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.codeRepository.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.codeRepository.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.codeRepository.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.codeRepository.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.codeRepository.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.container.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.container.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.container.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.container.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.container.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.container.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.container.encryptionInUse.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.container.imageId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.container.networkInterfaceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.container.remoteAttestation.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.container.remoteAttestation.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.container.remoteAttestation.status
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.container.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.container.resourceLogging.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.container.resourceLogging.monitoringLogDataEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.container.resourceLogging.retentionPeriod
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: newEvidence.resource.container.resourceLogging.securityAlertsEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.container.resourceLogging.loggingServiceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.function.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.function.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.function.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.function.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.function.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.function.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.function.runtimeLanguage
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.function.runtimeVersion
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.function.encryptionInUse.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.function.networkInterfaceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.function.remoteAttestation.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.function.remoteAttestation.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.function.remoteAttestation.status
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.function.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.function.resourceLogging.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.function.resourceLogging.monitoringLogDataEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.function.resourceLogging.retentionPeriod
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: newEvidence.resource.function.resourceLogging.securityAlertsEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.function.resourceLogging.loggingServiceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.qpu.oneQubitErrorRate
+                  in: query
+                  schema:
+                    type: number
+                    format: float
+                - name: newEvidence.resource.qpu.spamErrorRate
+                  in: query
+                  schema:
+                    type: number
+                    format: float
+                - name: newEvidence.resource.qpu.twoQubitErrorRate
+                  in: query
+                  schema:
+                    type: number
+                    format: float
+                - name: newEvidence.resource.qpu.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.qpu.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.qpu.errorCorrectionEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.qpu.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.qpu.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.qpu.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.qpu.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.qpu.networkInterfaceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.qpu.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.virtualMachine.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.virtualMachine.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.virtualMachine.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.virtualMachine.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.virtualMachine.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.virtualMachine.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.virtualMachine.activityLogging.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.virtualMachine.activityLogging.monitoringLogDataEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.virtualMachine.activityLogging.retentionPeriod
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: newEvidence.resource.virtualMachine.activityLogging.securityAlertsEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.virtualMachine.activityLogging.loggingServiceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.virtualMachine.automaticUpdates.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.virtualMachine.automaticUpdates.interval
+                  in: query
+                  description: The interval refers to the update interval in days.
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: newEvidence.resource.virtualMachine.automaticUpdates.securityOnly
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.virtualMachine.blockStorageIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.virtualMachine.bootLogging.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.virtualMachine.bootLogging.monitoringLogDataEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.virtualMachine.bootLogging.retentionPeriod
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: newEvidence.resource.virtualMachine.bootLogging.securityAlertsEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.virtualMachine.bootLogging.loggingServiceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.virtualMachine.malwareProtection.durationSinceActive
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: newEvidence.resource.virtualMachine.malwareProtection.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.virtualMachine.malwareProtection.numberOfThreatsFound
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.virtualMachine.malwareProtection.applicationLogging.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.virtualMachine.malwareProtection.applicationLogging.monitoringLogDataEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.virtualMachine.malwareProtection.applicationLogging.retentionPeriod
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: newEvidence.resource.virtualMachine.malwareProtection.applicationLogging.securityAlertsEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.virtualMachine.malwareProtection.applicationLogging.loggingServiceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.virtualMachine.networkInterfaceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.virtualMachine.osLogging.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.virtualMachine.osLogging.monitoringLogDataEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.virtualMachine.osLogging.retentionPeriod
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: newEvidence.resource.virtualMachine.osLogging.securityAlertsEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.virtualMachine.osLogging.loggingServiceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.virtualMachine.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.containerOrchestration.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.containerOrchestration.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.containerOrchestration.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.containerOrchestration.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.containerOrchestration.managementUrl
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.containerOrchestration.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.containerOrchestration.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.containerOrchestration.containerIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.containerOrchestration.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.containerRegistry.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.containerRegistry.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.containerRegistry.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.containerRegistry.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.containerRegistry.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.containerRegistry.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.containerRegistry.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.certificate.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.certificate.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.certificate.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.certificate.expirationDate
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.certificate.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.certificate.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.certificate.isManaged
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.certificate.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.certificate.notBeforeDate
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.certificate.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.certificate.infrastructureId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.certificate.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.key.algorithm
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.key.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.key.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.key.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.key.expirationDate
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.key.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.key.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.key.isManaged
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.key.keySize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.key.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.key.notBeforeDate
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.key.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.key.infrastructureId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.key.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.secret.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.secret.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.secret.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.secret.expirationDate
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.secret.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.secret.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.secret.isManaged
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.secret.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.secret.notBeforeDate
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.secret.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.secret.infrastructureId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.secret.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.identity.activated
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.identity.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.identity.disablePasswordPolicy
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.enforceMfa
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.identity.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.lastActivity
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.identity.loginDefenderEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.identity.privileged
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.identity.authenticity.certificateBasedAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.authenticity.certificateBasedAuthentication.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.authenticity.certificateBasedAuthentication.rotationInterval
+                  in: query
+                  description: Maximum password rotation interval in months
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.identity.authenticity.tokenBasedAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.authenticity.tokenBasedAuthentication.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.authenticity.tokenBasedAuthentication.enforced
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.authenticity.tokenBasedAuthentication.rotationInterval
+                  in: query
+                  description: Maximum password rotation interval in months
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.identity.authenticity.multiFactorAuthentiation.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.authenticity.multiFactorAuthentiation.rotationInterval
+                  in: query
+                  description: Maximum password rotation interval in months
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.identity.authenticity.noAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.authenticity.noAuthentication.rotationInterval
+                  in: query
+                  description: Maximum password rotation interval in months
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.identity.authenticity.otpBasedAuthentication.activated
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.authenticity.otpBasedAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.authenticity.otpBasedAuthentication.rotationInterval
+                  in: query
+                  description: Maximum password rotation interval in months
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.identity.authenticity.passwordBasedAuthentication.activated
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.authenticity.passwordBasedAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.authenticity.passwordBasedAuthentication.rotationInterval
+                  in: query
+                  description: Maximum password rotation interval in months
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.identity.authenticity.singleSignOn.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.authenticity.singleSignOn.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.authenticity.singleSignOn.rotationInterval
+                  in: query
+                  description: Maximum password rotation interval in months
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.identity.authorization.l3Firewall.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.authorization.l3Firewall.inbound
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.authorization.l3Firewall.restrictedPorts
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.identity.authorization.webApplicationFirewall.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.identity.authorization.rbac.broadAssignments
+                  in: query
+                  description: 'see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)'
+                  schema:
+                    type: number
+                    format: float
+                - name: newEvidence.resource.identity.authorization.rbac.mixedDuties
+                  in: query
+                  description: 'see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)'
+                  schema:
+                    type: number
+                    format: float
+                - name: newEvidence.resource.identity.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.roleAssignment.activated
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.roleAssignment.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.roleAssignment.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.roleAssignment.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.roleAssignment.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.roleAssignment.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.roleAssignment.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.roleAssignment.authenticity.certificateBasedAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.roleAssignment.authenticity.certificateBasedAuthentication.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.roleAssignment.authenticity.certificateBasedAuthentication.rotationInterval
+                  in: query
+                  description: Maximum password rotation interval in months
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.roleAssignment.authenticity.tokenBasedAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.roleAssignment.authenticity.tokenBasedAuthentication.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.roleAssignment.authenticity.tokenBasedAuthentication.enforced
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.roleAssignment.authenticity.tokenBasedAuthentication.rotationInterval
+                  in: query
+                  description: Maximum password rotation interval in months
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.roleAssignment.authenticity.multiFactorAuthentiation.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.roleAssignment.authenticity.multiFactorAuthentiation.rotationInterval
+                  in: query
+                  description: Maximum password rotation interval in months
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.roleAssignment.authenticity.noAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.roleAssignment.authenticity.noAuthentication.rotationInterval
+                  in: query
+                  description: Maximum password rotation interval in months
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.roleAssignment.authenticity.otpBasedAuthentication.activated
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.roleAssignment.authenticity.otpBasedAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.roleAssignment.authenticity.otpBasedAuthentication.rotationInterval
+                  in: query
+                  description: Maximum password rotation interval in months
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.roleAssignment.authenticity.passwordBasedAuthentication.activated
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.roleAssignment.authenticity.passwordBasedAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.roleAssignment.authenticity.passwordBasedAuthentication.rotationInterval
+                  in: query
+                  description: Maximum password rotation interval in months
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.roleAssignment.authenticity.singleSignOn.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.roleAssignment.authenticity.singleSignOn.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.roleAssignment.authenticity.singleSignOn.rotationInterval
+                  in: query
+                  description: Maximum password rotation interval in months
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.roleAssignment.authorization.l3Firewall.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.roleAssignment.authorization.l3Firewall.inbound
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.roleAssignment.authorization.l3Firewall.restrictedPorts
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.roleAssignment.authorization.webApplicationFirewall.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.roleAssignment.authorization.rbac.broadAssignments
+                  in: query
+                  description: 'see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)'
+                  schema:
+                    type: number
+                    format: float
+                - name: newEvidence.resource.roleAssignment.authorization.rbac.mixedDuties
+                  in: query
+                  description: 'see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)'
+                  schema:
+                    type: number
+                    format: float
+                - name: newEvidence.resource.roleAssignment.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.containerImage.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.containerImage.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.containerImage.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.containerImage.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.containerImage.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.containerImage.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.containerImage.applicationId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.containerImage.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.vmImage.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.vmImage.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.vmImage.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.vmImage.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.vmImage.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.vmImage.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.vmImage.applicationId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.vmImage.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.deviceProvisioningService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.deviceProvisioningService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.deviceProvisioningService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.deviceProvisioningService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.deviceProvisioningService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.deviceProvisioningService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.deviceProvisioningService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.messagingHub.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.messagingHub.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.messagingHub.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.messagingHub.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.messagingHub.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.messagingHub.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.messagingHub.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.keyVault.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.keyVault.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.keyVault.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.keyVault.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.keyVault.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.keyVault.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.keyVault.credentialIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.keyVault.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.networkInterface.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.networkInterface.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.networkInterface.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.networkInterface.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.networkInterface.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.networkInterface.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.networkInterface.networkServiceId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.networkInterface.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.networkSecurityGroup.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.networkSecurityGroup.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.networkSecurityGroup.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.networkSecurityGroup.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.networkSecurityGroup.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.networkSecurityGroup.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.networkSecurityGroup.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.functionService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.functionService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.functionService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.functionService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.functionService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.functionService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.functionService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: newEvidence.resource.functionService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.functionService.computeIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.functionService.functionIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.functionService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.functionService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.functionService.transportEncryption.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.functionService.transportEncryption.enforced
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.functionService.transportEncryption.protocol
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.functionService.transportEncryption.protocolVersion
+                  in: query
+                  schema:
+                    type: number
+                    format: float
+                - name: newEvidence.resource.genericNetworkService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.genericNetworkService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.genericNetworkService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.genericNetworkService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.genericNetworkService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.genericNetworkService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.genericNetworkService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: newEvidence.resource.genericNetworkService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.genericNetworkService.computeIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.genericNetworkService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.genericNetworkService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.genericNetworkService.transportEncryption.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.genericNetworkService.transportEncryption.enforced
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.genericNetworkService.transportEncryption.protocol
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.genericNetworkService.transportEncryption.protocolVersion
+                  in: query
+                  schema:
+                    type: number
+                    format: float
+                - name: newEvidence.resource.loadBalancer.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.loadBalancer.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.loadBalancer.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.loadBalancer.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.loadBalancer.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.loadBalancer.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.loadBalancer.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: newEvidence.resource.loadBalancer.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.loadBalancer.url
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.loadBalancer.computeIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.loadBalancer.networkServiceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.loadBalancer.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.loadBalancer.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.loggingService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.loggingService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.loggingService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.loggingService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.loggingService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.loggingService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.loggingService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: newEvidence.resource.loggingService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.loggingService.computeIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.loggingService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.loggingService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.loggingService.storageIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.machineLearningService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.machineLearningService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.machineLearningService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.machineLearningService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.machineLearningService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.machineLearningService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.machineLearningService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: newEvidence.resource.machineLearningService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.machineLearningService.computeIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.machineLearningService.machineLearningIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.machineLearningService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.machineLearningService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.machineLearningService.storageIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.securityAdvisoryService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.securityAdvisoryService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.securityAdvisoryService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.securityAdvisoryService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.securityAdvisoryService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.securityAdvisoryService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.securityAdvisoryService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: newEvidence.resource.securityAdvisoryService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.securityAdvisoryService.computeIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.securityAdvisoryService.keyIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.securityAdvisoryService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.securityAdvisoryService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.documentDatabaseService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.documentDatabaseService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.documentDatabaseService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.documentDatabaseService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.documentDatabaseService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.documentDatabaseService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.documentDatabaseService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: newEvidence.resource.documentDatabaseService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.documentDatabaseService.activityLogging.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.documentDatabaseService.activityLogging.monitoringLogDataEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.documentDatabaseService.activityLogging.retentionPeriod
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: newEvidence.resource.documentDatabaseService.activityLogging.securityAlertsEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.documentDatabaseService.activityLogging.loggingServiceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.documentDatabaseService.computeIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.documentDatabaseService.httpEndpoint.handler
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.documentDatabaseService.httpEndpoint.method
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.documentDatabaseService.httpEndpoint.path
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.documentDatabaseService.httpEndpoint.url
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.documentDatabaseService.malwareProtection.durationSinceActive
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: newEvidence.resource.documentDatabaseService.malwareProtection.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.documentDatabaseService.malwareProtection.numberOfThreatsFound
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.documentDatabaseService.malwareProtection.applicationLogging.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.documentDatabaseService.malwareProtection.applicationLogging.monitoringLogDataEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.documentDatabaseService.malwareProtection.applicationLogging.retentionPeriod
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: newEvidence.resource.documentDatabaseService.malwareProtection.applicationLogging.securityAlertsEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.documentDatabaseService.malwareProtection.applicationLogging.loggingServiceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.documentDatabaseService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.documentDatabaseService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.documentDatabaseService.storageIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.keyValueDatabaseService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.keyValueDatabaseService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.keyValueDatabaseService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.keyValueDatabaseService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.keyValueDatabaseService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.keyValueDatabaseService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.keyValueDatabaseService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: newEvidence.resource.keyValueDatabaseService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.keyValueDatabaseService.computeIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.keyValueDatabaseService.httpEndpoint.handler
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.keyValueDatabaseService.httpEndpoint.method
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.keyValueDatabaseService.httpEndpoint.path
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.keyValueDatabaseService.httpEndpoint.url
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.keyValueDatabaseService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.keyValueDatabaseService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.keyValueDatabaseService.storageIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.multiModalDatabaseService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.multiModalDatabaseService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.multiModalDatabaseService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.multiModalDatabaseService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.multiModalDatabaseService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.multiModalDatabaseService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.multiModalDatabaseService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: newEvidence.resource.multiModalDatabaseService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.multiModalDatabaseService.computeIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.multiModalDatabaseService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.multiModalDatabaseService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.multiModalDatabaseService.storageIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.relationalDatabaseService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.relationalDatabaseService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.relationalDatabaseService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.relationalDatabaseService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.relationalDatabaseService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.relationalDatabaseService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.relationalDatabaseService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: newEvidence.resource.relationalDatabaseService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.relationalDatabaseService.computeIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.relationalDatabaseService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.relationalDatabaseService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.relationalDatabaseService.storageIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.fileStorageService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.fileStorageService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.fileStorageService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.fileStorageService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.fileStorageService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.fileStorageService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.fileStorageService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: newEvidence.resource.fileStorageService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.fileStorageService.computeIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.fileStorageService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.fileStorageService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.fileStorageService.storageIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.objectStorageService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.objectStorageService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.objectStorageService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.objectStorageService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.objectStorageService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.objectStorageService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.objectStorageService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: newEvidence.resource.objectStorageService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.objectStorageService.computeIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.objectStorageService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.objectStorageService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.objectStorageService.storageIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.virtualNetwork.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.virtualNetwork.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.virtualNetwork.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.virtualNetwork.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.virtualNetwork.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.virtualNetwork.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.virtualNetwork.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.virtualSubNetwork.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.virtualSubNetwork.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.virtualSubNetwork.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.virtualSubNetwork.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.virtualSubNetwork.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.virtualSubNetwork.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.virtualSubNetwork.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.passwordPolicy.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.passwordPolicy.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.passwordPolicy.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.passwordPolicy.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.passwordPolicy.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.passwordPolicy.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.passwordPolicy.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.resourceGroup.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.resourceGroup.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.resourceGroup.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.resourceGroup.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.resourceGroup.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.resourceGroup.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.resourceGroup.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.blockStorage.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.blockStorage.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.blockStorage.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.blockStorage.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.blockStorage.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.blockStorage.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.blockStorage.atRestEncryption.customerKeyEncryption.algorithm
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.blockStorage.atRestEncryption.customerKeyEncryption.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.blockStorage.atRestEncryption.customerKeyEncryption.keyUrl
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.blockStorage.atRestEncryption.managedKeyEncryption.algorithm
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.blockStorage.atRestEncryption.managedKeyEncryption.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.blockStorage.atRestEncryption.managedKeyEncryption.keyUrl
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.blockStorage.immutability.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.blockStorage.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.databaseStorage.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.databaseStorage.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.databaseStorage.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.databaseStorage.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.databaseStorage.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.databaseStorage.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.databaseStorage.atRestEncryption.customerKeyEncryption.algorithm
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.databaseStorage.atRestEncryption.customerKeyEncryption.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.databaseStorage.atRestEncryption.customerKeyEncryption.keyUrl
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.databaseStorage.atRestEncryption.managedKeyEncryption.algorithm
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.databaseStorage.atRestEncryption.managedKeyEncryption.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.databaseStorage.atRestEncryption.managedKeyEncryption.keyUrl
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.databaseStorage.immutability.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.databaseStorage.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.fileStorage.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.fileStorage.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.fileStorage.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.fileStorage.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.fileStorage.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.fileStorage.publicAccess
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.fileStorage.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.fileStorage.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.objectStorage.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.objectStorage.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.objectStorage.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.objectStorage.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.objectStorage.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.objectStorage.publicAccess
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.objectStorage.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.objectStorage.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.genericDocument.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.genericDocument.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.genericDocument.filetype
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.genericDocument.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.genericDocument.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.genericDocument.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.genericDocument.dataLocation.localDataLocation.path
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.genericDocument.dataLocation.localDataLocation.storageId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.genericDocument.dataLocation.remoteDataLocation.path
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.genericDocument.dataLocation.remoteDataLocation.storageId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.genericDocument.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.genericDocument.schemaValidation.format
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.genericDocument.schemaValidation.schemaUrl
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.policyDocument.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.policyDocument.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.policyDocument.filetype
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.policyDocument.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.policyDocument.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.policyDocument.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.policyDocument.dataLocation.localDataLocation.path
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.policyDocument.dataLocation.localDataLocation.storageId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.policyDocument.dataLocation.remoteDataLocation.path
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.policyDocument.dataLocation.remoteDataLocation.storageId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.policyDocument.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.policyDocument.schemaValidation.format
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.policyDocument.schemaValidation.schemaUrl
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.securityAdvisoryDocument.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.securityAdvisoryDocument.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.securityAdvisoryDocument.filetype
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.securityAdvisoryDocument.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.securityAdvisoryDocument.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.securityAdvisoryDocument.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.securityAdvisoryDocument.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.serviceMetadataDocument.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.serviceMetadataDocument.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.serviceMetadataDocument.filetype
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.serviceMetadataDocument.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.serviceMetadataDocument.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.serviceMetadataDocument.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.serviceMetadataDocument.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.machineLearningDataset.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.machineLearningDataset.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.machineLearningDataset.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.machineLearningDataset.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.machineLearningDataset.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.machineLearningDataset.size
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: newEvidence.resource.machineLearningDataset.type
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.machineLearningDataset.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.machineLearningModel.advRobustness
+                  in: query
+                  schema:
+                    type: number
+                    format: float
+                - name: newEvidence.resource.machineLearningModel.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.machineLearningModel.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.machineLearningModel.explainability
+                  in: query
+                  schema:
+                    type: number
+                    format: float
+                - name: newEvidence.resource.machineLearningModel.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.machineLearningModel.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.machineLearningModel.poisonLevel
+                  in: query
+                  schema:
+                    type: number
+                    format: float
+                - name: newEvidence.resource.machineLearningModel.privacyLabel
+                  in: query
+                  schema:
+                    type: number
+                    format: float
+                - name: newEvidence.resource.machineLearningModel.privacyLevel
+                  in: query
+                  schema:
+                    type: number
+                    format: float
+                - name: newEvidence.resource.machineLearningModel.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.machineLearningModel.robustness
+                  in: query
+                  schema:
+                    type: number
+                    format: float
+                - name: newEvidence.resource.machineLearningModel.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.awarenessTraining.annualUpdateCompleted
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.awarenessTraining.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.awarenessTraining.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.awarenessTraining.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.awarenessTraining.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.awarenessTraining.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.awarenessTraining.successfullyCompletedPercentage
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.awarenessTraining.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.securityTraining.annualUpdateCompleted
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.securityTraining.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.securityTraining.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.securityTraining.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.securityTraining.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.securityTraining.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.securityTraining.successfullyCompletedPercentage
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.securityTraining.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.application.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.application.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.application.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.application.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.application.programmingLanguage
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.application.programmingVersion
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.application.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.application.translationUnits
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.application.automaticUpdates.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.application.automaticUpdates.interval
+                  in: query
+                  description: The interval refers to the update interval in days.
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: newEvidence.resource.application.automaticUpdates.securityOnly
+                  in: query
+                  schema:
+                    type: boolean
+                - name: newEvidence.resource.application.codeModuleIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.application.codeRepositoryId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.application.computeId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.application.libraryIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.application.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.library.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.library.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.library.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.library.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.library.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.library.codeModuleIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.library.codeRepositoryId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.library.libraryIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.library.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.sourceCodeFile.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: newEvidence.resource.sourceCodeFile.description
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.sourceCodeFile.id
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.sourceCodeFile.name
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.sourceCodeFile.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: newEvidence.resource.sourceCodeFile.codeModuleIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: newEvidence.resource.sourceCodeFile.codeRepositoryId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.resource.sourceCodeFile.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: newEvidence.experimentalRelatedResourceIds
+                  in: query
+                  description: |-
+                    Very experimental property. Use at own risk. This property will be deleted again.
+
+                     Related resource IDs. The assessment will wait until all evidences for related resource have arrived in the
+                     assessment and are recent enough. In the future, this will be replaced with information in the "related" edges in
+                     the resource. For now, this needs to be set manually in the evidence.
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: assessedEvidenceId
+                  in: query
+                  description: |-
+                    assessed_evidence_id is the id of the evidence that was assessed in the past and an assessment result
+                     already exists for it.
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json: {}
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UpdateOrCreateAssessmentResultResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
         AssessEvidenceResponse:
@@ -147,5 +3159,20 @@ components:
                         $ref: '#/components/schemas/GoogleProtobufAny'
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        UpdateOrCreateAssessmentResultResponse:
+            type: object
+            properties:
+                status:
+                    enum:
+                        - ASSESSMENT_STATUS_UNSPECIFIED
+                        - ASSESSMENT_STATUS_WAITING_FOR_RELATED
+                        - ASSESSMENT_STATUS_ASSESSED
+                        - ASSESSMENT_STATUS_FAILED
+                    type: string
+                    format: enum
+            description: |-
+                UpdateOrCreateAssessmentResultResponse belongs to UpdateOrCreateAssessmentResult, which uses a custom unary
+                 RPC and therefore requires a response message according to the style
+                 convention. Since no return values are required, this is empty.
 tags:
     - name: Assessment
