@@ -38,7 +38,7 @@ import (
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
-	api_evidence "clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/logging"
 	"clouditor.io/clouditor/v2/launcher"
@@ -46,9 +46,9 @@ import (
 	"clouditor.io/clouditor/v2/persistence/inmemory"
 	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/service"
-	"golang.org/x/oauth2/clientcredentials"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -66,7 +66,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 			// It is possible to register hook functions for the evidenceStore.
 			//  * The hook functions in evidenceStore are implemented in StoreEvidence(s)
 
-			// evidenceStoreService.RegisterEvidenceHook(func(result *api_evidence.Evidence, err error) {})
+			// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
 
 			return nil, nil
 		},
@@ -82,11 +82,11 @@ type Service struct {
 	assessment        *api.RPCConnection[assessment.AssessmentClient]
 
 	// channel that is used to send evidences from the StoreEvidence method to the worker threat to process the evidence
-	channelEvidence chan *api_evidence.Evidence
+	channelEvidence chan *evidence.Evidence
 
 	// evidenceHooks is a list of hook functions that can be used if one wants to be
 	// informed about each evidence
-	evidenceHooks []api_evidence.EvidenceHookFunc
+	evidenceHooks []evidence.EvidenceHookFunc
 	// mu is used for (un)locking result hook calls
 	mu sync.Mutex
 
@@ -94,8 +94,8 @@ type Service struct {
 	// resources, such as evidences and assessment results.
 	authz service.AuthorizationStrategy
 
-	api_evidence.UnimplementedEvidenceStoreServer
-	api_evidence.UnimplementedExperimentalResourcesServer
+	evidence.UnimplementedEvidenceStoreServer
+	evidence.UnimplementedExperimentalResourcesServer
 }
 
 func init() {
@@ -134,7 +134,7 @@ func NewService(opts ...service.Option[*Service]) (svc *Service) {
 	svc = &Service{
 		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
 		assessment:        api.NewRPCConnection(config.DefaultAssessmentURL, assessment.NewAssessmentClient),
-		channelEvidence:   make(chan *api_evidence.Evidence, 1000),
+		channelEvidence:   make(chan *evidence.Evidence, 1000),
 	}
 
 	for _, o := range opts {
@@ -159,7 +159,7 @@ func NewService(opts ...service.Option[*Service]) (svc *Service) {
 func (svc *Service) Init() {
 
 	// Start a worker thread to process the evidence that is being passed to the StoreEvidence function in order to utilize the fire-and-forget strategy.
-	// To do this, we want an channel, that contains the evidences and call another function that processes the api_evidence.
+	// To do this, we want an channel, that contains the evidences and call another function that processes the evidence.
 	go func() {
 		for {
 			// Wait for a new evidence to be passed to the channel
@@ -199,7 +199,7 @@ func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (s
 }
 
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives a req and stores it
-func (svc *Service) StoreEvidence(ctx context.Context, req *api_evidence.StoreEvidenceRequest) (res *api_evidence.StoreEvidenceResponse, err error) {
+func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEvidenceRequest) (res *evidence.StoreEvidenceResponse, err error) {
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
@@ -222,7 +222,7 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *api_evidence.StoreEv
 	// Store Resource
 	// Build a resource struct. This will hold the latest sync state of the
 	// resource for our storage layer. This is needed to store the resource in our DB.
-	r, err := api_evidence.ToEvidenceResource(req.Evidence.GetOntologyResource(), req.GetTargetOfEvaluationId(), req.Evidence.GetToolId())
+	r, err := evidence.ToEvidenceResource(req.Evidence.GetOntologyResource(), req.GetTargetOfEvaluationId(), req.Evidence.GetToolId())
 	if err != nil {
 		log.Errorf("Could not convert resource: %v", err)
 	}
@@ -238,26 +238,25 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *api_evidence.StoreEv
 	// Send evidence to the channel for processing (fire and forget)
 	svc.channelEvidence <- req.Evidence
 
-	res = &api_evidence.StoreEvidenceResponse{}
+	res = &evidence.StoreEvidenceResponse{}
 
 	logging.LogRequest(log, logrus.DebugLevel, logging.Store, req)
 
 	return res, nil
 }
 
-// TODO(anatheka): Rename ev or api/evidence import
-func (svc *Service) handleEvidence(ev *api_evidence.Evidence) error {
+func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
 	// TODO(anatheka): It must be checked if the evidence changed since the last time and then send to the assessment service. Add in separate PR
 	var (
 		query []string
 		args  []any
-		res   = new(api_evidence.Resource)
+		res   = new(evidence.Resource)
 		err   error
 	)
 
 	// Check if resource has changed to the last evidence
-	// Convert ontology.IsResource to api_evidence.Resource
-	resource, err := api_evidence.ToEvidenceResource(ev.GetOntologyResource(), ev.GetTargetOfEvaluationId(), ev.GetToolId())
+	// Convert ontology.IsResource to evidence.Resource
+	resource, err := evidence.ToEvidenceResource(ev.GetOntologyResource(), ev.GetTargetOfEvaluationId(), ev.GetToolId())
 	if err != nil {
 		log.Errorf("Could not convert resource: %v", err)
 	}
@@ -324,10 +323,10 @@ func (svc *Service) handleEvidence(ev *api_evidence.Evidence) error {
 }
 
 // StoreEvidences is a method implementation of the evidenceServer interface: It receives evidences and stores them
-func (svc *Service) StoreEvidences(stream api_evidence.EvidenceStore_StoreEvidencesServer) (err error) {
+func (svc *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesServer) (err error) {
 	var (
-		req *api_evidence.StoreEvidenceRequest
-		res *api_evidence.StoreEvidencesResponse
+		req *evidence.StoreEvidenceRequest
+		res *evidence.StoreEvidencesResponse
 	)
 
 	for {
@@ -344,20 +343,20 @@ func (svc *Service) StoreEvidences(stream api_evidence.EvidenceStore_StoreEviden
 		}
 
 		// Call StoreEvidence() for storing a single evidence
-		evidenceRequest := &api_evidence.StoreEvidenceRequest{
+		evidenceRequest := &evidence.StoreEvidenceRequest{
 			Evidence: req.Evidence,
 		}
 		_, err = svc.StoreEvidence(stream.Context(), evidenceRequest)
 		if err != nil {
 			log.Errorf("Error storing evidence: %v", err)
 			// Create response message. The StoreEvidence method does not need that message, so we have to create it here for the stream response.
-			res = &api_evidence.StoreEvidencesResponse{
-				Status:        api_evidence.EvidenceStatus_EVIDENCE_STATUS_ERROR,
+			res = &evidence.StoreEvidencesResponse{
+				Status:        evidence.EvidenceStatus_EVIDENCE_STATUS_ERROR,
 				StatusMessage: err.Error(),
 			}
 		} else {
-			res = &api_evidence.StoreEvidencesResponse{
-				Status: api_evidence.EvidenceStatus_EVIDENCE_STATUS_OK,
+			res = &evidence.StoreEvidencesResponse{
+				Status: evidence.EvidenceStatus_EVIDENCE_STATUS_OK,
 			}
 		}
 
@@ -377,7 +376,7 @@ func (svc *Service) StoreEvidences(stream api_evidence.EvidenceStore_StoreEviden
 }
 
 // ListEvidences is a method implementation of the evidenceServer interface: It returns the evidences lying in the storage
-func (svc *Service) ListEvidences(ctx context.Context, req *api_evidence.ListEvidencesRequest) (res *api_evidence.ListEvidencesResponse, err error) {
+func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidencesRequest) (res *evidence.ListEvidencesResponse, err error) {
 	var (
 		all     bool
 		allowed []string
@@ -397,7 +396,7 @@ func (svc *Service) ListEvidences(ctx context.Context, req *api_evidence.ListEvi
 		return nil, service.ErrPermissionDenied
 	}
 
-	res = new(api_evidence.ListEvidencesResponse)
+	res = new(evidence.ListEvidencesResponse)
 
 	// Apply filter options
 	if filter := req.GetFilter(); filter != nil {
@@ -418,7 +417,7 @@ func (svc *Service) ListEvidences(ctx context.Context, req *api_evidence.ListEvi
 	}
 
 	// Paginate the evidences according to the request
-	res.Evidences, res.NextPageToken, err = service.PaginateStorage[*api_evidence.Evidence](req, svc.storage,
+	res.Evidences, res.NextPageToken, err = service.PaginateStorage[*evidence.Evidence](req, svc.storage,
 		service.DefaultPaginationOpts, persistence.BuildConds(query, args)...)
 
 	if err != nil {
@@ -429,7 +428,7 @@ func (svc *Service) ListEvidences(ctx context.Context, req *api_evidence.ListEvi
 }
 
 // GetEvidence is a method implementation of the evidenceServer interface: It returns a particular evidence in the storage
-func (svc *Service) GetEvidence(ctx context.Context, req *api_evidence.GetEvidenceRequest) (res *api_evidence.Evidence, err error) {
+func (svc *Service) GetEvidence(ctx context.Context, req *evidence.GetEvidenceRequest) (res *evidence.Evidence, err error) {
 	var (
 		all     bool
 		allowed []string
@@ -451,7 +450,7 @@ func (svc *Service) GetEvidence(ctx context.Context, req *api_evidence.GetEviden
 		conds = []any{"id = ?", req.EvidenceId}
 	}
 
-	res = new(api_evidence.Evidence)
+	res = new(evidence.Evidence)
 
 	err = svc.storage.Get(res, conds...)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
@@ -463,7 +462,7 @@ func (svc *Service) GetEvidence(ctx context.Context, req *api_evidence.GetEviden
 	return
 }
 
-func (svc *Service) ListResources(ctx context.Context, req *api_evidence.ListResourcesRequest) (res *api_evidence.ListResourcesResponse, err error) {
+func (svc *Service) ListResources(ctx context.Context, req *evidence.ListResourcesRequest) (res *evidence.ListResourcesResponse, err error) {
 	var (
 		query   []string
 		args    []any
@@ -511,23 +510,23 @@ func (svc *Service) ListResources(ctx context.Context, req *api_evidence.ListRes
 		args = append(args, allowed)
 	}
 
-	res = new(api_evidence.ListResourcesResponse)
+	res = new(evidence.ListResourcesResponse)
 
 	// Join query with AND and prepend the query
 	args = append([]any{strings.Join(query, " AND ")}, args...)
 
-	res.Results, res.NextPageToken, err = service.PaginateStorage[*api_evidence.Resource](req, svc.storage, service.DefaultPaginationOpts, args...)
+	res.Results, res.NextPageToken, err = service.PaginateStorage[*evidence.Resource](req, svc.storage, service.DefaultPaginationOpts, args...)
 
 	return
 }
 
-func (svc *Service) RegisterEvidenceHook(evidenceHook api_evidence.EvidenceHookFunc) {
+func (svc *Service) RegisterEvidenceHook(evidenceHook evidence.EvidenceHookFunc) {
 	svc.mu.Lock()
 	defer svc.mu.Unlock()
 	svc.evidenceHooks = append(svc.evidenceHooks, evidenceHook)
 }
 
-func (svc *Service) informHooks(ctx context.Context, result *api_evidence.Evidence, err error) {
+func (svc *Service) informHooks(ctx context.Context, result *evidence.Evidence, err error) {
 	svc.mu.Lock()
 	defer svc.mu.Unlock()
 
