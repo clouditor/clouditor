@@ -62,6 +62,51 @@ func local_request_Assessment_AssessEvidence_0(ctx context.Context, marshaler ru
 	return msg, metadata, err
 }
 
+func request_Assessment_UpdateOrAssessNewAssessmentResult_0(ctx context.Context, marshaler runtime.Marshaler, client AssessmentClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq UpdateOrAssessNewAssessmentResultRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.Evidence); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	val, ok := pathParams["assessed_evidence_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "assessed_evidence_id")
+	}
+	protoReq.AssessedEvidenceId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "assessed_evidence_id", err)
+	}
+	msg, err := client.UpdateOrAssessNewAssessmentResult(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_Assessment_UpdateOrAssessNewAssessmentResult_0(ctx context.Context, marshaler runtime.Marshaler, server AssessmentServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq UpdateOrAssessNewAssessmentResultRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.Evidence); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["assessed_evidence_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "assessed_evidence_id")
+	}
+	protoReq.AssessedEvidenceId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "assessed_evidence_id", err)
+	}
+	msg, err := server.UpdateOrAssessNewAssessmentResult(ctx, &protoReq)
+	return msg, metadata, err
+}
+
 // RegisterAssessmentHandlerServer registers the http handlers for service Assessment to "mux".
 // UnaryRPC     :call AssessmentServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
@@ -87,6 +132,26 @@ func RegisterAssessmentHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 			return
 		}
 		forward_Assessment_AssessEvidence_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPut, pattern_Assessment_UpdateOrAssessNewAssessmentResult_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.assessment.v1.Assessment/UpdateOrAssessNewAssessmentResult", runtime.WithHTTPPathPattern("/v1/assessment/result/{assessed_evidence_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_Assessment_UpdateOrAssessNewAssessmentResult_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_Assessment_UpdateOrAssessNewAssessmentResult_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 
 	return nil
@@ -145,13 +210,32 @@ func RegisterAssessmentHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 		}
 		forward_Assessment_AssessEvidence_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodPut, pattern_Assessment_UpdateOrAssessNewAssessmentResult_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.assessment.v1.Assessment/UpdateOrAssessNewAssessmentResult", runtime.WithHTTPPathPattern("/v1/assessment/result/{assessed_evidence_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_Assessment_UpdateOrAssessNewAssessmentResult_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_Assessment_UpdateOrAssessNewAssessmentResult_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
 	return nil
 }
 
 var (
-	pattern_Assessment_AssessEvidence_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "assessment", "evidences"}, ""))
+	pattern_Assessment_AssessEvidence_0                    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "assessment", "evidences"}, ""))
+	pattern_Assessment_UpdateOrAssessNewAssessmentResult_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "assessment", "result", "assessed_evidence_id"}, ""))
 )
 
 var (
-	forward_Assessment_AssessEvidence_0 = runtime.ForwardResponseMessage
+	forward_Assessment_AssessEvidence_0                    = runtime.ForwardResponseMessage
+	forward_Assessment_UpdateOrAssessNewAssessmentResult_0 = runtime.ForwardResponseMessage
 )

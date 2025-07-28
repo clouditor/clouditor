@@ -368,6 +368,63 @@ func (x *AssessEvidencesResponse) GetStatusMessage() string {
 	return ""
 }
 
+type UpdateOrAssessNewAssessmentResultRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The new_evidence is an additional evidence for the same resource that has already been assessed.
+	// The ID of the new evidence will be included in the assessment results history. If no assessment result
+	// is available (due to any database errors), a new assessment result will be generated.
+	Evidence *evidence.Evidence `protobuf:"bytes,1,opt,name=evidence,proto3" json:"evidence,omitempty"`
+	// assessed_evidence_id is the id of the evidence that was assessed in the past and an assessment result
+	// already exists for it.
+	AssessedEvidenceId string `protobuf:"bytes,2,opt,name=assessed_evidence_id,json=assessedEvidenceId,proto3" json:"assessed_evidence_id,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *UpdateOrAssessNewAssessmentResultRequest) Reset() {
+	*x = UpdateOrAssessNewAssessmentResultRequest{}
+	mi := &file_api_assessment_assessment_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateOrAssessNewAssessmentResultRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateOrAssessNewAssessmentResultRequest) ProtoMessage() {}
+
+func (x *UpdateOrAssessNewAssessmentResultRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_assessment_assessment_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateOrAssessNewAssessmentResultRequest.ProtoReflect.Descriptor instead.
+func (*UpdateOrAssessNewAssessmentResultRequest) Descriptor() ([]byte, []int) {
+	return file_api_assessment_assessment_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *UpdateOrAssessNewAssessmentResultRequest) GetEvidence() *evidence.Evidence {
+	if x != nil {
+		return x.Evidence
+	}
+	return nil
+}
+
+func (x *UpdateOrAssessNewAssessmentResultRequest) GetAssessedEvidenceId() string {
+	if x != nil {
+		return x.AssessedEvidenceId
+	}
+	return ""
+}
+
 // A result resource, representing the result after assessing the cloud resource
 // with id resource_id.
 type AssessmentResult struct {
@@ -406,7 +463,7 @@ type AssessmentResult struct {
 
 func (x *AssessmentResult) Reset() {
 	*x = AssessmentResult{}
-	mi := &file_api_assessment_assessment_proto_msgTypes[6]
+	mi := &file_api_assessment_assessment_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -418,7 +475,7 @@ func (x *AssessmentResult) String() string {
 func (*AssessmentResult) ProtoMessage() {}
 
 func (x *AssessmentResult) ProtoReflect() protoreflect.Message {
-	mi := &file_api_assessment_assessment_proto_msgTypes[6]
+	mi := &file_api_assessment_assessment_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -431,7 +488,7 @@ func (x *AssessmentResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AssessmentResult.ProtoReflect.Descriptor instead.
 func (*AssessmentResult) Descriptor() ([]byte, []int) {
-	return file_api_assessment_assessment_proto_rawDescGZIP(), []int{6}
+	return file_api_assessment_assessment_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *AssessmentResult) GetId() string {
@@ -542,7 +599,7 @@ type Record struct {
 
 func (x *Record) Reset() {
 	*x = Record{}
-	mi := &file_api_assessment_assessment_proto_msgTypes[7]
+	mi := &file_api_assessment_assessment_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -554,7 +611,7 @@ func (x *Record) String() string {
 func (*Record) ProtoMessage() {}
 
 func (x *Record) ProtoReflect() protoreflect.Message {
-	mi := &file_api_assessment_assessment_proto_msgTypes[7]
+	mi := &file_api_assessment_assessment_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -567,7 +624,7 @@ func (x *Record) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Record.ProtoReflect.Descriptor instead.
 func (*Record) Descriptor() ([]byte, []int) {
-	return file_api_assessment_assessment_proto_rawDescGZIP(), []int{7}
+	return file_api_assessment_assessment_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *Record) GetEvidenceId() string {
@@ -603,7 +660,7 @@ type ComparisonResult struct {
 
 func (x *ComparisonResult) Reset() {
 	*x = ComparisonResult{}
-	mi := &file_api_assessment_assessment_proto_msgTypes[8]
+	mi := &file_api_assessment_assessment_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -615,7 +672,7 @@ func (x *ComparisonResult) String() string {
 func (*ComparisonResult) ProtoMessage() {}
 
 func (x *ComparisonResult) ProtoReflect() protoreflect.Message {
-	mi := &file_api_assessment_assessment_proto_msgTypes[8]
+	mi := &file_api_assessment_assessment_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -628,7 +685,7 @@ func (x *ComparisonResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ComparisonResult.ProtoReflect.Descriptor instead.
 func (*ComparisonResult) Descriptor() ([]byte, []int) {
-	return file_api_assessment_assessment_proto_rawDescGZIP(), []int{8}
+	return file_api_assessment_assessment_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ComparisonResult) GetProperty() string {
@@ -682,7 +739,10 @@ const file_api_assessment_assessment_proto_rawDesc = "" +
 	"\x06status\x18\x01 \x01(\x0e2).clouditor.assessment.v1.AssessmentStatusR\x06status\"\x83\x01\n" +
 	"\x17AssessEvidencesResponse\x12A\n" +
 	"\x06status\x18\x01 \x01(\x0e2).clouditor.assessment.v1.AssessmentStatusR\x06status\x12%\n" +
-	"\x0estatus_message\x18\x02 \x01(\tR\rstatusMessage\"\xcf\b\n" +
+	"\x0estatus_message\x18\x02 \x01(\tR\rstatusMessage\"\xae\x01\n" +
+	"(UpdateOrAssessNewAssessmentResultRequest\x12C\n" +
+	"\bevidence\x18\x01 \x01(\v2\x1f.clouditor.evidence.v1.EvidenceB\x06\xbaH\x03\xc8\x01\x01R\bevidence\x12=\n" +
+	"\x14assessed_evidence_id\x18\x02 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x12assessedEvidenceId\"\xcf\b\n" +
 	"\x10AssessmentResult\x12\x1b\n" +
 	"\x02id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12u\n" +
 	"\n" +
@@ -723,12 +783,13 @@ const file_api_assessment_assessment_proto_rawDesc = "" +
 	"\x1dASSESSMENT_STATUS_UNSPECIFIED\x10\x00\x12)\n" +
 	"%ASSESSMENT_STATUS_WAITING_FOR_RELATED\x10\x01\x12\x1e\n" +
 	"\x1aASSESSMENT_STATUS_ASSESSED\x10\x02\x12\x1c\n" +
-	"\x18ASSESSMENT_STATUS_FAILED\x10\x032\x8d\x03\n" +
+	"\x18ASSESSMENT_STATUS_FAILED\x10\x032\xe1\x04\n" +
 	"\n" +
 	"Assessment\x12d\n" +
 	"\x13CalculateCompliance\x123.clouditor.assessment.v1.CalculateComplianceRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x9d\x01\n" +
 	"\x0eAssessEvidence\x12..clouditor.assessment.v1.AssessEvidenceRequest\x1a/.clouditor.assessment.v1.AssessEvidenceResponse\"*\x82\xd3\xe4\x93\x02$:\bevidence\"\x18/v1/assessment/evidences\x12y\n" +
-	"\x0fAssessEvidences\x12..clouditor.assessment.v1.AssessEvidenceRequest\x1a0.clouditor.assessment.v1.AssessEvidencesResponse\"\x00(\x010\x01B*Z(clouditor.io/clouditor/v2/api/assessmentb\x06proto3"
+	"\x0fAssessEvidences\x12..clouditor.assessment.v1.AssessEvidenceRequest\x1a0.clouditor.assessment.v1.AssessEvidencesResponse\"\x00(\x010\x01\x12\xd1\x01\n" +
+	"!UpdateOrAssessNewAssessmentResult\x12A.clouditor.assessment.v1.UpdateOrAssessNewAssessmentResultRequest\x1a).clouditor.assessment.v1.AssessmentResult\">\x82\xd3\xe4\x93\x028:\bevidence\x1a,/v1/assessment/result/{assessed_evidence_id}B*Z(clouditor.io/clouditor/v2/api/assessmentb\x06proto3"
 
 var (
 	file_api_assessment_assessment_proto_rawDescOnce sync.Once
@@ -743,47 +804,51 @@ func file_api_assessment_assessment_proto_rawDescGZIP() []byte {
 }
 
 var file_api_assessment_assessment_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_api_assessment_assessment_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_api_assessment_assessment_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_api_assessment_assessment_proto_goTypes = []any{
-	(AssessmentStatus)(0),               // 0: clouditor.assessment.v1.AssessmentStatus
-	(*ConfigureAssessmentRequest)(nil),  // 1: clouditor.assessment.v1.ConfigureAssessmentRequest
-	(*ConfigureAssessmentResponse)(nil), // 2: clouditor.assessment.v1.ConfigureAssessmentResponse
-	(*CalculateComplianceRequest)(nil),  // 3: clouditor.assessment.v1.CalculateComplianceRequest
-	(*AssessEvidenceRequest)(nil),       // 4: clouditor.assessment.v1.AssessEvidenceRequest
-	(*AssessEvidenceResponse)(nil),      // 5: clouditor.assessment.v1.AssessEvidenceResponse
-	(*AssessEvidencesResponse)(nil),     // 6: clouditor.assessment.v1.AssessEvidencesResponse
-	(*AssessmentResult)(nil),            // 7: clouditor.assessment.v1.AssessmentResult
-	(*Record)(nil),                      // 8: clouditor.assessment.v1.Record
-	(*ComparisonResult)(nil),            // 9: clouditor.assessment.v1.ComparisonResult
-	(*evidence.Evidence)(nil),           // 10: clouditor.evidence.v1.Evidence
-	(*timestamppb.Timestamp)(nil),       // 11: google.protobuf.Timestamp
-	(*MetricConfiguration)(nil),         // 12: clouditor.assessment.v1.MetricConfiguration
-	(*structpb.Value)(nil),              // 13: google.protobuf.Value
-	(*emptypb.Empty)(nil),               // 14: google.protobuf.Empty
+	(AssessmentStatus)(0),                            // 0: clouditor.assessment.v1.AssessmentStatus
+	(*ConfigureAssessmentRequest)(nil),               // 1: clouditor.assessment.v1.ConfigureAssessmentRequest
+	(*ConfigureAssessmentResponse)(nil),              // 2: clouditor.assessment.v1.ConfigureAssessmentResponse
+	(*CalculateComplianceRequest)(nil),               // 3: clouditor.assessment.v1.CalculateComplianceRequest
+	(*AssessEvidenceRequest)(nil),                    // 4: clouditor.assessment.v1.AssessEvidenceRequest
+	(*AssessEvidenceResponse)(nil),                   // 5: clouditor.assessment.v1.AssessEvidenceResponse
+	(*AssessEvidencesResponse)(nil),                  // 6: clouditor.assessment.v1.AssessEvidencesResponse
+	(*UpdateOrAssessNewAssessmentResultRequest)(nil), // 7: clouditor.assessment.v1.UpdateOrAssessNewAssessmentResultRequest
+	(*AssessmentResult)(nil),                         // 8: clouditor.assessment.v1.AssessmentResult
+	(*Record)(nil),                                   // 9: clouditor.assessment.v1.Record
+	(*ComparisonResult)(nil),                         // 10: clouditor.assessment.v1.ComparisonResult
+	(*evidence.Evidence)(nil),                        // 11: clouditor.evidence.v1.Evidence
+	(*timestamppb.Timestamp)(nil),                    // 12: google.protobuf.Timestamp
+	(*MetricConfiguration)(nil),                      // 13: clouditor.assessment.v1.MetricConfiguration
+	(*structpb.Value)(nil),                           // 14: google.protobuf.Value
+	(*emptypb.Empty)(nil),                            // 15: google.protobuf.Empty
 }
 var file_api_assessment_assessment_proto_depIdxs = []int32{
-	10, // 0: clouditor.assessment.v1.AssessEvidenceRequest.evidence:type_name -> clouditor.evidence.v1.Evidence
+	11, // 0: clouditor.assessment.v1.AssessEvidenceRequest.evidence:type_name -> clouditor.evidence.v1.Evidence
 	0,  // 1: clouditor.assessment.v1.AssessEvidenceResponse.status:type_name -> clouditor.assessment.v1.AssessmentStatus
 	0,  // 2: clouditor.assessment.v1.AssessEvidencesResponse.status:type_name -> clouditor.assessment.v1.AssessmentStatus
-	11, // 3: clouditor.assessment.v1.AssessmentResult.created_at:type_name -> google.protobuf.Timestamp
-	12, // 4: clouditor.assessment.v1.AssessmentResult.metric_configuration:type_name -> clouditor.assessment.v1.MetricConfiguration
-	9,  // 5: clouditor.assessment.v1.AssessmentResult.compliance_details:type_name -> clouditor.assessment.v1.ComparisonResult
-	11, // 6: clouditor.assessment.v1.AssessmentResult.history_updated_at:type_name -> google.protobuf.Timestamp
-	8,  // 7: clouditor.assessment.v1.AssessmentResult.history:type_name -> clouditor.assessment.v1.Record
-	11, // 8: clouditor.assessment.v1.Record.evidence_recorded_at:type_name -> google.protobuf.Timestamp
-	13, // 9: clouditor.assessment.v1.ComparisonResult.value:type_name -> google.protobuf.Value
-	13, // 10: clouditor.assessment.v1.ComparisonResult.target_value:type_name -> google.protobuf.Value
-	3,  // 11: clouditor.assessment.v1.Assessment.CalculateCompliance:input_type -> clouditor.assessment.v1.CalculateComplianceRequest
-	4,  // 12: clouditor.assessment.v1.Assessment.AssessEvidence:input_type -> clouditor.assessment.v1.AssessEvidenceRequest
-	4,  // 13: clouditor.assessment.v1.Assessment.AssessEvidences:input_type -> clouditor.assessment.v1.AssessEvidenceRequest
-	14, // 14: clouditor.assessment.v1.Assessment.CalculateCompliance:output_type -> google.protobuf.Empty
-	5,  // 15: clouditor.assessment.v1.Assessment.AssessEvidence:output_type -> clouditor.assessment.v1.AssessEvidenceResponse
-	6,  // 16: clouditor.assessment.v1.Assessment.AssessEvidences:output_type -> clouditor.assessment.v1.AssessEvidencesResponse
-	14, // [14:17] is the sub-list for method output_type
-	11, // [11:14] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	11, // 3: clouditor.assessment.v1.UpdateOrAssessNewAssessmentResultRequest.evidence:type_name -> clouditor.evidence.v1.Evidence
+	12, // 4: clouditor.assessment.v1.AssessmentResult.created_at:type_name -> google.protobuf.Timestamp
+	13, // 5: clouditor.assessment.v1.AssessmentResult.metric_configuration:type_name -> clouditor.assessment.v1.MetricConfiguration
+	10, // 6: clouditor.assessment.v1.AssessmentResult.compliance_details:type_name -> clouditor.assessment.v1.ComparisonResult
+	12, // 7: clouditor.assessment.v1.AssessmentResult.history_updated_at:type_name -> google.protobuf.Timestamp
+	9,  // 8: clouditor.assessment.v1.AssessmentResult.history:type_name -> clouditor.assessment.v1.Record
+	12, // 9: clouditor.assessment.v1.Record.evidence_recorded_at:type_name -> google.protobuf.Timestamp
+	14, // 10: clouditor.assessment.v1.ComparisonResult.value:type_name -> google.protobuf.Value
+	14, // 11: clouditor.assessment.v1.ComparisonResult.target_value:type_name -> google.protobuf.Value
+	3,  // 12: clouditor.assessment.v1.Assessment.CalculateCompliance:input_type -> clouditor.assessment.v1.CalculateComplianceRequest
+	4,  // 13: clouditor.assessment.v1.Assessment.AssessEvidence:input_type -> clouditor.assessment.v1.AssessEvidenceRequest
+	4,  // 14: clouditor.assessment.v1.Assessment.AssessEvidences:input_type -> clouditor.assessment.v1.AssessEvidenceRequest
+	7,  // 15: clouditor.assessment.v1.Assessment.UpdateOrAssessNewAssessmentResult:input_type -> clouditor.assessment.v1.UpdateOrAssessNewAssessmentResultRequest
+	15, // 16: clouditor.assessment.v1.Assessment.CalculateCompliance:output_type -> google.protobuf.Empty
+	5,  // 17: clouditor.assessment.v1.Assessment.AssessEvidence:output_type -> clouditor.assessment.v1.AssessEvidenceResponse
+	6,  // 18: clouditor.assessment.v1.Assessment.AssessEvidences:output_type -> clouditor.assessment.v1.AssessEvidencesResponse
+	8,  // 19: clouditor.assessment.v1.Assessment.UpdateOrAssessNewAssessmentResult:output_type -> clouditor.assessment.v1.AssessmentResult
+	16, // [16:20] is the sub-list for method output_type
+	12, // [12:16] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_api_assessment_assessment_proto_init() }
@@ -792,14 +857,14 @@ func file_api_assessment_assessment_proto_init() {
 		return
 	}
 	file_api_assessment_metric_proto_init()
-	file_api_assessment_assessment_proto_msgTypes[6].OneofWrappers = []any{}
+	file_api_assessment_assessment_proto_msgTypes[7].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_assessment_assessment_proto_rawDesc), len(file_api_assessment_assessment_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   9,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

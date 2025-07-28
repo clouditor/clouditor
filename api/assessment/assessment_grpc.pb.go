@@ -45,9 +45,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Assessment_CalculateCompliance_FullMethodName = "/clouditor.assessment.v1.Assessment/CalculateCompliance"
-	Assessment_AssessEvidence_FullMethodName      = "/clouditor.assessment.v1.Assessment/AssessEvidence"
-	Assessment_AssessEvidences_FullMethodName     = "/clouditor.assessment.v1.Assessment/AssessEvidences"
+	Assessment_CalculateCompliance_FullMethodName               = "/clouditor.assessment.v1.Assessment/CalculateCompliance"
+	Assessment_AssessEvidence_FullMethodName                    = "/clouditor.assessment.v1.Assessment/AssessEvidence"
+	Assessment_AssessEvidences_FullMethodName                   = "/clouditor.assessment.v1.Assessment/AssessEvidences"
+	Assessment_UpdateOrAssessNewAssessmentResult_FullMethodName = "/clouditor.assessment.v1.Assessment/UpdateOrAssessNewAssessmentResult"
 )
 
 // AssessmentClient is the client API for Assessment service.
@@ -66,6 +67,8 @@ type AssessmentClient interface {
 	// Assesses stream of evidences sent by the discovery and returns a response
 	// stream. Part of the public API. Not exposed as REST.
 	AssessEvidences(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[AssessEvidenceRequest, AssessEvidencesResponse], error)
+	// Updates the AssessmentResult field history with the new evidence or creates a new AssessmentResult for the evidence.
+	UpdateOrAssessNewAssessmentResult(ctx context.Context, in *UpdateOrAssessNewAssessmentResultRequest, opts ...grpc.CallOption) (*AssessmentResult, error)
 }
 
 type assessmentClient struct {
@@ -109,6 +112,16 @@ func (c *assessmentClient) AssessEvidences(ctx context.Context, opts ...grpc.Cal
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Assessment_AssessEvidencesClient = grpc.BidiStreamingClient[AssessEvidenceRequest, AssessEvidencesResponse]
 
+func (c *assessmentClient) UpdateOrAssessNewAssessmentResult(ctx context.Context, in *UpdateOrAssessNewAssessmentResultRequest, opts ...grpc.CallOption) (*AssessmentResult, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AssessmentResult)
+	err := c.cc.Invoke(ctx, Assessment_UpdateOrAssessNewAssessmentResult_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AssessmentServer is the server API for Assessment service.
 // All implementations must embed UnimplementedAssessmentServer
 // for forward compatibility.
@@ -125,6 +138,8 @@ type AssessmentServer interface {
 	// Assesses stream of evidences sent by the discovery and returns a response
 	// stream. Part of the public API. Not exposed as REST.
 	AssessEvidences(grpc.BidiStreamingServer[AssessEvidenceRequest, AssessEvidencesResponse]) error
+	// Updates the AssessmentResult field history with the new evidence or creates a new AssessmentResult for the evidence.
+	UpdateOrAssessNewAssessmentResult(context.Context, *UpdateOrAssessNewAssessmentResultRequest) (*AssessmentResult, error)
 	mustEmbedUnimplementedAssessmentServer()
 }
 
@@ -143,6 +158,9 @@ func (UnimplementedAssessmentServer) AssessEvidence(context.Context, *AssessEvid
 }
 func (UnimplementedAssessmentServer) AssessEvidences(grpc.BidiStreamingServer[AssessEvidenceRequest, AssessEvidencesResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method AssessEvidences not implemented")
+}
+func (UnimplementedAssessmentServer) UpdateOrAssessNewAssessmentResult(context.Context, *UpdateOrAssessNewAssessmentResultRequest) (*AssessmentResult, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateOrAssessNewAssessmentResult not implemented")
 }
 func (UnimplementedAssessmentServer) mustEmbedUnimplementedAssessmentServer() {}
 func (UnimplementedAssessmentServer) testEmbeddedByValue()                    {}
@@ -208,6 +226,24 @@ func _Assessment_AssessEvidences_Handler(srv interface{}, stream grpc.ServerStre
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Assessment_AssessEvidencesServer = grpc.BidiStreamingServer[AssessEvidenceRequest, AssessEvidencesResponse]
 
+func _Assessment_UpdateOrAssessNewAssessmentResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateOrAssessNewAssessmentResultRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AssessmentServer).UpdateOrAssessNewAssessmentResult(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Assessment_UpdateOrAssessNewAssessmentResult_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AssessmentServer).UpdateOrAssessNewAssessmentResult(ctx, req.(*UpdateOrAssessNewAssessmentResultRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Assessment_ServiceDesc is the grpc.ServiceDesc for Assessment service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -222,6 +258,10 @@ var Assessment_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AssessEvidence",
 			Handler:    _Assessment_AssessEvidence_Handler,
+		},
+		{
+			MethodName: "UpdateOrAssessNewAssessmentResult",
+			Handler:    _Assessment_UpdateOrAssessNewAssessmentResult_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

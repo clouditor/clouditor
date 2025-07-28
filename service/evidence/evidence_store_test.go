@@ -1219,6 +1219,11 @@ func (m *mockAssessmentClient) CalculateCompliance(ctx context.Context, req *ass
 	return nil, fmt.Errorf("not implemented")
 }
 
+// UpdateOrAssessNewAssessmentResult is a stub implementation to satisfy the AssessmentClient interface.
+func (m *mockAssessmentClient) UpdateOrAssessNewAssessmentResult(ctx context.Context, req *assessment.UpdateOrAssessNewAssessmentResultRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
 func TestService_handleEvidence(t *testing.T) {
 	// mock assessment stream
 	mockStream := &mockAssessmentStream{connectionEstablished: true, expected: 2}

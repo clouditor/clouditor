@@ -60,9 +60,9 @@ service Assessment {
   rpc AssessEvidences(stream AssessEvidenceRequest) returns (stream AssessEvidencesResponse) {}
 
   // Updates the AssessmentResult field history with the new evidence or creates a new AssessmentResult for the evidence.
-  rpc UpdateOrAssessNewAssessmentResult(UpdateOrCreateAssessmentResultRequest) returns (UpdateOrCreateAssessmentResultResponse) {
+  rpc UpdateOrAssessNewAssessmentResult(UpdateOrAssessNewAssessmentResultRequest) returns (AssessmentResult) {
     option (google.api.http) = {
-      post: "/v1/assessment/result"
+      put: "/v1/assessment/result/{assessed_evidence_id}"
       body: "evidence"
     };
   }
@@ -103,11 +103,11 @@ message AssessEvidencesResponse {
   string status_message = 2;
 }
 
-message UpdateOrCreateAssessmentResultRequest {
+message UpdateOrAssessNewAssessmentResultRequest {
   // The new_evidence is an additional evidence for the same resource that has already been assessed.
   // The ID of the new evidence will be included in the assessment results history. If no assessment result
   // is available (due to any database errors), a new assessment result will be generated.
-  clouditor.evidence.v1.Evidence new_evidence = 1;
+  clouditor.evidence.v1.Evidence evidence = 1 [(buf.validate.field).required = true];
 
   // assessed_evidence_id is the id of the evidence that was assessed in the past and an assessment result
   // already exists for it.
@@ -115,13 +115,6 @@ message UpdateOrCreateAssessmentResultRequest {
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
-}
-
-// UpdateOrCreateAssessmentResultResponse belongs to UpdateOrCreateAssessmentResult, which uses a custom unary
-// RPC and therefore requires a response message according to the style
-// convention. Since no return values are required, this is empty.
-message UpdateOrCreateAssessmentResultResponse {
-  AssessmentStatus status = 1;
 }
 
 // A result resource, representing the result after assessing the cloud resource
