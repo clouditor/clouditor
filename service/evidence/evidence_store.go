@@ -250,7 +250,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
 	var (
 		query []string
 		args  []any
-		res   = new(evidence.Resource)
+		dbRes = new(evidence.Resource)
 		err   error
 	)
 
@@ -263,40 +263,40 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
 
 	// Create query to check if resource already exists in storage.
 	//  Note that properties will be validated later, as they are of type *anypb.Any.
-	// Add resource ID
+	// Add resource ID to query
 	query = append(query, "id = ?")
 	args = append(args, resource.GetId())
 
-	// Add target of evaluation ID
+	// Add target of evaluation ID to query
 	query = append(query, "target_of_evaluation_id = ?")
 	args = append(args, ev.GetTargetOfEvaluationId())
 
-	// Add resource type
+	// Add resource type to query
 	query = append(query, "resource_type = ?")
 	args = append(args, resource.GetResourceType())
 
-	// Add tool ID
+	// Add tool ID to query
 	query = append(query, "tool_id = ?")
 	args = append(args, resource.GetToolId())
 
 	// Join query with AND and prepend the query
 	args = append([]any{strings.Join(query, " AND ")}, args...)
 
-	err = svc.storage.Get(res, args...)
+	err = svc.storage.Get(dbRes, args...)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		log.Info("Resource with same content not available in storage. Trigger new assessment for evidence.")
 	} else if err != nil {
 		return persistence.ErrDatabase
 	}
 
-	// Check if field properties of resource equals as well
+	// resource seems to be present in the database, check if the field properties of the resource are equal as well
 	propEvidenceResourceBytes, err := json.Marshal(resource.GetProperties())
 	if err != nil {
 		log.Errorf("Could not marshal properties: %v", err)
 		return err
 	}
 
-	propDBResourceBytes, err := json.Marshal(res.GetProperties())
+	propDBResourceBytes, err := json.Marshal(dbRes.GetProperties())
 	if err != nil {
 		log.Errorf("Could not marshal properties: %v", err)
 		return err
@@ -305,7 +305,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
 	if bytes.Equal(propEvidenceResourceBytes, propDBResourceBytes) {
 		log.Info("Resource with same content already available in storage. No need to trigger new assessment.")
 	} else {
-		log.Info("Resource with same content not available in storage, field 'properties' differ. Trigger new assessment for evidence.")
+		log.Info("Resource with same content not available in DB, field 'properties' differ. Trigger new assessment for evidence.")
 	}
 
 	// Get Assessment stream
