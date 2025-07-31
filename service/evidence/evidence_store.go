@@ -26,7 +26,9 @@
 package evidence
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -220,7 +222,7 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 
 	// Store Resource
 	// Build a resource struct. This will hold the latest sync state of the
-	// resource for our storage layer. This is needed to store the resource in our DB.s
+	// resource for our storage layer. This is needed to store the resource in our DB.
 	r, err := evidence.ToEvidenceResource(req.Evidence.GetOntologyResource(), req.GetTargetOfEvaluationId(), req.Evidence.GetToolId())
 	if err != nil {
 		log.Errorf("Could not convert resource: %v", err)
@@ -245,8 +247,68 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 	return res, nil
 }
 
-func (svc *Service) handleEvidence(evidence *evidence.Evidence) error {
+func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
 	// TODO(anatheka): It must be checked if the evidence changed since the last time and then send to the assessment service. Add in separate PR
+	var (
+		query []string
+		args  []any
+		dbRes = new(evidence.Resource)
+		err   error
+	)
+
+	// Check if resource has changed to the last evidence
+	// Convert ontology.IsResource to evidence.Resource
+	resource, err := evidence.ToEvidenceResource(ev.GetOntologyResource(), ev.GetTargetOfEvaluationId(), ev.GetToolId())
+	if err != nil {
+		log.Errorf("Could not convert resource: %v", err)
+	}
+
+	// Create query to check if resource already exists in storage.
+	//  Note that properties will be validated later, as they are of type *anypb.Any.
+	// Add resource ID to query
+	query = append(query, "id = ?")
+	args = append(args, resource.GetId())
+
+	// Add target of evaluation ID to query
+	query = append(query, "target_of_evaluation_id = ?")
+	args = append(args, ev.GetTargetOfEvaluationId())
+
+	// Add resource type to query
+	query = append(query, "resource_type = ?")
+	args = append(args, resource.GetResourceType())
+
+	// Add tool ID to query
+	query = append(query, "tool_id = ?")
+	args = append(args, resource.GetToolId())
+
+	// Join query with AND and prepend the query
+	args = append([]any{strings.Join(query, " AND ")}, args...)
+
+	err = svc.storage.Get(dbRes, args...)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		log.Info("Resource with same content not available in storage. Trigger new assessment for evidence.")
+	} else if err != nil {
+		return persistence.ErrDatabase
+	}
+
+	// resource seems to be present in the database, check if the field properties of the resource are equal as well
+	propEvidenceResourceBytes, err := json.Marshal(resource.GetProperties())
+	if err != nil {
+		log.Errorf("Could not marshal properties: %v", err)
+		return err
+	}
+
+	propDBResourceBytes, err := json.Marshal(dbRes.GetProperties())
+	if err != nil {
+		log.Errorf("Could not marshal properties: %v", err)
+		return err
+	}
+
+	if bytes.Equal(propEvidenceResourceBytes, propDBResourceBytes) {
+		log.Info("Resource with same content already available in storage. No need to trigger new assessment.")
+	} else {
+		log.Info("Resource with same content not available in DB, field 'properties' differ. Trigger new assessment for evidence.")
+	}
 
 	// Get Assessment stream
 	channelAssessment, err := svc.assessmentStreams.GetStream(svc.assessment.Target, "Assessment", svc.initAssessmentStream, svc.assessment.Opts...)
@@ -257,7 +319,7 @@ func (svc *Service) handleEvidence(evidence *evidence.Evidence) error {
 	}
 
 	// Send evidence to assessment service
-	channelAssessment.Send(&assessment.AssessEvidenceRequest{Evidence: evidence})
+	channelAssessment.Send(&assessment.AssessEvidenceRequest{Evidence: ev})
 
 	return nil
 }
