@@ -58,14 +58,6 @@ service Assessment {
   // Assesses stream of evidences sent by the discovery and returns a response
   // stream. Part of the public API. Not exposed as REST.
   rpc AssessEvidences(stream AssessEvidenceRequest) returns (stream AssessEvidencesResponse) {}
-
-  // Updates the AssessmentResult field history with the new evidence or creates a new AssessmentResult for the evidence.
-  rpc UpdateOrAssessNewAssessmentResult(UpdateOrAssessNewAssessmentResultRequest) returns (AssessmentResult) {
-    option (google.api.http) = {
-      put: "/v1/assessment/result/{assessed_evidence_id}"
-      body: "evidence"
-    };
-  }
 }
 
 message ConfigureAssessmentRequest {}
@@ -101,20 +93,6 @@ message AssessEvidencesResponse {
   AssessmentStatus status = 1;
 
   string status_message = 2;
-}
-
-message UpdateOrAssessNewAssessmentResultRequest {
-  // The new_evidence is an additional evidence for the same resource that has already been assessed.
-  // The ID of the new evidence will be included in the assessment results history. If no assessment result
-  // is available (due to any database errors), a new assessment result will be generated.
-  clouditor.evidence.v1.Evidence evidence = 1 [(buf.validate.field).required = true];
-
-  // assessed_evidence_id is the id of the evidence that was assessed in the past and an assessment result
-  // already exists for it.
-  string assessed_evidence_id = 2 [
-    (buf.validate.field).string.uuid = true,
-    (google.api.field_behavior) = REQUIRED
-  ];
 }
 
 // A result resource, representing the result after assessing the cloud resource

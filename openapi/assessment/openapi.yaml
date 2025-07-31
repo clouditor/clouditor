@@ -36,40 +36,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/assessment/result/{assessedEvidenceId}:
-        put:
-            tags:
-                - Assessment
-            description: Updates the AssessmentResult field history with the new evidence or creates a new AssessmentResult for the evidence.
-            operationId: Assessment_UpdateOrAssessNewAssessmentResult
-            parameters:
-                - name: assessedEvidenceId
-                  in: path
-                  description: |-
-                    assessed_evidence_id is the id of the evidence that was assessed in the past and an assessment result
-                     already exists for it.
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/Evidence'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/AssessmentResult'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
 components:
     schemas:
         AssessEvidenceResponse:
@@ -87,103 +53,6 @@ components:
                 AssessEvidenceResponse belongs to AssessEvidence, which uses a custom unary
                  RPC and therefore requires a response message according to the style
                  convention. Since no return values are required, this is empty.
-        AssessmentResult:
-            required:
-                - id
-                - createdAt
-                - metricId
-                - metricConfiguration
-                - evidenceId
-                - resourceId
-                - resourceTypes
-                - complianceComment
-                - targetOfEvaluationId
-                - toolId
-                - historyUpdatedAt
-                - history
-            type: object
-            properties:
-                id:
-                    type: string
-                    description: Assessment result id
-                createdAt:
-                    type: string
-                    description: Time of assessment
-                    format: date-time
-                metricId:
-                    type: string
-                    description: Reference to the metric the assessment was based on
-                metricConfiguration:
-                    allOf:
-                        - $ref: '#/components/schemas/MetricConfiguration'
-                    description: Data corresponding to the metric by the given metric id
-                compliant:
-                    type: boolean
-                    description: 'Compliant case: true or false'
-                evidenceId:
-                    type: string
-                    description: Reference to the last assessed evidence
-                resourceId:
-                    type: string
-                    description: Reference to the resource of the assessed evidence
-                resourceTypes:
-                    type: array
-                    items:
-                        type: string
-                    description: Resource types
-                complianceComment:
-                    type: string
-                    description: ComplianceComment contains a human readable description on the reason for (non)-compliance.
-                complianceDetails:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/ComparisonResult'
-                    description: ComplianceDetails contains machine-readable details about which comparisons lead to a (non)-compliance.
-                targetOfEvaluationId:
-                    type: string
-                    description: The target of evaluation which this assessment result belongs to
-                toolId:
-                    type: string
-                    description: Reference to the tool which provided the assessment result
-                historyUpdatedAt:
-                    type: string
-                    description: The time of the last update of the assessment result history field
-                    format: date-time
-                history:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/Record'
-                    description: Stores the history of evidence IDs and timestamps for evidence that have the same content as the evidence used for this assessment result.
-            description: |-
-                A result resource, representing the result after assessing the cloud resource
-                 with id resource_id.
-        ComparisonResult:
-            required:
-                - property
-                - value
-                - operator
-                - targetValue
-                - success
-            type: object
-            properties:
-                property:
-                    type: string
-                    description: Property is the property that was compared
-                value:
-                    allOf:
-                        - $ref: '#/components/schemas/GoogleProtobufValue'
-                    description: Value is the value in the property
-                operator:
-                    type: string
-                    description: Operator is the operator used in the comparison
-                targetValue:
-                    allOf:
-                        - $ref: '#/components/schemas/GoogleProtobufValue'
-                    description: TargetValue is the target value used in the comparison
-                success:
-                    type: boolean
-                    description: Success is true, if the comparison was sucessful
-            description: An optional structure containing more details how a comparison inside an assessment result was done and if it was successful.
         Evidence:
             type: object
             properties:
@@ -225,49 +94,6 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
-        GoogleProtobufValue:
-            description: Represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values.
-        MetricConfiguration:
-            required:
-                - operator
-                - targetValue
-                - isDefault
-                - metricId
-                - targetOfEvaluationId
-            type: object
-            properties:
-                operator:
-                    type: string
-                    description: The operator to compare the metric, such as == or >
-                targetValue:
-                    allOf:
-                        - $ref: '#/components/schemas/GoogleProtobufValue'
-                    description: The target value
-                isDefault:
-                    type: boolean
-                    description: Whether this configuration is a default configuration
-                updatedAt:
-                    type: string
-                    description: The last time of update
-                    format: date-time
-                metricId:
-                    type: string
-                    description: The metric this configuration belongs to
-                targetOfEvaluationId:
-                    type: string
-                    description: The target of evaluation this configuration belongs to
-            description: Defines the operator and a target value for an individual metric
-        Record:
-            required:
-                - evidenceId
-                - evidenceRecordedAt
-            type: object
-            properties:
-                evidenceId:
-                    type: string
-                evidenceRecordedAt:
-                    type: string
-                    format: date-time
         Resource:
             required:
                 - id

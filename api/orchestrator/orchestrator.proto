@@ -28,6 +28,7 @@ package clouditor.orchestrator.v1;
 
 import "api/assessment/assessment.proto";
 import "api/assessment/metric.proto";
+import "api/evidence/evidence.proto";
 import "api/runtime/runtime.proto";
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
@@ -84,6 +85,14 @@ service Orchestrator {
   // Stores stream of assessment results provided by an assessment tool and
   // returns a response stream. Part of the public API, not exposed as REST.
   rpc StoreAssessmentResults(stream StoreAssessmentResultRequest) returns (stream StoreAssessmentResultsResponse);
+
+  // Updates the AssessmentResult field history with the new evidence or creates a new AssessmentResult for the evidence.
+  rpc UpdateOrAddAssessmentResultHistory(UpdateOrAddAssessmentResultHistoryRequest) returns (clouditor.assessment.v1.AssessmentResult) {
+    option (google.api.http) = {
+      put: "/v1/assessment/result/{assessed_evidence_id}"
+      body: "evidence"
+    };
+  }
 
   // Get an assessment result by ID
   rpc GetAssessmentResult(GetAssessmentResultRequest) returns (clouditor.assessment.v1.AssessmentResult) {
@@ -408,6 +417,20 @@ message StoreAssessmentResultResponse {}
 message StoreAssessmentResultsResponse {
   bool status = 1;
   string status_message = 2;
+}
+
+message UpdateOrAddAssessmentResultHistoryRequest {
+  // The new_evidence is an additional evidence for the same resource that has already been assessed.
+  // The ID of the new evidence will be included in the assessment results history. If no assessment result
+  // is available (due to any database errors), a new assessment result will be generated.
+  clouditor.evidence.v1.Evidence evidence = 1 [(buf.validate.field).required = true];
+
+  // assessed_evidence_id is the id of the evidence that was assessed in the past and an assessment result
+  // already exists for it.
+  string assessed_evidence_id = 2 [
+    (buf.validate.field).string.uuid = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
 }
 
 message CreateMetricRequest {
