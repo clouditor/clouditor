@@ -248,6 +248,51 @@ func local_request_Orchestrator_StoreAssessmentResult_0(ctx context.Context, mar
 	return msg, metadata, err
 }
 
+func request_Orchestrator_UpdateOrAddAssessmentResultHistory_0(ctx context.Context, marshaler runtime.Marshaler, client OrchestratorClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq UpdateOrAddAssessmentResultHistoryRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.Evidence); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	val, ok := pathParams["assessed_evidence_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "assessed_evidence_id")
+	}
+	protoReq.AssessedEvidenceId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "assessed_evidence_id", err)
+	}
+	msg, err := client.UpdateOrAddAssessmentResultHistory(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_Orchestrator_UpdateOrAddAssessmentResultHistory_0(ctx context.Context, marshaler runtime.Marshaler, server OrchestratorServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq UpdateOrAddAssessmentResultHistoryRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.Evidence); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["assessed_evidence_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "assessed_evidence_id")
+	}
+	protoReq.AssessedEvidenceId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "assessed_evidence_id", err)
+	}
+	msg, err := server.UpdateOrAddAssessmentResultHistory(ctx, &protoReq)
+	return msg, metadata, err
+}
+
 func request_Orchestrator_GetAssessmentResult_0(ctx context.Context, marshaler runtime.Marshaler, client OrchestratorClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq GetAssessmentResultRequest
@@ -2016,6 +2061,26 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_Orchestrator_StoreAssessmentResult_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodPut, pattern_Orchestrator_UpdateOrAddAssessmentResultHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateOrAddAssessmentResultHistory", runtime.WithHTTPPathPattern("/v1/assessment/result/{assessed_evidence_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_Orchestrator_UpdateOrAddAssessmentResultHistory_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_Orchestrator_UpdateOrAddAssessmentResultHistory_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
 	mux.Handle(http.MethodGet, pattern_Orchestrator_GetAssessmentResult_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -2958,6 +3023,23 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_Orchestrator_StoreAssessmentResult_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodPut, pattern_Orchestrator_UpdateOrAddAssessmentResultHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateOrAddAssessmentResultHistory", runtime.WithHTTPPathPattern("/v1/assessment/result/{assessed_evidence_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_Orchestrator_UpdateOrAddAssessmentResultHistory_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_Orchestrator_UpdateOrAddAssessmentResultHistory_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
 	mux.Handle(http.MethodGet, pattern_Orchestrator_GetAssessmentResult_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -3642,99 +3724,101 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 }
 
 var (
-	pattern_Orchestrator_RegisterAssessmentTool_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "assessment_tools"}, ""))
-	pattern_Orchestrator_ListAssessmentTools_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "assessment_tools"}, ""))
-	pattern_Orchestrator_GetAssessmentTool_0               = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "assessment_tools", "tool_id"}, ""))
-	pattern_Orchestrator_UpdateAssessmentTool_0            = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "assessment_tools", "tool.id"}, ""))
-	pattern_Orchestrator_DeregisterAssessmentTool_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "assessment_tools", "tool_id"}, ""))
-	pattern_Orchestrator_StoreAssessmentResult_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "assessment_results"}, ""))
-	pattern_Orchestrator_GetAssessmentResult_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "assessment_results", "id"}, ""))
-	pattern_Orchestrator_ListAssessmentResults_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "assessment_results"}, ""))
-	pattern_Orchestrator_CreateMetric_0                    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "metrics"}, ""))
-	pattern_Orchestrator_UpdateMetric_0                    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "metrics", "metric.id"}, ""))
-	pattern_Orchestrator_GetMetric_0                       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "metrics", "metric_id"}, ""))
-	pattern_Orchestrator_ListMetrics_0                     = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "metrics"}, ""))
-	pattern_Orchestrator_RemoveMetric_0                    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "metrics", "metric_id"}, ""))
-	pattern_Orchestrator_CreateTargetOfEvaluation_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "targets_of_evaluation"}, ""))
-	pattern_Orchestrator_UpdateTargetOfEvaluation_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "targets_of_evaluation", "target_of_evaluation.id"}, ""))
-	pattern_Orchestrator_GetTargetOfEvaluation_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "targets_of_evaluation", "target_of_evaluation_id"}, ""))
-	pattern_Orchestrator_ListTargetsOfEvaluation_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "targets_of_evaluation"}, ""))
-	pattern_Orchestrator_RemoveTargetOfEvaluation_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "targets_of_evaluation", "target_of_evaluation_id"}, ""))
-	pattern_Orchestrator_GetTargetOfEvaluationStatistics_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "orchestrator", "targets_of_evaluation", "statistics"}, ""))
-	pattern_Orchestrator_UpdateMetricConfiguration_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "targets_of_evaluation", "target_of_evaluation_id", "metric_configurations", "metric_id"}, ""))
-	pattern_Orchestrator_GetMetricConfiguration_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "targets_of_evaluation", "target_of_evaluation_id", "metric_configurations", "metric_id"}, ""))
-	pattern_Orchestrator_ListMetricConfigurations_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "orchestrator", "targets_of_evaluation", "target_of_evaluation_id", "metric_configurations"}, ""))
-	pattern_Orchestrator_UpdateMetricImplementation_0      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "orchestrator", "metrics", "implementation.metric_id", "implementation"}, ""))
-	pattern_Orchestrator_GetMetricImplementation_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "orchestrator", "metrics", "metric_id", "implementation"}, ""))
-	pattern_Orchestrator_CreateCertificate_0               = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "certificates"}, ""))
-	pattern_Orchestrator_GetCertificate_0                  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "certificates", "certificate_id"}, ""))
-	pattern_Orchestrator_ListCertificates_0                = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "certificates"}, ""))
-	pattern_Orchestrator_ListPublicCertificates_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "orchestrator", "public", "certificates"}, ""))
-	pattern_Orchestrator_UpdateCertificate_0               = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "certificates", "certificate.id"}, ""))
-	pattern_Orchestrator_RemoveCertificate_0               = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "certificates", "certificate_id"}, ""))
-	pattern_Orchestrator_CreateCatalog_0                   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "catalogs"}, ""))
-	pattern_Orchestrator_ListCatalogs_0                    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "catalogs"}, ""))
-	pattern_Orchestrator_GetCatalog_0                      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "catalogs", "catalog_id"}, ""))
-	pattern_Orchestrator_RemoveCatalog_0                   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "catalogs", "catalog_id"}, ""))
-	pattern_Orchestrator_UpdateCatalog_0                   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "catalogs", "catalog.id"}, ""))
-	pattern_Orchestrator_GetCategory_0                     = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "catalogs", "catalog_id", "category", "category_name"}, ""))
-	pattern_Orchestrator_ListControls_0                    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "controls"}, ""))
-	pattern_Orchestrator_ListControls_1                    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "orchestrator", "catalogs", "catalog_id", "controls"}, ""))
-	pattern_Orchestrator_ListControls_2                    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "orchestrator", "catalogs", "catalog_id", "categories", "category_name", "controls"}, ""))
-	pattern_Orchestrator_GetControl_0                      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"v1", "orchestrator", "catalogs", "catalog_id", "categories", "category_name", "controls", "control_id"}, ""))
-	pattern_Orchestrator_CreateAuditScope_0                = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "audit_scopes"}, ""))
-	pattern_Orchestrator_GetAuditScope_0                   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "audit_scopes", "audit_scope_id"}, ""))
-	pattern_Orchestrator_ListAuditScopes_0                 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "audit_scopes"}, ""))
-	pattern_Orchestrator_UpdateAuditScope_0                = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "targets_of_evaluation", "audit_scope.target_of_evaluation_id", "audit_scopes", "audit_scope.catalog_id"}, ""))
-	pattern_Orchestrator_RemoveAuditScope_0                = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "audit_scopes", "audit_scope_id"}, ""))
-	pattern_Orchestrator_GetRuntimeInfo_0                  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "runtime_info"}, ""))
+	pattern_Orchestrator_RegisterAssessmentTool_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "assessment_tools"}, ""))
+	pattern_Orchestrator_ListAssessmentTools_0                = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "assessment_tools"}, ""))
+	pattern_Orchestrator_GetAssessmentTool_0                  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "assessment_tools", "tool_id"}, ""))
+	pattern_Orchestrator_UpdateAssessmentTool_0               = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "assessment_tools", "tool.id"}, ""))
+	pattern_Orchestrator_DeregisterAssessmentTool_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "assessment_tools", "tool_id"}, ""))
+	pattern_Orchestrator_StoreAssessmentResult_0              = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "assessment_results"}, ""))
+	pattern_Orchestrator_UpdateOrAddAssessmentResultHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "assessment", "result", "assessed_evidence_id"}, ""))
+	pattern_Orchestrator_GetAssessmentResult_0                = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "assessment_results", "id"}, ""))
+	pattern_Orchestrator_ListAssessmentResults_0              = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "assessment_results"}, ""))
+	pattern_Orchestrator_CreateMetric_0                       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "metrics"}, ""))
+	pattern_Orchestrator_UpdateMetric_0                       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "metrics", "metric.id"}, ""))
+	pattern_Orchestrator_GetMetric_0                          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "metrics", "metric_id"}, ""))
+	pattern_Orchestrator_ListMetrics_0                        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "metrics"}, ""))
+	pattern_Orchestrator_RemoveMetric_0                       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "metrics", "metric_id"}, ""))
+	pattern_Orchestrator_CreateTargetOfEvaluation_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "targets_of_evaluation"}, ""))
+	pattern_Orchestrator_UpdateTargetOfEvaluation_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "targets_of_evaluation", "target_of_evaluation.id"}, ""))
+	pattern_Orchestrator_GetTargetOfEvaluation_0              = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "targets_of_evaluation", "target_of_evaluation_id"}, ""))
+	pattern_Orchestrator_ListTargetsOfEvaluation_0            = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "targets_of_evaluation"}, ""))
+	pattern_Orchestrator_RemoveTargetOfEvaluation_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "targets_of_evaluation", "target_of_evaluation_id"}, ""))
+	pattern_Orchestrator_GetTargetOfEvaluationStatistics_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "orchestrator", "targets_of_evaluation", "statistics"}, ""))
+	pattern_Orchestrator_UpdateMetricConfiguration_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "targets_of_evaluation", "target_of_evaluation_id", "metric_configurations", "metric_id"}, ""))
+	pattern_Orchestrator_GetMetricConfiguration_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "targets_of_evaluation", "target_of_evaluation_id", "metric_configurations", "metric_id"}, ""))
+	pattern_Orchestrator_ListMetricConfigurations_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "orchestrator", "targets_of_evaluation", "target_of_evaluation_id", "metric_configurations"}, ""))
+	pattern_Orchestrator_UpdateMetricImplementation_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "orchestrator", "metrics", "implementation.metric_id", "implementation"}, ""))
+	pattern_Orchestrator_GetMetricImplementation_0            = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "orchestrator", "metrics", "metric_id", "implementation"}, ""))
+	pattern_Orchestrator_CreateCertificate_0                  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "certificates"}, ""))
+	pattern_Orchestrator_GetCertificate_0                     = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "certificates", "certificate_id"}, ""))
+	pattern_Orchestrator_ListCertificates_0                   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "certificates"}, ""))
+	pattern_Orchestrator_ListPublicCertificates_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "orchestrator", "public", "certificates"}, ""))
+	pattern_Orchestrator_UpdateCertificate_0                  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "certificates", "certificate.id"}, ""))
+	pattern_Orchestrator_RemoveCertificate_0                  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "certificates", "certificate_id"}, ""))
+	pattern_Orchestrator_CreateCatalog_0                      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "catalogs"}, ""))
+	pattern_Orchestrator_ListCatalogs_0                       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "catalogs"}, ""))
+	pattern_Orchestrator_GetCatalog_0                         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "catalogs", "catalog_id"}, ""))
+	pattern_Orchestrator_RemoveCatalog_0                      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "catalogs", "catalog_id"}, ""))
+	pattern_Orchestrator_UpdateCatalog_0                      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "catalogs", "catalog.id"}, ""))
+	pattern_Orchestrator_GetCategory_0                        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "catalogs", "catalog_id", "category", "category_name"}, ""))
+	pattern_Orchestrator_ListControls_0                       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "controls"}, ""))
+	pattern_Orchestrator_ListControls_1                       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "orchestrator", "catalogs", "catalog_id", "controls"}, ""))
+	pattern_Orchestrator_ListControls_2                       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "orchestrator", "catalogs", "catalog_id", "categories", "category_name", "controls"}, ""))
+	pattern_Orchestrator_GetControl_0                         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"v1", "orchestrator", "catalogs", "catalog_id", "categories", "category_name", "controls", "control_id"}, ""))
+	pattern_Orchestrator_CreateAuditScope_0                   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "audit_scopes"}, ""))
+	pattern_Orchestrator_GetAuditScope_0                      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "audit_scopes", "audit_scope_id"}, ""))
+	pattern_Orchestrator_ListAuditScopes_0                    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "audit_scopes"}, ""))
+	pattern_Orchestrator_UpdateAuditScope_0                   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "targets_of_evaluation", "audit_scope.target_of_evaluation_id", "audit_scopes", "audit_scope.catalog_id"}, ""))
+	pattern_Orchestrator_RemoveAuditScope_0                   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "audit_scopes", "audit_scope_id"}, ""))
+	pattern_Orchestrator_GetRuntimeInfo_0                     = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "runtime_info"}, ""))
 )
 
 var (
-	forward_Orchestrator_RegisterAssessmentTool_0          = runtime.ForwardResponseMessage
-	forward_Orchestrator_ListAssessmentTools_0             = runtime.ForwardResponseMessage
-	forward_Orchestrator_GetAssessmentTool_0               = runtime.ForwardResponseMessage
-	forward_Orchestrator_UpdateAssessmentTool_0            = runtime.ForwardResponseMessage
-	forward_Orchestrator_DeregisterAssessmentTool_0        = runtime.ForwardResponseMessage
-	forward_Orchestrator_StoreAssessmentResult_0           = runtime.ForwardResponseMessage
-	forward_Orchestrator_GetAssessmentResult_0             = runtime.ForwardResponseMessage
-	forward_Orchestrator_ListAssessmentResults_0           = runtime.ForwardResponseMessage
-	forward_Orchestrator_CreateMetric_0                    = runtime.ForwardResponseMessage
-	forward_Orchestrator_UpdateMetric_0                    = runtime.ForwardResponseMessage
-	forward_Orchestrator_GetMetric_0                       = runtime.ForwardResponseMessage
-	forward_Orchestrator_ListMetrics_0                     = runtime.ForwardResponseMessage
-	forward_Orchestrator_RemoveMetric_0                    = runtime.ForwardResponseMessage
-	forward_Orchestrator_CreateTargetOfEvaluation_0        = runtime.ForwardResponseMessage
-	forward_Orchestrator_UpdateTargetOfEvaluation_0        = runtime.ForwardResponseMessage
-	forward_Orchestrator_GetTargetOfEvaluation_0           = runtime.ForwardResponseMessage
-	forward_Orchestrator_ListTargetsOfEvaluation_0         = runtime.ForwardResponseMessage
-	forward_Orchestrator_RemoveTargetOfEvaluation_0        = runtime.ForwardResponseMessage
-	forward_Orchestrator_GetTargetOfEvaluationStatistics_0 = runtime.ForwardResponseMessage
-	forward_Orchestrator_UpdateMetricConfiguration_0       = runtime.ForwardResponseMessage
-	forward_Orchestrator_GetMetricConfiguration_0          = runtime.ForwardResponseMessage
-	forward_Orchestrator_ListMetricConfigurations_0        = runtime.ForwardResponseMessage
-	forward_Orchestrator_UpdateMetricImplementation_0      = runtime.ForwardResponseMessage
-	forward_Orchestrator_GetMetricImplementation_0         = runtime.ForwardResponseMessage
-	forward_Orchestrator_CreateCertificate_0               = runtime.ForwardResponseMessage
-	forward_Orchestrator_GetCertificate_0                  = runtime.ForwardResponseMessage
-	forward_Orchestrator_ListCertificates_0                = runtime.ForwardResponseMessage
-	forward_Orchestrator_ListPublicCertificates_0          = runtime.ForwardResponseMessage
-	forward_Orchestrator_UpdateCertificate_0               = runtime.ForwardResponseMessage
-	forward_Orchestrator_RemoveCertificate_0               = runtime.ForwardResponseMessage
-	forward_Orchestrator_CreateCatalog_0                   = runtime.ForwardResponseMessage
-	forward_Orchestrator_ListCatalogs_0                    = runtime.ForwardResponseMessage
-	forward_Orchestrator_GetCatalog_0                      = runtime.ForwardResponseMessage
-	forward_Orchestrator_RemoveCatalog_0                   = runtime.ForwardResponseMessage
-	forward_Orchestrator_UpdateCatalog_0                   = runtime.ForwardResponseMessage
-	forward_Orchestrator_GetCategory_0                     = runtime.ForwardResponseMessage
-	forward_Orchestrator_ListControls_0                    = runtime.ForwardResponseMessage
-	forward_Orchestrator_ListControls_1                    = runtime.ForwardResponseMessage
-	forward_Orchestrator_ListControls_2                    = runtime.ForwardResponseMessage
-	forward_Orchestrator_GetControl_0                      = runtime.ForwardResponseMessage
-	forward_Orchestrator_CreateAuditScope_0                = runtime.ForwardResponseMessage
-	forward_Orchestrator_GetAuditScope_0                   = runtime.ForwardResponseMessage
-	forward_Orchestrator_ListAuditScopes_0                 = runtime.ForwardResponseMessage
-	forward_Orchestrator_UpdateAuditScope_0                = runtime.ForwardResponseMessage
-	forward_Orchestrator_RemoveAuditScope_0                = runtime.ForwardResponseMessage
-	forward_Orchestrator_GetRuntimeInfo_0                  = runtime.ForwardResponseMessage
+	forward_Orchestrator_RegisterAssessmentTool_0             = runtime.ForwardResponseMessage
+	forward_Orchestrator_ListAssessmentTools_0                = runtime.ForwardResponseMessage
+	forward_Orchestrator_GetAssessmentTool_0                  = runtime.ForwardResponseMessage
+	forward_Orchestrator_UpdateAssessmentTool_0               = runtime.ForwardResponseMessage
+	forward_Orchestrator_DeregisterAssessmentTool_0           = runtime.ForwardResponseMessage
+	forward_Orchestrator_StoreAssessmentResult_0              = runtime.ForwardResponseMessage
+	forward_Orchestrator_UpdateOrAddAssessmentResultHistory_0 = runtime.ForwardResponseMessage
+	forward_Orchestrator_GetAssessmentResult_0                = runtime.ForwardResponseMessage
+	forward_Orchestrator_ListAssessmentResults_0              = runtime.ForwardResponseMessage
+	forward_Orchestrator_CreateMetric_0                       = runtime.ForwardResponseMessage
+	forward_Orchestrator_UpdateMetric_0                       = runtime.ForwardResponseMessage
+	forward_Orchestrator_GetMetric_0                          = runtime.ForwardResponseMessage
+	forward_Orchestrator_ListMetrics_0                        = runtime.ForwardResponseMessage
+	forward_Orchestrator_RemoveMetric_0                       = runtime.ForwardResponseMessage
+	forward_Orchestrator_CreateTargetOfEvaluation_0           = runtime.ForwardResponseMessage
+	forward_Orchestrator_UpdateTargetOfEvaluation_0           = runtime.ForwardResponseMessage
+	forward_Orchestrator_GetTargetOfEvaluation_0              = runtime.ForwardResponseMessage
+	forward_Orchestrator_ListTargetsOfEvaluation_0            = runtime.ForwardResponseMessage
+	forward_Orchestrator_RemoveTargetOfEvaluation_0           = runtime.ForwardResponseMessage
+	forward_Orchestrator_GetTargetOfEvaluationStatistics_0    = runtime.ForwardResponseMessage
+	forward_Orchestrator_UpdateMetricConfiguration_0          = runtime.ForwardResponseMessage
+	forward_Orchestrator_GetMetricConfiguration_0             = runtime.ForwardResponseMessage
+	forward_Orchestrator_ListMetricConfigurations_0           = runtime.ForwardResponseMessage
+	forward_Orchestrator_UpdateMetricImplementation_0         = runtime.ForwardResponseMessage
+	forward_Orchestrator_GetMetricImplementation_0            = runtime.ForwardResponseMessage
+	forward_Orchestrator_CreateCertificate_0                  = runtime.ForwardResponseMessage
+	forward_Orchestrator_GetCertificate_0                     = runtime.ForwardResponseMessage
+	forward_Orchestrator_ListCertificates_0                   = runtime.ForwardResponseMessage
+	forward_Orchestrator_ListPublicCertificates_0             = runtime.ForwardResponseMessage
+	forward_Orchestrator_UpdateCertificate_0                  = runtime.ForwardResponseMessage
+	forward_Orchestrator_RemoveCertificate_0                  = runtime.ForwardResponseMessage
+	forward_Orchestrator_CreateCatalog_0                      = runtime.ForwardResponseMessage
+	forward_Orchestrator_ListCatalogs_0                       = runtime.ForwardResponseMessage
+	forward_Orchestrator_GetCatalog_0                         = runtime.ForwardResponseMessage
+	forward_Orchestrator_RemoveCatalog_0                      = runtime.ForwardResponseMessage
+	forward_Orchestrator_UpdateCatalog_0                      = runtime.ForwardResponseMessage
+	forward_Orchestrator_GetCategory_0                        = runtime.ForwardResponseMessage
+	forward_Orchestrator_ListControls_0                       = runtime.ForwardResponseMessage
+	forward_Orchestrator_ListControls_1                       = runtime.ForwardResponseMessage
+	forward_Orchestrator_ListControls_2                       = runtime.ForwardResponseMessage
+	forward_Orchestrator_GetControl_0                         = runtime.ForwardResponseMessage
+	forward_Orchestrator_CreateAuditScope_0                   = runtime.ForwardResponseMessage
+	forward_Orchestrator_GetAuditScope_0                      = runtime.ForwardResponseMessage
+	forward_Orchestrator_ListAuditScopes_0                    = runtime.ForwardResponseMessage
+	forward_Orchestrator_UpdateAuditScope_0                   = runtime.ForwardResponseMessage
+	forward_Orchestrator_RemoveAuditScope_0                   = runtime.ForwardResponseMessage
+	forward_Orchestrator_GetRuntimeInfo_0                     = runtime.ForwardResponseMessage
 )
