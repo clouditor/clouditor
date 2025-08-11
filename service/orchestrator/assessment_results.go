@@ -37,6 +37,7 @@ import (
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/logging"
+	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
 
@@ -281,4 +282,44 @@ func (s *Service) informHook(ctx context.Context, result *assessment.AssessmentR
 			hook(ctx, result, err)
 		}
 	}
+}
+
+// UpdateOrAddAssessmentResultHistory is a method implementation of the assessment interface: The given evidence is an additional evidence for the same resource that has already been assessed. The ID of the new evidence will be included in the assessment results history. If no assessment result is available (e.g., due to database errors), a new assessment result will be generated.
+func (svc *Service) UpdateOrAddAssessmentResultHistory(ctx context.Context, req *orchestrator.UpdateOrAddAssessmentResultHistoryRequest) (res *assessment.AssessmentResult, err error) {
+	var (
+		response *orchestrator.ListAssessmentResultsResponse
+	)
+
+	// Validate request
+	err = api.Validate(req)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	// Check if target_of_evaluation_id in the service is within allowed or one can access *all* the target of evaluations
+	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
+		log.Error(service.ErrPermissionDenied)
+		return nil, service.ErrPermissionDenied
+	}
+
+	// Get existing assessment results for evidence ID that was already assessed
+	response, err = svc.ListAssessmentResults(ctx, &orchestrator.ListAssessmentResultsRequest{
+		Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
+			HistoryEvidenceId: util.Ref(req.GetAssessedEvidenceId()),
+		},
+	})
+
+	// Update all existing assessment results
+	for _, result := range response.Results {
+		result.History = append(result.History, &assessment.Record{
+			EvidenceId:         req.Evidence.GetId(),
+			EvidenceRecordedAt: req.Evidence.GetTimestamp(),
+		})
+
+		// Update the assessment results in the DB
+		// svc.orchestrator.Client.UpdateAssessmentResult(ctx, &orchestrat)
+	}
+
+	return res, err
 }
