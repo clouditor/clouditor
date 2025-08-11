@@ -57,7 +57,3 @@ func (req *AssessEvidenceRequest) GetPayload() proto.Message {
 func (req *AssessEvidenceRequest) GetTargetOfEvaluationId() string {
 	return req.GetEvidence().GetTargetOfEvaluationId()
 }
-
-func (req *UpdateOrAddAssessmentResultHistoryRequest) GetTargetOfEvaluationId() string {
-	return req.GetEvidence().GetTargetOfEvaluationId()
-}
