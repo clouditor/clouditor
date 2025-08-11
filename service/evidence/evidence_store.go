@@ -40,6 +40,7 @@ import (
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/logging"
 	"clouditor.io/clouditor/v2/launcher"
@@ -81,6 +82,8 @@ type Service struct {
 
 	assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
 	assessment        *api.RPCConnection[assessment.AssessmentClient]
+
+	orchestrator *api.RPCConnection[orchestrator.OrchestratorClient]
 
 	// channel that is used to send evidences from the StoreEvidence method to the worker threat to process the evidence
 	channelEvidence chan *evidence.Evidence
@@ -135,6 +138,7 @@ func NewService(opts ...service.Option[*Service]) (svc *Service) {
 	svc = &Service{
 		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
 		assessment:        api.NewRPCConnection(config.DefaultAssessmentURL, assessment.NewAssessmentClient),
+		orchestrator:      api.NewRPCConnection(config.DefaultOrchestratorURL, orchestrator.NewOrchestratorClient),
 		channelEvidence:   make(chan *evidence.Evidence, 1000),
 	}
 
@@ -303,13 +307,6 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
 		return err
 	}
 
-	// TODO(anatheka): Call correct endpoint based on the result of the if
-	if bytes.Equal(propEvidenceResourceBytes, propDBResourceBytes) {
-		log.Info("Resource with same content already available in storage. No need to trigger new assessment.")
-	} else {
-		log.Info("Resource with same content not available in DB, field 'properties' differ. Trigger new assessment for evidence.")
-	}
-
 	// Get Assessment stream
 	channelAssessment, err := svc.assessmentStreams.GetStream(svc.assessment.Target, "Assessment", svc.initAssessmentStream, svc.assessment.Opts...)
 	if err != nil {
@@ -318,8 +315,28 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
 		return err
 	}
 
-	// Send evidence to assessment service
-	channelAssessment.Send(&assessment.AssessEvidenceRequest{Evidence: ev})
+	// Check if properties of the resource in the new evidence and the resource in the database are equal.
+	// If they are equal, we do not need to trigger a new assessment, but just update the history field of the corresponding assessment results.
+	// If they are not equal, we need to trigger a new assessment for the evidence.
+	if bytes.Equal(propEvidenceResourceBytes, propDBResourceBytes) {
+		// Send evidence to orchestrator service an update the history field of the corresponding assessment results
+		log.Debug("Resource with same content already available in storage. No need to trigger new assessment, just update the history field of the corresponding assessment results.")
+
+		_, err = svc.orchestrator.Client.UpdateOrAddAssessmentResultHistory(context.Background(), &orchestrator.UpdateOrAddAssessmentResultHistoryRequest{
+			Evidence:           ev,
+			AssessedEvidenceId: dbRes.GetId(),
+		})
+		if err != nil {
+			newError := fmt.Errorf("could not update assessment result history: %v", err)
+			log.Error(newError)
+			return status.Errorf(codes.Internal, "%v", newError)
+		}
+	} else {
+		// Send evidence to assessment service
+		log.Debug("Resource with same content not available in DB, field 'properties' differ. Trigger new assessment for evidence.")
+
+		channelAssessment.Send(&assessment.AssessEvidenceRequest{Evidence: ev})
+	}
 
 	return nil
 }
