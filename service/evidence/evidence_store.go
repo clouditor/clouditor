@@ -248,7 +248,6 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 }
 
 func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
-	// TODO(anatheka): It must be checked if the evidence changed since the last time and then send to the assessment service. Add in separate PR
 	var (
 		query []string
 		args  []any
@@ -264,7 +263,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
 	}
 
 	// Create query to check if resource already exists in storage.
-	//  Note that properties will be validated later, as they are of type *anypb.Any.
+	// Note that properties will be validated later, as they are of type *anypb.Any.
 	// Add resource ID to query
 	query = append(query, "id = ?")
 	args = append(args, resource.GetId())
@@ -304,6 +303,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
 		return err
 	}
 
+	// TODO(anatheka): Call correct endpoint based on the result of the if
 	if bytes.Equal(propEvidenceResourceBytes, propDBResourceBytes) {
 		log.Info("Resource with same content already available in storage. No need to trigger new assessment.")
 	} else {
