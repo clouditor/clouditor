@@ -307,14 +307,6 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
 		return err
 	}
 
-	// Get Assessment stream
-	channelAssessment, err := svc.assessmentStreams.GetStream(svc.assessment.Target, "Assessment", svc.initAssessmentStream, svc.assessment.Opts...)
-	if err != nil {
-		err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessment.Target, err)
-		log.Error(err)
-		return err
-	}
-
 	// Check if properties of the resource in the new evidence and the resource in the database are equal.
 	// If they are equal, we do not need to trigger a new assessment, but just update the history field of the corresponding assessment results.
 	// If they are not equal, we need to trigger a new assessment for the evidence.
@@ -334,6 +326,14 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
 	} else {
 		// Send evidence to assessment service
 		log.Debug("Resource with same content not available in DB, field 'properties' differ. Trigger new assessment for evidence.")
+
+		// Get Assessment stream
+		channelAssessment, err := svc.assessmentStreams.GetStream(svc.assessment.Target, "Assessment", svc.initAssessmentStream, svc.assessment.Opts...)
+		if err != nil {
+			err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessment.Target, err)
+			log.Error(err)
+			return err
+		}
 
 		channelAssessment.Send(&assessment.AssessEvidenceRequest{Evidence: ev})
 	}

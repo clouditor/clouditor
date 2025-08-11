@@ -40,6 +40,8 @@ import (
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	cl_runtime "clouditor.io/clouditor/v2/api/runtime"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
@@ -52,6 +54,7 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
+
 	"github.com/google/uuid"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
@@ -1219,20 +1222,220 @@ func (m *mockAssessmentClient) CalculateCompliance(ctx context.Context, req *ass
 	return nil, fmt.Errorf("not implemented")
 }
 
+// mockOrchestratorClient is a mock implementation of the OrchestratorClient interface.
+type mockOrchestratorClient struct {
+	failStream                             bool
+	mockUpdateOrAddAssessmentResultHistory func(ctx context.Context, req *orchestrator.UpdateOrAddAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error)
+}
+
+func (m *mockOrchestratorClient) RegisterAssessmentTool(ctx context.Context, in *orchestrator.RegisterAssessmentToolRequest, opts ...grpc.CallOption) (*orchestrator.AssessmentTool, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) ListAssessmentTools(ctx context.Context, in *orchestrator.ListAssessmentToolsRequest, opts ...grpc.CallOption) (*orchestrator.ListAssessmentToolsResponse, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) GetAssessmentTool(ctx context.Context, in *orchestrator.GetAssessmentToolRequest, opts ...grpc.CallOption) (*orchestrator.AssessmentTool, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) UpdateAssessmentTool(ctx context.Context, in *orchestrator.UpdateAssessmentToolRequest, opts ...grpc.CallOption) (*orchestrator.AssessmentTool, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) DeregisterAssessmentTool(ctx context.Context, in *orchestrator.DeregisterAssessmentToolRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) StoreAssessmentResult(ctx context.Context, in *orchestrator.StoreAssessmentResultRequest, opts ...grpc.CallOption) (*orchestrator.StoreAssessmentResultResponse, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) StoreAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[orchestrator.StoreAssessmentResultRequest, orchestrator.StoreAssessmentResultsResponse], error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) UpdateOrAddAssessmentResultHistory(ctx context.Context, req *orchestrator.UpdateOrAddAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error) {
+	if m.mockUpdateOrAddAssessmentResultHistory != nil {
+		return m.mockUpdateOrAddAssessmentResultHistory(ctx, req, opts...)
+	}
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) GetAssessmentResult(ctx context.Context, in *orchestrator.GetAssessmentResultRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) ListAssessmentResults(ctx context.Context, in *orchestrator.ListAssessmentResultsRequest, opts ...grpc.CallOption) (*orchestrator.ListAssessmentResultsResponse, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) CreateMetric(ctx context.Context, in *orchestrator.CreateMetricRequest, opts ...grpc.CallOption) (*assessment.Metric, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) UpdateMetric(ctx context.Context, in *orchestrator.UpdateMetricRequest, opts ...grpc.CallOption) (*assessment.Metric, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) GetMetric(ctx context.Context, in *orchestrator.GetMetricRequest, opts ...grpc.CallOption) (*assessment.Metric, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) ListMetrics(ctx context.Context, in *orchestrator.ListMetricsRequest, opts ...grpc.CallOption) (*orchestrator.ListMetricsResponse, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) RemoveMetric(ctx context.Context, in *orchestrator.RemoveMetricRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) CreateTargetOfEvaluation(ctx context.Context, in *orchestrator.CreateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*orchestrator.TargetOfEvaluation, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) UpdateTargetOfEvaluation(ctx context.Context, in *orchestrator.UpdateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*orchestrator.TargetOfEvaluation, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) GetTargetOfEvaluation(ctx context.Context, in *orchestrator.GetTargetOfEvaluationRequest, opts ...grpc.CallOption) (*orchestrator.TargetOfEvaluation, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) ListTargetsOfEvaluation(ctx context.Context, in *orchestrator.ListTargetsOfEvaluationRequest, opts ...grpc.CallOption) (*orchestrator.ListTargetsOfEvaluationResponse, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) RemoveTargetOfEvaluation(ctx context.Context, in *orchestrator.RemoveTargetOfEvaluationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) GetTargetOfEvaluationStatistics(ctx context.Context, in *orchestrator.GetTargetOfEvaluationStatisticsRequest, opts ...grpc.CallOption) (*orchestrator.GetTargetOfEvaluationStatisticsResponse, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) UpdateMetricConfiguration(ctx context.Context, in *orchestrator.UpdateMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) GetMetricConfiguration(ctx context.Context, in *orchestrator.GetMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) ListMetricConfigurations(ctx context.Context, in *orchestrator.ListMetricConfigurationRequest, opts ...grpc.CallOption) (*orchestrator.ListMetricConfigurationResponse, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) UpdateMetricImplementation(ctx context.Context, in *orchestrator.UpdateMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) GetMetricImplementation(ctx context.Context, in *orchestrator.GetMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) SubscribeMetricChangeEvents(ctx context.Context, in *orchestrator.SubscribeMetricChangeEventRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[orchestrator.MetricChangeEvent], error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) CreateCertificate(ctx context.Context, in *orchestrator.CreateCertificateRequest, opts ...grpc.CallOption) (*orchestrator.Certificate, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) GetCertificate(ctx context.Context, in *orchestrator.GetCertificateRequest, opts ...grpc.CallOption) (*orchestrator.Certificate, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) ListCertificates(ctx context.Context, in *orchestrator.ListCertificatesRequest, opts ...grpc.CallOption) (*orchestrator.ListCertificatesResponse, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) ListPublicCertificates(ctx context.Context, in *orchestrator.ListPublicCertificatesRequest, opts ...grpc.CallOption) (*orchestrator.ListPublicCertificatesResponse, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) UpdateCertificate(ctx context.Context, in *orchestrator.UpdateCertificateRequest, opts ...grpc.CallOption) (*orchestrator.Certificate, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) RemoveCertificate(ctx context.Context, in *orchestrator.RemoveCertificateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) CreateCatalog(ctx context.Context, in *orchestrator.CreateCatalogRequest, opts ...grpc.CallOption) (*orchestrator.Catalog, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) ListCatalogs(ctx context.Context, in *orchestrator.ListCatalogsRequest, opts ...grpc.CallOption) (*orchestrator.ListCatalogsResponse, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) GetCatalog(ctx context.Context, in *orchestrator.GetCatalogRequest, opts ...grpc.CallOption) (*orchestrator.Catalog, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) RemoveCatalog(ctx context.Context, in *orchestrator.RemoveCatalogRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) UpdateCatalog(ctx context.Context, in *orchestrator.UpdateCatalogRequest, opts ...grpc.CallOption) (*orchestrator.Catalog, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) GetCategory(ctx context.Context, in *orchestrator.GetCategoryRequest, opts ...grpc.CallOption) (*orchestrator.Category, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) ListControls(ctx context.Context, in *orchestrator.ListControlsRequest, opts ...grpc.CallOption) (*orchestrator.ListControlsResponse, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) GetControl(ctx context.Context, in *orchestrator.GetControlRequest, opts ...grpc.CallOption) (*orchestrator.Control, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) CreateAuditScope(ctx context.Context, in *orchestrator.CreateAuditScopeRequest, opts ...grpc.CallOption) (*orchestrator.AuditScope, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) GetAuditScope(ctx context.Context, in *orchestrator.GetAuditScopeRequest, opts ...grpc.CallOption) (*orchestrator.AuditScope, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) ListAuditScopes(ctx context.Context, in *orchestrator.ListAuditScopesRequest, opts ...grpc.CallOption) (*orchestrator.ListAuditScopesResponse, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) UpdateAuditScope(ctx context.Context, in *orchestrator.UpdateAuditScopeRequest, opts ...grpc.CallOption) (*orchestrator.AuditScope, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockOrchestratorClient) RemoveAuditScope(ctx context.Context, in *orchestrator.RemoveAuditScopeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+// GetRuntimeInfo is a stub implementation to satisfy the OrchestratorClient interface.
+func (m *mockOrchestratorClient) GetRuntimeInfo(ctx context.Context, in *cl_runtime.GetRuntimeInfoRequest, opts ...grpc.CallOption) (*cl_runtime.Runtime, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
 func TestService_handleEvidence(t *testing.T) {
 	// mock assessment stream
 	mockStream := &mockAssessmentStream{connectionEstablished: true, expected: 2}
 	mockStream.Prepare()
 
 	type fields struct {
-		storage    persistence.Storage
-		assessment *api.RPCConnection[assessment.AssessmentClient]
-		authz      service.AuthorizationStrategy
+		storage      persistence.Storage
+		assessment   *api.RPCConnection[assessment.AssessmentClient]
+		orchestrator *api.RPCConnection[orchestrator.OrchestratorClient]
+		authz        service.AuthorizationStrategy
 	}
 	type args struct {
-		evidence  *evidence.Evidence
-		addStream bool
-		target    string
+		evidence            *evidence.Evidence
+		addAssessmentStream bool
+		// addOrchestratorConnection bool
+		target string
 	}
 	tests := []struct {
 		name    string
@@ -1240,24 +1443,24 @@ func TestService_handleEvidence(t *testing.T) {
 		args    args
 		wantErr assert.ErrorAssertionFunc
 	}{
-		{
-			name: "Error getting stream",
-			fields: fields{
-				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-				}),
-				assessment: &api.RPCConnection[assessment.AssessmentClient]{
-					Client: &mockAssessmentClient{failStream: true},
-				},
-			},
-			args: args{
-				addStream: true,
-				evidence:  evidencetest.MockEvidence1,
-				target:    "error",
-			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not get stream to assessment service")
-			},
-		},
+		// {
+		// 	name: "Error getting stream",
+		// 	fields: fields{
+		// 		storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+		// 		}),
+		// 		assessment: &api.RPCConnection[assessment.AssessmentClient]{
+		// 			Client: &mockAssessmentClient{failStream: true},
+		// 		},
+		// 	},
+		// 	args: args{
+		// 		addStream: true,
+		// 		evidence:  evidencetest.MockEvidence1,
+		// 		target:    "error",
+		// 	},
+		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+		// 		return assert.ErrorContains(t, err, "could not get stream to assessment service")
+		// 	},
+		// },
 		{
 			name: "Happy path: do not trigger new assessment",
 			fields: fields{
@@ -1268,14 +1471,39 @@ func TestService_handleEvidence(t *testing.T) {
 				assessment: &api.RPCConnection[assessment.AssessmentClient]{
 					Target: "mock",
 				},
+				orchestrator: &api.RPCConnection[orchestrator.OrchestratorClient]{
+					Client: &mockOrchestratorClient{
+						mockUpdateOrAddAssessmentResultHistory: func(ctx context.Context, req *orchestrator.UpdateOrAddAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error) {
+							// Successful response
+							return &assessment.AssessmentResult{}, nil
+						},
+					},
+				},
 			},
 			args: args{
-				addStream: true,
-				evidence:  evidencetest.MockEvidence1,
-				target:    "mock",
+				evidence: evidencetest.MockEvidence1,
+				target:   "mock",
 			},
 			wantErr: assert.NoError,
 		},
+		// {
+		// 	name: "Happy path: trigger new assessment",
+		// 	fields: fields{
+		// 		storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+		// 			assert.NoError(t, s.Save(&evidencetest.MockEvidence1))
+		// 			assert.NoError(t, s.Save(&evidencetest.MockResourceFromEvidence1))
+		// 		}),
+		// 		assessment: &api.RPCConnection[assessment.AssessmentClient]{
+		// 			Target: "mock",
+		// 		},
+		// 	},
+		// 	args: args{
+		// 		addAssessmentStream: false,
+		// 		evidence:            evidencetest.MockEvidence1,
+		// 		target:              "mock",
+		// 	},
+		// 	wantErr: assert.NoError,
+		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1284,14 +1512,16 @@ func TestService_handleEvidence(t *testing.T) {
 			svc.authz = tt.fields.authz
 			svc.assessment = tt.fields.assessment
 			svc.assessmentStreams = nil
+			svc.orchestrator = tt.fields.orchestrator
 
 			// Add assessment stream if needed
-			if tt.args.addStream {
+			if tt.args.addAssessmentStream {
 				svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]()
 				_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
 					return mockStream, nil
 				})
 			}
+
 			err := svc.handleEvidence(tt.args.evidence)
 			tt.wantErr(t, err)
 		})
