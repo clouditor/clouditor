@@ -45,7 +45,7 @@ require (
 require (
 	github.com/MicahParks/keyfunc/v2 v2.1.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
-	github.com/oxisto/oauth2go v0.14.0
+	github.com/oxisto/oauth2go v0.15.0
 	golang.org/x/crypto v0.40.0 // indirect
 	golang.org/x/oauth2 v0.30.0
 )
