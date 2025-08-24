@@ -93,9 +93,9 @@ func (good *goodIndexTxtWriter) handleHash(w http.ResponseWriter, advisory *csaf
 	_, _ = h.Write(body)
 	checksum = h.Sum(nil)
 
-	_, err = w.Write([]byte(fmt.Sprintf("%s %s",
+	_, err = fmt.Fprintf(w, "%s %s",
 		hex.EncodeToString(checksum),
-		strings.ToLower(string(util.Deref(advisory.Document.Tracking.ID)))+".json")),
+		strings.ToLower(string(util.Deref(advisory.Document.Tracking.ID)))+".json",
 	)
 	if err != nil {
 		log.Warnf("Could not write: %s", err.Error())

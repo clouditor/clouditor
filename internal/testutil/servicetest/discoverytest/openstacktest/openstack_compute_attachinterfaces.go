@@ -42,7 +42,7 @@ import (
 //
 // Changes:
 // - 2024-12-10: Extended function HandleInterfaceListSuccessfully() for all 3 virtual machines given in /internal/testuitl/servicetes/openstacktest/openstack_compute.go (@anatheka)
-// - 2025-01-07:  (@anatheka)
+// - 2025-01-07: Add error check to fmt.Fprint() (@anatheka)
 
 // ListInterfacesExpected represents an expected response from a ListInterfaces request.
 var ListInterfacesExpected = []attachinterfaces.Interface{
@@ -103,7 +103,7 @@ func HandleInterfaceListSuccessfully(t *testing.T) {
 		th.TestHeader(t, r, "X-Auth-Token", client.TokenID)
 
 		w.Header().Add("Content-Type", "application/json")
-		fmt.Fprint(w, `{
+		if _, err := fmt.Fprint(w, `{
 			"interfaceAttachments": [
 				{
 					"port_state":"ACTIVE",
@@ -122,7 +122,9 @@ func HandleInterfaceListSuccessfully(t *testing.T) {
 					"mac_addr": "fa:16:3e:38:2d:80"
 				}
 			]
-		}`)
+		}`); err != nil {
+			t.Fatalf("Failed to write response: %v", err)
+		}
 	})
 
 	th.Mux.HandleFunc("/servers/9e5476bd-a4ec-4653-93d6-72c93aa682ba/os-interface", func(w http.ResponseWriter, r *http.Request) {
@@ -130,7 +132,7 @@ func HandleInterfaceListSuccessfully(t *testing.T) {
 		th.TestHeader(t, r, "X-Auth-Token", client.TokenID)
 
 		w.Header().Add("Content-Type", "application/json")
-		fmt.Fprint(w, `{
+		if _, err := fmt.Fprint(w, `{
 			"interfaceAttachments": [
 				{
 					"port_state":"ACTIVE",
@@ -149,7 +151,9 @@ func HandleInterfaceListSuccessfully(t *testing.T) {
 					"mac_addr": "fa:16:3e:38:2d:80"
 				}
 			]
-		}`)
+		}`); err != nil {
+			t.Fatalf("Failed to write response: %v", err)
+		}
 	})
 
 	th.Mux.HandleFunc("/servers/9e5476bd-a4ec-4653-93d6-72c93aa682bb/os-interface", func(w http.ResponseWriter, r *http.Request) {
@@ -157,7 +161,7 @@ func HandleInterfaceListSuccessfully(t *testing.T) {
 		th.TestHeader(t, r, "X-Auth-Token", client.TokenID)
 
 		w.Header().Add("Content-Type", "application/json")
-		fmt.Fprint(w, `{
+		if _, err := fmt.Fprint(w, `{
 			"interfaceAttachments": [
 				{
 					"port_state":"ACTIVE",
@@ -176,7 +180,9 @@ func HandleInterfaceListSuccessfully(t *testing.T) {
 					"mac_addr": "fa:16:3e:38:2d:80"
 				}
 			]
-		}`)
+		}`); err != nil {
+			t.Fatalf("Failed to write response: %v", err)
+		}
 	})
 }
 
@@ -187,7 +193,7 @@ func HandleInterfaceGetSuccessfully(t *testing.T) {
 		th.TestHeader(t, r, "X-Auth-Token", client.TokenID)
 
 		w.Header().Add("Content-Type", "application/json")
-		fmt.Fprint(w, `{
+		if _, err := fmt.Fprint(w, `{
 			"interfaceAttachment":
 				{
 					"port_state":"ACTIVE",
@@ -205,7 +211,9 @@ func HandleInterfaceGetSuccessfully(t *testing.T) {
 					"net_id": "8a5fe506-7e9f-4091-899b-96336909d93c",
 					"mac_addr": "fa:16:3e:38:2d:80"
 				}
-		}`)
+		}`); err != nil {
+			t.Fatalf("Failed to write response: %v", err)
+		}
 	})
 }
 
@@ -221,7 +229,7 @@ func HandleInterfaceCreateSuccessfully(t *testing.T) {
 		}`)
 
 		w.Header().Add("Content-Type", "application/json")
-		fmt.Fprint(w, `{
+		if _, err := fmt.Fprint(w, `{
 			"interfaceAttachment":
 				{
 					"port_state":"ACTIVE",
@@ -235,7 +243,9 @@ func HandleInterfaceCreateSuccessfully(t *testing.T) {
 					"net_id": "8a5fe506-7e9f-4091-899b-96336909d93c",
 					"mac_addr": "fa:16:3e:38:2d:80"
 				}
-		}`)
+		}`); err != nil {
+			t.Fatalf("Failed to write response: %v", err)
+		}
 	})
 }
 
