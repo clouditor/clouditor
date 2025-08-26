@@ -483,7 +483,7 @@ func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached
 	assert.NoError(t, err)
 }
 
-func TestService_AssessEvidences(t *testing.T) {
+func TestService_AssessStreamEvidence(t *testing.T) {
 	type fields struct {
 		ResultHooks          []assessment.ResultHookFunc
 		evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
@@ -623,12 +623,12 @@ func TestService_AssessEvidences(t *testing.T) {
 			}
 
 			if tt.args.streamToServer != nil {
-				err = s.AssessEvidences(tt.args.streamToServer)
+    err = s.AssessStreamEvidence(tt.args.streamToServer)
 				responseFromServer = <-tt.args.streamToServer.SentFromServer
 			} else if tt.args.streamToClientWithSendErr != nil {
-				err = s.AssessEvidences(tt.args.streamToClientWithSendErr)
+    err = s.AssessStreamEvidence(tt.args.streamToClientWithSendErr)
 			} else if tt.args.streamToServerWithRecvErr != nil {
-				err = s.AssessEvidences(tt.args.streamToServerWithRecvErr)
+    err = s.AssessStreamEvidence(tt.args.streamToServerWithRecvErr)
 			}
 
 			tt.wantErr(t, err)

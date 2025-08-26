@@ -47,7 +47,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	Assessment_CalculateCompliance_FullMethodName = "/clouditor.assessment.v1.Assessment/CalculateCompliance"
 	Assessment_AssessEvidence_FullMethodName      = "/clouditor.assessment.v1.Assessment/AssessEvidence"
-	Assessment_AssessEvidences_FullMethodName     = "/clouditor.assessment.v1.Assessment/AssessEvidences"
+	Assessment_AssessStreamEvidence_FullMethodName     = "/clouditor.assessment.v1.Assessment/AssessStreamEvidence"
 )
 
 // AssessmentClient is the client API for Assessment service.
@@ -65,7 +65,7 @@ type AssessmentClient interface {
 	AssessEvidence(ctx context.Context, in *AssessEvidenceRequest, opts ...grpc.CallOption) (*AssessEvidenceResponse, error)
 	// Assesses stream of evidences sent by the discovery and returns a response
 	// stream. Part of the public API. Not exposed as REST.
-	AssessEvidences(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[AssessEvidenceRequest, AssessEvidencesResponse], error)
+	AssessStreamEvidence(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[AssessEvidenceRequest, AssessEvidencesResponse], error)
 }
 
 type assessmentClient struct {
@@ -96,9 +96,9 @@ func (c *assessmentClient) AssessEvidence(ctx context.Context, in *AssessEvidenc
 	return out, nil
 }
 
-func (c *assessmentClient) AssessEvidences(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[AssessEvidenceRequest, AssessEvidencesResponse], error) {
+func (c *assessmentClient) AssessStreamEvidence(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[AssessEvidenceRequest, AssessEvidencesResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &Assessment_ServiceDesc.Streams[0], Assessment_AssessEvidences_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &Assessment_ServiceDesc.Streams[0], Assessment_AssessStreamEvidence_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +107,7 @@ func (c *assessmentClient) AssessEvidences(ctx context.Context, opts ...grpc.Cal
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type Assessment_AssessEvidencesClient = grpc.BidiStreamingClient[AssessEvidenceRequest, AssessEvidencesResponse]
+type Assessment_AssessStreamEvidenceClient = grpc.BidiStreamingClient[AssessEvidenceRequest, AssessEvidencesResponse]
 
 // AssessmentServer is the server API for Assessment service.
 // All implementations must embed UnimplementedAssessmentServer
@@ -124,7 +124,7 @@ type AssessmentServer interface {
 	AssessEvidence(context.Context, *AssessEvidenceRequest) (*AssessEvidenceResponse, error)
 	// Assesses stream of evidences sent by the discovery and returns a response
 	// stream. Part of the public API. Not exposed as REST.
-	AssessEvidences(grpc.BidiStreamingServer[AssessEvidenceRequest, AssessEvidencesResponse]) error
+	AssessStreamEvidence(grpc.BidiStreamingServer[AssessEvidenceRequest, AssessEvidencesResponse]) error
 	mustEmbedUnimplementedAssessmentServer()
 }
 
@@ -141,8 +141,8 @@ func (UnimplementedAssessmentServer) CalculateCompliance(context.Context, *Calcu
 func (UnimplementedAssessmentServer) AssessEvidence(context.Context, *AssessEvidenceRequest) (*AssessEvidenceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AssessEvidence not implemented")
 }
-func (UnimplementedAssessmentServer) AssessEvidences(grpc.BidiStreamingServer[AssessEvidenceRequest, AssessEvidencesResponse]) error {
-	return status.Errorf(codes.Unimplemented, "method AssessEvidences not implemented")
+func (UnimplementedAssessmentServer) AssessStreamEvidence(grpc.BidiStreamingServer[AssessEvidenceRequest, AssessEvidencesResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method AssessStreamEvidence not implemented")
 }
 func (UnimplementedAssessmentServer) mustEmbedUnimplementedAssessmentServer() {}
 func (UnimplementedAssessmentServer) testEmbeddedByValue()                    {}
@@ -201,12 +201,12 @@ func _Assessment_AssessEvidence_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Assessment_AssessEvidences_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(AssessmentServer).AssessEvidences(&grpc.GenericServerStream[AssessEvidenceRequest, AssessEvidencesResponse]{ServerStream: stream})
+func _Assessment_AssessStreamEvidence_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(AssessmentServer).AssessStreamEvidence(&grpc.GenericServerStream[AssessEvidenceRequest, AssessEvidencesResponse]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type Assessment_AssessEvidencesServer = grpc.BidiStreamingServer[AssessEvidenceRequest, AssessEvidencesResponse]
+type Assessment_AssessStreamEvidenceServer = grpc.BidiStreamingServer[AssessEvidenceRequest, AssessEvidencesResponse]
 
 // Assessment_ServiceDesc is the grpc.ServiceDesc for Assessment service.
 // It's only intended for direct use with grpc.RegisterService,
@@ -226,8 +226,8 @@ var Assessment_ServiceDesc = grpc.ServiceDesc{
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "AssessEvidences",
-			Handler:       _Assessment_AssessEvidences_Handler,
+			StreamName:    "AssessStreamEvidence",
+			Handler:       _Assessment_AssessStreamEvidence_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},
