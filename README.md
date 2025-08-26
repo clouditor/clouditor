@@ -1,4 +1,4 @@
-<img src="images/claudi.png" width="60%"/>
+<img src="images/claudi.png" width="60%" alt="Clouditor logo"/>
 
 # Clouditor Community Edition
 
@@ -11,7 +11,7 @@
 > [!NOTE]
 > Note: We are currently preparing a `v2` release of Clouditor, which will be somewhat incompatible with regards to storage to `v1`. The APIs will remain largely the same, but will be improved and cleaned. We will regularly release pre-release `v2` versions, but do not have a concrete time-frame for a stable `v2` yet.
 >
-> If you are looking for a stable version, please use the [v1.10.1](https://github.com/clouditor/clouditor/releases/tag/v10.10.1) release.
+> If you are looking for a stable version, please use the [v1.10.1](https://github.com/clouditor/clouditor/releases/tag/v1.10.1) release.
 
 ## Introduction
 
@@ -26,23 +26,23 @@ Key features are:
 - automated compliance rules for AWS and MS Azure
 - granular report of detected non-compliant configurations
 - quick and adaptive integration with existing service through automated service discovery
-- descriptive development of custom rules using [Cloud Compliance Language (CCL)](clouditor-engine-azure/src/main/resources/rules/azure/compute/vm-data-encryption.md) to support individual evaluation scenarios
+- curated security metrics integrated from the external Security Metrics repository
 - integration of custom security requirements and mapping to rules
 
-## QuickStart with UI
+## Quick start with UI
 
-In order to just build and run the Clouditor, without generating the protobuf file, one can use the `run-engine-with-ui.sh` script. This still requires Go and Node.js to be installed. For example, to run the engine in-memory with the Azure provider the following command can be used:
+To quickly build and run Clouditor without generating protobuf files, you can use the `run-engine-with-ui.sh` script. This still requires Go and Node.js to be installed. For example, to run the engine in memory with the Azure provider, use:
 
 ```
 ./run-engine-with-ui.sh --discovery-provider=azure
 ```
 
-This will start the all-in-on-engine with all discoverers enabled and launches the UI on http://localhost:3000. The
-default credentials are clouditor/clouditor.
+This starts the all-in-one engine with all discoverers enabled and launches the UI at http://localhost:3000.
+The default credentials are clouditor/clouditor.
 
-### Using the extra discoverers (e.g. CSAF)
+### Using the extra discoverers (e.g., CSAF)
 
-Next to the regular cloud provider discoverers, Clouditor also comes with a a set of extra discoverers for dedicated protocols, for example CSAF. The CSAF discoverer allows the conformance check of a CSAF (trusted) provider.
+In addition to the regular cloud provider discoverers, Clouditor also includes a set of extra discoverers for dedicated protocols, for example CSAF. The CSAF discoverer allows the conformance check of a CSAF (trusted) provider.
 
 It can be used with the following command:
 
@@ -50,7 +50,7 @@ It can be used with the following command:
 ./run-engine-with-ui.sh --discovery-provider=csaf --discovery-csaf-domain=clouditor.io
 ```
 
-The domain `clouditor.io` can be replace with your actual domain.
+The domain `clouditor.io` can be replaced with your actual domain.
 
 ## Build
 
@@ -68,15 +68,71 @@ go generate ./...
 go build -o ./engine cmd/engine/engine.go
 ```
 
+## Security metrics integration
+
+Clouditor integrates security metrics from an external, community-driven repository to decouple metric content from the engine and enable independent versioning and collaboration.
+
+- Repository: https://github.com/Cybersecurity-Certification-Hub/security-metrics
+- Integration method: Git submodule located at `policies/security-metrics`
+- Default load path: Clouditor loads metric definitions and implementations from `./policies/security-metrics/metrics` at startup.
+
+Getting the metrics after cloning this repository:
+
+```bash
+# Initialize submodules (only needed once per fresh clone)
+git submodule update --init --recursive
+```
+
+Updating to the latest metrics:
+
+```bash
+# Update the security-metrics submodule to the latest commit on its default branch
+git submodule update --remote policies/security-metrics
+# Commit the updated submodule pointer in this repo
+git add policies/security-metrics && git commit -m "chore: bump security-metrics"
+```
+
+Notes:
+- Submodules pin an exact commit. Updating the metrics in Clouditor requires committing the new submodule reference.
+- The metrics follow a defined schema (see `policies/security-metrics/metric_schema.json`) and are implemented using OPA/Rego files and metadata.
+- Custom or experimental metrics can be developed by contributing to the external repository above.
+
+### About the Security Metrics repository
+
+The external security-metrics repository collects reusable security metrics for continuous certification. It is organized as follows:
+
+- api: preliminary place to define the metric data format programmatically (e.g., via protobuf)
+- catalogs: definitions of certification catalogs/benchmarks and mappings from catalog requirements to metrics
+- metrics: the actual metrics, grouped by domain; each metric folder typically contains:
+  - metric.yml: metadata and configuration for the metric (see structure below)
+  - metric.rego: the Rego implementation evaluable by OPA
+- ontology: the domain ontology (possibly multiple versions) that underpins metric descriptions (resources, security properties, etc.)
+
+Metric data structure
+
+- Metadata (static)
+  - id: human-readable unique identifier
+  - description: must reference ontology terms and config parameters in brackets, e.g., [BlockStorage], [p1:AtRestEncryption]
+  - version: metric version
+  - comments: reasoning, applicability, and examples
+- Configuration (context-dependent)
+  - interval: integer hours for evidence collection (e.g., 24)
+  - operator: one of the basic operators (==, >=, <, ...)
+  - targetValue: the value to compare against (e.g., true for AtRestEncryptionEnabled)
+
+Ontology overview
+
+The ontology harmonizes evidence gathering and assessment across providers and environments. It includes taxonomies for resources (e.g., Compute, Networking; VMs, containers, functions, etc.) and security properties organized by STRIDE categories (Authentication, Integrity, Non-repudiation, Confidentiality, Availability, Authorization). This harmonization enables provider-agnostic metrics and reusable mappings between catalog requirements and ontological concepts. The ontology is authored in Protégé and published on WebProtégé.
+
 ## Usage
 
-To test, start the engine with an in-memory DB
+To test, start the engine with an in-memory database:
 
 ```
 ./engine --db-in-memory
 ```
 
-Alternatively, be sure to start a postgre DB:
+Alternatively, start a PostgreSQL database:
 
 ```
 docker run -e POSTGRES_HOST_AUTH_METHOD=trust -d -p 5432:5432 postgres
@@ -85,7 +141,7 @@ docker run -e POSTGRES_HOST_AUTH_METHOD=trust -d -p 5432:5432 postgres
 
 ## Clouditor CLI
 
-The Go components contain a basic CLI command called `cl`. It can be installed using `go install cmd/cli/cl.go`. Make sure that your `~/go/bin` is within your $PATH. Afterwards the binary can be used to connect to a Clouditor instance.
+The Go components contain a basic CLI command called `cl`. It can be installed using `go install ./cmd/cli`. Make sure that your `~/go/bin` is within your `$PATH`. Afterwards, the binary can be used to connect to a Clouditor instance.
 
 ```bash
 cl login <host:grpcPort>
@@ -104,6 +160,7 @@ cl service discovery experimental update-resource \
 '{"id": "github.com/org/app", "targetOfEvaluationId": "00000000-0000-0000-0000-000000000000", "resourceType": "CodeRepository,Resource", "properties":{"id:": "github.com/org/app", "name": "github.com/org/app", "parent": "MyApplication", "url": "github.com/org/app"}}'
 ```
 
-### Command Completion
+### Command completion
 
 The CLI offers command completion for most shells using the `cl completion` command. Specific instructions to install the shell completions can be accessed using `cl completion --help`.
+
