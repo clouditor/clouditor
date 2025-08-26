@@ -1363,7 +1363,7 @@ func TestService_ListSupportedResourceTypes(t *testing.T) {
 func TestService_ListResources(t *testing.T) {
 	type fields struct {
 		storage           persistence.Storage
-		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
+		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessStreamEvidenceClient, *assessment.AssessEvidenceRequest]
 		assessment        *api.RPCConnection[assessment.AssessmentClient]
 		channelEvidence   chan *evidence.Evidence
 		evidenceHooks     []evidence.EvidenceHookFunc
