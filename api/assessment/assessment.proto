@@ -57,7 +57,7 @@ service Assessment {
 
   // Assesses stream of evidences sent by the discovery and returns a response
   // stream. Part of the public API. Not exposed as REST.
-  rpc AssessStreamEvidence(stream AssessEvidenceRequest) returns (stream AssessEvidencesResponse) {}
+  rpc AssessEvidenceStream(stream AssessEvidenceRequest) returns (stream AssessEvidencesResponse) {}
 }
 
 message ConfigureAssessmentRequest {}

@@ -294,8 +294,8 @@ func TestService_StoreEvidence(t *testing.T) {
 			// Add assessment stream if needed
 			if tt.args.addStream {
 				svc.assessment = &api.RPCConnection[assessment.AssessmentClient]{Target: "mock"}
-				svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessStreamEvidenceClient, *assessment.AssessEvidenceRequest]()
-				_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessStreamEvidenceClient, err error) {
+				svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest]()
+				_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidenceStreamClient, err error) {
 					return mockStream, nil
 				})
 			}
@@ -678,8 +678,8 @@ func TestService_EvidenceHook(t *testing.T) {
 	// create service
 	svc := NewService()
 	svc.assessment = &api.RPCConnection[assessment.AssessmentClient]{Target: "mock"}
-	svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessStreamEvidenceClient, *assessment.AssessEvidenceRequest]()
-	_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessStreamEvidenceClient, err error) {
+	svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest]()
+	_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidenceStreamClient, err error) {
 		return mockStream, nil
 	})
 	svc.RegisterEvidenceHook(firstHookFunction)

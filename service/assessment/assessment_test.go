@@ -623,12 +623,12 @@ func TestService_AssessStreamEvidence(t *testing.T) {
 			}
 
 			if tt.args.streamToServer != nil {
-    err = s.AssessStreamEvidence(tt.args.streamToServer)
+   	err = s.AssessEvidenceStream(tt.args.streamToServer)
 				responseFromServer = <-tt.args.streamToServer.SentFromServer
 			} else if tt.args.streamToClientWithSendErr != nil {
-    err = s.AssessStreamEvidence(tt.args.streamToClientWithSendErr)
+		err = s.AssessEvidenceStream(tt.args.streamToClientWithSendErr)
 			} else if tt.args.streamToServerWithRecvErr != nil {
-    err = s.AssessStreamEvidence(tt.args.streamToServerWithRecvErr)
+		err = s.AssessEvidenceStream(tt.args.streamToServerWithRecvErr)
 			}
 
 			tt.wantErr(t, err)

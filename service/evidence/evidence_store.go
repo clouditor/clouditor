@@ -77,7 +77,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 type Service struct {
 	storage persistence.Storage
 
- assessmentStreams *api.StreamsOf[assessment.Assessment_AssessStreamEvidenceClient, *assessment.AssessEvidenceRequest]
+ assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest]
 	assessment        *api.RPCConnection[assessment.AssessmentClient]
 
 	// channel that is used to send evidences from the StoreEvidence method to the worker threat to process the evidence
@@ -131,7 +131,7 @@ func NewService(opts ...service.Option[*Service]) (svc *Service) {
 		err error
 	)
 	svc = &Service{
-  assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessStreamEvidenceClient, *assessment.AssessEvidenceRequest](log)),
+  assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest](log)),
 		assessment:        api.NewRPCConnection(config.DefaultAssessmentURL, assessment.NewAssessmentClient),
 		channelEvidence:   make(chan *evidence.Evidence, 1000),
 	}
@@ -179,7 +179,7 @@ func (svc *Service) Shutdown() {
 
 // initAssessmentStream initializes the stream that is used to send evidences to the assessment service.
 // If configured, it uses the Authorizer of the evidence store service to authenticate requests to the assessment.
-func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (stream assessment.Assessment_AssessStreamEvidenceClient, err error) {
+func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (stream assessment.Assessment_AssessEvidenceStreamClient, err error) {
 	log.Infof("Trying to establish a connection to assessment service @ %v", target)
 
 	// Make sure, that we re-connect
@@ -187,12 +187,12 @@ func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (s
 
 	// Set up the stream and store it in our service struct, so we can access it later to actually
 	// send the evidence data
- stream, err = svc.assessment.Client.AssessStreamEvidence(context.Background())
+ stream, err = svc.assessment.Client.AssessEvidenceStream(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("could not set up stream to assessment for assessing evidence: %w", err)
 	}
 
- log.Infof("Stream to AssessStreamEvidence established")
+ log.Infof("Stream to AssessEvidenceStream established")
 
 	return
 }

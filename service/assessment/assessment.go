@@ -313,8 +313,8 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 	return res, nil
 }
 
-// AssessStreamEvidence is a method implementation of the assessment interface: It assesses multiple evidences (stream) and responds with a stream.
-func (svc *Service) AssessStreamEvidence(stream assessment.Assessment_AssessStreamEvidenceServer) (err error) {
+// AssessEvidenceStream is a method implementation of the assessment interface: It assesses multiple evidences (stream) and responds with a stream.
+func (svc *Service) AssessEvidenceStream(stream assessment.Assessment_AssessEvidenceStreamServer) (err error) {
 	var (
 		req *assessment.AssessEvidenceRequest
 		res *assessment.AssessEvidencesResponse
