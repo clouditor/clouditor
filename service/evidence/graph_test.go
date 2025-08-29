@@ -47,7 +47,7 @@ import (
 
 func TestService_ListGraphEdges(t *testing.T) {
 	type fields struct {
-		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessStreamEvidenceClient, *assessment.AssessEvidenceRequest]
+		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest]
 		assessment        *api.RPCConnection[assessment.AssessmentClient]
 		storage           persistence.Storage
 		authz             service.AuthorizationStrategy
@@ -188,7 +188,7 @@ func panicToDiscoveryResource(t *testing.T, resource ontology.IsResource, ctID, 
 
 func TestService_UpdateResource(t *testing.T) {
 	type fields struct {
-		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessStreamEvidenceClient, *assessment.AssessEvidenceRequest]
+		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest]
 		assessment        *api.RPCConnection[assessment.AssessmentClient]
 		storage           persistence.Storage
 		authz             service.AuthorizationStrategy
