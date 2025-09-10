@@ -214,7 +214,7 @@ require (
 	cel.dev/expr v0.24.0 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.0.2 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
-	github.com/google/addlicense v1.1.0
+	github.com/google/addlicense v1.2.0
 	github.com/lyft/protoc-gen-star v0.6.1 // indirect
 	github.com/oxisto/owl2proto v0.2.2
 	github.com/srikrsna/protoc-gen-gotag v1.0.0
