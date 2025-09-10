@@ -1060,7 +1060,7 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 					_ = s.Create(&assessment.MetricConfiguration{
 						MetricId:             testdata.MockMetricID1,
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-						Operator:             "==",
+						Operator:             string(assessment.OperatorEqual),
 						TargetValue:          &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
 					})
 				}),
@@ -1075,14 +1075,14 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 			wantResponse: &assessment.MetricConfiguration{
 				MetricId:             testdata.MockMetricID1,
 				TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-				Operator:             "==",
+				Operator:             string(assessment.OperatorEqual),
 				TargetValue:          &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
 			},
 			want: func(t *testing.T, got *assessment.MetricConfiguration) bool {
 				wantResp := &assessment.MetricConfiguration{
 					MetricId:             testdata.MockMetricID1,
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-					Operator:             "==",
+					Operator:             string(assessment.OperatorEqual),
 					TargetValue:          &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
 				}
 
