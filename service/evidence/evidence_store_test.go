@@ -194,7 +194,27 @@ func TestService_StoreEvidence(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: storage error (database error)",
+			name: "Error: evidence already exists in storage",
+			args: args{
+				in0: context.TODO(),
+				req: &evidence.StoreEvidenceRequest{
+					Evidence: evidencetest.MockEvidence1,
+				},
+			},
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true, testdata.MockTargetOfEvaluationID1),
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&evidencetest.MockEvidence1))
+				}),
+			},
+			wantRes: assert.Nil[*evidence.StoreEvidenceResponse],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.AlreadyExists, status.Code(err))
+				return assert.ErrorContains(t, err, persistence.ErrEntryAlreadyExists.Error())
+			},
+		},
+		{
+			name: "Error: store evidence storage error (database error)",
 			args: args{
 				in0: context.TODO(),
 				req: &evidence.StoreEvidenceRequest{
@@ -204,6 +224,49 @@ func TestService_StoreEvidence(t *testing.T) {
 			fields: fields{
 				authz:   servicetest.NewAuthorizationStrategy(true, testdata.MockTargetOfEvaluationID1),
 				storage: &testutil.StorageWithError{CreateErr: gormio.ErrInvalidDB},
+			},
+			wantRes: assert.Nil[*evidence.StoreEvidenceResponse],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, persistence.ErrDatabase.Error())
+			},
+			want: func(t *testing.T, s *Service) bool {
+				return assert.NotEmpty(t, s)
+			},
+		},
+		{
+			name: "Error: convertion error (proto message to ontology.IsResource)",
+			args: args{
+				in0: context.TODO(),
+				req: &evidence.StoreEvidenceRequest{
+					Evidence: evidencetest.MockEvidence1,
+				},
+			},
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true, testdata.MockTargetOfEvaluationID1),
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+				}),
+			},
+			wantRes: assert.Nil[*evidence.StoreEvidenceResponse],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, "could not convert resource")
+			},
+			want: func(t *testing.T, s *Service) bool {
+				return assert.NotEmpty(t, s)
+			},
+		},
+		{
+			name: "Error: store resource storage error (database error)",
+			args: args{
+				in0: context.TODO(),
+				req: &evidence.StoreEvidenceRequest{
+					Evidence: evidencetest.MockEvidence3,
+				},
+			},
+			fields: fields{
+				authz:   servicetest.NewAuthorizationStrategy(true, testdata.MockTargetOfEvaluationID1),
+				storage: &testutil.StorageWithError{SaveErr: gormio.ErrInvalidDB},
 			},
 			wantRes: assert.Nil[*evidence.StoreEvidenceResponse],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
