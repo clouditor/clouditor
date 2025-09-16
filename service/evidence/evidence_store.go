@@ -224,12 +224,14 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 	r, err := evidence.ToEvidenceResource(req.Evidence.GetOntologyResource(), req.GetTargetOfEvaluationId(), req.Evidence.GetToolId())
 	if err != nil {
 		log.Errorf("Could not convert resource: %v", err)
+		return nil, status.Errorf(codes.Internal, "could not convert resource: %v", err)
 	}
 
 	// Persist the latest state of the resource
 	err = svc.storage.Save(&r, "id = ?", r.Id)
 	if err != nil {
 		log.Errorf("Could not save resource with ID '%s' to storage: %v", r.Id, err)
+		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
 
 	go svc.informHooks(ctx, req.Evidence, nil)
