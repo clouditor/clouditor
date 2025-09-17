@@ -1322,9 +1322,11 @@ func TestService_handleEvidence(t *testing.T) {
 			},
 		},
 		{
-			name: "Happy path",
+			name: "Happy path: do not trigger new assessment",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Save(&evidencetest.MockEvidence1))
+					assert.NoError(t, s.Save(&evidencetest.MockResourceFromEvidence1))
 				}),
 				assessment: &api.RPCConnection[assessment.AssessmentClient]{
 					Target: "mock",
