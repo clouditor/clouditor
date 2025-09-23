@@ -296,6 +296,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
 		if err != nil {
 			return err
 		}
+		return nil
 	} else if err != nil {
 		return persistence.ErrDatabase
 	}

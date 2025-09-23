@@ -1441,55 +1441,118 @@ func TestService_handleEvidence(t *testing.T) {
 		args    args
 		wantErr assert.ErrorAssertionFunc
 	}{
-		// {
-		// 	name: "Error getting stream",
-		// 	fields: fields{
-		// 		storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-		// 		}),
-		// 		assessment: &api.RPCConnection[assessment.AssessmentClient]{
-		// 			Client: &mockAssessmentClient{failStream: true},
-		// 		},
-		// 	},
-		// 	args: args{
-		// 		addStream: true,
-		// 		evidence:  evidencetest.MockEvidence1,
-		// 		target:    "error",
-		// 	},
-		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		// 		return assert.ErrorContains(t, err, "could not get stream to assessment service")
-		// 	},
-		// },
 		{
-			name: "Happy path: do not trigger new assessment, only update available assessment result history",
+			name: "error sending evidence to assessment if resource does not exist in database",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {}),
+				// assessment: &api.RPCConnection[assessment.AssessmentClient]{
+				// 	Target: "mock failure",
+				// },
+				assessment: &api.RPCConnection[assessment.AssessmentClient]{
+					Client: &mockAssessmentClient{failStream: true},
+					Target: "mock-failure",
+				},
+			},
+			args: args{
+				evidence:            evidencetest.MockEvidence1,
+				target:              "mock-target",
+				addAssessmentStream: true,
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not get stream to assessment service")
+			},
+		},
+		{
+			name: "database error on evidence lookup",
+			fields: fields{
+				storage: &testutil.StorageWithError{GetErr: gormio.ErrInvalidDB},
+			},
+			args: args{
+				evidence: evidencetest.MockEvidence1,
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, persistence.ErrDatabase.Error())
+			},
+		},
+		{
+			name: "error sending evidence to UpdateOrAddAssessmentResultHistory endpoint",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Save(evidencetest.MockEvidence1))
 					assert.NoError(t, s.Save(evidence.ToEvidenceResource(evidencetest.MockEvidence1.GetOntologyResource(), evidencetest.MockEvidence1.GetTargetOfEvaluationId(), evidencetest.MockEvidence1.GetToolId())))
 				}),
+				orchestrator: &api.RPCConnection[orchestrator.OrchestratorClient]{
+					Client: &mockOrchestratorClient{
+						mockUpdateOrAddAssessmentResultHistory: func(ctx context.Context, req *orchestrator.UpdateOrAddAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error) {
+							// Simulate an error response
+							return nil, fmt.Errorf("mock error from UpdateOrAddAssessmentResultHistory")
+						},
+					},
+				},
 			},
 			args: args{
 				addAssessmentStream: false,
 				evidence:            evidencetest.MockEvidence1,
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not update assessment result history")
+			},
+		},
+		{
+			name: "error sending evidence to assessment if resource properties differ in database",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Save(evidencetest.MockEvidence1))
+					assert.NoError(t, s.Save(evidence.ToEvidenceResource(evidencetest.MockEvidence1.GetOntologyResource(), evidencetest.MockEvidence1.GetTargetOfEvaluationId(), evidencetest.MockEvidence1.GetToolId())))
+				}),
+				assessment: &api.RPCConnection[assessment.AssessmentClient]{
+					Client: &mockAssessmentClient{failStream: true},
+					Target: "mock-failure",
+				},
+			},
+			args: args{
+				evidence: &evidence.Evidence{
+					Id:                   testdata.MockEvidenceID1,
+					Timestamp:            timestamppb.Now(),
+					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+					ToolId:               testdata.MockEvidenceToolID1,
+					Resource: &ontology.Resource{
+						Type: &ontology.Resource_VirtualMachine{
+							VirtualMachine: &ontology.VirtualMachine{
+								Id:           testdata.MockVirtualMachineID1,
+								Name:         testdata.MockVirtualMachineName1,
+								CreationTime: timestamppb.Now(),
+								Description:  "changed description",
+								BlockStorageIds: []string{
+									testdata.MockBlockStorageID1,
+								},
+							},
+						},
+					},
+				},
+				target:              "mock-target",
+				addAssessmentStream: true,
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not get stream to assessment service")
+			},
+		},
+		{
+			name: "Happy path: trigger new assessment, resource not available",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+				}),
+				assessment: &api.RPCConnection[assessment.AssessmentClient]{
+					Target: "mock",
+				},
+			},
+			args: args{
+				evidence:            evidencetest.MockEvidence1,
 				target:              "mock",
+				addAssessmentStream: true,
 			},
 			wantErr: assert.NoError,
 		},
-		// {
-		// 	name: "Happy path: trigger new assessment",
-		// 	fields: fields{
-		// 		storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-		// 		}),
-		// 		assessment: &api.RPCConnection[assessment.AssessmentClient]{
-		// 			Target: "mock",
-		// 		},
-		// 	},
-		// 	args: args{
-		// 		evidence:            evidencetest.MockEvidence1,
-		// 		target:              "mock",
-		// 		addAssessmentStream: true,
-		// 	},
-		// 	wantErr: assert.NoError,
-		// },
 		{
 			name: "Happy path: do not trigger new assessment, only update available assessment result history",
 			fields: fields{
@@ -1510,6 +1573,42 @@ func TestService_handleEvidence(t *testing.T) {
 				addAssessmentStream: false,
 				evidence:            evidencetest.MockEvidence1,
 				target:              "mock",
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: trigger new assessment, field resource properties differ",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Save(evidencetest.MockEvidence1))
+					assert.NoError(t, s.Save(evidence.ToEvidenceResource(evidencetest.MockEvidence1.GetOntologyResource(), evidencetest.MockEvidence1.GetTargetOfEvaluationId(), evidencetest.MockEvidence1.GetToolId())))
+				}),
+				assessment: &api.RPCConnection[assessment.AssessmentClient]{
+					Target: "mock",
+				},
+			},
+			args: args{
+				addAssessmentStream: true,
+				evidence: &evidence.Evidence{
+					Id:                   testdata.MockEvidenceID1,
+					Timestamp:            timestamppb.Now(),
+					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+					ToolId:               testdata.MockEvidenceToolID1,
+					Resource: &ontology.Resource{ // only the description differs
+						Type: &ontology.Resource_VirtualMachine{
+							VirtualMachine: &ontology.VirtualMachine{
+								Id:           testdata.MockVirtualMachineID1,
+								Name:         testdata.MockVirtualMachineName1,
+								CreationTime: timestamppb.Now(),
+								Description:  "Changed description",
+								BlockStorageIds: []string{
+									testdata.MockBlockStorageID1,
+								},
+							},
+						},
+					},
+				},
+				target: "mock",
 			},
 			wantErr: assert.NoError,
 		},
