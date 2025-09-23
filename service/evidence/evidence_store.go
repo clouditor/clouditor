@@ -267,7 +267,6 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
 	}
 
 	// Create query to check if resource already exists in storage.
-	// Note that properties will be validated later, as they are of type *anypb.Any.
 	// Add resource ID to query
 	query = append(query, "id = ?")
 	args = append(args, resource.GetId())
@@ -276,20 +275,26 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
 	query = append(query, "target_of_evaluation_id = ?")
 	args = append(args, ev.GetTargetOfEvaluationId())
 
-	// Add resource type to query
-	query = append(query, "resource_type = ?")
-	args = append(args, resource.GetResourceType())
-
 	// Add tool ID to query
 	query = append(query, "tool_id = ?")
 	args = append(args, resource.GetToolId())
 
-	// Join query with AND and prepend the query
+	// Add resource type to query
+	query = append(query, "resource_type = ?")
+	args = append(args, resource.GetResourceType())
+
+	// Join query with AND and prepend the query string to the args slice
 	args = append([]any{strings.Join(query, " AND ")}, args...)
 
+	// Check if resource with same content is already present in the database
 	err = svc.storage.Get(dbRes, args...)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		log.Info("Resource with same content not available in storage. Trigger new assessment for evidence.")
+		log.Debugf("Resource with same content not available in storage. Trigger new assessment for evidence with ID '%s'.", ev.GetId())
+
+		err := svc.sendEvidenceToAssessment(ev)
+		if err != nil {
+			return err
+		}
 	} else if err != nil {
 		return persistence.ErrDatabase
 	}
@@ -311,8 +316,8 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
 	// If they are equal, we do not need to trigger a new assessment, but just update the history field of the corresponding assessment results.
 	// If they are not equal, we need to trigger a new assessment for the evidence.
 	if bytes.Equal(propEvidenceResourceBytes, propDBResourceBytes) {
-		// Send evidence to orchestrator service an update the history field of the corresponding assessment results
-		log.Debug("Resource with same content already available in storage. No need to trigger new assessment, just update the history field of the corresponding assessment results.")
+		// Send evidence to orchestrator service and update the history field of the corresponding assessment result
+		log.Debugf("Resource with same content already available in storage for Evidence with ID '%s'. No need to trigger new assessment, just update the history field of the corresponding assessment result.", ev.GetId())
 
 		_, err = svc.orchestrator.Client.UpdateOrAddAssessmentResultHistory(context.Background(), &orchestrator.UpdateOrAddAssessmentResultHistoryRequest{
 			Evidence:           ev,
@@ -325,18 +330,27 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
 		}
 	} else {
 		// Send evidence to assessment service
-		log.Debug("Resource with same content not available in DB, field 'properties' differ. Trigger new assessment for evidence.")
+		log.Debugf("Resource with same content not available in DB (field 'properties' differ). Trigger new assessment for evidence with ID '%s'.", ev.GetId())
 
-		// Get Assessment stream
-		channelAssessment, err := svc.assessmentStreams.GetStream(svc.assessment.Target, "Assessment", svc.initAssessmentStream, svc.assessment.Opts...)
+		err := svc.sendEvidenceToAssessment(ev)
 		if err != nil {
-			err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessment.Target, err)
-			log.Error(err)
 			return err
 		}
-
-		channelAssessment.Send(&assessment.AssessEvidenceRequest{Evidence: ev})
 	}
+
+	return nil
+}
+
+func (svc *Service) sendEvidenceToAssessment(ev *evidence.Evidence) error {
+	// Get Assessment stream
+	channelAssessment, err := svc.assessmentStreams.GetStream(svc.assessment.Target, "Assessment", svc.initAssessmentStream, svc.assessment.Opts...)
+	if err != nil {
+		err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessment.Target, err)
+		log.Error(err)
+		return err
+	}
+
+	channelAssessment.Send(&assessment.AssessEvidenceRequest{Evidence: ev})
 
 	return nil
 }
