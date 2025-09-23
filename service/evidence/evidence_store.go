@@ -251,6 +251,7 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 	return res, nil
 }
 
+// handleEvidence handles the evidence before sending further. It checks if the resource has changed since the last evidence. If the resource has changed, it sends the evidence to the assessment service, otherwise it just updates the history field of the corresponding assessment result.
 func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
 	var (
 		query []string
