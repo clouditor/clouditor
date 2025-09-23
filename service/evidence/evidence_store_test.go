@@ -1421,7 +1421,6 @@ func (m *mockOrchestratorClient) GetRuntimeInfo(ctx context.Context, in *cl_runt
 }
 
 func TestService_handleEvidence(t *testing.T) {
-	// mock assessment stream
 	mockStream := &mockAssessmentStream{connectionEstablished: true, expected: 2}
 	mockStream.Prepare()
 
@@ -1434,8 +1433,7 @@ func TestService_handleEvidence(t *testing.T) {
 	type args struct {
 		evidence            *evidence.Evidence
 		addAssessmentStream bool
-		// addOrchestratorConnection bool
-		target string
+		target              string
 	}
 	tests := []struct {
 		name    string
@@ -1462,15 +1460,43 @@ func TestService_handleEvidence(t *testing.T) {
 		// 	},
 		// },
 		{
-			name: "Happy path: do not trigger new assessment",
+			name: "Happy path: do not trigger new assessment, only update available assessment result history",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Save(&evidencetest.MockEvidence1))
-					assert.NoError(t, s.Save(&evidencetest.MockResourceFromEvidence1))
+					assert.NoError(t, s.Save(evidencetest.MockEvidence1))
+					assert.NoError(t, s.Save(evidence.ToEvidenceResource(evidencetest.MockEvidence1.GetOntologyResource(), evidencetest.MockEvidence1.GetTargetOfEvaluationId(), evidencetest.MockEvidence1.GetToolId())))
 				}),
-				assessment: &api.RPCConnection[assessment.AssessmentClient]{
-					Target: "mock",
-				},
+			},
+			args: args{
+				addAssessmentStream: false,
+				evidence:            evidencetest.MockEvidence1,
+				target:              "mock",
+			},
+			wantErr: assert.NoError,
+		},
+		// {
+		// 	name: "Happy path: trigger new assessment",
+		// 	fields: fields{
+		// 		storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+		// 		}),
+		// 		assessment: &api.RPCConnection[assessment.AssessmentClient]{
+		// 			Target: "mock",
+		// 		},
+		// 	},
+		// 	args: args{
+		// 		evidence:            evidencetest.MockEvidence1,
+		// 		target:              "mock",
+		// 		addAssessmentStream: true,
+		// 	},
+		// 	wantErr: assert.NoError,
+		// },
+		{
+			name: "Happy path: do not trigger new assessment, only update available assessment result history",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Save(evidencetest.MockEvidence1))
+					assert.NoError(t, s.Save(evidence.ToEvidenceResource(evidencetest.MockEvidence1.GetOntologyResource(), evidencetest.MockEvidence1.GetTargetOfEvaluationId(), evidencetest.MockEvidence1.GetToolId())))
+				}),
 				orchestrator: &api.RPCConnection[orchestrator.OrchestratorClient]{
 					Client: &mockOrchestratorClient{
 						mockUpdateOrAddAssessmentResultHistory: func(ctx context.Context, req *orchestrator.UpdateOrAddAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error) {
@@ -1481,33 +1507,25 @@ func TestService_handleEvidence(t *testing.T) {
 				},
 			},
 			args: args{
-				evidence: evidencetest.MockEvidence1,
-				target:   "mock",
+				addAssessmentStream: false,
+				evidence:            evidencetest.MockEvidence1,
+				target:              "mock",
 			},
 			wantErr: assert.NoError,
 		},
-		// {
-		// 	name: "Happy path: trigger new assessment",
-		// 	fields: fields{
-		// 		storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-		// 			assert.NoError(t, s.Save(&evidencetest.MockEvidence1))
-		// 			assert.NoError(t, s.Save(&evidencetest.MockResourceFromEvidence1))
-		// 		}),
-		// 		assessment: &api.RPCConnection[assessment.AssessmentClient]{
-		// 			Target: "mock",
-		// 		},
-		// 	},
-		// 	args: args{
-		// 		addAssessmentStream: false,
-		// 		evidence:            evidencetest.MockEvidence1,
-		// 		target:              "mock",
-		// 	},
-		// 	wantErr: assert.NoError,
-		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc := NewService()
+			// svc := NewService()
+			svc := Service{
+				channelEvidence:   make(chan *evidence.Evidence, 10),
+				evidenceHooks:     []evidence.EvidenceHookFunc{},
+				storage:           tt.fields.storage,
+				authz:             tt.fields.authz,
+				assessment:        tt.fields.assessment,
+				orchestrator:      tt.fields.orchestrator,
+				assessmentStreams: nil,
+			}
 			svc.storage = tt.fields.storage
 			svc.authz = tt.fields.authz
 			svc.assessment = tt.fields.assessment
@@ -1720,6 +1738,58 @@ func TestService_ListResources(t *testing.T) {
 
 			tt.wantRes(t, gotRes)
 			tt.wantErr(t, err)
+		})
+	}
+}
+
+func TestService_sendEvidenceToAssessment(t *testing.T) {
+	type fields struct {
+		storage                          persistence.Storage
+		assessmentStreams                *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
+		assessment                       *api.RPCConnection[assessment.AssessmentClient]
+		channelEvidence                  chan *evidence.Evidence
+		evidenceHooks                    []evidence.EvidenceHookFunc
+		authz                            service.AuthorizationStrategy
+		UnimplementedEvidenceStoreServer evidence.UnimplementedEvidenceStoreServer
+	}
+	type args struct {
+		ev *evidence.Evidence
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "error getting assessment stream",
+			fields: fields{
+				assessment: &api.RPCConnection[assessment.AssessmentClient]{
+					Client: &mockAssessmentClient{failStream: true},
+				},
+				assessmentStreams: api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](),
+			},
+			args: args{
+				ev: evidencetest.MockEvidence1,
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not get stream to assessment service")
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				storage:           tt.fields.storage,
+				assessmentStreams: tt.fields.assessmentStreams,
+				assessment:        tt.fields.assessment,
+				channelEvidence:   tt.fields.channelEvidence,
+				evidenceHooks:     tt.fields.evidenceHooks,
+				authz:             tt.fields.authz,
+			}
+
+			gotErr := svc.sendEvidenceToAssessment(tt.args.ev)
+			tt.wantErr(t, gotErr)
 		})
 	}
 }
