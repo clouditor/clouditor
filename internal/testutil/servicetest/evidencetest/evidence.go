@@ -65,6 +65,20 @@ var (
 			},
 		},
 	}
+	MockEvidence3 = &evidence.Evidence{
+		Id:                   testdata.MockEvidenceID2,
+		Timestamp:            timestamppb.Now(),
+		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
+		ToolId:               testdata.MockEvidenceToolID2,
+		Resource: &ontology.Resource{
+			Type: &ontology.Resource_VirtualMachine{
+				VirtualMachine: &ontology.VirtualMachine{
+					Id:   testdata.MockVirtualMachineID1,
+					Name: testdata.MockVirtualMachineName1,
+				},
+			},
+		},
+	}
 	MockVirtualMachineResource1 = &evidence.Resource{
 		Id:                   testdata.MockVirtualMachineID1,
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
