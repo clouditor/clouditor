@@ -80,7 +80,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 type Service struct {
 	storage persistence.Storage
 
- assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest]
+	assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest]
 	assessment        *api.RPCConnection[assessment.AssessmentClient]
 
 	orchestrator *api.RPCConnection[orchestrator.OrchestratorClient]
@@ -136,7 +136,7 @@ func NewService(opts ...service.Option[*Service]) (svc *Service) {
 		err error
 	)
 	svc = &Service{
-  assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest](log)),
+		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest](log)),
 		assessment:        api.NewRPCConnection(config.DefaultAssessmentURL, assessment.NewAssessmentClient),
 		orchestrator:      api.NewRPCConnection(config.DefaultOrchestratorURL, orchestrator.NewOrchestratorClient),
 		channelEvidence:   make(chan *evidence.Evidence, 1000),
@@ -193,12 +193,12 @@ func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (s
 
 	// Set up the stream and store it in our service struct, so we can access it later to actually
 	// send the evidence data
- stream, err = svc.assessment.Client.AssessEvidenceStream(context.Background())
+	stream, err = svc.assessment.Client.AssessEvidenceStream(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("could not set up stream to assessment for assessing evidence: %w", err)
 	}
 
- log.Infof("Stream to AssessEvidenceStream established")
+	log.Infof("Stream to AssessEvidenceStream established")
 
 	return
 }
@@ -267,6 +267,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
 	resource, err := evidence.ToEvidenceResource(ev.GetOntologyResource(), ev.GetTargetOfEvaluationId(), ev.GetToolId())
 	if err != nil {
 		log.Errorf("Could not convert resource: %v", err)
+		return err
 	}
 
 	// Create query to check if resource already exists in storage.

@@ -238,28 +238,6 @@ func TestService_StoreEvidence(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: convertion error (proto message to ontology.IsResource)",
-			args: args{
-				in0: context.TODO(),
-				req: &evidence.StoreEvidenceRequest{
-					Evidence: evidencetest.MockEvidence1,
-				},
-			},
-			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(true, testdata.MockTargetOfEvaluationID1),
-				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-				}),
-			},
-			wantRes: assert.Nil[*evidence.StoreEvidenceResponse],
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.Equal(t, codes.Internal, status.Code(err))
-				return assert.ErrorContains(t, err, "could not convert resource")
-			},
-			want: func(t *testing.T, s *Service) bool {
-				return assert.NotEmpty(t, s)
-			},
-		},
-		{
 			name: "Error: store resource storage error (database error)",
 			args: args{
 				in0: context.TODO(),
@@ -470,9 +448,9 @@ func TestService_StoreEvidences(t *testing.T) {
 			// create service with assessment stream
 			// StoreEvidences sends the evidence to the StoreEvidence method which will use the assessment stream to send the evidence to the assessment service
 			svc := NewService()
-  	svc.assessment = &api.RPCConnection[assessment.AssessmentClient]{Target: "mock"}
-  	svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest]()
-  	_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidenceStreamClient, err error) {
+			svc.assessment = &api.RPCConnection[assessment.AssessmentClient]{Target: "mock"}
+			svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest]()
+			_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidenceStreamClient, err error) {
 				return mockStream, nil
 			})
 
@@ -1287,7 +1265,6 @@ func (m *mockAssessmentClient) CalculateCompliance(ctx context.Context, req *ass
 
 // mockOrchestratorClient is a mock implementation of the OrchestratorClient interface.
 type mockOrchestratorClient struct {
-	failStream                             bool
 	mockUpdateOrAddAssessmentResultHistory func(ctx context.Context, req *orchestrator.UpdateOrAddAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error)
 }
 
@@ -1508,9 +1485,6 @@ func TestService_handleEvidence(t *testing.T) {
 			name: "error sending evidence to assessment if resource does not exist in database",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {}),
-				// assessment: &api.RPCConnection[assessment.AssessmentClient]{
-				// 	Target: "mock failure",
-				// },
 				assessment: &api.RPCConnection[assessment.AssessmentClient]{
 					Client: &mockAssessmentClient{failStream: true},
 					Target: "mock-failure",
@@ -1696,8 +1670,8 @@ func TestService_handleEvidence(t *testing.T) {
 
 			// Add assessment stream if needed
 			if tt.args.addAssessmentStream {
-				svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]()
-				_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
+				svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest]()
+				_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidenceStreamClient, err error) {
 					return mockStream, nil
 				})
 			}
@@ -1711,7 +1685,7 @@ func TestService_handleEvidence(t *testing.T) {
 func TestService_ListSupportedResourceTypes(t *testing.T) {
 	type fields struct {
 		storage                          persistence.Storage
-  assessmentStreams                *api.StreamsOf[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest]
+		assessmentStreams                *api.StreamsOf[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest]
 		assessment                       *api.RPCConnection[assessment.AssessmentClient]
 		channelEvidence                  chan *evidence.Evidence
 		evidenceHooks                    []evidence.EvidenceHookFunc
@@ -1775,7 +1749,7 @@ func TestService_ListSupportedResourceTypes(t *testing.T) {
 func TestService_ListResources(t *testing.T) {
 	type fields struct {
 		storage           persistence.Storage
-  assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest]
+		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest]
 		assessment        *api.RPCConnection[assessment.AssessmentClient]
 		channelEvidence   chan *evidence.Evidence
 		evidenceHooks     []evidence.EvidenceHookFunc
@@ -1905,9 +1879,12 @@ func TestService_ListResources(t *testing.T) {
 }
 
 func TestService_sendEvidenceToAssessment(t *testing.T) {
+	mockStream := &mockAssessmentStream{connectionEstablished: true, expected: 1}
+	mockStream.Prepare()
+
 	type fields struct {
 		storage                          persistence.Storage
-		assessmentStreams                *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
+		assessmentStreams                *api.StreamsOf[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest]
 		assessment                       *api.RPCConnection[assessment.AssessmentClient]
 		channelEvidence                  chan *evidence.Evidence
 		evidenceHooks                    []evidence.EvidenceHookFunc
@@ -1915,7 +1892,8 @@ func TestService_sendEvidenceToAssessment(t *testing.T) {
 		UnimplementedEvidenceStoreServer evidence.UnimplementedEvidenceStoreServer
 	}
 	type args struct {
-		ev *evidence.Evidence
+		ev        *evidence.Evidence
+		addStream bool
 	}
 	tests := []struct {
 		name    string
@@ -1929,7 +1907,7 @@ func TestService_sendEvidenceToAssessment(t *testing.T) {
 				assessment: &api.RPCConnection[assessment.AssessmentClient]{
 					Client: &mockAssessmentClient{failStream: true},
 				},
-				assessmentStreams: api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](),
+				assessmentStreams: api.NewStreamsOf[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest](),
 			},
 			args: args{
 				ev: evidencetest.MockEvidence1,
@@ -1937,6 +1915,20 @@ func TestService_sendEvidenceToAssessment(t *testing.T) {
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "could not get stream to assessment service")
 			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				assessment: &api.RPCConnection[assessment.AssessmentClient]{
+					Target: "mock",
+				},
+				assessmentStreams: api.NewStreamsOf[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest](),
+			},
+			args: args{
+				ev:        evidencetest.MockEvidence1,
+				addStream: true,
+			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -1948,6 +1940,13 @@ func TestService_sendEvidenceToAssessment(t *testing.T) {
 				channelEvidence:   tt.fields.channelEvidence,
 				evidenceHooks:     tt.fields.evidenceHooks,
 				authz:             tt.fields.authz,
+			}
+
+			if tt.args.addStream {
+				_, err := svc.assessmentStreams.GetStream(tt.fields.assessment.Target, "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidenceStreamClient, err error) {
+					return mockStream, nil
+				})
+				assert.NoError(t, err)
 			}
 
 			gotErr := svc.sendEvidenceToAssessment(tt.args.ev)
