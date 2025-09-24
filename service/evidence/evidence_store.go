@@ -324,9 +324,9 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
 		// Send evidence to orchestrator service and update the history field of the corresponding assessment result
 		log.Debugf("Resource with same content already available in storage for Evidence with ID '%s'. No need to trigger new assessment, just update the history field of the corresponding assessment result.", ev.GetId())
 
-		_, err = svc.orchestrator.Client.UpdateOrAddAssessmentResultHistory(context.Background(), &orchestrator.UpdateOrAddAssessmentResultHistoryRequest{
-			Evidence:           ev,
-			AssessedEvidenceId: dbRes.GetId(),
+		_, err = svc.orchestrator.Client.UpdateAssessmentResultHistory(context.Background(), &orchestrator.UpdateAssessmentResultHistoryRequest{
+			Evidence:   ev,
+			ResourceId: dbRes.GetId(),
 		})
 		if err != nil {
 			newError := fmt.Errorf("could not update assessment result history: %v", err)

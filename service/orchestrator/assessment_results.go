@@ -285,7 +285,7 @@ func (s *Service) informHook(ctx context.Context, result *assessment.AssessmentR
 }
 
 // UpdateOrAddAssessmentResultHistory is a method implementation of the assessment interface: The given evidence is an additional evidence for the same resource that has already been assessed. The ID of the new evidence will be included in the assessment results history. If no assessment result is available (e.g., due to database errors), a new assessment result will be generated.
-func (svc *Service) UpdateOrAddAssessmentResultHistory(ctx context.Context, req *orchestrator.UpdateOrAddAssessmentResultHistoryRequest) (res *assessment.AssessmentResult, err error) {
+func (svc *Service) UpdateAssessmentResultHistory(ctx context.Context, req *orchestrator.UpdateAssessmentResultHistoryRequest) (res *assessment.AssessmentResult, err error) {
 	var (
 		response *orchestrator.ListAssessmentResultsResponse
 	)
@@ -306,7 +306,7 @@ func (svc *Service) UpdateOrAddAssessmentResultHistory(ctx context.Context, req 
 	// Get existing assessment results for evidence ID that was already assessed
 	response, err = svc.ListAssessmentResults(ctx, &orchestrator.ListAssessmentResultsRequest{
 		Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-			HistoryEvidenceId: util.Ref(req.GetAssessedEvidenceId()),
+			HistoryEvidenceId: util.Ref(req.GetResourceId()),
 		},
 	})
 

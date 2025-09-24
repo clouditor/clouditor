@@ -656,33 +656,31 @@ func (x *StoreAssessmentResultsResponse) GetStatusMessage() string {
 	return ""
 }
 
-type UpdateOrAddAssessmentResultHistoryRequest struct {
+type UpdateAssessmentResultHistoryRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The new_evidence is an additional evidence for the same resource that has already been assessed.
-	// The ID of the new evidence will be included in the assessment results history. If no assessment result
-	// is available (due to any database errors), a new assessment result will be generated.
+	// The ID of the new evidence will be included in the assessment results history.
 	Evidence *evidence.Evidence `protobuf:"bytes,1,opt,name=evidence,proto3" json:"evidence,omitempty"`
-	// assessed_evidence_id is the id of the evidence that was assessed in the past and an assessment result
-	// already exists for it.
-	AssessedEvidenceId string `protobuf:"bytes,2,opt,name=assessed_evidence_id,json=assessedEvidenceId,proto3" json:"assessed_evidence_id,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	// resource_id is the id of the resource that was assessed in the past and an assessment result already exists for it.
+	ResourceId    string `protobuf:"bytes,2,opt,name=resource_id,json=resourceId,proto3" json:"resource_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
-func (x *UpdateOrAddAssessmentResultHistoryRequest) Reset() {
-	*x = UpdateOrAddAssessmentResultHistoryRequest{}
+func (x *UpdateAssessmentResultHistoryRequest) Reset() {
+	*x = UpdateAssessmentResultHistoryRequest{}
 	mi := &file_api_orchestrator_orchestrator_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *UpdateOrAddAssessmentResultHistoryRequest) String() string {
+func (x *UpdateAssessmentResultHistoryRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UpdateOrAddAssessmentResultHistoryRequest) ProtoMessage() {}
+func (*UpdateAssessmentResultHistoryRequest) ProtoMessage() {}
 
-func (x *UpdateOrAddAssessmentResultHistoryRequest) ProtoReflect() protoreflect.Message {
+func (x *UpdateAssessmentResultHistoryRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_api_orchestrator_orchestrator_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -694,21 +692,21 @@ func (x *UpdateOrAddAssessmentResultHistoryRequest) ProtoReflect() protoreflect.
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UpdateOrAddAssessmentResultHistoryRequest.ProtoReflect.Descriptor instead.
-func (*UpdateOrAddAssessmentResultHistoryRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use UpdateAssessmentResultHistoryRequest.ProtoReflect.Descriptor instead.
+func (*UpdateAssessmentResultHistoryRequest) Descriptor() ([]byte, []int) {
 	return file_api_orchestrator_orchestrator_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *UpdateOrAddAssessmentResultHistoryRequest) GetEvidence() *evidence.Evidence {
+func (x *UpdateAssessmentResultHistoryRequest) GetEvidence() *evidence.Evidence {
 	if x != nil {
 		return x.Evidence
 	}
 	return nil
 }
 
-func (x *UpdateOrAddAssessmentResultHistoryRequest) GetAssessedEvidenceId() string {
+func (x *UpdateAssessmentResultHistoryRequest) GetResourceId() string {
 	if x != nil {
-		return x.AssessedEvidenceId
+		return x.ResourceId
 	}
 	return ""
 }
@@ -4517,10 +4515,11 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x1dStoreAssessmentResultResponse\"_\n" +
 	"\x1eStoreAssessmentResultsResponse\x12\x16\n" +
 	"\x06status\x18\x01 \x01(\bR\x06status\x12%\n" +
-	"\x0estatus_message\x18\x02 \x01(\tR\rstatusMessage\"\xaf\x01\n" +
-	")UpdateOrAddAssessmentResultHistoryRequest\x12C\n" +
-	"\bevidence\x18\x01 \x01(\v2\x1f.clouditor.evidence.v1.EvidenceB\x06\xbaH\x03\xc8\x01\x01R\bevidence\x12=\n" +
-	"\x14assessed_evidence_id\x18\x02 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x12assessedEvidenceId\"Y\n" +
+	"\x0estatus_message\x18\x02 \x01(\tR\rstatusMessage\"\x99\x01\n" +
+	"$UpdateAssessmentResultHistoryRequest\x12C\n" +
+	"\bevidence\x18\x01 \x01(\v2\x1f.clouditor.evidence.v1.EvidenceB\x06\xbaH\x03\xc8\x01\x01R\bevidence\x12,\n" +
+	"\vresource_id\x18\x02 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\n" +
+	"resourceId\"Y\n" +
 	"\x13CreateMetricRequest\x12B\n" +
 	"\x06metric\x18\x01 \x01(\v2\x1f.clouditor.assessment.v1.MetricB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x06metric\"Y\n" +
 	"\x13UpdateMetricRequest\x12B\n" +
@@ -4870,7 +4869,7 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x18TYPE_AUDIT_SCOPE_CREATED\x10\x01\x12\x1c\n" +
 	"\x18TYPE_AUDIT_SCOPE_UPDATED\x10\x02\x12\x1c\n" +
 	"\x18TYPE_AUDIT_SCOPE_REMOVED\x10\x03B\x0e\n" +
-	"\f_audit_scope2\xc9B\n" +
+	"\f_audit_scope2\xb6B\n" +
 	"\fOrchestrator\x12\xae\x01\n" +
 	"\x16RegisterAssessmentTool\x128.clouditor.orchestrator.v1.RegisterAssessmentToolRequest\x1a).clouditor.orchestrator.v1.AssessmentTool\"/\x82\xd3\xe4\x93\x02):\x04tool\"!/v1/orchestrator/assessment_tools\x12\xaf\x01\n" +
 	"\x13ListAssessmentTools\x125.clouditor.orchestrator.v1.ListAssessmentToolsRequest\x1a6.clouditor.orchestrator.v1.ListAssessmentToolsResponse\")\x82\xd3\xe4\x93\x02#\x12!/v1/orchestrator/assessment_tools\x12\xa8\x01\n" +
@@ -4878,8 +4877,8 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x14UpdateAssessmentTool\x126.clouditor.orchestrator.v1.UpdateAssessmentToolRequest\x1a).clouditor.orchestrator.v1.AssessmentTool\"9\x82\xd3\xe4\x93\x023:\x04tool\x1a+/v1/orchestrator/assessment_tools/{tool.id}\x12\xa3\x01\n" +
 	"\x18DeregisterAssessmentTool\x12:.clouditor.orchestrator.v1.DeregisterAssessmentToolRequest\x1a\x16.google.protobuf.Empty\"3\x82\xd3\xe4\x93\x02-*+/v1/orchestrator/assessment_tools/{tool_id}\x12\xbf\x01\n" +
 	"\x15StoreAssessmentResult\x127.clouditor.orchestrator.v1.StoreAssessmentResultRequest\x1a8.clouditor.orchestrator.v1.StoreAssessmentResultResponse\"3\x82\xd3\xe4\x93\x02-:\x06result\"#/v1/orchestrator/assessment_results\x12\x90\x01\n" +
-	"\x16StoreAssessmentResults\x127.clouditor.orchestrator.v1.StoreAssessmentResultRequest\x1a9.clouditor.orchestrator.v1.StoreAssessmentResultsResponse(\x010\x01\x12\xd5\x01\n" +
-	"\"UpdateOrAddAssessmentResultHistory\x12D.clouditor.orchestrator.v1.UpdateOrAddAssessmentResultHistoryRequest\x1a).clouditor.assessment.v1.AssessmentResult\">\x82\xd3\xe4\x93\x028:\bevidence\x1a,/v1/assessment/result/{assessed_evidence_id}\x12\xa9\x01\n" +
+	"\x16StoreAssessmentResults\x127.clouditor.orchestrator.v1.StoreAssessmentResultRequest\x1a9.clouditor.orchestrator.v1.StoreAssessmentResultsResponse(\x010\x01\x12\xc2\x01\n" +
+	"\x1dUpdateAssessmentResultHistory\x12?.clouditor.orchestrator.v1.UpdateAssessmentResultHistoryRequest\x1a).clouditor.assessment.v1.AssessmentResult\"5\x82\xd3\xe4\x93\x02/:\bevidence\x1a#/v1/assessment/result/{resource_id}\x12\xa9\x01\n" +
 	"\x13GetAssessmentResult\x125.clouditor.orchestrator.v1.GetAssessmentResultRequest\x1a).clouditor.assessment.v1.AssessmentResult\"0\x82\xd3\xe4\x93\x02*\x12(/v1/orchestrator/assessment_results/{id}\x12\xb7\x01\n" +
 	"\x15ListAssessmentResults\x127.clouditor.orchestrator.v1.ListAssessmentResultsRequest\x1a8.clouditor.orchestrator.v1.ListAssessmentResultsResponse\"+\x82\xd3\xe4\x93\x02%\x12#/v1/orchestrator/assessment_results\x12\x89\x01\n" +
 	"\fCreateMetric\x12..clouditor.orchestrator.v1.CreateMetricRequest\x1a\x1f.clouditor.assessment.v1.Metric\"(\x82\xd3\xe4\x93\x02\":\x06metric\"\x18/v1/orchestrator/metrics\x12\x95\x01\n" +
@@ -4937,95 +4936,95 @@ func file_api_orchestrator_orchestrator_proto_rawDescGZIP() []byte {
 var file_api_orchestrator_orchestrator_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
 var file_api_orchestrator_orchestrator_proto_msgTypes = make([]protoimpl.MessageInfo, 77)
 var file_api_orchestrator_orchestrator_proto_goTypes = []any{
-	(MetricChangeEvent_Type)(0),                       // 0: clouditor.orchestrator.v1.MetricChangeEvent.Type
-	(TargetOfEvaluation_TargetType)(0),                // 1: clouditor.orchestrator.v1.TargetOfEvaluation.TargetType
-	(AuditScopeChangeEvent_Type)(0),                   // 2: clouditor.orchestrator.v1.AuditScopeChangeEvent.Type
-	(*RegisterAssessmentToolRequest)(nil),             // 3: clouditor.orchestrator.v1.RegisterAssessmentToolRequest
-	(*ListAssessmentToolsRequest)(nil),                // 4: clouditor.orchestrator.v1.ListAssessmentToolsRequest
-	(*ListAssessmentToolsResponse)(nil),               // 5: clouditor.orchestrator.v1.ListAssessmentToolsResponse
-	(*GetAssessmentToolRequest)(nil),                  // 6: clouditor.orchestrator.v1.GetAssessmentToolRequest
-	(*UpdateAssessmentToolRequest)(nil),               // 7: clouditor.orchestrator.v1.UpdateAssessmentToolRequest
-	(*DeregisterAssessmentToolRequest)(nil),           // 8: clouditor.orchestrator.v1.DeregisterAssessmentToolRequest
-	(*StoreAssessmentResultRequest)(nil),              // 9: clouditor.orchestrator.v1.StoreAssessmentResultRequest
-	(*StoreAssessmentResultResponse)(nil),             // 10: clouditor.orchestrator.v1.StoreAssessmentResultResponse
-	(*StoreAssessmentResultsResponse)(nil),            // 11: clouditor.orchestrator.v1.StoreAssessmentResultsResponse
-	(*UpdateOrAddAssessmentResultHistoryRequest)(nil), // 12: clouditor.orchestrator.v1.UpdateOrAddAssessmentResultHistoryRequest
-	(*CreateMetricRequest)(nil),                       // 13: clouditor.orchestrator.v1.CreateMetricRequest
-	(*UpdateMetricRequest)(nil),                       // 14: clouditor.orchestrator.v1.UpdateMetricRequest
-	(*GetMetricRequest)(nil),                          // 15: clouditor.orchestrator.v1.GetMetricRequest
-	(*ListMetricsRequest)(nil),                        // 16: clouditor.orchestrator.v1.ListMetricsRequest
-	(*RemoveMetricRequest)(nil),                       // 17: clouditor.orchestrator.v1.RemoveMetricRequest
-	(*ListMetricsResponse)(nil),                       // 18: clouditor.orchestrator.v1.ListMetricsResponse
-	(*GetTargetOfEvaluationRequest)(nil),              // 19: clouditor.orchestrator.v1.GetTargetOfEvaluationRequest
-	(*CreateTargetOfEvaluationRequest)(nil),           // 20: clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest
-	(*UpdateTargetOfEvaluationRequest)(nil),           // 21: clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest
-	(*RemoveTargetOfEvaluationRequest)(nil),           // 22: clouditor.orchestrator.v1.RemoveTargetOfEvaluationRequest
-	(*ListTargetsOfEvaluationRequest)(nil),            // 23: clouditor.orchestrator.v1.ListTargetsOfEvaluationRequest
-	(*ListTargetsOfEvaluationResponse)(nil),           // 24: clouditor.orchestrator.v1.ListTargetsOfEvaluationResponse
-	(*GetTargetOfEvaluationStatisticsRequest)(nil),    // 25: clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsRequest
-	(*GetTargetOfEvaluationStatisticsResponse)(nil),   // 26: clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsResponse
-	(*UpdateMetricConfigurationRequest)(nil),          // 27: clouditor.orchestrator.v1.UpdateMetricConfigurationRequest
-	(*GetMetricConfigurationRequest)(nil),             // 28: clouditor.orchestrator.v1.GetMetricConfigurationRequest
-	(*ListMetricConfigurationRequest)(nil),            // 29: clouditor.orchestrator.v1.ListMetricConfigurationRequest
-	(*ListMetricConfigurationResponse)(nil),           // 30: clouditor.orchestrator.v1.ListMetricConfigurationResponse
-	(*UpdateMetricImplementationRequest)(nil),         // 31: clouditor.orchestrator.v1.UpdateMetricImplementationRequest
-	(*GetMetricImplementationRequest)(nil),            // 32: clouditor.orchestrator.v1.GetMetricImplementationRequest
-	(*SubscribeMetricChangeEventRequest)(nil),         // 33: clouditor.orchestrator.v1.SubscribeMetricChangeEventRequest
-	(*MetricChangeEvent)(nil),                         // 34: clouditor.orchestrator.v1.MetricChangeEvent
-	(*AssessmentTool)(nil),                            // 35: clouditor.orchestrator.v1.AssessmentTool
-	(*TargetOfEvaluation)(nil),                        // 36: clouditor.orchestrator.v1.TargetOfEvaluation
-	(*Catalog)(nil),                                   // 37: clouditor.orchestrator.v1.Catalog
-	(*Category)(nil),                                  // 38: clouditor.orchestrator.v1.Category
-	(*Control)(nil),                                   // 39: clouditor.orchestrator.v1.Control
-	(*AuditScope)(nil),                                // 40: clouditor.orchestrator.v1.AuditScope
-	(*GetAssessmentResultRequest)(nil),                // 41: clouditor.orchestrator.v1.GetAssessmentResultRequest
-	(*ListAssessmentResultsRequest)(nil),              // 42: clouditor.orchestrator.v1.ListAssessmentResultsRequest
-	(*ListAssessmentResultsResponse)(nil),             // 43: clouditor.orchestrator.v1.ListAssessmentResultsResponse
-	(*CreateAuditScopeRequest)(nil),                   // 44: clouditor.orchestrator.v1.CreateAuditScopeRequest
-	(*RemoveAuditScopeRequest)(nil),                   // 45: clouditor.orchestrator.v1.RemoveAuditScopeRequest
-	(*GetAuditScopeRequest)(nil),                      // 46: clouditor.orchestrator.v1.GetAuditScopeRequest
-	(*ListAuditScopesRequest)(nil),                    // 47: clouditor.orchestrator.v1.ListAuditScopesRequest
-	(*ListAuditScopesResponse)(nil),                   // 48: clouditor.orchestrator.v1.ListAuditScopesResponse
-	(*UpdateAuditScopeRequest)(nil),                   // 49: clouditor.orchestrator.v1.UpdateAuditScopeRequest
-	(*GetCertificateRequest)(nil),                     // 50: clouditor.orchestrator.v1.GetCertificateRequest
-	(*ListCertificatesRequest)(nil),                   // 51: clouditor.orchestrator.v1.ListCertificatesRequest
-	(*ListCertificatesResponse)(nil),                  // 52: clouditor.orchestrator.v1.ListCertificatesResponse
-	(*ListPublicCertificatesRequest)(nil),             // 53: clouditor.orchestrator.v1.ListPublicCertificatesRequest
-	(*ListPublicCertificatesResponse)(nil),            // 54: clouditor.orchestrator.v1.ListPublicCertificatesResponse
-	(*UpdateCertificateRequest)(nil),                  // 55: clouditor.orchestrator.v1.UpdateCertificateRequest
-	(*CreateCatalogRequest)(nil),                      // 56: clouditor.orchestrator.v1.CreateCatalogRequest
-	(*RemoveCatalogRequest)(nil),                      // 57: clouditor.orchestrator.v1.RemoveCatalogRequest
-	(*GetCatalogRequest)(nil),                         // 58: clouditor.orchestrator.v1.GetCatalogRequest
-	(*ListCatalogsRequest)(nil),                       // 59: clouditor.orchestrator.v1.ListCatalogsRequest
-	(*ListCatalogsResponse)(nil),                      // 60: clouditor.orchestrator.v1.ListCatalogsResponse
-	(*UpdateCatalogRequest)(nil),                      // 61: clouditor.orchestrator.v1.UpdateCatalogRequest
-	(*GetCategoryRequest)(nil),                        // 62: clouditor.orchestrator.v1.GetCategoryRequest
-	(*GetControlRequest)(nil),                         // 63: clouditor.orchestrator.v1.GetControlRequest
-	(*ListControlsRequest)(nil),                       // 64: clouditor.orchestrator.v1.ListControlsRequest
-	(*ListControlsResponse)(nil),                      // 65: clouditor.orchestrator.v1.ListControlsResponse
-	(*CreateCertificateRequest)(nil),                  // 66: clouditor.orchestrator.v1.CreateCertificateRequest
-	(*RemoveCertificateRequest)(nil),                  // 67: clouditor.orchestrator.v1.RemoveCertificateRequest
-	(*Certificate)(nil),                               // 68: clouditor.orchestrator.v1.Certificate
-	(*State)(nil),                                     // 69: clouditor.orchestrator.v1.State
-	(*AuditScopeChangeEvent)(nil),                     // 70: clouditor.orchestrator.v1.AuditScopeChangeEvent
-	(*ListAssessmentToolsRequest_Filter)(nil),         // 71: clouditor.orchestrator.v1.ListAssessmentToolsRequest.Filter
-	(*ListMetricsRequest_Filter)(nil),                 // 72: clouditor.orchestrator.v1.ListMetricsRequest.Filter
-	nil,                                               // 73: clouditor.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntry
-	(*TargetOfEvaluation_Metadata)(nil),               // 74: clouditor.orchestrator.v1.TargetOfEvaluation.Metadata
-	nil,                                               // 75: clouditor.orchestrator.v1.TargetOfEvaluation.Metadata.LabelsEntry
-	(*Catalog_Metadata)(nil),                          // 76: clouditor.orchestrator.v1.Catalog.Metadata
-	(*ListAssessmentResultsRequest_Filter)(nil),       // 77: clouditor.orchestrator.v1.ListAssessmentResultsRequest.Filter
-	(*ListAuditScopesRequest_Filter)(nil),             // 78: clouditor.orchestrator.v1.ListAuditScopesRequest.Filter
-	(*ListControlsRequest_Filter)(nil),                // 79: clouditor.orchestrator.v1.ListControlsRequest.Filter
-	(*assessment.AssessmentResult)(nil),               // 80: clouditor.assessment.v1.AssessmentResult
-	(*evidence.Evidence)(nil),                         // 81: clouditor.evidence.v1.Evidence
-	(*assessment.Metric)(nil),                         // 82: clouditor.assessment.v1.Metric
-	(*assessment.MetricConfiguration)(nil),            // 83: clouditor.assessment.v1.MetricConfiguration
-	(*assessment.MetricImplementation)(nil),           // 84: clouditor.assessment.v1.MetricImplementation
-	(*timestamppb.Timestamp)(nil),                     // 85: google.protobuf.Timestamp
-	(*runtime.GetRuntimeInfoRequest)(nil),             // 86: clouditor.runtime.v1.GetRuntimeInfoRequest
-	(*emptypb.Empty)(nil),                             // 87: google.protobuf.Empty
-	(*runtime.Runtime)(nil),                           // 88: clouditor.runtime.v1.Runtime
+	(MetricChangeEvent_Type)(0),                     // 0: clouditor.orchestrator.v1.MetricChangeEvent.Type
+	(TargetOfEvaluation_TargetType)(0),              // 1: clouditor.orchestrator.v1.TargetOfEvaluation.TargetType
+	(AuditScopeChangeEvent_Type)(0),                 // 2: clouditor.orchestrator.v1.AuditScopeChangeEvent.Type
+	(*RegisterAssessmentToolRequest)(nil),           // 3: clouditor.orchestrator.v1.RegisterAssessmentToolRequest
+	(*ListAssessmentToolsRequest)(nil),              // 4: clouditor.orchestrator.v1.ListAssessmentToolsRequest
+	(*ListAssessmentToolsResponse)(nil),             // 5: clouditor.orchestrator.v1.ListAssessmentToolsResponse
+	(*GetAssessmentToolRequest)(nil),                // 6: clouditor.orchestrator.v1.GetAssessmentToolRequest
+	(*UpdateAssessmentToolRequest)(nil),             // 7: clouditor.orchestrator.v1.UpdateAssessmentToolRequest
+	(*DeregisterAssessmentToolRequest)(nil),         // 8: clouditor.orchestrator.v1.DeregisterAssessmentToolRequest
+	(*StoreAssessmentResultRequest)(nil),            // 9: clouditor.orchestrator.v1.StoreAssessmentResultRequest
+	(*StoreAssessmentResultResponse)(nil),           // 10: clouditor.orchestrator.v1.StoreAssessmentResultResponse
+	(*StoreAssessmentResultsResponse)(nil),          // 11: clouditor.orchestrator.v1.StoreAssessmentResultsResponse
+	(*UpdateAssessmentResultHistoryRequest)(nil),    // 12: clouditor.orchestrator.v1.UpdateAssessmentResultHistoryRequest
+	(*CreateMetricRequest)(nil),                     // 13: clouditor.orchestrator.v1.CreateMetricRequest
+	(*UpdateMetricRequest)(nil),                     // 14: clouditor.orchestrator.v1.UpdateMetricRequest
+	(*GetMetricRequest)(nil),                        // 15: clouditor.orchestrator.v1.GetMetricRequest
+	(*ListMetricsRequest)(nil),                      // 16: clouditor.orchestrator.v1.ListMetricsRequest
+	(*RemoveMetricRequest)(nil),                     // 17: clouditor.orchestrator.v1.RemoveMetricRequest
+	(*ListMetricsResponse)(nil),                     // 18: clouditor.orchestrator.v1.ListMetricsResponse
+	(*GetTargetOfEvaluationRequest)(nil),            // 19: clouditor.orchestrator.v1.GetTargetOfEvaluationRequest
+	(*CreateTargetOfEvaluationRequest)(nil),         // 20: clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest
+	(*UpdateTargetOfEvaluationRequest)(nil),         // 21: clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest
+	(*RemoveTargetOfEvaluationRequest)(nil),         // 22: clouditor.orchestrator.v1.RemoveTargetOfEvaluationRequest
+	(*ListTargetsOfEvaluationRequest)(nil),          // 23: clouditor.orchestrator.v1.ListTargetsOfEvaluationRequest
+	(*ListTargetsOfEvaluationResponse)(nil),         // 24: clouditor.orchestrator.v1.ListTargetsOfEvaluationResponse
+	(*GetTargetOfEvaluationStatisticsRequest)(nil),  // 25: clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsRequest
+	(*GetTargetOfEvaluationStatisticsResponse)(nil), // 26: clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsResponse
+	(*UpdateMetricConfigurationRequest)(nil),        // 27: clouditor.orchestrator.v1.UpdateMetricConfigurationRequest
+	(*GetMetricConfigurationRequest)(nil),           // 28: clouditor.orchestrator.v1.GetMetricConfigurationRequest
+	(*ListMetricConfigurationRequest)(nil),          // 29: clouditor.orchestrator.v1.ListMetricConfigurationRequest
+	(*ListMetricConfigurationResponse)(nil),         // 30: clouditor.orchestrator.v1.ListMetricConfigurationResponse
+	(*UpdateMetricImplementationRequest)(nil),       // 31: clouditor.orchestrator.v1.UpdateMetricImplementationRequest
+	(*GetMetricImplementationRequest)(nil),          // 32: clouditor.orchestrator.v1.GetMetricImplementationRequest
+	(*SubscribeMetricChangeEventRequest)(nil),       // 33: clouditor.orchestrator.v1.SubscribeMetricChangeEventRequest
+	(*MetricChangeEvent)(nil),                       // 34: clouditor.orchestrator.v1.MetricChangeEvent
+	(*AssessmentTool)(nil),                          // 35: clouditor.orchestrator.v1.AssessmentTool
+	(*TargetOfEvaluation)(nil),                      // 36: clouditor.orchestrator.v1.TargetOfEvaluation
+	(*Catalog)(nil),                                 // 37: clouditor.orchestrator.v1.Catalog
+	(*Category)(nil),                                // 38: clouditor.orchestrator.v1.Category
+	(*Control)(nil),                                 // 39: clouditor.orchestrator.v1.Control
+	(*AuditScope)(nil),                              // 40: clouditor.orchestrator.v1.AuditScope
+	(*GetAssessmentResultRequest)(nil),              // 41: clouditor.orchestrator.v1.GetAssessmentResultRequest
+	(*ListAssessmentResultsRequest)(nil),            // 42: clouditor.orchestrator.v1.ListAssessmentResultsRequest
+	(*ListAssessmentResultsResponse)(nil),           // 43: clouditor.orchestrator.v1.ListAssessmentResultsResponse
+	(*CreateAuditScopeRequest)(nil),                 // 44: clouditor.orchestrator.v1.CreateAuditScopeRequest
+	(*RemoveAuditScopeRequest)(nil),                 // 45: clouditor.orchestrator.v1.RemoveAuditScopeRequest
+	(*GetAuditScopeRequest)(nil),                    // 46: clouditor.orchestrator.v1.GetAuditScopeRequest
+	(*ListAuditScopesRequest)(nil),                  // 47: clouditor.orchestrator.v1.ListAuditScopesRequest
+	(*ListAuditScopesResponse)(nil),                 // 48: clouditor.orchestrator.v1.ListAuditScopesResponse
+	(*UpdateAuditScopeRequest)(nil),                 // 49: clouditor.orchestrator.v1.UpdateAuditScopeRequest
+	(*GetCertificateRequest)(nil),                   // 50: clouditor.orchestrator.v1.GetCertificateRequest
+	(*ListCertificatesRequest)(nil),                 // 51: clouditor.orchestrator.v1.ListCertificatesRequest
+	(*ListCertificatesResponse)(nil),                // 52: clouditor.orchestrator.v1.ListCertificatesResponse
+	(*ListPublicCertificatesRequest)(nil),           // 53: clouditor.orchestrator.v1.ListPublicCertificatesRequest
+	(*ListPublicCertificatesResponse)(nil),          // 54: clouditor.orchestrator.v1.ListPublicCertificatesResponse
+	(*UpdateCertificateRequest)(nil),                // 55: clouditor.orchestrator.v1.UpdateCertificateRequest
+	(*CreateCatalogRequest)(nil),                    // 56: clouditor.orchestrator.v1.CreateCatalogRequest
+	(*RemoveCatalogRequest)(nil),                    // 57: clouditor.orchestrator.v1.RemoveCatalogRequest
+	(*GetCatalogRequest)(nil),                       // 58: clouditor.orchestrator.v1.GetCatalogRequest
+	(*ListCatalogsRequest)(nil),                     // 59: clouditor.orchestrator.v1.ListCatalogsRequest
+	(*ListCatalogsResponse)(nil),                    // 60: clouditor.orchestrator.v1.ListCatalogsResponse
+	(*UpdateCatalogRequest)(nil),                    // 61: clouditor.orchestrator.v1.UpdateCatalogRequest
+	(*GetCategoryRequest)(nil),                      // 62: clouditor.orchestrator.v1.GetCategoryRequest
+	(*GetControlRequest)(nil),                       // 63: clouditor.orchestrator.v1.GetControlRequest
+	(*ListControlsRequest)(nil),                     // 64: clouditor.orchestrator.v1.ListControlsRequest
+	(*ListControlsResponse)(nil),                    // 65: clouditor.orchestrator.v1.ListControlsResponse
+	(*CreateCertificateRequest)(nil),                // 66: clouditor.orchestrator.v1.CreateCertificateRequest
+	(*RemoveCertificateRequest)(nil),                // 67: clouditor.orchestrator.v1.RemoveCertificateRequest
+	(*Certificate)(nil),                             // 68: clouditor.orchestrator.v1.Certificate
+	(*State)(nil),                                   // 69: clouditor.orchestrator.v1.State
+	(*AuditScopeChangeEvent)(nil),                   // 70: clouditor.orchestrator.v1.AuditScopeChangeEvent
+	(*ListAssessmentToolsRequest_Filter)(nil),       // 71: clouditor.orchestrator.v1.ListAssessmentToolsRequest.Filter
+	(*ListMetricsRequest_Filter)(nil),               // 72: clouditor.orchestrator.v1.ListMetricsRequest.Filter
+	nil,                                             // 73: clouditor.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntry
+	(*TargetOfEvaluation_Metadata)(nil),             // 74: clouditor.orchestrator.v1.TargetOfEvaluation.Metadata
+	nil,                                             // 75: clouditor.orchestrator.v1.TargetOfEvaluation.Metadata.LabelsEntry
+	(*Catalog_Metadata)(nil),                        // 76: clouditor.orchestrator.v1.Catalog.Metadata
+	(*ListAssessmentResultsRequest_Filter)(nil),     // 77: clouditor.orchestrator.v1.ListAssessmentResultsRequest.Filter
+	(*ListAuditScopesRequest_Filter)(nil),           // 78: clouditor.orchestrator.v1.ListAuditScopesRequest.Filter
+	(*ListControlsRequest_Filter)(nil),              // 79: clouditor.orchestrator.v1.ListControlsRequest.Filter
+	(*assessment.AssessmentResult)(nil),             // 80: clouditor.assessment.v1.AssessmentResult
+	(*evidence.Evidence)(nil),                       // 81: clouditor.evidence.v1.Evidence
+	(*assessment.Metric)(nil),                       // 82: clouditor.assessment.v1.Metric
+	(*assessment.MetricConfiguration)(nil),          // 83: clouditor.assessment.v1.MetricConfiguration
+	(*assessment.MetricImplementation)(nil),         // 84: clouditor.assessment.v1.MetricImplementation
+	(*timestamppb.Timestamp)(nil),                   // 85: google.protobuf.Timestamp
+	(*runtime.GetRuntimeInfoRequest)(nil),           // 86: clouditor.runtime.v1.GetRuntimeInfoRequest
+	(*emptypb.Empty)(nil),                           // 87: google.protobuf.Empty
+	(*runtime.Runtime)(nil),                         // 88: clouditor.runtime.v1.Runtime
 }
 var file_api_orchestrator_orchestrator_proto_depIdxs = []int32{
 	35, // 0: clouditor.orchestrator.v1.RegisterAssessmentToolRequest.tool:type_name -> clouditor.orchestrator.v1.AssessmentTool
@@ -5033,7 +5032,7 @@ var file_api_orchestrator_orchestrator_proto_depIdxs = []int32{
 	35, // 2: clouditor.orchestrator.v1.ListAssessmentToolsResponse.tools:type_name -> clouditor.orchestrator.v1.AssessmentTool
 	35, // 3: clouditor.orchestrator.v1.UpdateAssessmentToolRequest.tool:type_name -> clouditor.orchestrator.v1.AssessmentTool
 	80, // 4: clouditor.orchestrator.v1.StoreAssessmentResultRequest.result:type_name -> clouditor.assessment.v1.AssessmentResult
-	81, // 5: clouditor.orchestrator.v1.UpdateOrAddAssessmentResultHistoryRequest.evidence:type_name -> clouditor.evidence.v1.Evidence
+	81, // 5: clouditor.orchestrator.v1.UpdateAssessmentResultHistoryRequest.evidence:type_name -> clouditor.evidence.v1.Evidence
 	82, // 6: clouditor.orchestrator.v1.CreateMetricRequest.metric:type_name -> clouditor.assessment.v1.Metric
 	82, // 7: clouditor.orchestrator.v1.UpdateMetricRequest.metric:type_name -> clouditor.assessment.v1.Metric
 	72, // 8: clouditor.orchestrator.v1.ListMetricsRequest.filter:type_name -> clouditor.orchestrator.v1.ListMetricsRequest.Filter
@@ -5082,7 +5081,7 @@ var file_api_orchestrator_orchestrator_proto_depIdxs = []int32{
 	8,  // 51: clouditor.orchestrator.v1.Orchestrator.DeregisterAssessmentTool:input_type -> clouditor.orchestrator.v1.DeregisterAssessmentToolRequest
 	9,  // 52: clouditor.orchestrator.v1.Orchestrator.StoreAssessmentResult:input_type -> clouditor.orchestrator.v1.StoreAssessmentResultRequest
 	9,  // 53: clouditor.orchestrator.v1.Orchestrator.StoreAssessmentResults:input_type -> clouditor.orchestrator.v1.StoreAssessmentResultRequest
-	12, // 54: clouditor.orchestrator.v1.Orchestrator.UpdateOrAddAssessmentResultHistory:input_type -> clouditor.orchestrator.v1.UpdateOrAddAssessmentResultHistoryRequest
+	12, // 54: clouditor.orchestrator.v1.Orchestrator.UpdateAssessmentResultHistory:input_type -> clouditor.orchestrator.v1.UpdateAssessmentResultHistoryRequest
 	41, // 55: clouditor.orchestrator.v1.Orchestrator.GetAssessmentResult:input_type -> clouditor.orchestrator.v1.GetAssessmentResultRequest
 	42, // 56: clouditor.orchestrator.v1.Orchestrator.ListAssessmentResults:input_type -> clouditor.orchestrator.v1.ListAssessmentResultsRequest
 	13, // 57: clouditor.orchestrator.v1.Orchestrator.CreateMetric:input_type -> clouditor.orchestrator.v1.CreateMetricRequest
@@ -5129,7 +5128,7 @@ var file_api_orchestrator_orchestrator_proto_depIdxs = []int32{
 	87, // 98: clouditor.orchestrator.v1.Orchestrator.DeregisterAssessmentTool:output_type -> google.protobuf.Empty
 	10, // 99: clouditor.orchestrator.v1.Orchestrator.StoreAssessmentResult:output_type -> clouditor.orchestrator.v1.StoreAssessmentResultResponse
 	11, // 100: clouditor.orchestrator.v1.Orchestrator.StoreAssessmentResults:output_type -> clouditor.orchestrator.v1.StoreAssessmentResultsResponse
-	80, // 101: clouditor.orchestrator.v1.Orchestrator.UpdateOrAddAssessmentResultHistory:output_type -> clouditor.assessment.v1.AssessmentResult
+	80, // 101: clouditor.orchestrator.v1.Orchestrator.UpdateAssessmentResultHistory:output_type -> clouditor.assessment.v1.AssessmentResult
 	80, // 102: clouditor.orchestrator.v1.Orchestrator.GetAssessmentResult:output_type -> clouditor.assessment.v1.AssessmentResult
 	43, // 103: clouditor.orchestrator.v1.Orchestrator.ListAssessmentResults:output_type -> clouditor.orchestrator.v1.ListAssessmentResultsResponse
 	82, // 104: clouditor.orchestrator.v1.Orchestrator.CreateMetric:output_type -> clouditor.assessment.v1.Metric

@@ -47,53 +47,53 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Orchestrator_RegisterAssessmentTool_FullMethodName             = "/clouditor.orchestrator.v1.Orchestrator/RegisterAssessmentTool"
-	Orchestrator_ListAssessmentTools_FullMethodName                = "/clouditor.orchestrator.v1.Orchestrator/ListAssessmentTools"
-	Orchestrator_GetAssessmentTool_FullMethodName                  = "/clouditor.orchestrator.v1.Orchestrator/GetAssessmentTool"
-	Orchestrator_UpdateAssessmentTool_FullMethodName               = "/clouditor.orchestrator.v1.Orchestrator/UpdateAssessmentTool"
-	Orchestrator_DeregisterAssessmentTool_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/DeregisterAssessmentTool"
-	Orchestrator_StoreAssessmentResult_FullMethodName              = "/clouditor.orchestrator.v1.Orchestrator/StoreAssessmentResult"
-	Orchestrator_StoreAssessmentResults_FullMethodName             = "/clouditor.orchestrator.v1.Orchestrator/StoreAssessmentResults"
-	Orchestrator_UpdateOrAddAssessmentResultHistory_FullMethodName = "/clouditor.orchestrator.v1.Orchestrator/UpdateOrAddAssessmentResultHistory"
-	Orchestrator_GetAssessmentResult_FullMethodName                = "/clouditor.orchestrator.v1.Orchestrator/GetAssessmentResult"
-	Orchestrator_ListAssessmentResults_FullMethodName              = "/clouditor.orchestrator.v1.Orchestrator/ListAssessmentResults"
-	Orchestrator_CreateMetric_FullMethodName                       = "/clouditor.orchestrator.v1.Orchestrator/CreateMetric"
-	Orchestrator_UpdateMetric_FullMethodName                       = "/clouditor.orchestrator.v1.Orchestrator/UpdateMetric"
-	Orchestrator_GetMetric_FullMethodName                          = "/clouditor.orchestrator.v1.Orchestrator/GetMetric"
-	Orchestrator_ListMetrics_FullMethodName                        = "/clouditor.orchestrator.v1.Orchestrator/ListMetrics"
-	Orchestrator_RemoveMetric_FullMethodName                       = "/clouditor.orchestrator.v1.Orchestrator/RemoveMetric"
-	Orchestrator_CreateTargetOfEvaluation_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/CreateTargetOfEvaluation"
-	Orchestrator_UpdateTargetOfEvaluation_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/UpdateTargetOfEvaluation"
-	Orchestrator_GetTargetOfEvaluation_FullMethodName              = "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluation"
-	Orchestrator_ListTargetsOfEvaluation_FullMethodName            = "/clouditor.orchestrator.v1.Orchestrator/ListTargetsOfEvaluation"
-	Orchestrator_RemoveTargetOfEvaluation_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/RemoveTargetOfEvaluation"
-	Orchestrator_GetTargetOfEvaluationStatistics_FullMethodName    = "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluationStatistics"
-	Orchestrator_UpdateMetricConfiguration_FullMethodName          = "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricConfiguration"
-	Orchestrator_GetMetricConfiguration_FullMethodName             = "/clouditor.orchestrator.v1.Orchestrator/GetMetricConfiguration"
-	Orchestrator_ListMetricConfigurations_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/ListMetricConfigurations"
-	Orchestrator_UpdateMetricImplementation_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricImplementation"
-	Orchestrator_GetMetricImplementation_FullMethodName            = "/clouditor.orchestrator.v1.Orchestrator/GetMetricImplementation"
-	Orchestrator_SubscribeMetricChangeEvents_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/SubscribeMetricChangeEvents"
-	Orchestrator_CreateCertificate_FullMethodName                  = "/clouditor.orchestrator.v1.Orchestrator/CreateCertificate"
-	Orchestrator_GetCertificate_FullMethodName                     = "/clouditor.orchestrator.v1.Orchestrator/GetCertificate"
-	Orchestrator_ListCertificates_FullMethodName                   = "/clouditor.orchestrator.v1.Orchestrator/ListCertificates"
-	Orchestrator_ListPublicCertificates_FullMethodName             = "/clouditor.orchestrator.v1.Orchestrator/ListPublicCertificates"
-	Orchestrator_UpdateCertificate_FullMethodName                  = "/clouditor.orchestrator.v1.Orchestrator/UpdateCertificate"
-	Orchestrator_RemoveCertificate_FullMethodName                  = "/clouditor.orchestrator.v1.Orchestrator/RemoveCertificate"
-	Orchestrator_CreateCatalog_FullMethodName                      = "/clouditor.orchestrator.v1.Orchestrator/CreateCatalog"
-	Orchestrator_ListCatalogs_FullMethodName                       = "/clouditor.orchestrator.v1.Orchestrator/ListCatalogs"
-	Orchestrator_GetCatalog_FullMethodName                         = "/clouditor.orchestrator.v1.Orchestrator/GetCatalog"
-	Orchestrator_RemoveCatalog_FullMethodName                      = "/clouditor.orchestrator.v1.Orchestrator/RemoveCatalog"
-	Orchestrator_UpdateCatalog_FullMethodName                      = "/clouditor.orchestrator.v1.Orchestrator/UpdateCatalog"
-	Orchestrator_GetCategory_FullMethodName                        = "/clouditor.orchestrator.v1.Orchestrator/GetCategory"
-	Orchestrator_ListControls_FullMethodName                       = "/clouditor.orchestrator.v1.Orchestrator/ListControls"
-	Orchestrator_GetControl_FullMethodName                         = "/clouditor.orchestrator.v1.Orchestrator/GetControl"
-	Orchestrator_CreateAuditScope_FullMethodName                   = "/clouditor.orchestrator.v1.Orchestrator/CreateAuditScope"
-	Orchestrator_GetAuditScope_FullMethodName                      = "/clouditor.orchestrator.v1.Orchestrator/GetAuditScope"
-	Orchestrator_ListAuditScopes_FullMethodName                    = "/clouditor.orchestrator.v1.Orchestrator/ListAuditScopes"
-	Orchestrator_UpdateAuditScope_FullMethodName                   = "/clouditor.orchestrator.v1.Orchestrator/UpdateAuditScope"
-	Orchestrator_RemoveAuditScope_FullMethodName                   = "/clouditor.orchestrator.v1.Orchestrator/RemoveAuditScope"
-	Orchestrator_GetRuntimeInfo_FullMethodName                     = "/clouditor.orchestrator.v1.Orchestrator/GetRuntimeInfo"
+	Orchestrator_RegisterAssessmentTool_FullMethodName          = "/clouditor.orchestrator.v1.Orchestrator/RegisterAssessmentTool"
+	Orchestrator_ListAssessmentTools_FullMethodName             = "/clouditor.orchestrator.v1.Orchestrator/ListAssessmentTools"
+	Orchestrator_GetAssessmentTool_FullMethodName               = "/clouditor.orchestrator.v1.Orchestrator/GetAssessmentTool"
+	Orchestrator_UpdateAssessmentTool_FullMethodName            = "/clouditor.orchestrator.v1.Orchestrator/UpdateAssessmentTool"
+	Orchestrator_DeregisterAssessmentTool_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/DeregisterAssessmentTool"
+	Orchestrator_StoreAssessmentResult_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/StoreAssessmentResult"
+	Orchestrator_StoreAssessmentResults_FullMethodName          = "/clouditor.orchestrator.v1.Orchestrator/StoreAssessmentResults"
+	Orchestrator_UpdateAssessmentResultHistory_FullMethodName   = "/clouditor.orchestrator.v1.Orchestrator/UpdateAssessmentResultHistory"
+	Orchestrator_GetAssessmentResult_FullMethodName             = "/clouditor.orchestrator.v1.Orchestrator/GetAssessmentResult"
+	Orchestrator_ListAssessmentResults_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/ListAssessmentResults"
+	Orchestrator_CreateMetric_FullMethodName                    = "/clouditor.orchestrator.v1.Orchestrator/CreateMetric"
+	Orchestrator_UpdateMetric_FullMethodName                    = "/clouditor.orchestrator.v1.Orchestrator/UpdateMetric"
+	Orchestrator_GetMetric_FullMethodName                       = "/clouditor.orchestrator.v1.Orchestrator/GetMetric"
+	Orchestrator_ListMetrics_FullMethodName                     = "/clouditor.orchestrator.v1.Orchestrator/ListMetrics"
+	Orchestrator_RemoveMetric_FullMethodName                    = "/clouditor.orchestrator.v1.Orchestrator/RemoveMetric"
+	Orchestrator_CreateTargetOfEvaluation_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/CreateTargetOfEvaluation"
+	Orchestrator_UpdateTargetOfEvaluation_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/UpdateTargetOfEvaluation"
+	Orchestrator_GetTargetOfEvaluation_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluation"
+	Orchestrator_ListTargetsOfEvaluation_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/ListTargetsOfEvaluation"
+	Orchestrator_RemoveTargetOfEvaluation_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/RemoveTargetOfEvaluation"
+	Orchestrator_GetTargetOfEvaluationStatistics_FullMethodName = "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluationStatistics"
+	Orchestrator_UpdateMetricConfiguration_FullMethodName       = "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricConfiguration"
+	Orchestrator_GetMetricConfiguration_FullMethodName          = "/clouditor.orchestrator.v1.Orchestrator/GetMetricConfiguration"
+	Orchestrator_ListMetricConfigurations_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/ListMetricConfigurations"
+	Orchestrator_UpdateMetricImplementation_FullMethodName      = "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricImplementation"
+	Orchestrator_GetMetricImplementation_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/GetMetricImplementation"
+	Orchestrator_SubscribeMetricChangeEvents_FullMethodName     = "/clouditor.orchestrator.v1.Orchestrator/SubscribeMetricChangeEvents"
+	Orchestrator_CreateCertificate_FullMethodName               = "/clouditor.orchestrator.v1.Orchestrator/CreateCertificate"
+	Orchestrator_GetCertificate_FullMethodName                  = "/clouditor.orchestrator.v1.Orchestrator/GetCertificate"
+	Orchestrator_ListCertificates_FullMethodName                = "/clouditor.orchestrator.v1.Orchestrator/ListCertificates"
+	Orchestrator_ListPublicCertificates_FullMethodName          = "/clouditor.orchestrator.v1.Orchestrator/ListPublicCertificates"
+	Orchestrator_UpdateCertificate_FullMethodName               = "/clouditor.orchestrator.v1.Orchestrator/UpdateCertificate"
+	Orchestrator_RemoveCertificate_FullMethodName               = "/clouditor.orchestrator.v1.Orchestrator/RemoveCertificate"
+	Orchestrator_CreateCatalog_FullMethodName                   = "/clouditor.orchestrator.v1.Orchestrator/CreateCatalog"
+	Orchestrator_ListCatalogs_FullMethodName                    = "/clouditor.orchestrator.v1.Orchestrator/ListCatalogs"
+	Orchestrator_GetCatalog_FullMethodName                      = "/clouditor.orchestrator.v1.Orchestrator/GetCatalog"
+	Orchestrator_RemoveCatalog_FullMethodName                   = "/clouditor.orchestrator.v1.Orchestrator/RemoveCatalog"
+	Orchestrator_UpdateCatalog_FullMethodName                   = "/clouditor.orchestrator.v1.Orchestrator/UpdateCatalog"
+	Orchestrator_GetCategory_FullMethodName                     = "/clouditor.orchestrator.v1.Orchestrator/GetCategory"
+	Orchestrator_ListControls_FullMethodName                    = "/clouditor.orchestrator.v1.Orchestrator/ListControls"
+	Orchestrator_GetControl_FullMethodName                      = "/clouditor.orchestrator.v1.Orchestrator/GetControl"
+	Orchestrator_CreateAuditScope_FullMethodName                = "/clouditor.orchestrator.v1.Orchestrator/CreateAuditScope"
+	Orchestrator_GetAuditScope_FullMethodName                   = "/clouditor.orchestrator.v1.Orchestrator/GetAuditScope"
+	Orchestrator_ListAuditScopes_FullMethodName                 = "/clouditor.orchestrator.v1.Orchestrator/ListAuditScopes"
+	Orchestrator_UpdateAuditScope_FullMethodName                = "/clouditor.orchestrator.v1.Orchestrator/UpdateAuditScope"
+	Orchestrator_RemoveAuditScope_FullMethodName                = "/clouditor.orchestrator.v1.Orchestrator/RemoveAuditScope"
+	Orchestrator_GetRuntimeInfo_FullMethodName                  = "/clouditor.orchestrator.v1.Orchestrator/GetRuntimeInfo"
 )
 
 // OrchestratorClient is the client API for Orchestrator service.
@@ -119,8 +119,8 @@ type OrchestratorClient interface {
 	// Stores stream of assessment results provided by an assessment tool and
 	// returns a response stream. Part of the public API, not exposed as REST.
 	StoreAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[StoreAssessmentResultRequest, StoreAssessmentResultsResponse], error)
-	// Updates the AssessmentResult field history with the new evidence or creates a new AssessmentResult for the evidence.
-	UpdateOrAddAssessmentResultHistory(ctx context.Context, in *UpdateOrAddAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error)
+	// Updates the AssessmentResult field history with the new evidence ID
+	UpdateAssessmentResultHistory(ctx context.Context, in *UpdateAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error)
 	// Get an assessment result by ID
 	GetAssessmentResult(ctx context.Context, in *GetAssessmentResultRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error)
 	// List all assessment results. Part of the public API, also exposed as REST.
@@ -293,10 +293,10 @@ func (c *orchestratorClient) StoreAssessmentResults(ctx context.Context, opts ..
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Orchestrator_StoreAssessmentResultsClient = grpc.BidiStreamingClient[StoreAssessmentResultRequest, StoreAssessmentResultsResponse]
 
-func (c *orchestratorClient) UpdateOrAddAssessmentResultHistory(ctx context.Context, in *UpdateOrAddAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error) {
+func (c *orchestratorClient) UpdateAssessmentResultHistory(ctx context.Context, in *UpdateAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(assessment.AssessmentResult)
-	err := c.cc.Invoke(ctx, Orchestrator_UpdateOrAddAssessmentResultHistory_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Orchestrator_UpdateAssessmentResultHistory_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -725,8 +725,8 @@ type OrchestratorServer interface {
 	// Stores stream of assessment results provided by an assessment tool and
 	// returns a response stream. Part of the public API, not exposed as REST.
 	StoreAssessmentResults(grpc.BidiStreamingServer[StoreAssessmentResultRequest, StoreAssessmentResultsResponse]) error
-	// Updates the AssessmentResult field history with the new evidence or creates a new AssessmentResult for the evidence.
-	UpdateOrAddAssessmentResultHistory(context.Context, *UpdateOrAddAssessmentResultHistoryRequest) (*assessment.AssessmentResult, error)
+	// Updates the AssessmentResult field history with the new evidence ID
+	UpdateAssessmentResultHistory(context.Context, *UpdateAssessmentResultHistoryRequest) (*assessment.AssessmentResult, error)
 	// Get an assessment result by ID
 	GetAssessmentResult(context.Context, *GetAssessmentResultRequest) (*assessment.AssessmentResult, error)
 	// List all assessment results. Part of the public API, also exposed as REST.
@@ -847,8 +847,8 @@ func (UnimplementedOrchestratorServer) StoreAssessmentResult(context.Context, *S
 func (UnimplementedOrchestratorServer) StoreAssessmentResults(grpc.BidiStreamingServer[StoreAssessmentResultRequest, StoreAssessmentResultsResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method StoreAssessmentResults not implemented")
 }
-func (UnimplementedOrchestratorServer) UpdateOrAddAssessmentResultHistory(context.Context, *UpdateOrAddAssessmentResultHistoryRequest) (*assessment.AssessmentResult, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateOrAddAssessmentResultHistory not implemented")
+func (UnimplementedOrchestratorServer) UpdateAssessmentResultHistory(context.Context, *UpdateAssessmentResultHistoryRequest) (*assessment.AssessmentResult, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateAssessmentResultHistory not implemented")
 }
 func (UnimplementedOrchestratorServer) GetAssessmentResult(context.Context, *GetAssessmentResultRequest) (*assessment.AssessmentResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAssessmentResult not implemented")
@@ -1103,20 +1103,20 @@ func _Orchestrator_StoreAssessmentResults_Handler(srv interface{}, stream grpc.S
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Orchestrator_StoreAssessmentResultsServer = grpc.BidiStreamingServer[StoreAssessmentResultRequest, StoreAssessmentResultsResponse]
 
-func _Orchestrator_UpdateOrAddAssessmentResultHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateOrAddAssessmentResultHistoryRequest)
+func _Orchestrator_UpdateAssessmentResultHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateAssessmentResultHistoryRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).UpdateOrAddAssessmentResultHistory(ctx, in)
+		return srv.(OrchestratorServer).UpdateAssessmentResultHistory(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_UpdateOrAddAssessmentResultHistory_FullMethodName,
+		FullMethod: Orchestrator_UpdateAssessmentResultHistory_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).UpdateOrAddAssessmentResultHistory(ctx, req.(*UpdateOrAddAssessmentResultHistoryRequest))
+		return srv.(OrchestratorServer).UpdateAssessmentResultHistory(ctx, req.(*UpdateAssessmentResultHistoryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1848,8 +1848,8 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Orchestrator_StoreAssessmentResult_Handler,
 		},
 		{
-			MethodName: "UpdateOrAddAssessmentResultHistory",
-			Handler:    _Orchestrator_UpdateOrAddAssessmentResultHistory_Handler,
+			MethodName: "UpdateAssessmentResultHistory",
+			Handler:    _Orchestrator_UpdateAssessmentResultHistory_Handler,
 		},
 		{
 			MethodName: "GetAssessmentResult",

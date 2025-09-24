@@ -1265,7 +1265,7 @@ func (m *mockAssessmentClient) CalculateCompliance(ctx context.Context, req *ass
 
 // mockOrchestratorClient is a mock implementation of the OrchestratorClient interface.
 type mockOrchestratorClient struct {
-	mockUpdateOrAddAssessmentResultHistory func(ctx context.Context, req *orchestrator.UpdateOrAddAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error)
+	mockUpdateAssessmentResultHistory func(ctx context.Context, req *orchestrator.UpdateAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error)
 }
 
 func (m *mockOrchestratorClient) RegisterAssessmentTool(ctx context.Context, in *orchestrator.RegisterAssessmentToolRequest, opts ...grpc.CallOption) (*orchestrator.AssessmentTool, error) {
@@ -1296,9 +1296,9 @@ func (m *mockOrchestratorClient) StoreAssessmentResults(ctx context.Context, opt
 	return nil, fmt.Errorf("not implemented")
 }
 
-func (m *mockOrchestratorClient) UpdateOrAddAssessmentResultHistory(ctx context.Context, req *orchestrator.UpdateOrAddAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error) {
-	if m.mockUpdateOrAddAssessmentResultHistory != nil {
-		return m.mockUpdateOrAddAssessmentResultHistory(ctx, req, opts...)
+func (m *mockOrchestratorClient) UpdateAssessmentResultHistory(ctx context.Context, req *orchestrator.UpdateAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error) {
+	if m.mockUpdateAssessmentResultHistory != nil {
+		return m.mockUpdateAssessmentResultHistory(ctx, req, opts...)
 	}
 	return nil, fmt.Errorf("not implemented")
 }
@@ -1512,7 +1512,7 @@ func TestService_handleEvidence(t *testing.T) {
 			},
 		},
 		{
-			name: "error sending evidence to UpdateOrAddAssessmentResultHistory endpoint",
+			name: "error sending evidence to UpdateAssessmentResultHistory endpoint",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Save(evidencetest.MockEvidence1))
@@ -1520,9 +1520,9 @@ func TestService_handleEvidence(t *testing.T) {
 				}),
 				orchestrator: &api.RPCConnection[orchestrator.OrchestratorClient]{
 					Client: &mockOrchestratorClient{
-						mockUpdateOrAddAssessmentResultHistory: func(ctx context.Context, req *orchestrator.UpdateOrAddAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error) {
+						mockUpdateAssessmentResultHistory: func(ctx context.Context, req *orchestrator.UpdateAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error) {
 							// Simulate an error response
-							return nil, fmt.Errorf("mock error from UpdateOrAddAssessmentResultHistory")
+							return nil, fmt.Errorf("mock error from UpdateAssessmentResultHistory")
 						},
 					},
 				},
@@ -1599,7 +1599,7 @@ func TestService_handleEvidence(t *testing.T) {
 				}),
 				orchestrator: &api.RPCConnection[orchestrator.OrchestratorClient]{
 					Client: &mockOrchestratorClient{
-						mockUpdateOrAddAssessmentResultHistory: func(ctx context.Context, req *orchestrator.UpdateOrAddAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error) {
+						mockUpdateAssessmentResultHistory: func(ctx context.Context, req *orchestrator.UpdateAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error) {
 							// Successful response
 							return &assessment.AssessmentResult{}, nil
 						},

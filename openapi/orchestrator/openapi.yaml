@@ -7,18 +7,16 @@ info:
     description: Manages the orchestration of components within the Clouditor architecture
     version: 0.0.1
 paths:
-    /v1/assessment/result/{assessedEvidenceId}:
+    /v1/assessment/result/{resourceId}:
         put:
             tags:
                 - Orchestrator
-            description: Updates the AssessmentResult field history with the new evidence or creates a new AssessmentResult for the evidence.
-            operationId: Orchestrator_UpdateOrAddAssessmentResultHistory
+            description: Updates the AssessmentResult field history with the new evidence ID
+            operationId: Orchestrator_UpdateAssessmentResultHistory
             parameters:
-                - name: assessedEvidenceId
+                - name: resourceId
                   in: path
-                  description: |-
-                    assessed_evidence_id is the id of the evidence that was assessed in the past and an assessment result
-                     already exists for it.
+                  description: resource_id is the id of the resource that was assessed in the past and an assessment result already exists for it.
                   required: true
                   schema:
                     type: string

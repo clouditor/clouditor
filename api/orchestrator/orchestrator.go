@@ -91,7 +91,7 @@ func (req *UpdateAssessmentToolRequest) GetPayload() proto.Message {
 	return req.Tool
 }
 
-func (req *UpdateOrAddAssessmentResultHistoryRequest) GetTargetOfEvaluationId() string {
+func (req *UpdateAssessmentResultHistoryRequest) GetTargetOfEvaluationId() string {
 	return req.GetEvidence().GetTargetOfEvaluationId()
 }
 
