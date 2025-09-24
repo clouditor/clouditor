@@ -91,6 +91,10 @@ func (req *UpdateAssessmentToolRequest) GetPayload() proto.Message {
 	return req.Tool
 }
 
+func (req *UpdateAssessmentResultHistoryRequest) GetTargetOfEvaluationId() string {
+	return req.GetEvidence().GetTargetOfEvaluationId()
+}
+
 func (req *DeregisterAssessmentToolRequest) GetPayload() proto.Message {
 	return &AssessmentTool{Id: req.ToolId}
 }

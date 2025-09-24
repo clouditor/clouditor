@@ -60,7 +60,7 @@ func (ev *Evidence) GetOntologyResource() ontology.IsResource {
 }
 
 // ToEvidenceResource converts a proto message that complies to the interface [ontology.IsResource] into a resource
-// that can be persisted in our database ([*discovery.Resource]).
+// that can be persisted in our database ([*evidence.Resource]).
 func ToEvidenceResource(resource ontology.IsResource, ctID, collectorID string) (r *Resource, err error) {
 	var (
 		a *anypb.Any

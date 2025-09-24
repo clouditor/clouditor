@@ -7,6 +7,38 @@ info:
     description: Manages the orchestration of components within the Clouditor architecture
     version: 0.0.1
 paths:
+    /v1/assessment/result/{resourceId}:
+        put:
+            tags:
+                - Orchestrator
+            description: Updates the AssessmentResult field history with the new evidence ID
+            operationId: Orchestrator_UpdateAssessmentResultHistory
+            parameters:
+                - name: resourceId
+                  in: path
+                  description: resource_id is the id of the resource that was assessed in the past and an assessment result already exists for it.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Evidence'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AssessmentResult'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/assessment_results:
         get:
             tags:
@@ -47,6 +79,11 @@ paths:
                     type: array
                     items:
                         type: string
+                - name: filter.historyEvidenceId
+                  in: query
+                  description: 'Optional: List only the assessment results for a specific evidence ID in the history field.'
+                  schema:
+                    type: string
                 - name: latestByResourceId
                   in: query
                   description: Optional. Latest results grouped by resource_id and metric_id.
@@ -1834,6 +1871,39 @@ components:
                     type: string
                 version:
                     type: string
+        Evidence:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: the ID in a uuid format
+                timestamp:
+                    type: string
+                    description: time of evidence creation
+                    format: date-time
+                targetOfEvaluationId:
+                    type: string
+                    description: Reference to a target of evaluation (e.g., service, organization) this evidence was gathered from
+                toolId:
+                    type: string
+                    description: Reference to the tool which provided the evidence
+                resource:
+                    allOf:
+                        - $ref: '#/components/schemas/Resource'
+                    description: |-
+                        Semantic representation of the Cloud resource according to our defined
+                         ontology
+                experimentalRelatedResourceIds:
+                    type: array
+                    items:
+                        type: string
+                    description: |-
+                        Very experimental property. Use at own risk. This property will be deleted again.
+
+                         Related resource IDs. The assessment will wait until all evidences for related resource have arrived in the
+                         assessment and are recent enough. In the future, this will be replaced with information in the "related" edges in
+                         the resource. For now, this needs to be set manually in the evidence.
+            description: An evidence resource
         GeoLocation:
             type: object
             properties:
@@ -2116,6 +2186,43 @@ components:
                 zoneRedundancy:
                     $ref: '#/components/schemas/ZoneRedundancy'
             description: Redundancy is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+        Resource:
+            required:
+                - id
+                - targetOfEvaluationId
+                - resourceType
+                - toolId
+                - properties
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: |-
+                        Id contains a unique ID for each resource. This is specific for the cloud
+                         provider this resource was gathered for and can for example be a resource
+                         URL.
+                targetOfEvaluationId:
+                    type: string
+                    description: |-
+                        TargetOfEvaluationId is the UUID for the target of evaluation to which this resource
+                         belongs to.
+                resourceType:
+                    type: string
+                    description: |-
+                        ResourceType contains a comma separated string of resource types according
+                         to our ontology.
+                toolId:
+                    type: string
+                    description: Reference to the tool which provided the resource
+                properties:
+                    allOf:
+                        - $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: |-
+                        Properties contains a protobuf message that describe the resource in the
+                         terms of our Clouditor ontology.
+            description: |-
+                Resource is a wrapper around google.protobuf.Value that is needed for
+                 persistence reasons.
         ResourceLogging:
             type: object
             properties:

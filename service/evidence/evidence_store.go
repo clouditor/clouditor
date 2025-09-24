@@ -26,7 +26,9 @@
 package evidence
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -38,6 +40,7 @@ import (
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/logging"
 	"clouditor.io/clouditor/v2/launcher"
@@ -77,8 +80,10 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 type Service struct {
 	storage persistence.Storage
 
- assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest]
+	assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest]
 	assessment        *api.RPCConnection[assessment.AssessmentClient]
+
+	orchestrator *api.RPCConnection[orchestrator.OrchestratorClient]
 
 	// channel that is used to send evidences from the StoreEvidence method to the worker threat to process the evidence
 	channelEvidence chan *evidence.Evidence
@@ -131,8 +136,9 @@ func NewService(opts ...service.Option[*Service]) (svc *Service) {
 		err error
 	)
 	svc = &Service{
-  assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest](log)),
+		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidenceStreamClient, *assessment.AssessEvidenceRequest](log)),
 		assessment:        api.NewRPCConnection(config.DefaultAssessmentURL, assessment.NewAssessmentClient),
+		orchestrator:      api.NewRPCConnection(config.DefaultOrchestratorURL, orchestrator.NewOrchestratorClient),
 		channelEvidence:   make(chan *evidence.Evidence, 1000),
 	}
 
@@ -187,12 +193,12 @@ func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (s
 
 	// Set up the stream and store it in our service struct, so we can access it later to actually
 	// send the evidence data
- stream, err = svc.assessment.Client.AssessEvidenceStream(context.Background())
+	stream, err = svc.assessment.Client.AssessEvidenceStream(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("could not set up stream to assessment for assessing evidence: %w", err)
 	}
 
- log.Infof("Stream to AssessEvidenceStream established")
+	log.Infof("Stream to AssessEvidenceStream established")
 
 	return
 }
@@ -220,7 +226,7 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 
 	// Store Resource
 	// Build a resource struct. This will hold the latest sync state of the
-	// resource for our storage layer. This is needed to store the resource in our DB.s
+	// resource for our storage layer. This is needed to store the resource in our DB.
 	r, err := evidence.ToEvidenceResource(req.Evidence.GetOntologyResource(), req.GetTargetOfEvaluationId(), req.Evidence.GetToolId())
 	if err != nil {
 		log.Errorf("Could not convert resource: %v", err)
@@ -247,9 +253,100 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 	return res, nil
 }
 
-func (svc *Service) handleEvidence(evidence *evidence.Evidence) error {
-	// TODO(anatheka): It must be checked if the evidence changed since the last time and then send to the assessment service. Add in separate PR
+// handleEvidence handles the evidence before sending further. It checks if the resource has changed since the last evidence. If the resource has changed, it sends the evidence to the assessment service, otherwise it just updates the history field of the corresponding assessment result.
+func (svc *Service) handleEvidence(ev *evidence.Evidence) error {
+	var (
+		query []string
+		args  []any
+		dbRes = new(evidence.Resource)
+		err   error
+	)
 
+	// Check if resource has changed to the last evidence
+	// Convert ontology.IsResource to evidence.Resource
+	resource, err := evidence.ToEvidenceResource(ev.GetOntologyResource(), ev.GetTargetOfEvaluationId(), ev.GetToolId())
+	if err != nil {
+		log.Errorf("Could not convert resource: %v", err)
+		return err
+	}
+
+	// Create query to check if resource already exists in storage.
+	// Add resource ID to query
+	query = append(query, "id = ?")
+	args = append(args, resource.GetId())
+
+	// Add target of evaluation ID to query
+	query = append(query, "target_of_evaluation_id = ?")
+	args = append(args, ev.GetTargetOfEvaluationId())
+
+	// Add tool ID to query
+	query = append(query, "tool_id = ?")
+	args = append(args, resource.GetToolId())
+
+	// Add resource type to query
+	query = append(query, "resource_type = ?")
+	args = append(args, resource.GetResourceType())
+
+	// Join query with AND and prepend the query string to the args slice
+	args = append([]any{strings.Join(query, " AND ")}, args...)
+
+	// Check if resource with same content is already present in the database
+	err = svc.storage.Get(dbRes, args...)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		log.Debugf("Resource with same content not available in storage. Trigger new assessment for evidence with ID '%s'.", ev.GetId())
+
+		err := svc.sendEvidenceToAssessment(ev)
+		if err != nil {
+			return err
+		}
+		return nil
+	} else if err != nil {
+		return persistence.ErrDatabase
+	}
+
+	// resource seems to be present in the database, check if the field properties of the resource are equal as well
+	propEvidenceResourceBytes, err := json.Marshal(resource.GetProperties())
+	if err != nil {
+		log.Errorf("Could not marshal properties: %v", err)
+		return err
+	}
+
+	propDBResourceBytes, err := json.Marshal(dbRes.GetProperties())
+	if err != nil {
+		log.Errorf("Could not marshal properties: %v", err)
+		return err
+	}
+
+	// Check if properties of the resource in the new evidence and the resource in the database are equal.
+	// If they are equal, we do not need to trigger a new assessment, but just update the history field of the corresponding assessment results.
+	// If they are not equal, we need to trigger a new assessment for the evidence.
+	if bytes.Equal(propEvidenceResourceBytes, propDBResourceBytes) {
+		// Send evidence to orchestrator service and update the history field of the corresponding assessment result
+		log.Debugf("Resource with same content already available in storage for Evidence with ID '%s'. No need to trigger new assessment, just update the history field of the corresponding assessment result.", ev.GetId())
+
+		_, err = svc.orchestrator.Client.UpdateAssessmentResultHistory(context.Background(), &orchestrator.UpdateAssessmentResultHistoryRequest{
+			Evidence:   ev,
+			ResourceId: dbRes.GetId(),
+		})
+		if err != nil {
+			newError := fmt.Errorf("could not update assessment result history: %v", err)
+			log.Error(newError)
+			return status.Errorf(codes.Internal, "%v", newError)
+		}
+	} else {
+		// Send evidence to assessment service
+		log.Debugf("Resource with same content not available in DB (field 'properties' differ). Trigger new assessment for evidence with ID '%s'.", ev.GetId())
+
+		err := svc.sendEvidenceToAssessment(ev)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (svc *Service) sendEvidenceToAssessment(ev *evidence.Evidence) error {
 	// Get Assessment stream
 	channelAssessment, err := svc.assessmentStreams.GetStream(svc.assessment.Target, "Assessment", svc.initAssessmentStream, svc.assessment.Opts...)
 	if err != nil {
@@ -258,8 +355,7 @@ func (svc *Service) handleEvidence(evidence *evidence.Evidence) error {
 		return err
 	}
 
-	// Send evidence to assessment service
-	channelAssessment.Send(&assessment.AssessEvidenceRequest{Evidence: evidence})
+	channelAssessment.Send(&assessment.AssessEvidenceRequest{Evidence: ev})
 
 	return nil
 }
