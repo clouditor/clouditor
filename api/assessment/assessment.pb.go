@@ -723,12 +723,12 @@ const file_api_assessment_assessment_proto_rawDesc = "" +
 	"\x1dASSESSMENT_STATUS_UNSPECIFIED\x10\x00\x12)\n" +
 	"%ASSESSMENT_STATUS_WAITING_FOR_RELATED\x10\x01\x12\x1e\n" +
 	"\x1aASSESSMENT_STATUS_ASSESSED\x10\x02\x12\x1c\n" +
-	"\x18ASSESSMENT_STATUS_FAILED\x10\x032\x8d\x03\n" +
+	"\x18ASSESSMENT_STATUS_FAILED\x10\x032\x92\x03\n" +
 	"\n" +
 	"Assessment\x12d\n" +
 	"\x13CalculateCompliance\x123.clouditor.assessment.v1.CalculateComplianceRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x9d\x01\n" +
-	"\x0eAssessEvidence\x12..clouditor.assessment.v1.AssessEvidenceRequest\x1a/.clouditor.assessment.v1.AssessEvidenceResponse\"*\x82\xd3\xe4\x93\x02$:\bevidence\"\x18/v1/assessment/evidences\x12y\n" +
-	"\x0fAssessEvidences\x12..clouditor.assessment.v1.AssessEvidenceRequest\x1a0.clouditor.assessment.v1.AssessEvidencesResponse\"\x00(\x010\x01B*Z(clouditor.io/clouditor/v2/api/assessmentb\x06proto3"
+	"\x0eAssessEvidence\x12..clouditor.assessment.v1.AssessEvidenceRequest\x1a/.clouditor.assessment.v1.AssessEvidenceResponse\"*\x82\xd3\xe4\x93\x02$:\bevidence\"\x18/v1/assessment/evidences\x12~\n" +
+	"\x14AssessEvidenceStream\x12..clouditor.assessment.v1.AssessEvidenceRequest\x1a0.clouditor.assessment.v1.AssessEvidencesResponse\"\x00(\x010\x01B*Z(clouditor.io/clouditor/v2/api/assessmentb\x06proto3"
 
 var (
 	file_api_assessment_assessment_proto_rawDescOnce sync.Once
@@ -775,10 +775,10 @@ var file_api_assessment_assessment_proto_depIdxs = []int32{
 	13, // 10: clouditor.assessment.v1.ComparisonResult.target_value:type_name -> google.protobuf.Value
 	3,  // 11: clouditor.assessment.v1.Assessment.CalculateCompliance:input_type -> clouditor.assessment.v1.CalculateComplianceRequest
 	4,  // 12: clouditor.assessment.v1.Assessment.AssessEvidence:input_type -> clouditor.assessment.v1.AssessEvidenceRequest
-	4,  // 13: clouditor.assessment.v1.Assessment.AssessEvidences:input_type -> clouditor.assessment.v1.AssessEvidenceRequest
+	4,  // 13: clouditor.assessment.v1.Assessment.AssessEvidenceStream:input_type -> clouditor.assessment.v1.AssessEvidenceRequest
 	14, // 14: clouditor.assessment.v1.Assessment.CalculateCompliance:output_type -> google.protobuf.Empty
 	5,  // 15: clouditor.assessment.v1.Assessment.AssessEvidence:output_type -> clouditor.assessment.v1.AssessEvidenceResponse
-	6,  // 16: clouditor.assessment.v1.Assessment.AssessEvidences:output_type -> clouditor.assessment.v1.AssessEvidencesResponse
+	6,  // 16: clouditor.assessment.v1.Assessment.AssessEvidenceStream:output_type -> clouditor.assessment.v1.AssessEvidencesResponse
 	14, // [14:17] is the sub-list for method output_type
 	11, // [11:14] is the sub-list for method input_type
 	11, // [11:11] is the sub-list for extension type_name

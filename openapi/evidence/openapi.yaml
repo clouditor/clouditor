@@ -333,7 +333,6 @@ components:
                 AnomalyDetection is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  Analyzes the activity of a NetworkService (which includes DatabaseServices).
                  Scope contains the resource ID of the protected resource.
-                 scope:
         Application:
             type: object
             properties:

@@ -45,9 +45,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Assessment_CalculateCompliance_FullMethodName = "/clouditor.assessment.v1.Assessment/CalculateCompliance"
-	Assessment_AssessEvidence_FullMethodName      = "/clouditor.assessment.v1.Assessment/AssessEvidence"
-	Assessment_AssessEvidenceStream_FullMethodName     = "/clouditor.assessment.v1.Assessment/AssessEvidenceStream"
+	Assessment_CalculateCompliance_FullMethodName  = "/clouditor.assessment.v1.Assessment/CalculateCompliance"
+	Assessment_AssessEvidence_FullMethodName       = "/clouditor.assessment.v1.Assessment/AssessEvidence"
+	Assessment_AssessEvidenceStream_FullMethodName = "/clouditor.assessment.v1.Assessment/AssessEvidenceStream"
 )
 
 // AssessmentClient is the client API for Assessment service.

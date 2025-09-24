@@ -386,7 +386,6 @@ func (x *ActivityLogging) GetLoggingServiceIds() []string {
 // AnomalyDetection is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 // Analyzes the activity of a NetworkService (which includes DatabaseServices).
 // Scope contains the resource ID of the protected resource.
-// scope:
 type AnomalyDetection struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	Enabled            bool                   `protobuf:"varint,8852,opt,name=enabled,proto3" json:"enabled,omitempty"`
