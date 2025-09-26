@@ -48,6 +48,7 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 		region   string
 		domain   *domain
 		project  *project
+		projects map[string]ontology.IsResource
 	}
 	type args struct {
 		volume *volumes.Volume
@@ -63,27 +64,32 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 			name: "Happy path: volume name missing",
 			fields: fields{
 				region: "test region",
+				domain: &domain{
+					domainID:   testdata.MockOpenstackDomainID1,
+					domainName: testdata.MockOpenstackDomainName1,
+				},
+				projects: map[string]ontology.IsResource{},
 			},
 			args: args{
 				volume: &volumes.Volume{
-					ID: testdata.MockVolumeID1,
-					// Name:      testdata.MockVolumeName1,
-					TenantID:  testdata.MockVolumeTenantID,
+					ID:        testdata.MockOpenstackVolumeID1,
+					TenantID:  testdata.MockOpenstackVolumeTenantID,
 					CreatedAt: testTime,
 				},
 			},
 			want: func(t *testing.T, got ontology.IsResource) bool {
 				want := &ontology.BlockStorage{
-					Id:           testdata.MockVolumeID1,
-					Name:         testdata.MockVolumeID1,
+					Id:           testdata.MockOpenstackVolumeID1,
+					Name:         testdata.MockOpenstackVolumeID1,
 					CreationTime: timestamppb.New(testTime),
 					GeoLocation: &ontology.GeoLocation{
 						Region: "test region",
 					},
-					ParentId: util.Ref(testdata.MockVolumeTenantID),
+					ParentId: util.Ref(testdata.MockOpenstackVolumeTenantID),
 				}
 
-				gotNew := got.(*ontology.BlockStorage)
+				gotNew, ok := got.(*ontology.BlockStorage)
+				assert.True(t, ok)
 
 				assert.NotEmpty(t, gotNew.GetRaw())
 				gotNew.Raw = ""
@@ -95,27 +101,33 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 			name: "Happy path: volume name available",
 			fields: fields{
 				region: "test region",
+				domain: &domain{
+					domainID:   testdata.MockOpenstackDomainID1,
+					domainName: testdata.MockOpenstackDomainName1,
+				},
+				projects: map[string]ontology.IsResource{},
 			},
 			args: args{
 				volume: &volumes.Volume{
-					ID:        testdata.MockVolumeID1,
-					Name:      testdata.MockVolumeName1,
-					TenantID:  testdata.MockVolumeTenantID,
+					ID:        testdata.MockOpenstackVolumeID1,
+					Name:      testdata.MockOpenstackVolumeName1,
+					TenantID:  testdata.MockOpenstackVolumeTenantID,
 					CreatedAt: testTime,
 				},
 			},
 			want: func(t *testing.T, got ontology.IsResource) bool {
 				want := &ontology.BlockStorage{
-					Id:           testdata.MockVolumeID1,
-					Name:         testdata.MockVolumeName1,
+					Id:           testdata.MockOpenstackVolumeID1,
+					Name:         testdata.MockOpenstackVolumeName1,
 					CreationTime: timestamppb.New(testTime),
 					GeoLocation: &ontology.GeoLocation{
 						Region: "test region",
 					},
-					ParentId: util.Ref(testdata.MockVolumeTenantID),
+					ParentId: util.Ref(testdata.MockOpenstackVolumeTenantID),
 				}
 
-				gotNew := got.(*ontology.BlockStorage)
+				gotNew, ok := got.(*ontology.BlockStorage)
+				assert.True(t, ok)
 
 				assert.NotEmpty(t, gotNew.GetRaw())
 				gotNew.Raw = ""
@@ -133,6 +145,7 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 				region:   tt.fields.region,
 				domain:   tt.fields.domain,
 				project:  tt.fields.project,
+				projects: tt.fields.projects,
 			}
 			got, err := d.handleBlockStorage(tt.args.volume)
 

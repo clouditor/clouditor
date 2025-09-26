@@ -26,6 +26,8 @@
 package openstack
 
 import (
+	"fmt"
+
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
@@ -37,6 +39,7 @@ import (
 // handleBlockStorage creates a block storage resource based on the Clouditor Ontology
 func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontology.IsResource, error) {
 	// Get Name, if exits, otherwise take the ID
+	//TODO(anatheka): Add tests
 	name := volume.Name
 	if volume.Name == "" {
 		name = volume.ID
@@ -55,7 +58,13 @@ func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontolog
 		Raw:      discovery.Raw(volume),
 	}
 
-	log.Infof("Adding block storage '%s", volume.Name)
+	// Create project resource for the parentId if not available
+	err := d.checkAndHandleManualCreatedProject(volume.TenantID, volume.TenantID, d.domain.domainID)
+	if err != nil {
+		return nil, fmt.Errorf("could not handle project for block storage %s: %w", volume.ID, err)
+	}
+
+	log.Infof("Adding block storage '%s", r.Name)
 
 	return r, nil
 }
