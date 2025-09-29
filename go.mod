@@ -47,7 +47,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/oxisto/oauth2go v0.15.0
 	golang.org/x/crypto v0.41.0 // indirect
-	golang.org/x/oauth2 v0.30.0
+	golang.org/x/oauth2 v0.31.0
 )
 
 // runtime dependencies (rpc)
