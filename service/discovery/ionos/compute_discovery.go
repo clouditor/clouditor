@@ -38,10 +38,13 @@ import (
 // discoverDatacenters lists all datacenters in the IONOS cloud and returns them as a list of ontology resources
 func (d *ionosDiscovery) discoverDatacenters() (*ionoscloud.Datacenters, error) {
 	// List all datacenters
-	dc, _, err := d.clients.computeClient.DataCentersApi.DatacentersGet(context.Background()).Execute()
+	dc, _, err := d.clients.computeClient.DataCentersApi.DatacentersGet(context.Background()).Depth(1).Execute()
 	if err != nil {
 		return util.Ref(dc), fmt.Errorf("could not list datacenters: %w", err)
 	}
+
+	// for _, datacenter := range util.Deref(dc.Items) {
+	// }
 
 	return util.Ref(dc), err
 }
@@ -54,7 +57,7 @@ func (d *ionosDiscovery) discoverServers(dc ionoscloud.Datacenter) (list []ontol
 		return nil, fmt.Errorf("could not list servers for datacenter %s: %w", util.Deref(dc.Id), err)
 	}
 
-	for _, server := range *servers.Items {
+	for _, server := range util.Deref(servers.Items) {
 		r, err := d.handleServer(server, dc)
 		if err != nil {
 			return nil, fmt.Errorf("could not handle server %s: %w", util.Deref(server.Id), err)
@@ -70,7 +73,7 @@ func (d *ionosDiscovery) discoverServers(dc ionoscloud.Datacenter) (list []ontol
 
 // discoverNetworks lists all networks in the given datacenter and returns them as a list of ontology resources
 func (d *ionosDiscovery) discoverBlockStorages(dc ionoscloud.Datacenter) (list []ontology.IsResource, err error) {
-	blockStorages, _, err := d.clients.computeClient.VolumesApi.DatacentersVolumesGet(context.Background(), util.Deref(dc.Id)).Execute()
+	blockStorages, _, err := d.clients.computeClient.VolumesApi.DatacentersVolumesGet(context.Background(), util.Deref(dc.Id)).Depth(1).Execute()
 	if err != nil {
 		return nil, fmt.Errorf("could not list block storages for datacenter %s: %w", util.Deref(dc.Id), err)
 	}
@@ -89,7 +92,7 @@ func (d *ionosDiscovery) discoverBlockStorages(dc ionoscloud.Datacenter) (list [
 
 // discoverLoadBalancers lists all load balancers in the given datacenter and returns them as a list of ontology resources
 func (d *ionosDiscovery) discoverLoadBalancers(dc ionoscloud.Datacenter) (list []ontology.IsResource, err error) {
-	loadBalancers, _, err := d.clients.computeClient.LoadBalancersApi.DatacentersLoadbalancersGet(context.Background(), util.Deref(dc.Id)).Execute()
+	loadBalancers, _, err := d.clients.computeClient.LoadBalancersApi.DatacentersLoadbalancersGet(context.Background(), util.Deref(dc.Id)).Depth(1).Execute()
 	if err != nil {
 		return nil, fmt.Errorf("could not list load balancers for datacenter %s: %w", util.Deref(dc.Id), err)
 	}
