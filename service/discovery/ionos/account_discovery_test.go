@@ -67,8 +67,11 @@ func Test_ionosDiscovery_discoverDatacenters(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := tt.fields.ionosDiscovery
-			got, _, err := d.discoverDatacenters()
-			// TODO(all): Check list as well
+			got, list, err := d.discoverDatacenters()
+
+			if tt.want == nil {
+				assert.NotEmpty(t, list)
+			}
 
 			tt.want(t, got)
 			tt.wantErr(t, err)
