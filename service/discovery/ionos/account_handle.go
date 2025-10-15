@@ -50,7 +50,7 @@ func (d *ionosDiscovery) handleDatacenter(dc ionoscloud.Datacenter) (ontology.Is
 	r := &ontology.Account{
 		Id:           util.Deref(dc.Id),
 		Name:         util.Deref(dc.Properties.Name),
-		CreationTime: timestamppb.New(*dc.Metadata.GetCreatedDate()),
+		CreationTime: timestamppb.New(util.Deref(dc.Metadata.GetCreatedDate())),
 		GeoLocation: &ontology.GeoLocation{
 			Region: util.Deref(dc.Properties.Location),
 		},

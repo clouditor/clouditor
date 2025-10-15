@@ -95,7 +95,7 @@ func (mockSender) RoundTrip(req *http.Request) (res *http.Response, err error) {
 					"id": testdata.MockIonosDatacenterID1,
 					"properties": map[string]interface{}{
 						"name":        testdata.MockIonosDatacenterName1,
-						"desctiption": testdata.MockIonosDatacenterDescription1,
+						"description": testdata.MockIonosDatacenterDescription1,
 						"location":    testdata.MockIonosDatacenterLocation1,
 					},
 					"metadata": map[string]interface{}{},
@@ -104,7 +104,7 @@ func (mockSender) RoundTrip(req *http.Request) (res *http.Response, err error) {
 					"id": testdata.MockIonosDatacenterID2,
 					"properties": map[string]interface{}{
 						"name":        testdata.MockIonosDatacenterName2,
-						"desctiption": testdata.MockIonosDatacenterDescription2,
+						"description": testdata.MockIonosDatacenterDescription2,
 						"location":    testdata.MockIonosDatacenterLocation2,
 					},
 					"metadata": map[string]interface{}{},
