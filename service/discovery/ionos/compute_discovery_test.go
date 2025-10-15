@@ -35,48 +35,6 @@ import (
 	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 )
 
-func Test_ionosDiscovery_discoverDatacenters(t *testing.T) {
-	type fields struct {
-		ionosDiscovery *ionosDiscovery
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		want    assert.Want[*ionoscloud.Datacenters]
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "error: could not list datacenters",
-			fields: fields{
-				ionosDiscovery: NewMockIonosDiscovery(newMockErrorSender()),
-			},
-			want: assert.Empty[*ionoscloud.Datacenters],
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not list datacenters:")
-			},
-		},
-		{
-			name: "Happy path",
-			fields: fields{
-				ionosDiscovery: NewMockIonosDiscovery(newMockSender()),
-			},
-			want: func(t *testing.T, got *ionoscloud.Datacenters) bool {
-				return assert.Equal(t, 2, len(util.Deref(got.Items)))
-			},
-			wantErr: assert.NoError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := tt.fields.ionosDiscovery
-			got, err := d.discoverDatacenters()
-
-			tt.want(t, got)
-			tt.wantErr(t, err)
-		})
-	}
-}
-
 func Test_ionosDiscovery_discoverServer(t *testing.T) {
 	type fields struct {
 		ionosDiscovery *ionosDiscovery

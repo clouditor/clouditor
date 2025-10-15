@@ -94,6 +94,7 @@ func (d *ionosDiscovery) handleBlockStorage(blockStorage ionoscloud.Volume, dc i
 		Labels:   labels(l),
 		ParentId: dc.GetId(),
 		Raw:      discovery.Raw(blockStorage, dc),
+		// Description: , // Not available
 		// AtRestEncryption: ,
 		// Backups: ,
 

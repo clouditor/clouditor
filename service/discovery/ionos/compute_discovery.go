@@ -35,20 +35,6 @@ import (
 	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 )
 
-// discoverDatacenters lists all datacenters in the IONOS cloud and returns them as a list of ontology resources
-func (d *ionosDiscovery) discoverDatacenters() (*ionoscloud.Datacenters, error) {
-	// List all datacenters
-	dc, _, err := d.clients.computeClient.DataCentersApi.DatacentersGet(context.Background()).Depth(1).Execute()
-	if err != nil {
-		return util.Ref(dc), fmt.Errorf("could not list datacenters: %w", err)
-	}
-
-	// for _, datacenter := range util.Deref(dc.Items) {
-	// }
-
-	return util.Ref(dc), err
-}
-
 // discoverResources lists all resources in the given datacenter and returns them as a list of ontology resources
 func (d *ionosDiscovery) discoverServers(dc ionoscloud.Datacenter) (list []ontology.IsResource, err error) {
 	// List all servers in the datacenter

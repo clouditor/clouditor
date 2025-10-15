@@ -110,10 +110,12 @@ func (d *ionosDiscovery) List() (list []ontology.IsResource, err error) {
 
 	// For IONOS Cloud, we have to discover the datacenters first and then the resources within those datacenters.
 	// Discover datacenters
-	dc, err := d.discoverDatacenters()
+	log.Info("Discover IONOS Cloud datacenters ...")
+	dc, dcResources, err := d.discoverDatacenters()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover datacenters: %w", err)
 	}
+	list = append(list, dcResources...)
 
 	for _, datacenter := range util.Deref(dc.Items) {
 		// Discover storage resources
