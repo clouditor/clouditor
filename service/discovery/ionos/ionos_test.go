@@ -545,7 +545,7 @@ func Test_ionosDiscovery_List(t *testing.T) {
 				ionosDiscovery: NewMockIonosDiscovery(newMockSender()),
 			},
 			want: func(t *testing.T, gotList []ontology.IsResource) bool {
-				return assert.Equal(t, 8, len(gotList))
+				return assert.Equal(t, 12, len(gotList))
 			},
 			wantErr: assert.Nil[error],
 		},
