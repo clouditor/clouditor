@@ -55,7 +55,7 @@ func (d *ionosDiscovery) discoverServers(dc ionoscloud.Datacenter) (list []ontol
 
 		// Handle network interfaces
 		for _, nic := range util.Deref(server.Entities.Nics.Items) {
-			networkInterface, err := d.handleNetworkInterfaces(nic, dc)
+			networkInterface, err := d.handleServerNetworkInterfaces(nic, dc)
 			if err != nil {
 				return nil, fmt.Errorf("could not handle network interfaces: %w", err)
 			}
@@ -81,14 +81,14 @@ func (d *ionosDiscovery) discoverBlockStorages(dc ionoscloud.Datacenter) (list [
 			return nil, fmt.Errorf("could not handle block storage %s: %w", util.Deref(blockStorage.Id), err)
 		}
 
-		log.Infof("Adding block storage '+s'", r.GetId())
+		log.Infof("Adding block storage '%s'", r.GetId())
 
 		list = append(list, r)
 	}
 	return list, nil
 }
 
-// discoverLoadBalancers lists all load balancers in the given datacenter and returns them as a list of ontology resources
+// discoverLoadBalancers lists all load balancers and corresponding network interfaces in the given datacenter and returns them as a list of ontology resources
 func (d *ionosDiscovery) discoverLoadBalancers(dc ionoscloud.Datacenter) (list []ontology.IsResource, err error) {
 	loadBalancers, _, err := d.clients.client.LoadBalancersApi.DatacentersLoadbalancersGet(context.Background(), util.Deref(dc.Id)).Depth(1).Execute()
 	if err != nil {
@@ -103,6 +103,18 @@ func (d *ionosDiscovery) discoverLoadBalancers(dc ionoscloud.Datacenter) (list [
 		log.Infof("Adding load balancer '%s'", r.GetId())
 
 		list = append(list, r)
+
+		// Handle network interfaces
+		for _, nic := range util.Deref(loadBalancer.Entities.Balancednics.Items) {
+			networkInterface, err := d.handleLBNetworkInterfaces(nic, dc)
+			if err != nil {
+				return nil, fmt.Errorf("could not handle network interfaces: %w", err)
+			}
+
+			log.Infof("Adding network interface '%s'", r.GetId())
+
+			list = append(list, networkInterface)
+		}
 	}
 	return list, nil
 }

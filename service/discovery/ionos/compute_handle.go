@@ -46,7 +46,6 @@ func (d *ionosDiscovery) handleServer(server ionoscloud.Server, dc ionoscloud.Da
 		log.Errorf("error getting labels for server %s: %s", util.Deref(server.Id), err)
 	}
 
-	// TODO(anatheka): !!!!!!!!!!!HIER WEITERMACHEN: Get Nics from Server information, DEPTH(3) needed !!!!!!
 	r := &ontology.VirtualMachine{
 		Id:           util.Deref(server.Id),
 		Name:         util.Deref(server.Properties.Name),
