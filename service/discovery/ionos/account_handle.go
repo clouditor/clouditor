@@ -27,7 +27,6 @@ package ionos
 
 import (
 	"context"
-	"fmt"
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
@@ -40,11 +39,11 @@ import (
 // handleDatacenter creates a datacenter resource based on the Clouditor Ontology
 func (d *ionosDiscovery) handleDatacenter(dc ionoscloud.Datacenter) (ontology.IsResource, error) {
 	// Getting labels
-	l, _, err := d.clients.computeClient.LabelsApi.
+	l, _, err := d.clients.client.LabelsApi.
 		DatacentersLabelsGet(context.Background(), util.Deref(dc.GetId())).
 		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("error getting labels for datacenter %s: %s", util.Deref(dc.Id), err)
+		log.Errorf("error getting labels for datacenter %s: %s", util.Deref(dc.Id), err)
 	}
 
 	r := &ontology.Account{

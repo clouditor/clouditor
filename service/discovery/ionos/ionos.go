@@ -83,9 +83,7 @@ type ionosDiscovery struct {
 }
 
 type clients struct {
-	computeClient *ionoscloud.APIClient
-	storageClient *ionoscloud.APIClient
-	networkClient *ionoscloud.APIClient
+	client *ionoscloud.APIClient
 }
 
 func NewIonosDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
@@ -138,12 +136,13 @@ func (d *ionosDiscovery) List() (list []ontology.IsResource, err error) {
 		}
 		list = append(list, storage...)
 
-		// Discover virtual machines
-		virtualMachines, err := d.discoverServers(datacenter)
+		// Discover virtual machines and network interfaces
+		// Network interfaces can not be discovered alone, only via the servers
+		servers, err := d.discoverServers(datacenter)
 		if err != nil {
-			return nil, fmt.Errorf("could not discover virtual machines: %w", err)
+			return nil, fmt.Errorf("could not discover servers and network interfaces: %w", err)
 		}
-		list = append(list, virtualMachines...)
+		list = append(list, servers...)
 
 		// Discover load balancers
 		loadBalancer, err := d.discoverLoadBalancers(datacenter)
@@ -154,13 +153,6 @@ func (d *ionosDiscovery) List() (list []ontology.IsResource, err error) {
 
 		// Discover network resources
 		log.Info("Discover IONOS Cloud network resources...")
-
-		// Discover network interfaces
-		// networkInterfaces, err := d.discoverNetworkInterfaces()
-		// if err != nil {
-		// 	return nil, fmt.Errorf("could not discover network interfaces: %w", err)
-		// }
-		// list = append(list, networkInterfaces...)
 	}
 
 	return list, nil
@@ -171,8 +163,8 @@ func (d *ionosDiscovery) TargetOfEvaluationID() string {
 }
 
 func (d *ionosDiscovery) authorize() {
-	if d.clients.computeClient == nil {
-		d.clients.computeClient = ionoscloud.NewAPIClient(d.authConfig)
+	if d.clients.client == nil {
+		d.clients.client = ionoscloud.NewAPIClient(d.authConfig)
 	}
 }
 

@@ -40,7 +40,7 @@ func (d *ionosDiscovery) discoverDatacenters() (*ionoscloud.Datacenters, []ontol
 		list []ontology.IsResource
 	)
 	// List all datacenters
-	dc, _, err := d.clients.computeClient.DataCentersApi.DatacentersGet(context.Background()).Depth(1).Execute()
+	dc, _, err := d.clients.client.DataCentersApi.DatacentersGet(context.Background()).Depth(1).Execute()
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not list datacenters: %w", err)
 	}
@@ -51,7 +51,7 @@ func (d *ionosDiscovery) discoverDatacenters() (*ionoscloud.Datacenters, []ontol
 			return nil, nil, fmt.Errorf("could not handle datacenter %s: %w", util.Deref(datacenter.Id), err)
 		}
 
-		log.Debug("Adding datacenter %+w", r.GetId())
+		log.Infof("Adding datacenter '%s'", r.GetId())
 
 		list = append(list, r)
 	}

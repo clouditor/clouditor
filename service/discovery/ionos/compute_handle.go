@@ -27,7 +27,6 @@ package ionos
 
 import (
 	"context"
-	"fmt"
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
@@ -40,13 +39,14 @@ import (
 // handleServer creates a virtual machine resource based on the Clouditor Ontology
 func (d *ionosDiscovery) handleServer(server ionoscloud.Server, dc ionoscloud.Datacenter) (ontology.IsResource, error) {
 	// Getting labels
-	l, _, err := d.clients.computeClient.LabelsApi.
+	l, _, err := d.clients.client.LabelsApi.
 		DatacentersServersLabelsGet(context.Background(), util.Deref(dc.GetId()), util.Deref(server.GetId())).
 		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("error getting labels for server %s: %s", util.Deref(server.Id), err)
+		log.Errorf("error getting labels for server %s: %s", util.Deref(server.Id), err)
 	}
 
+	// TODO(anatheka): !!!!!!!!!!!HIER WEITERMACHEN: Get Nics from Server information, DEPTH(3) needed !!!!!!
 	r := &ontology.VirtualMachine{
 		Id:           util.Deref(server.Id),
 		Name:         util.Deref(server.Properties.Name),
@@ -77,11 +77,11 @@ func (d *ionosDiscovery) handleServer(server ionoscloud.Server, dc ionoscloud.Da
 // handleBlockStorage creates a block storage resource based on the Clouditor Ontology
 func (d *ionosDiscovery) handleBlockStorage(blockStorage ionoscloud.Volume, dc ionoscloud.Datacenter) (ontology.IsResource, error) {
 	// Getting labels
-	l, _, err := d.clients.computeClient.LabelsApi.
+	l, _, err := d.clients.client.LabelsApi.
 		DatacentersServersLabelsGet(context.Background(), util.Deref(dc.GetId()), util.Deref(blockStorage.GetId())).
 		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("error getting labels for block storage %s: %s", util.Deref(blockStorage.Id), err)
+		log.Errorf("error getting labels for block storage %s: %s", util.Deref(blockStorage.Id), err)
 	}
 
 	r := &ontology.BlockStorage{
@@ -106,11 +106,11 @@ func (d *ionosDiscovery) handleBlockStorage(blockStorage ionoscloud.Volume, dc i
 // handleLoadBalancer creates a load balancer resource based on the Clouditor Ontology
 func (d *ionosDiscovery) handleLoadBalancer(loadBalancer ionoscloud.Loadbalancer, dc ionoscloud.Datacenter) (ontology.IsResource, error) {
 	// Getting labels
-	l, _, err := d.clients.computeClient.LabelsApi.
+	l, _, err := d.clients.client.LabelsApi.
 		DatacentersServersLabelsGet(context.Background(), util.Deref(dc.GetId()), util.Deref(loadBalancer.GetId())).
 		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("error getting labels for load balancer %s: %s", util.Deref(loadBalancer.Id), err)
+		log.Errorf("error getting labels for load balancer %s: %s", util.Deref(loadBalancer.Id), err)
 	}
 	r := &ontology.LoadBalancer{
 		Id:           util.Deref(loadBalancer.Id),

@@ -53,16 +53,6 @@ func Test_ionosDiscovery_handleServer(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "error: getting labels",
-			fields: fields{
-				ionosDiscovery: NewMockIonosDiscovery(newMockErrorSender()),
-			},
-			want: assert.Nil[ontology.IsResource],
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "error getting labels for server")
-			},
-		},
-		{
 			name: "Happy path",
 			fields: fields{
 				ionosDiscovery: NewMockIonosDiscovery(newMockSender()),
@@ -164,16 +154,6 @@ func Test_ionosDiscovery_handleBlockStorage(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "error: getting labels",
-			fields: fields{
-				ionosDiscovery: NewMockIonosDiscovery(newMockErrorSender()),
-			},
-			want: assert.Nil[ontology.IsResource],
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "error getting labels for block storage")
-			},
-		},
-		{
 			name: "Happy path",
 			fields: fields{
 				ionosDiscovery: NewMockIonosDiscovery(newMockSender()),
@@ -246,16 +226,6 @@ func Test_ionosDiscovery_handleLoadBalancer(t *testing.T) {
 		want    assert.Want[ontology.IsResource]
 		wantErr assert.ErrorAssertionFunc
 	}{
-		{
-			name: "error: getting labels",
-			fields: fields{
-				ionosDiscovery: NewMockIonosDiscovery(newMockErrorSender()),
-			},
-			want: assert.Nil[ontology.IsResource],
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "error getting labels for load balancer")
-			},
-		},
 		{
 			name: "Happy path",
 			fields: fields{

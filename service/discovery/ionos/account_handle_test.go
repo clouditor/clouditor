@@ -51,16 +51,6 @@ func Test_ionosDiscovery_handleDatacenter(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "error: getting labels",
-			fields: fields{
-				ionosDiscovery: NewMockIonosDiscovery(newMockErrorSender()),
-			},
-			want: assert.Nil[ontology.IsResource],
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "error getting labels for datacenter")
-			},
-		},
-		{
 			name: "Happy path",
 			fields: fields{
 				ionosDiscovery: NewMockIonosDiscovery(newMockSender()),

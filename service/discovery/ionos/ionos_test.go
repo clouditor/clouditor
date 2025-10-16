@@ -272,9 +272,9 @@ func NewMockIonosDiscovery(roundTrip http.RoundTripper) *ionosDiscovery {
 	}
 
 	if _, ok := d.authConfig.HTTPClient.Transport.(*mockErrorSender); ok {
-		d.clients.computeClient = computeClient(true)
+		d.clients.client = computeClient(true)
 	} else {
-		d.clients.computeClient = computeClient(false)
+		d.clients.client = computeClient(false)
 	}
 
 	return d
