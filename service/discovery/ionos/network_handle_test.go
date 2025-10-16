@@ -36,13 +36,13 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func Test_ionosDiscovery_handleLBNetworkInterfaces(t *testing.T) {
+func Test_ionosDiscovery_handleNetworkInterfaces(t *testing.T) {
 	type fields struct {
 		ionosDiscovery *ionosDiscovery
 	}
 	type args struct {
-		volume ionoscloud.Nic
-		dc     ionoscloud.Datacenter
+		nic ionoscloud.Nic
+		dc  ionoscloud.Datacenter
 	}
 	tests := []struct {
 		name    string
@@ -57,7 +57,7 @@ func Test_ionosDiscovery_handleLBNetworkInterfaces(t *testing.T) {
 				ionosDiscovery: NewMockIonosDiscovery(newMockSender()),
 			},
 			args: args{
-				volume: ionoscloud.Nic{
+				nic: ionoscloud.Nic{
 					Id: util.Ref(testdata.MockIonosNicID1),
 					Properties: &ionoscloud.NicProperties{
 						Name:           util.Ref(testdata.MockIonosNicName1),
@@ -104,7 +104,7 @@ func Test_ionosDiscovery_handleLBNetworkInterfaces(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := tt.fields.ionosDiscovery
-			got, err := d.handleLBNetworkInterfaces(tt.args.volume, tt.args.dc)
+			got, err := d.handleNetworkInterfaces(tt.args.nic, tt.args.dc)
 
 			tt.want(t, got)
 			tt.wantErr(t, err)

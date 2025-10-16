@@ -34,33 +34,8 @@ import (
 	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 )
 
-// handleLBNetworkInterfaces creates a network interface (balances Load Balancer) resource based on the Clouditor Ontology
-func (d *ionosDiscovery) handleLBNetworkInterfaces(nic ionoscloud.Nic, dc ionoscloud.Datacenter) (ontology.IsResource, error) {
-	r := &ontology.NetworkInterface{
-		Id:           util.Deref(nic.Id),
-		Name:         util.Deref(nic.Properties.Name),
-		CreationTime: timestamppb.New(util.Deref(nic.Metadata.GetCreatedDate())),
-		GeoLocation: &ontology.GeoLocation{
-			Region: util.Deref(dc.Properties.GetLocation()),
-		},
-		// Labels:   , // Not available
-		ParentId: dc.GetId(),
-		Raw:      discovery.Raw(nic, dc),
-		AccessRestriction: &ontology.AccessRestriction{
-			Type: &ontology.AccessRestriction_L3Firewall{
-				L3Firewall: &ontology.L3Firewall{
-					Enabled:         util.Deref(nic.Properties.GetFirewallActive()),
-					RestrictedPorts: "",
-				},
-			},
-		},
-	}
-
-	return r, nil
-}
-
-// handleServerNetworkInterfaces creates a network interface resource based on the Clouditor Ontology
-func (d *ionosDiscovery) handleServerNetworkInterfaces(nic ionoscloud.Nic, dc ionoscloud.Datacenter) (ontology.IsResource, error) {
+// handleNetworkInterfaces creates a network interface resource based on the Clouditor Ontology
+func (d *ionosDiscovery) handleNetworkInterfaces(nic ionoscloud.Nic, dc ionoscloud.Datacenter) (ontology.IsResource, error) {
 	r := &ontology.NetworkInterface{
 		Id:           util.Deref(nic.Id),
 		Name:         util.Deref(nic.Properties.Name),

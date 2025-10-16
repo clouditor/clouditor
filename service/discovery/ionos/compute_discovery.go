@@ -55,7 +55,7 @@ func (d *ionosDiscovery) discoverServers(dc ionoscloud.Datacenter) (list []ontol
 
 		// Handle network interfaces
 		for _, nic := range util.Deref(server.Entities.Nics.Items) {
-			networkInterface, err := d.handleServerNetworkInterfaces(nic, dc)
+			networkInterface, err := d.handleNetworkInterfaces(nic, dc)
 			if err != nil {
 				return nil, fmt.Errorf("could not handle network interfaces: %w", err)
 			}
@@ -106,7 +106,7 @@ func (d *ionosDiscovery) discoverLoadBalancers(dc ionoscloud.Datacenter) (list [
 
 		// Handle network interfaces
 		for _, nic := range util.Deref(loadBalancer.Entities.Balancednics.Items) {
-			networkInterface, err := d.handleLBNetworkInterfaces(nic, dc)
+			networkInterface, err := d.handleNetworkInterfaces(nic, dc)
 			if err != nil {
 				return nil, fmt.Errorf("could not handle network interfaces: %w", err)
 			}
