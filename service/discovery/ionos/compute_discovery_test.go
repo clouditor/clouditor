@@ -198,11 +198,13 @@ func Test_ionosDiscovery_discoverLoadBalancers(t *testing.T) {
 				},
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {
-				assert.Equal(t, 2, len(got))
+				assert.Equal(t, 4, len(got))
 				_, ok := got[0].(*ontology.LoadBalancer)
-				_, ok1 := got[1].(*ontology.LoadBalancer)
-				if !ok || !ok1 {
-					return assert.Fail(t, "expected both resources to be LoadBalancer")
+				_, ok1 := got[1].(*ontology.NetworkInterface)
+				_, ok2 := got[2].(*ontology.LoadBalancer)
+				_, ok3 := got[3].(*ontology.NetworkInterface)
+				if !ok || !ok1 || !ok2 || !ok3 {
+					return assert.Fail(t, "expected 2 resources to be load balancers and 2 to be network interfaces")
 				}
 				return true
 			},

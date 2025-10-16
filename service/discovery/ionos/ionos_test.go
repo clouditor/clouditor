@@ -212,6 +212,18 @@ func (mockSender) RoundTrip(req *http.Request) (res *http.Response, err error) {
 					"metadata": map[string]interface{}{
 						"createdDate": testdata.CreationTime,
 					},
+					"entities": map[string]interface{}{
+						"balancednics": map[string]interface{}{
+							"items": []map[string]interface{}{
+								{
+									"id": testdata.MockIonosNicID1,
+									"properties": map[string]interface{}{
+										"name": testdata.MockIonosNicName1,
+									},
+								},
+							},
+						},
+					},
 				},
 				{
 					"id": testdata.MockIonosLoadBalancerID2,
@@ -220,6 +232,18 @@ func (mockSender) RoundTrip(req *http.Request) (res *http.Response, err error) {
 					},
 					"metadata": map[string]interface{}{
 						"createdDate": testdata.CreationTime,
+					},
+					"entities": map[string]interface{}{
+						"balancednics": map[string]interface{}{
+							"items": []map[string]interface{}{
+								{
+									"id": testdata.MockIonosNicID2,
+									"properties": map[string]interface{}{
+										"name": testdata.MockIonosNicName2,
+									},
+								},
+							},
+						},
 					},
 				},
 			},
