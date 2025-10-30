@@ -132,12 +132,12 @@ func Test_openstackDiscovery_discoverCluster(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				region:   tt.fields.region,
-				domain:   tt.fields.domain,
-				project:  tt.fields.project,
+				ctID:              tt.fields.ctID,
+				clients:           tt.fields.clients,
+				authOpts:          tt.fields.authOpts,
+				region:            tt.fields.region,
+				domain:            tt.fields.domain,
+				configuredProject: tt.fields.project,
 			}
 			gotList, err := d.discoverCluster()
 

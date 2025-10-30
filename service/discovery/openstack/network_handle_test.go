@@ -140,13 +140,13 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				region:   tt.fields.region,
-				domain:   tt.fields.domain,
-				project:  tt.fields.project,
-				projects: tt.fields.projects,
+				ctID:               tt.fields.ctID,
+				clients:            tt.fields.clients,
+				authOpts:           tt.fields.authOpts,
+				region:             tt.fields.region,
+				domain:             tt.fields.domain,
+				configuredProject:  tt.fields.project,
+				discoveredProjects: tt.fields.projects,
 			}
 			got, err := d.handleNetworkInterfaces(tt.args.network)
 

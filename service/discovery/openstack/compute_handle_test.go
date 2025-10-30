@@ -181,12 +181,12 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				region:   tt.fields.region,
-				projects: tt.fields.projects,
-				domain:   tt.fields.domain,
+				ctID:               tt.fields.ctID,
+				clients:            tt.fields.clients,
+				authOpts:           tt.fields.authOpts,
+				region:             tt.fields.region,
+				discoveredProjects: tt.fields.projects,
+				domain:             tt.fields.domain,
 			}
 
 			got, err := d.handleServer(tt.args.server)

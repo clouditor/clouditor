@@ -113,8 +113,8 @@ func (d *openstackDiscovery) setProjectInfo(x interface{}) error {
 		return fmt.Errorf("error getting project ID")
 	}
 
-	d.project.projectID = projectID
-	d.project.projectName = projectName
+	d.configuredProject.projectID = projectID
+	d.configuredProject.projectName = projectName
 	return nil
 }
 

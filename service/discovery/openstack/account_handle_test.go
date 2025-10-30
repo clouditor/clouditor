@@ -94,12 +94,12 @@ func Test_openstackDiscovery_handleProject(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				region:   tt.fields.region,
-				domain:   tt.fields.domain,
-				project:  tt.fields.project,
+				ctID:              tt.fields.ctID,
+				clients:           tt.fields.clients,
+				authOpts:          tt.fields.authOpts,
+				region:            tt.fields.region,
+				domain:            tt.fields.domain,
+				configuredProject: tt.fields.project,
 			}
 			got, err := d.handleProject(tt.args.project)
 
@@ -155,11 +155,11 @@ func Test_openstackDiscovery_handleDomain(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				domain:   tt.fields.domain,
-				project:  tt.fields.project,
+				ctID:              tt.fields.ctID,
+				clients:           tt.fields.clients,
+				authOpts:          tt.fields.authOpts,
+				domain:            tt.fields.domain,
+				configuredProject: tt.fields.project,
 			}
 			got, err := d.handleDomain(tt.args.domain)
 
@@ -198,7 +198,7 @@ func Test_openstackDiscovery_checkAndHandleManualCreatedProject(t *testing.T) {
 			},
 			args: args{},
 			want: func(t *testing.T, d *openstackDiscovery) bool {
-				return assert.Empty(t, d.projects)
+				return assert.Empty(t, d.discoveredProjects)
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "cannot create project resource: project ID, project name, or domain ID is empty")
@@ -228,7 +228,7 @@ func Test_openstackDiscovery_checkAndHandleManualCreatedProject(t *testing.T) {
 					ParentId: util.Ref(testdata.MockOpenstackDomainID1),
 					Raw:      discovery.Raw("Project/Tenant information manually added."),
 				}
-				got, ok := d.projects[testdata.MockOpenstackProjectID1].(*ontology.ResourceGroup)
+				got, ok := d.discoveredProjects[testdata.MockOpenstackProjectID1].(*ontology.ResourceGroup)
 				assert.True(t, ok)
 
 				return assert.Equal(t, want, got)
@@ -252,7 +252,7 @@ func Test_openstackDiscovery_checkAndHandleManualCreatedProject(t *testing.T) {
 					ParentId: util.Ref(testdata.MockOpenstackDomainID1),
 					Raw:      discovery.Raw("Project/Tenant information manually added."),
 				}
-				got, ok := d.projects[testdata.MockOpenstackProjectID1].(*ontology.ResourceGroup)
+				got, ok := d.discoveredProjects[testdata.MockOpenstackProjectID1].(*ontology.ResourceGroup)
 				assert.True(t, ok)
 				return assert.Equal(t, want, got)
 			},
@@ -262,13 +262,13 @@ func Test_openstackDiscovery_checkAndHandleManualCreatedProject(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				region:   tt.fields.region,
-				domain:   tt.fields.domain,
-				project:  tt.fields.project,
-				projects: tt.fields.projects,
+				ctID:               tt.fields.ctID,
+				clients:            tt.fields.clients,
+				authOpts:           tt.fields.authOpts,
+				region:             tt.fields.region,
+				domain:             tt.fields.domain,
+				configuredProject:  tt.fields.project,
+				discoveredProjects: tt.fields.projects,
 			}
 			err := d.addProjectIfMissing(tt.args.id, tt.args.name, tt.args.domain)
 

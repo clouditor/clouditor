@@ -201,7 +201,7 @@ func Test_openstackDiscovery_setProjectInfo(t *testing.T) {
 				x: nil,
 			},
 			want: func(t *testing.T, d *openstackDiscovery) bool {
-				return assert.Empty(t, d.project)
+				return assert.Empty(t, d.configuredProject)
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "unknown resource type:")
@@ -216,7 +216,7 @@ func Test_openstackDiscovery_setProjectInfo(t *testing.T) {
 				x: struct{}{}, // Example of an unknown resource type
 			},
 			want: func(t *testing.T, d *openstackDiscovery) bool {
-				return assert.Empty(t, d.project)
+				return assert.Empty(t, d.configuredProject)
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "unknown resource type:")
@@ -233,7 +233,7 @@ func Test_openstackDiscovery_setProjectInfo(t *testing.T) {
 				},
 			},
 			want: func(t *testing.T, d *openstackDiscovery) bool {
-				return assert.Empty(t, d.project)
+				return assert.Empty(t, d.configuredProject)
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "error getting project ID")
@@ -253,7 +253,7 @@ func Test_openstackDiscovery_setProjectInfo(t *testing.T) {
 				},
 			},
 			want: func(t *testing.T, d *openstackDiscovery) bool {
-				return assert.Empty(t, d.project) // Domain does not have a project ID or name, so we skip this
+				return assert.Empty(t, d.configuredProject) // Domain does not have a project ID or name, so we skip this
 			},
 			wantErr: assert.NoError,
 		},
@@ -270,8 +270,8 @@ func Test_openstackDiscovery_setProjectInfo(t *testing.T) {
 				},
 			},
 			want: func(t *testing.T, d *openstackDiscovery) bool {
-				assert.Equal(t, testdata.MockOpenstackProjectID1, d.project.projectID)
-				return assert.Equal(t, testdata.MockOpenstackProjectID1, d.project.projectName)
+				assert.Equal(t, testdata.MockOpenstackProjectID1, d.configuredProject.projectID)
+				return assert.Equal(t, testdata.MockOpenstackProjectID1, d.configuredProject.projectName)
 			},
 			wantErr: assert.NoError,
 		},
@@ -288,8 +288,8 @@ func Test_openstackDiscovery_setProjectInfo(t *testing.T) {
 				},
 			},
 			want: func(t *testing.T, d *openstackDiscovery) bool {
-				assert.Equal(t, testdata.MockOpenstackProjectID1, d.project.projectID)
-				return assert.Equal(t, testdata.MockOpenstackProjectID1, d.project.projectName)
+				assert.Equal(t, testdata.MockOpenstackProjectID1, d.configuredProject.projectID)
+				return assert.Equal(t, testdata.MockOpenstackProjectID1, d.configuredProject.projectName)
 			},
 			wantErr: assert.NoError,
 		},
@@ -306,8 +306,8 @@ func Test_openstackDiscovery_setProjectInfo(t *testing.T) {
 				},
 			},
 			want: func(t *testing.T, d *openstackDiscovery) bool {
-				assert.Equal(t, testdata.MockOpenstackProjectID1, d.project.projectID)
-				return assert.Equal(t, testdata.MockOpenstackProjectID1, d.project.projectName)
+				assert.Equal(t, testdata.MockOpenstackProjectID1, d.configuredProject.projectID)
+				return assert.Equal(t, testdata.MockOpenstackProjectID1, d.configuredProject.projectName)
 			},
 			wantErr: assert.NoError,
 		},
@@ -324,8 +324,8 @@ func Test_openstackDiscovery_setProjectInfo(t *testing.T) {
 				},
 			},
 			want: func(t *testing.T, d *openstackDiscovery) bool {
-				assert.Equal(t, testdata.MockOpenstackProjectID1, d.project.projectID)
-				return assert.Equal(t, testdata.MockOpenstackProjectID1, d.project.projectName)
+				assert.Equal(t, testdata.MockOpenstackProjectID1, d.configuredProject.projectID)
+				return assert.Equal(t, testdata.MockOpenstackProjectID1, d.configuredProject.projectName)
 			},
 			wantErr: assert.NoError,
 		},
@@ -333,13 +333,13 @@ func Test_openstackDiscovery_setProjectInfo(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				region:   tt.fields.region,
-				domain:   tt.fields.domain,
-				project:  tt.fields.project,
-				projects: tt.fields.projects,
+				ctID:               tt.fields.ctID,
+				clients:            tt.fields.clients,
+				authOpts:           tt.fields.authOpts,
+				region:             tt.fields.region,
+				domain:             tt.fields.domain,
+				configuredProject:  tt.fields.project,
+				discoveredProjects: tt.fields.projects,
 			}
 			err := d.setProjectInfo(tt.args.x)
 

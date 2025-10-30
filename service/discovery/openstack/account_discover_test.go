@@ -135,12 +135,12 @@ func Test_openstackDiscovery_discoverProjects(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				region:   tt.fields.region,
-				domain:   tt.fields.domain,
-				project:  tt.fields.project,
+				ctID:              tt.fields.ctID,
+				clients:           tt.fields.clients,
+				authOpts:          tt.fields.authOpts,
+				region:            tt.fields.region,
+				domain:            tt.fields.domain,
+				configuredProject: tt.fields.project,
 			}
 
 			gotList, err := d.discoverProjects()
@@ -212,11 +212,11 @@ func Test_openstackDiscovery_discoverDomain(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				domain:   tt.fields.domain,
-				project:  tt.fields.project,
+				ctID:              tt.fields.ctID,
+				clients:           tt.fields.clients,
+				authOpts:          tt.fields.authOpts,
+				domain:            tt.fields.domain,
+				configuredProject: tt.fields.project,
 			}
 			gotList, err := d.discoverDomains()
 

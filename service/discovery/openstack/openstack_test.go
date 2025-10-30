@@ -628,12 +628,12 @@ func Test_openstackDiscovery_List(t *testing.T) {
 			testhelper.SetupHTTP()
 
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				domain:   tt.fields.domain,
-				project:  tt.fields.project,
-				projects: tt.fields.projects,
+				ctID:               tt.fields.ctID,
+				clients:            tt.fields.clients,
+				authOpts:           tt.fields.authOpts,
+				domain:             tt.fields.domain,
+				configuredProject:  tt.fields.project,
+				discoveredProjects: tt.fields.projects,
 			}
 
 			switch tt.fields.testhelper {

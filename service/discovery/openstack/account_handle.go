@@ -82,7 +82,7 @@ func (d *openstackDiscovery) addProjectIfMissing(projectID, projectName, domainI
 		return fmt.Errorf("cannot create project resource: project ID, project name, or domain ID is empty")
 	}
 
-	if _, ok := d.projects[projectID]; ok {
+	if _, ok := d.discoveredProjects[projectID]; ok {
 		log.Debugf("Project with ID '%s' already exists, skipping creation", projectID)
 		return nil
 	}
@@ -95,7 +95,7 @@ func (d *openstackDiscovery) addProjectIfMissing(projectID, projectName, domainI
 	}
 
 	// Add project to the list of projects
-	d.projects[r.GetId()] = r
+	d.discoveredProjects[r.GetId()] = r
 
 	return nil
 }
