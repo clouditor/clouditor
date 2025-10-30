@@ -39,7 +39,6 @@ import (
 // handleBlockStorage creates a block storage resource based on the Clouditor Ontology
 func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontology.IsResource, error) {
 	// Get Name, if exits, otherwise take the ID
-	//TODO(anatheka): Add tests
 	name := volume.Name
 	if volume.Name == "" {
 		name = volume.ID

@@ -61,6 +61,24 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
+			name: "error handling project",
+			fields: fields{
+				region:   "test region",
+				domain:   &domain{},
+				projects: map[string]ontology.IsResource{},
+			},
+			args: args{
+				volume: &volumes.Volume{
+					ID:        testdata.MockOpenstackVolumeID1,
+					CreatedAt: testTime,
+				},
+			},
+			want: assert.Nil[ontology.IsResource],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not handle project for block storage")
+			},
+		},
+		{
 			name: "Happy path: volume name missing",
 			fields: fields{
 				region: "test region",
