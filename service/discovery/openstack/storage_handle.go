@@ -59,7 +59,7 @@ func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontolog
 	}
 
 	// Create project resource for the parentId if not available
-	err := d.checkAndHandleManualCreatedProject(volume.TenantID, volume.TenantID, d.domain.domainID)
+	err := d.addProjectIfMissing(volume.TenantID, volume.TenantID, d.domain.domainID)
 	if err != nil {
 		return nil, fmt.Errorf("could not handle project for block storage %s: %w", volume.ID, err)
 	}

@@ -58,7 +58,7 @@ func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) 
 	}
 
 	// Create project resource for the parentId if not available
-	err = d.checkAndHandleManualCreatedProject(projectId, projectId, d.domain.domainID)
+	err = d.addProjectIfMissing(projectId, projectId, d.domain.domainID)
 	if err != nil {
 		return nil, fmt.Errorf("could not handle project for network interface '%s': %w", network.Name, err)
 	}

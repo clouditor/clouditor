@@ -75,9 +75,9 @@ func (d *openstackDiscovery) handleProject(project *projects.Project) (ontology.
 	return r, nil
 }
 
-// checkAndHandleManualCreatedProject checks if the project information is available and adds it to the list of projects.
+// addProjectIfMissing checks if the project information is available and adds it to the list of projects.
 // If the project is already in the list, it will skip the creation.
-func (d *openstackDiscovery) checkAndHandleManualCreatedProject(projectID, projectName, domainID string) error {
+func (d *openstackDiscovery) addProjectIfMissing(projectID, projectName, domainID string) error {
 	if projectID == "" || projectName == "" || domainID == "" {
 		return fmt.Errorf("cannot create project resource: project ID, project name, or domain ID is empty")
 	}

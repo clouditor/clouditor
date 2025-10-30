@@ -270,7 +270,7 @@ func Test_openstackDiscovery_checkAndHandleManualCreatedProject(t *testing.T) {
 				project:  tt.fields.project,
 				projects: tt.fields.projects,
 			}
-			err := d.checkAndHandleManualCreatedProject(tt.args.id, tt.args.name, tt.args.domain)
+			err := d.addProjectIfMissing(tt.args.id, tt.args.name, tt.args.domain)
 
 			tt.want(t, d)
 			tt.wantErr(t, err)

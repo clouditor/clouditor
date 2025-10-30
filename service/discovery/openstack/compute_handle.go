@@ -86,7 +86,7 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 	}
 
 	// Create project resource for the parentId if not available
-	err = d.checkAndHandleManualCreatedProject(server.TenantID, server.TenantID, d.domain.domainID)
+	err = d.addProjectIfMissing(server.TenantID, server.TenantID, d.domain.domainID)
 	if err != nil {
 		return nil, fmt.Errorf("could not handle project for server '%s': %w", server.Name, err)
 	}
