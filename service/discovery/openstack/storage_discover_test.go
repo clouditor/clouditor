@@ -81,7 +81,7 @@ func Test_openstackDiscovery_discoverBlockStorage(t *testing.T) {
 				},
 				region: "test region",
 				domain: &domain{
-					domainID: testdata.MockOpenStackDomainID,
+					domainID: testdata.MockOpenstackDomainID1,
 				},
 				project: &project{
 					projectID:   testdata.MockOpenstackProjectID1,

@@ -65,8 +65,8 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 			fields: fields{
 				region: "test region",
 				domain: &domain{
-					domainID:   testdata.MockOpenStackDomainID,
-					domainName: testdata.MockOpenStackDomainName,
+					domainID:   testdata.MockOpenstackDomainID1,
+					domainName: testdata.MockOpenstackDomainName1,
 				},
 				projects: map[string]ontology.IsResource{},
 			},
@@ -103,8 +103,8 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 			fields: fields{
 				region: "test region",
 				domain: &domain{
-					domainID:   testdata.MockOpenStackDomainID,
-					domainName: testdata.MockOpenStackDomainName,
+					domainID:   testdata.MockOpenstackDomainID1,
+					domainName: testdata.MockOpenstackDomainName1,
 				},
 				projects: map[string]ontology.IsResource{},
 			},

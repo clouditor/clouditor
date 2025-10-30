@@ -404,7 +404,7 @@ func Test_openstackDiscovery_List(t *testing.T) {
 				},
 				project: &project{},
 				domain: &domain{
-					domainID: testdata.MockOpenStackDomainID,
+					domainID: testdata.MockOpenstackDomainID1,
 				},
 				projects: map[string]ontology.IsResource{},
 			},
@@ -437,7 +437,7 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					projectName: testdata.MockOpenstackProjectName1,
 				},
 				domain: &domain{
-					domainID: testdata.MockOpenStackDomainID,
+					domainID: testdata.MockOpenstackDomainID1,
 				},
 				projects: map[string]ontology.IsResource{},
 			},
@@ -470,7 +470,7 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					projectName: testdata.MockOpenstackProjectName1,
 				},
 				domain: &domain{
-					domainID: testdata.MockOpenStackDomainID,
+					domainID: testdata.MockOpenstackDomainID1,
 				},
 				projects: map[string]ontology.IsResource{},
 			},
@@ -503,7 +503,7 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					projectName: testdata.MockOpenstackProjectName1,
 				},
 				domain: &domain{
-					domainID: testdata.MockOpenStackDomainID,
+					domainID: testdata.MockOpenstackDomainID1,
 				},
 				projects: map[string]ontology.IsResource{},
 			},
@@ -581,7 +581,7 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					projectName: testdata.MockOpenstackProjectName1,
 				},
 				domain: &domain{
-					domainID: testdata.MockOpenStackDomainID,
+					domainID: testdata.MockOpenstackDomainID1,
 				},
 				projects: map[string]ontology.IsResource{
 					testdata.MockOpenstackProjectID1: nil,

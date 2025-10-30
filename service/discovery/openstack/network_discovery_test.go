@@ -80,8 +80,8 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 				},
 				region: "test region",
 				domain: &domain{
-					domainID:   testdata.MockOpenStackDomainID,
-					domainName: testdata.MockOpenStackDomainName,
+					domainID:   testdata.MockOpenstackDomainID1,
+					domainName: testdata.MockOpenstackDomainName1,
 				},
 				project: &project{
 					projectID:   testdata.MockOpenstackProjectID1,
