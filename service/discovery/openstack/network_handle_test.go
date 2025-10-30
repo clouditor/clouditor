@@ -61,6 +61,21 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
+			name: "error getting projectID",
+			fields: fields{
+				region:   "test region",
+				domain:   &domain{},
+				projects: map[string]ontology.IsResource{},
+			},
+			args: args{
+				network: &networks.Network{},
+			},
+			want: assert.Nil[ontology.IsResource],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not get project ID for network interface")
+			},
+		},
+		{
 			name: "Happy path: projectID available",
 			fields: fields{
 				region: "test region",
