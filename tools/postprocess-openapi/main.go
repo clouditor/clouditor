@@ -99,7 +99,7 @@ func processFile(inputPath, outputPath string) error {
 		if err := os.Remove(inputPath); err != nil {
 			return fmt.Errorf("removing original file: %w", err)
 		}
-		
+
 		// Try to remove the now-empty service directory
 		serviceDir := filepath.Dir(inputPath)
 		if err := os.Remove(serviceDir); err != nil {
