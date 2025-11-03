@@ -88,7 +88,7 @@ Run all generators as part of the regular build step:
 go generate ./...
 ```
 
-Note: The underlying plugin emits `openapi.yaml` in a directory; the `go:generate` commands rename it to `openapi/<service>.yaml` for convenience.
+Note: The underlying plugin emits `openapi.yaml` in a directory; the `postprocess-openapi` tool (invoked by the `go:generate` commands) moves and renames it to `openapi/<service>.yaml` for convenience.
 
 ## Usage
 
