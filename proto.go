@@ -27,9 +27,15 @@
 
 package clouditor
 
+//go:generate buf format -w
+//go:generate buf generate --exclude-path="policies/security-metrics/ontology/1.0/ontology.proto"
+//go:generate buf generate --exclude-path="policies/security-metrics/ontology/1.0/ontology.proto" --template buf.gotag.gen.yaml
+// Generate OpenAPI files: buf outputs to openapi/<service>/openapi.yaml, then postprocess-openapi
+// moves them to openapi/<service>.yaml and fixes duplicate operationIds from additional_bindings
 //go:generate buf generate --template buf.openapi.gen.yaml --path api/assessment -o openapi/assessment
 //go:generate buf generate --template buf.openapi.gen.yaml --path api/evaluation -o openapi/evaluation
 //go:generate buf generate --template buf.openapi.gen.yaml --path api/discovery -o openapi/discovery
 //go:generate buf generate --template buf.openapi.gen.yaml --path api/evidence -o openapi/evidence
 //go:generate buf generate --template buf.openapi.gen.yaml --path api/orchestrator -o openapi/orchestrator
 //go:generate buf generate --template buf.openapi.gen.yaml --path api/ontology -o openapi/ontology
+//go:generate go run ./tools/postprocess-openapi/main.go openapi/assessment openapi/evaluation openapi/discovery openapi/evidence openapi/orchestrator openapi/ontology

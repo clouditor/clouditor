@@ -544,7 +544,7 @@ paths:
                 If no additional parameters are specified, this lists all controls. If a
                  catalog ID and a category name is specified, then only controls containing
                  in this category are returned.
-            operationId: Orchestrator_ListControls
+            operationId: Orchestrator_ListControls_ByCatalogIdAndCategoryName
             parameters:
                 - name: catalogId
                   in: path
@@ -674,7 +674,7 @@ paths:
                 If no additional parameters are specified, this lists all controls. If a
                  catalog ID and a category name is specified, then only controls containing
                  in this category are returned.
-            operationId: Orchestrator_ListControls
+            operationId: Orchestrator_ListControls_ByCatalogId
             parameters:
                 - name: catalogId
                   in: path

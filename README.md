@@ -68,6 +68,28 @@ go generate ./...
 go build -o ./engine cmd/engine/engine.go
 ```
 
+### OpenAPI generation
+
+This repository uses Buf with the google-gnostic OpenAPI plugin to generate OpenAPI specs.
+
+- Configuration: `buf.openapi.gen.yaml`
+- Generator entrypoint: `proto.go` via `go:generate`
+- Output files (one per service):
+	- `openapi/assessment.yaml`
+	- `openapi/evaluation.yaml`
+	- `openapi/discovery.yaml`
+	- `openapi/evidence.yaml`
+	- `openapi/orchestrator.yaml`
+	- `openapi/ontology.yaml`
+
+Run all generators as part of the regular build step:
+
+```
+go generate ./...
+```
+
+Note: The underlying plugin emits `openapi.yaml` in a directory; the `go:generate` commands rename it to `openapi/<service>.yaml` for convenience.
+
 ## Usage
 
 To test, start the engine with an in-memory DB
