@@ -60,8 +60,12 @@ type openstackDiscovery struct {
 	clients  clients
 	authOpts *gophercloud.AuthOptions
 	region   string
-	domain   *domain
-	project  *project
+	// domain is used to store the domain ID and name from the environment variables
+	domain *domain
+	// configuredProject is used to store the configuredProject ID and name from the environment variables
+	configuredProject *project
+	// discoveredProjects is used to store the discovered discoveredProjects/tenants. If it is not possible to get the discoveredProjects from the OpenStack API, the project resources are created while discovering the other resources (e.g., servers, networks, etc.) and added to this map.
+	discoveredProjects map[string]ontology.IsResource
 }
 
 type domain struct {
@@ -129,7 +133,8 @@ func NewOpenstackDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 			domainName: os.Getenv(DomainName),
 		},
 		// Currently, the project ID cannot be specified as an environment variable in conjunction with application credentials.
-		project: &project{},
+		configuredProject:  &project{},
+		discoveredProjects: make(map[string]ontology.IsResource),
 	}
 
 	// Apply options
@@ -247,46 +252,55 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 	// Discover servers
 	servers, err = d.discoverServer()
 	if err != nil {
-		log.Errorf("could not discover servers: %v", err)
+		return nil, fmt.Errorf("could not discover servers: %v", err)
 	}
 	list = append(list, servers...)
 
 	// Discover networks interfaces
 	networks, err = d.discoverNetworkInterfaces()
 	if err != nil {
-		log.Errorf("could not discover network interfaces: %v", err)
+		return nil, fmt.Errorf("could not discover network interfaces: %v", err)
 	}
 	list = append(list, networks...)
 
 	// Discover block storage
 	storages, err = d.discoverBlockStorage()
 	if err != nil {
-		log.Errorf("could not discover block storage: %v", err)
+		return nil, fmt.Errorf("could not discover block storage: %v", err)
 	}
 	list = append(list, storages...)
 
 	// Discover clusters
 	clusters, err = d.discoverCluster()
 	if err != nil {
-		log.Errorf("could not discover clusters: %v", err)
+		return nil, fmt.Errorf("could not discover clusters: %v", err)
 	}
 	list = append(list, clusters...)
 
 	// Discover project resources
 	projects, err = d.discoverProjects()
 	if err != nil {
-		log.Errorf("could not discover projects/tenants: %v", err)
+		return nil, fmt.Errorf("could not discover projects/tenants: %v", err)
 	}
 	list = append(list, projects...)
 
 	// Discover domains resource
 	domains, err = d.discoverDomains()
 	if err != nil {
-		log.Errorf("could not discover domains: %v", err)
+		return nil, fmt.Errorf("could not discover domains: %v", err)
 	}
 	list = append(list, domains...)
 
-	return list, nil
+	// Add all discovered projects/tenants while discovering the other resources and add them to the list
+	for _, p := range d.discoveredProjects {
+		if p == nil {
+			log.Warnf("Project resource is nil, skipping")
+			continue
+		}
+		list = append(list, p)
+	}
+
+	return
 }
 
 type ClientFunc func() (*gophercloud.ServiceClient, error)
@@ -321,8 +335,11 @@ func genericList[T any, O any, R ontology.IsResource](d *openstackDiscovery,
 		}
 
 		// Check if project/tenant ID is already stored
-		if d.project.projectID == "" {
-			d.setProjectInfo(x)
+		if d.configuredProject.projectID == "" {
+			err := d.setProjectInfo(x)
+			if err != nil {
+				return false, fmt.Errorf("could not set project info: %w", err)
+			}
 		}
 
 		for _, s := range x {
@@ -330,8 +347,6 @@ func genericList[T any, O any, R ontology.IsResource](d *openstackDiscovery,
 			if err != nil {
 				return false, fmt.Errorf("could not convert into Clouditor ontology: %w", err)
 			}
-
-			log.Debugf("Adding resource %+v", s)
 
 			list = append(list, r)
 		}

@@ -26,6 +26,8 @@
 package openstack
 
 import (
+	"fmt"
+
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
@@ -47,7 +49,7 @@ func (d *openstackDiscovery) handleDomain(domain *domains.Domain) (ontology.IsRe
 		Raw:          discovery.Raw(domain),
 	}
 
-	log.Infof("Adding domain '%s", domain.Name)
+	log.Infof("Adding domain '%s", r.Name)
 
 	return r, nil
 }
@@ -68,7 +70,32 @@ func (d *openstackDiscovery) handleProject(project *projects.Project) (ontology.
 		Raw:      discovery.Raw(project),
 	}
 
-	log.Infof("Adding project '%s", project.Name)
+	log.Infof("Adding project '%s", r.Name)
 
 	return r, nil
+}
+
+// addProjectIfMissing checks if the project information is available and adds it to the list of projects.
+// If the project is already in the list, it will skip the creation.
+func (d *openstackDiscovery) addProjectIfMissing(projectID, projectName, domainID string) error {
+	if projectID == "" || projectName == "" || domainID == "" {
+		return fmt.Errorf("cannot create project resource: project ID, project name, or domain ID is empty")
+	}
+
+	if _, ok := d.discoveredProjects[projectID]; ok {
+		log.Debugf("Project with ID '%s' already exists, skipping creation", projectID)
+		return nil
+	}
+
+	r := &ontology.ResourceGroup{
+		Id:       projectID,
+		Name:     projectName,
+		ParentId: util.Ref(domainID),
+		Raw:      discovery.Raw("Project/Tenant information manually added."),
+	}
+
+	// Add project to the list of projects
+	d.discoveredProjects[r.GetId()] = r
+
+	return nil
 }

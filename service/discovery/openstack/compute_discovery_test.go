@@ -58,6 +58,7 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 		region   string
 		domain   *domain
 		project  *project
+		projects map[string]ontology.IsResource
 	}
 	tests := []struct {
 		name    string
@@ -83,9 +84,15 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 					},
 					computeClient: client.ServiceClient(),
 				},
-				region:  "test region",
-				domain:  &domain{},
-				project: &project{},
+				region: "test region",
+				domain: &domain{
+					domainID: testdata.MockOpenstackDomainID1,
+				},
+				project: &project{
+					projectID:   testdata.MockOpenstackProjectID1,
+					projectName: testdata.MockOpenstackProjectName1,
+				},
+				projects: map[string]ontology.IsResource{},
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {
 				assert.Equal(t, 3, len(got))
@@ -129,12 +136,14 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 					BootLogging:         &ontology.BootLogging{Enabled: false},
 				}
 
-				got0 := got[0].(*ontology.VirtualMachine)
+				got0, ok := got[0].(*ontology.VirtualMachine)
+				assert.True(t, ok)
 				assert.NotEmpty(t, got0.GetRaw())
 				got0.Raw = ""
 				assert.Equal(t, want, got0)
 
-				got1 := got[1].(*ontology.VirtualMachine)
+				got1, ok := got[1].(*ontology.VirtualMachine)
+				assert.True(t, ok)
 				assert.NotEmpty(t, got1.GetRaw())
 				got1.Raw = ""
 
@@ -146,12 +155,13 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				region:   tt.fields.region,
-				domain:   tt.fields.domain,
-				project:  tt.fields.project,
+				ctID:               tt.fields.ctID,
+				clients:            tt.fields.clients,
+				authOpts:           tt.fields.authOpts,
+				region:             tt.fields.region,
+				domain:             tt.fields.domain,
+				configuredProject:  tt.fields.project,
+				discoveredProjects: tt.fields.projects,
 			}
 			gotList, err := d.discoverServer()
 

@@ -61,6 +61,8 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 		clients  clients
 		authOpts *gophercloud.AuthOptions
 		region   string
+		projects map[string]ontology.IsResource
+		domain   *domain
 	}
 	type args struct {
 		server *servers.Server
@@ -127,7 +129,12 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 					},
 					computeClient: client.ServiceClient(),
 				},
-				region: "test region",
+				region:   "test region",
+				projects: map[string]ontology.IsResource{},
+				domain: &domain{
+					domainID:   "test-domain-id",
+					domainName: "test-domain-name",
+				},
 			},
 			args: args{
 				server: &servers.Server{
@@ -161,7 +168,8 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 					BootLogging:         &ontology.BootLogging{Enabled: true},
 				}
 
-				gotNew := got.(*ontology.VirtualMachine)
+				gotNew, ok := got.(*ontology.VirtualMachine)
+				assert.True(t, ok)
 
 				assert.NotEmpty(t, gotNew.GetRaw())
 				gotNew.Raw = ""
@@ -173,10 +181,12 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				region:   tt.fields.region,
+				ctID:               tt.fields.ctID,
+				clients:            tt.fields.clients,
+				authOpts:           tt.fields.authOpts,
+				region:             tt.fields.region,
+				discoveredProjects: tt.fields.projects,
+				domain:             tt.fields.domain,
 			}
 
 			got, err := d.handleServer(tt.args.server)

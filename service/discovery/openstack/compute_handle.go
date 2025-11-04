@@ -85,7 +85,13 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 		return nil, fmt.Errorf("could not discover attached network interfaces: %w", err)
 	}
 
-	log.Infof("Adding server '%s", server.Name)
+	// Create project resource for the parentId if not available
+	err = d.addProjectIfMissing(server.TenantID, server.TenantID, d.domain.domainID)
+	if err != nil {
+		return nil, fmt.Errorf("could not handle project for server '%s': %w", server.Name, err)
+	}
+
+	log.Infof("Adding server '%s", r.Name)
 
 	return r, nil
 }
