@@ -154,6 +154,9 @@ require (
 	github.com/aws/smithy-go v1.23.0
 )
 
+// runtime dependencies (IONOS Cloud)
+require github.com/ionos-cloud/sdk-go/v6 v6.3.4
+
 // runtime dependencies (OpenStack)
 require github.com/gophercloud/gophercloud/v2 v2.7.0
 

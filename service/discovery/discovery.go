@@ -44,6 +44,7 @@ import (
 	"clouditor.io/clouditor/v2/service/discovery/aws"
 	"clouditor.io/clouditor/v2/service/discovery/azure"
 	"clouditor.io/clouditor/v2/service/discovery/extra/csaf"
+	"clouditor.io/clouditor/v2/service/discovery/ionos"
 	"clouditor.io/clouditor/v2/service/discovery/k8s"
 	"clouditor.io/clouditor/v2/service/discovery/openstack"
 
@@ -63,6 +64,7 @@ const (
 	ProviderK8S       = "k8s"
 	ProviderAzure     = "azure"
 	ProviderOpenstack = "openstack"
+	ProviderIonos     = "ionos"
 	ProviderCSAF      = "csaf"
 
 	// DiscovererStart is emitted at the start of a discovery run.
@@ -277,6 +279,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 	var (
 		optsAzure     = []azure.DiscoveryOption{}
 		optsOpenstack = []openstack.DiscoveryOption{}
+		optsIonos     = []ionos.DiscoveryOption{}
 	)
 
 	// Validate request
@@ -339,6 +342,15 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 			// Add authorizer and TargetOfEvaluationID
 			optsOpenstack = append(optsOpenstack, openstack.WithAuthorizer(authorizer), openstack.WithTargetOfEvaluationID(svc.ctID))
 			svc.discoverers = append(svc.discoverers, openstack.NewOpenstackDiscovery(optsOpenstack...))
+		case provider == ProviderIonos:
+			sharedAuthorizer, err := ionos.NewAuthorizer()
+			if err != nil {
+				log.Errorf("Could not authenticate to IONOS Cloud: %v", err)
+				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to IONOS Cloud: %v", err)
+			}
+			// Add authorizer and TargetOfEvaluationID
+			optsIonos = append(optsIonos, ionos.WithAuthorizer(sharedAuthorizer), ionos.WithTargetOfEvaluationID(svc.ctID))
+			svc.discoverers = append(svc.discoverers, ionos.NewIonosDiscovery(optsIonos...))
 		case provider == ProviderCSAF:
 			var (
 				domain string

@@ -1,0 +1,120 @@
+// Copyright 2025 Fraunhofer AISEC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//           $$\                           $$\ $$\   $$\
+//           $$ |                          $$ |\__|  $$ |
+//  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+// $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+// $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+// $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+// \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+//  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+//
+// This file is part of Clouditor Community Edition.
+
+package ionos
+
+import (
+	"context"
+	"fmt"
+
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/util"
+
+	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
+)
+
+// discoverResources lists all virtual machines and corresponding network interfaces in the given datacenter and returns them as a list of ontology resources
+func (d *ionosDiscovery) discoverServers(dc ionoscloud.Datacenter) (list []ontology.IsResource, err error) {
+	// List all servers in the datacenter
+	servers, _, err := d.clients.client.ServersApi.DatacentersServersGet(context.Background(), util.Deref(dc.Id)).Depth(3).Execute() // Depth(3) to include the volumes and NICs
+	if err != nil {
+		return nil, fmt.Errorf("could not list servers for datacenter %s: %w", util.Deref(dc.Id), err)
+	}
+
+	for _, server := range util.Deref(servers.Items) {
+		r, err := d.handleServer(server, dc)
+		if err != nil {
+			return nil, fmt.Errorf("could not handle server %s: %w", util.Deref(server.Id), err)
+		}
+
+		log.Infof("Adding server '%s'", r.GetId())
+
+		list = append(list, r)
+
+		// Handle network interfaces
+		for _, nic := range util.Deref(server.Entities.Nics.Items) {
+			networkInterface, err := d.handleNetworkInterfaces(nic, dc)
+			if err != nil {
+				return nil, fmt.Errorf("could not handle network interfaces: %w", err)
+			}
+
+			log.Infof("Adding network interface '%s'", r.GetId())
+
+			list = append(list, networkInterface)
+		}
+	}
+
+	return list, nil
+}
+
+// discoverNetworks lists all block storages in the given datacenter and returns them as a list of ontology resources
+func (d *ionosDiscovery) discoverBlockStorages(dc ionoscloud.Datacenter) (list []ontology.IsResource, err error) {
+	blockStorages, _, err := d.clients.client.VolumesApi.DatacentersVolumesGet(context.Background(), util.Deref(dc.Id)).Depth(1).Execute()
+	if err != nil {
+		return nil, fmt.Errorf("could not list block storages for datacenter %s: %w", util.Deref(dc.Id), err)
+	}
+	for _, blockStorage := range util.Deref(blockStorages.Items) {
+		r, err := d.handleBlockStorage(blockStorage, dc)
+		if err != nil {
+			return nil, fmt.Errorf("could not handle block storage %s: %w", util.Deref(blockStorage.Id), err)
+		}
+
+		log.Infof("Adding block storage '%s'", r.GetId())
+
+		list = append(list, r)
+	}
+	return list, nil
+}
+
+// discoverLoadBalancers lists all load balancers and corresponding network interfaces in the given datacenter and returns them as a list of ontology resources
+func (d *ionosDiscovery) discoverLoadBalancers(dc ionoscloud.Datacenter) (list []ontology.IsResource, err error) {
+	loadBalancers, _, err := d.clients.client.LoadBalancersApi.DatacentersLoadbalancersGet(context.Background(), util.Deref(dc.Id)).Depth(1).Execute()
+	if err != nil {
+		return nil, fmt.Errorf("could not list load balancers for datacenter %s: %w", util.Deref(dc.Id), err)
+	}
+	for _, loadBalancer := range util.Deref(loadBalancers.Items) {
+		r, err := d.handleLoadBalancer(loadBalancer, dc)
+		if err != nil {
+			return nil, fmt.Errorf("could not handle load balancer %s: %w", util.Deref(loadBalancer.Id), err)
+		}
+
+		log.Infof("Adding load balancer '%s'", r.GetId())
+
+		list = append(list, r)
+
+		// Handle network interfaces
+		for _, nic := range util.Deref(loadBalancer.Entities.Balancednics.Items) {
+			networkInterface, err := d.handleNetworkInterfaces(nic, dc)
+			if err != nil {
+				return nil, fmt.Errorf("could not handle network interfaces: %w", err)
+			}
+
+			log.Infof("Adding network interface '%s'", r.GetId())
+
+			list = append(list, networkInterface)
+		}
+	}
+	return list, nil
+}

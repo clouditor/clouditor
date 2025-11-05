@@ -1,6 +1,8 @@
 package testdata
 
 import (
+	"time"
+
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -171,6 +173,8 @@ const (
 )
 
 var (
+	CreationTime = time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
+
 	// Catalog
 	AssuranceLevelBasic       = "basic"
 	AssuranceLevelSubstantial = "substantial"
