@@ -245,7 +245,7 @@ var (
 		History: []*assessment.Record{
 			{
 				EvidenceRecordedAt: timestamppb.New(time.Unix(1, 0)),
-				EvidenceId:         testdata.MockEvidenceID1,
+				EvidenceId:         testdata.MockEvidenceID2,
 			},
 		},
 	}
@@ -271,7 +271,37 @@ var (
 		History: []*assessment.Record{
 			{
 				EvidenceRecordedAt: timestamppb.New(time.Unix(1, 0)),
+				EvidenceId:         testdata.MockEvidenceID2,
+			},
+		},
+	}
+	MockAssessmentResult5 = &assessment.AssessmentResult{
+		Id:                   testdata.MockAssessmentResult5ID,
+		CreatedAt:            timestamppb.New(time.Unix(1, 0)),
+		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+		MetricId:             testdata.MockMetricID1,
+		Compliant:            true,
+		EvidenceId:           testdata.MockEvidenceID1,
+		ResourceId:           testdata.MockVirtualMachineID1,
+		ResourceTypes:        testdata.MockVirtualMachineTypes,
+		ComplianceComment:    assessment.DefaultCompliantMessage,
+		MetricConfiguration: &assessment.MetricConfiguration{
+			Operator:             "==",
+			TargetValue:          structpb.NewBoolValue(true),
+			IsDefault:            true,
+			MetricId:             testdata.MockMetricID1,
+			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+		},
+		ToolId:           util.Ref(assessment.AssessmentToolId),
+		HistoryUpdatedAt: timestamppb.New(time.Unix(1, 0)),
+		History: []*assessment.Record{
+			{
+				EvidenceRecordedAt: timestamppb.New(time.Unix(1, 0)),
 				EvidenceId:         testdata.MockEvidenceID1,
+			},
+			{
+				EvidenceRecordedAt: timestamppb.New(time.Unix(2, 0)),
+				EvidenceId:         testdata.MockEvidenceID2,
 			},
 		},
 	}

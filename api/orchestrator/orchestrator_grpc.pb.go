@@ -54,6 +54,7 @@ const (
 	Orchestrator_DeregisterAssessmentTool_FullMethodName        = "/clouditor.orchestrator.v1.Orchestrator/DeregisterAssessmentTool"
 	Orchestrator_StoreAssessmentResult_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/StoreAssessmentResult"
 	Orchestrator_StoreAssessmentResults_FullMethodName          = "/clouditor.orchestrator.v1.Orchestrator/StoreAssessmentResults"
+	Orchestrator_UpdateAssessmentResultHistory_FullMethodName   = "/clouditor.orchestrator.v1.Orchestrator/UpdateAssessmentResultHistory"
 	Orchestrator_GetAssessmentResult_FullMethodName             = "/clouditor.orchestrator.v1.Orchestrator/GetAssessmentResult"
 	Orchestrator_ListAssessmentResults_FullMethodName           = "/clouditor.orchestrator.v1.Orchestrator/ListAssessmentResults"
 	Orchestrator_CreateMetric_FullMethodName                    = "/clouditor.orchestrator.v1.Orchestrator/CreateMetric"
@@ -118,6 +119,8 @@ type OrchestratorClient interface {
 	// Stores stream of assessment results provided by an assessment tool and
 	// returns a response stream. Part of the public API, not exposed as REST.
 	StoreAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[StoreAssessmentResultRequest, StoreAssessmentResultsResponse], error)
+	// Updates the AssessmentResult field history with the new evidence ID
+	UpdateAssessmentResultHistory(ctx context.Context, in *UpdateAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error)
 	// Get an assessment result by ID
 	GetAssessmentResult(ctx context.Context, in *GetAssessmentResultRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error)
 	// List all assessment results. Part of the public API, also exposed as REST.
@@ -289,6 +292,16 @@ func (c *orchestratorClient) StoreAssessmentResults(ctx context.Context, opts ..
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Orchestrator_StoreAssessmentResultsClient = grpc.BidiStreamingClient[StoreAssessmentResultRequest, StoreAssessmentResultsResponse]
+
+func (c *orchestratorClient) UpdateAssessmentResultHistory(ctx context.Context, in *UpdateAssessmentResultHistoryRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(assessment.AssessmentResult)
+	err := c.cc.Invoke(ctx, Orchestrator_UpdateAssessmentResultHistory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
 
 func (c *orchestratorClient) GetAssessmentResult(ctx context.Context, in *GetAssessmentResultRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
@@ -712,6 +725,8 @@ type OrchestratorServer interface {
 	// Stores stream of assessment results provided by an assessment tool and
 	// returns a response stream. Part of the public API, not exposed as REST.
 	StoreAssessmentResults(grpc.BidiStreamingServer[StoreAssessmentResultRequest, StoreAssessmentResultsResponse]) error
+	// Updates the AssessmentResult field history with the new evidence ID
+	UpdateAssessmentResultHistory(context.Context, *UpdateAssessmentResultHistoryRequest) (*assessment.AssessmentResult, error)
 	// Get an assessment result by ID
 	GetAssessmentResult(context.Context, *GetAssessmentResultRequest) (*assessment.AssessmentResult, error)
 	// List all assessment results. Part of the public API, also exposed as REST.
@@ -831,6 +846,9 @@ func (UnimplementedOrchestratorServer) StoreAssessmentResult(context.Context, *S
 }
 func (UnimplementedOrchestratorServer) StoreAssessmentResults(grpc.BidiStreamingServer[StoreAssessmentResultRequest, StoreAssessmentResultsResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method StoreAssessmentResults not implemented")
+}
+func (UnimplementedOrchestratorServer) UpdateAssessmentResultHistory(context.Context, *UpdateAssessmentResultHistoryRequest) (*assessment.AssessmentResult, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateAssessmentResultHistory not implemented")
 }
 func (UnimplementedOrchestratorServer) GetAssessmentResult(context.Context, *GetAssessmentResultRequest) (*assessment.AssessmentResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAssessmentResult not implemented")
@@ -1084,6 +1102,24 @@ func _Orchestrator_StoreAssessmentResults_Handler(srv interface{}, stream grpc.S
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Orchestrator_StoreAssessmentResultsServer = grpc.BidiStreamingServer[StoreAssessmentResultRequest, StoreAssessmentResultsResponse]
+
+func _Orchestrator_UpdateAssessmentResultHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateAssessmentResultHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).UpdateAssessmentResultHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Orchestrator_UpdateAssessmentResultHistory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).UpdateAssessmentResultHistory(ctx, req.(*UpdateAssessmentResultHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
 
 func _Orchestrator_GetAssessmentResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetAssessmentResultRequest)
@@ -1810,6 +1846,10 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StoreAssessmentResult",
 			Handler:    _Orchestrator_StoreAssessmentResult_Handler,
+		},
+		{
+			MethodName: "UpdateAssessmentResultHistory",
+			Handler:    _Orchestrator_UpdateAssessmentResultHistory_Handler,
 		},
 		{
 			MethodName: "GetAssessmentResult",

@@ -28,6 +28,7 @@ package clouditor.orchestrator.v1;
 
 import "api/assessment/assessment.proto";
 import "api/assessment/metric.proto";
+import "api/evidence/evidence.proto";
 import "api/runtime/runtime.proto";
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
@@ -84,6 +85,14 @@ service Orchestrator {
   // Stores stream of assessment results provided by an assessment tool and
   // returns a response stream. Part of the public API, not exposed as REST.
   rpc StoreAssessmentResults(stream StoreAssessmentResultRequest) returns (stream StoreAssessmentResultsResponse);
+
+  // Updates the AssessmentResult field history with the new evidence ID
+  rpc UpdateAssessmentResultHistory(UpdateAssessmentResultHistoryRequest) returns (clouditor.assessment.v1.AssessmentResult) {
+    option (google.api.http) = {
+      put: "/v1/assessment/result/{resource_id}"
+      body: "evidence"
+    };
+  }
 
   // Get an assessment result by ID
   rpc GetAssessmentResult(GetAssessmentResultRequest) returns (clouditor.assessment.v1.AssessmentResult) {
@@ -408,6 +417,18 @@ message StoreAssessmentResultResponse {}
 message StoreAssessmentResultsResponse {
   bool status = 1;
   string status_message = 2;
+}
+
+message UpdateAssessmentResultHistoryRequest {
+  // The new_evidence is an additional evidence for the same resource that has already been assessed.
+  // The ID of the new evidence will be included in the assessment results history.
+  clouditor.evidence.v1.Evidence evidence = 1 [(buf.validate.field).required = true];
+
+  // resource_id is the id of the resource that was assessed in the past and an assessment result already exists for it.
+  string resource_id = 2 [
+    (buf.validate.field).string.uuid = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
 }
 
 message CreateMetricRequest {
@@ -844,6 +865,8 @@ message ListAssessmentResultsRequest {
     optional string tool_id = 5 [(buf.validate.field).string.min_len = 1];
     // Optional. List only assessment result from a specific list of IDs.
     repeated string assessment_result_ids = 6 [(buf.validate.field).repeated.items.string.min_len = 1];
+    // Optional: List only the assessment results for a specific evidence ID in the history field.
+    optional string history_evidence_id = 7 [(buf.validate.field).string.min_len = 1];
   }
   optional Filter filter = 1;
   // Optional. Latest results grouped by resource_id and metric_id.

@@ -37,6 +37,7 @@ import (
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/logging"
+	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
 
@@ -111,6 +112,7 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 	// * metric ID
 	// * tool ID
 	// * assessment result ID(s)
+	// * evidence ID in the history field
 	if req.Filter != nil {
 		if req.Filter.TargetOfEvaluationId != nil {
 			query = append(query, "target_of_evaluation_id = ?")
@@ -131,6 +133,16 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 		if req.Filter.ToolId != nil {
 			query = append(query, "tool_id = ?")
 			args = append(args, req.Filter.ToolId)
+		}
+		if req.Filter.HistoryEvidenceId != nil {
+			query = append(query,
+				`EXISTS (
+					SELECT 1
+					FROM json_each(history)
+					WHERE json_extract(json_each.value, '$.evidence_id') = ?
+				)`,
+			)
+			args = append(args, req.Filter.GetHistoryEvidenceId())
 		}
 	}
 
@@ -270,4 +282,44 @@ func (s *Service) informHook(ctx context.Context, result *assessment.AssessmentR
 			hook(ctx, result, err)
 		}
 	}
+}
+
+// UpdateOrAddAssessmentResultHistory is a method implementation of the assessment interface: The given evidence is an additional evidence for the same resource that has already been assessed. The ID of the new evidence will be included in the assessment results history. If no assessment result is available (e.g., due to database errors), a new assessment result will be generated.
+func (svc *Service) UpdateAssessmentResultHistory(ctx context.Context, req *orchestrator.UpdateAssessmentResultHistoryRequest) (res *assessment.AssessmentResult, err error) {
+	var (
+		response *orchestrator.ListAssessmentResultsResponse
+	)
+
+	// Validate request
+	err = api.Validate(req)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	// Check if target_of_evaluation_id in the service is within allowed or one can access *all* the target of evaluations
+	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
+		log.Error(service.ErrPermissionDenied)
+		return nil, service.ErrPermissionDenied
+	}
+
+	// Get existing assessment results for evidence ID that was already assessed
+	response, err = svc.ListAssessmentResults(ctx, &orchestrator.ListAssessmentResultsRequest{
+		Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
+			HistoryEvidenceId: util.Ref(req.GetResourceId()),
+		},
+	})
+
+	// Update all existing assessment results
+	for _, result := range response.Results {
+		result.History = append(result.History, &assessment.Record{
+			EvidenceId:         req.Evidence.GetId(),
+			EvidenceRecordedAt: req.Evidence.GetTimestamp(),
+		})
+
+		// Update the assessment results in the DB
+		// svc.orchestrator.Client.UpdateAssessmentResult(ctx, &orchestrat)
+	}
+
+	return res, err
 }
