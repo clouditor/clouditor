@@ -63,12 +63,12 @@ func (l *waitingRequest) WaitAndHandle() {
 
 		// Are we ready to assess?
 		if len(l.waitingFor) == 0 {
-			log.Infof("Evidence %s is now ready to assess", l.Evidence.Id)
+			log.Infof("Evidence %s is now ready to assess", l.Id)
 
 			// Gather our additional resources
 			additional := make(map[string]ontology.IsResource)
 
-			for _, r := range l.Evidence.ExperimentalRelatedResourceIds {
+			for _, r := range l.ExperimentalRelatedResourceIds {
 				l.s.em.RLock()
 
 				e, ok := l.s.evidenceResourceMap[r]
@@ -92,7 +92,7 @@ func (l *waitingRequest) WaitAndHandle() {
 
 			duration := time.Since(l.started)
 
-			log.Infof("Evidence %s was waiting for %s", l.Evidence.Id, duration)
+			log.Infof("Evidence %s was waiting for %s", l.Id, duration)
 			break
 		}
 	}

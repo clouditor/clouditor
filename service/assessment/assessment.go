@@ -236,9 +236,9 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 
 	// Check, if we can immediately handle this evidence; we assume so at first
 	var (
-		canHandle                                 = true
-		waitingFor map[string]bool                = make(map[string]bool)
-		related    map[string]ontology.IsResource = make(map[string]ontology.IsResource)
+		canHandle  = true
+		waitingFor = make(map[string]bool)
+		related    = make(map[string]ontology.IsResource)
 	)
 
 	svc.em.Lock()

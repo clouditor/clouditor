@@ -44,6 +44,8 @@ import (
 // - 2024-12-10: Changed variable from CreateRequest to CreateProjectsRequest (@anatheka)
 // - 2024-12-10: Changed variable from UpdateRequest to UpdateProjectRequest (@anatheka)
 // - 2024-12-10: Changed import from "github.com/gophercloud/gophercloud/testhelper" to "github.com/gophercloud/gophercloud/testhelper"(@anatheka)
+// - 2025-01-07: Add error check to fmt.Fprint() (@anatheka)
+// - 2025-01-07: Add error check to w.Write(nil) (@anatheka)
 
 // ListAvailableOutput provides a single page of available Project results.
 const ListAvailableOutput = `
@@ -257,7 +259,9 @@ func HandleListAvailableProjectsSuccessfully(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, ListAvailableOutput)
+		if _, err := fmt.Fprint(w, ListAvailableOutput); err != nil {
+			t.Errorf("failed to write response: %v", err)
+		}
 	})
 }
 
@@ -271,7 +275,9 @@ func HandleListProjectsSuccessfully(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, ListOutput)
+		if _, err := fmt.Fprint(w, ListOutput); err != nil {
+			t.Errorf("failed to write response: %v", err)
+		}
 	})
 }
 
@@ -285,7 +291,9 @@ func HandleGetProjectSuccessfully(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, GetOutput)
+		if _, err := fmt.Fprint(w, GetOutput); err != nil {
+			t.Errorf("failed to write response: %v", err)
+		}
 	})
 }
 
@@ -298,7 +306,9 @@ func HandleCreateProjectSuccessfully(t *testing.T) {
 		th.TestJSONRequest(t, r, CreateProjectsRequest)
 
 		w.WriteHeader(http.StatusCreated)
-		fmt.Fprint(w, GetOutput)
+		if _, err := fmt.Fprint(w, GetOutput); err != nil {
+			t.Errorf("failed to write response: %v", err)
+		}
 	})
 }
 
@@ -308,8 +318,10 @@ func HandleDeleteProjectSuccessfully(t *testing.T) {
 	th.Mux.HandleFunc("/projects/1234", func(w http.ResponseWriter, r *http.Request) {
 		th.TestMethod(t, r, "DELETE")
 		th.TestHeader(t, r, "X-Auth-Token", client.TokenID)
-
 		w.WriteHeader(http.StatusNoContent)
+		if _, err := w.Write(nil); err != nil {
+			t.Errorf("failed to write response: %v", err)
+		}
 	})
 }
 
@@ -322,6 +334,8 @@ func HandleUpdateProjectSuccessfully(t *testing.T) {
 		th.TestJSONRequest(t, r, UpdateProjectRequest)
 
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, UpdateOutput)
+		if _, err := fmt.Fprint(w, UpdateOutput); err != nil {
+			t.Errorf("failed to write response: %v", err)
+		}
 	})
 }

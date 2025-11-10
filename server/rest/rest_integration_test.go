@@ -84,7 +84,10 @@ func TestMain(m *testing.M) {
 
 	exit := m.Run()
 
-	sock.Close()
+	if err := sock.Close(); err != nil {
+		log.Printf("Error closing socket: %v", err)
+	}
+
 	srv.Stop()
 
 	os.Exit(exit)
