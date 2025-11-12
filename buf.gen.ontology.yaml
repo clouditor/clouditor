@@ -1,0 +1,11 @@
+version: v1
+plugins:
+  - plugin: buf.build/protocolbuffers/go
+    out: .
+    opt: module=clouditor.io/clouditor/v2/api/ontology
+  - plugin: buf.build/grpc/go
+    out: .
+    opt: module=clouditor.io/clouditor/v2/api/ontology
+  - plugin: buf.build/grpc-ecosystem/gateway
+    out: .
+    opt: module=clouditor.io/clouditor/v2/api/ontology
