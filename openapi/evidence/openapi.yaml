@@ -617,6 +617,10 @@ components:
                     type: boolean
                 enabled:
                     type: boolean
+                rotationInterval:
+                    type: integer
+                    description: Maximum password rotation interval in months
+                    format: int32
             description: CertificateBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         CipherSuite:
             type: object
@@ -633,50 +637,6 @@ components:
                     type: string
                     description: 'naming schema: AES-128-GCM'
             description: CipherSuite is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
-        CodeNotebook:
-            type: object
-            properties:
-                creationTime:
-                    type: string
-                    format: date-time
-                description:
-                    type: string
-                filetype:
-                    type: string
-                id:
-                    type: string
-                labels:
-                    type: object
-                    additionalProperties:
-                        type: string
-                name:
-                    type: string
-                raw:
-                    type: string
-                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
-                codeIds:
-                    type: array
-                    items:
-                        type: string
-                dataLocation:
-                    $ref: '#/components/schemas/DataLocation'
-                documentChecksums:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/DocumentChecksum'
-                documentSignatures:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/DocumentSignature'
-                parentId:
-                    type: string
-                schemaValidation:
-                    $ref: '#/components/schemas/SchemaValidation'
-                securityFeatures:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/SecurityFeature'
-            description: CodeNotebook is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         CodeRegion:
             type: object
             properties:
@@ -2385,6 +2345,10 @@ components:
             properties:
                 contextIsChecked:
                     type: boolean
+                rotationInterval:
+                    type: integer
+                    description: Maximum password rotation interval in months
+                    format: int32
                 authenticities:
                     type: array
                     items:
@@ -2542,6 +2506,10 @@ components:
             properties:
                 contextIsChecked:
                     type: boolean
+                rotationInterval:
+                    type: integer
+                    description: Maximum password rotation interval in months
+                    format: int32
             description: NoAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         OSLogging:
             type: object
@@ -2567,6 +2535,10 @@ components:
                     type: boolean
                 contextIsChecked:
                     type: boolean
+                rotationInterval:
+                    type: integer
+                    description: Maximum password rotation interval in months
+                    format: int32
             description: OTPBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         ObjectStorage:
             type: object
@@ -2695,6 +2667,40 @@ components:
             description: |-
                 ObjectStorageService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  An object storage service represents the network service that is used to access a list of object storage containers. The storage itself is modelled as a ObjectStorage. The service has an http endpoint.
+        Package:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                description:
+                    type: string
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                codeModuleIds:
+                    type: array
+                    items:
+                        type: string
+                codeRepositoryId:
+                    type: string
+                functionalities:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Functionality'
+                parentId:
+                    type: string
+            description: |-
+                Package is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents a grouping of (source) code into logical unit, for example a package for a namespace.
         PasswordBasedAuthentication:
             type: object
             properties:
@@ -2702,6 +2708,10 @@ components:
                     type: boolean
                 contextIsChecked:
                     type: boolean
+                rotationInterval:
+                    type: integer
+                    description: Maximum password rotation interval in months
+                    format: int32
             description: PasswordBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         PasswordPolicy:
             type: object
@@ -2782,6 +2792,15 @@ components:
         QPU:
             type: object
             properties:
+                oneQubitErrorRate:
+                    type: number
+                    format: float
+                spamErrorRate:
+                    type: number
+                    format: float
+                twoQubitErrorRate:
+                    type: number
+                    format: float
                 creationTime:
                     type: string
                     format: date-time
@@ -2799,18 +2818,9 @@ components:
                         type: string
                 name:
                     type: string
-                oneQubitGateErrorRate:
-                    type: number
-                    format: float
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
-                spamErrorRate:
-                    type: number
-                    format: float
-                twoQubitGateErrorRate:
-                    type: number
-                    format: float
                 encryptionInUse:
                     $ref: '#/components/schemas/EncryptionInUse'
                 geoLocation:
@@ -2961,12 +2971,12 @@ components:
                     $ref: '#/components/schemas/Workflow'
                 codeRepository:
                     $ref: '#/components/schemas/CodeRepository'
-                qpu:
-                    $ref: '#/components/schemas/QPU'
                 container:
                     $ref: '#/components/schemas/Container'
                 function:
                     $ref: '#/components/schemas/Function'
+                qpu:
+                    $ref: '#/components/schemas/QPU'
                 virtualMachine:
                     $ref: '#/components/schemas/VirtualMachine'
                 containerOrchestration:
@@ -3037,8 +3047,6 @@ components:
                     $ref: '#/components/schemas/FileStorage'
                 objectStorage:
                     $ref: '#/components/schemas/ObjectStorage'
-                codeNotebook:
-                    $ref: '#/components/schemas/CodeNotebook'
                 genericDocument:
                     $ref: '#/components/schemas/GenericDocument'
                 policyDocument:
@@ -3059,6 +3067,8 @@ components:
                     $ref: '#/components/schemas/Application'
                 library:
                     $ref: '#/components/schemas/Library'
+                package:
+                    $ref: '#/components/schemas/Package'
                 sourceCodeFile:
                     $ref: '#/components/schemas/SourceCodeFile'
             description: Resource is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -3489,6 +3499,10 @@ components:
                     type: boolean
                 enabled:
                     type: boolean
+                rotationInterval:
+                    type: integer
+                    description: Maximum password rotation interval in months
+                    format: int32
             description: SingleSignOn is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         SourceCodeFile:
             type: object
@@ -3551,6 +3565,10 @@ components:
                     type: boolean
                 enforced:
                     type: boolean
+                rotationInterval:
+                    type: integer
+                    description: Maximum password rotation interval in months
+                    format: int32
             description: TokenBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         TransportEncryption:
             type: object
@@ -3758,6 +3776,9 @@ components:
         Vulnerability:
             type: object
             properties:
+                criticality:
+                    type: string
+                    description: 'criticality: Contains the criticality of a vulnerability, e.g., low, medium, high, critical'
                 cve:
                     type: string
                 cwe:
