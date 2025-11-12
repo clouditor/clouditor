@@ -116,7 +116,7 @@ type Metric struct {
 	Implementation *MetricImplementation `protobuf:"bytes,6,opt,name=implementation,proto3,oneof" json:"implementation,omitempty"`
 	// Optional, but required if the metric is removed. The metric is not deleted
 	// for backward compatibility and the timestamp is set to the time of removal.
-	DeprecatedSince *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=deprecated_since,json=deprecatedSince,proto3,oneof" json:"deprecated_since,omitempty"`
+	DeprecatedSince *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=deprecated_since,json=deprecatedSince,proto3,oneof" json:"deprecated_since,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -206,15 +206,15 @@ type MetricConfiguration struct {
 	// The operator to compare the metric, such as == or >
 	Operator string `protobuf:"bytes,1,opt,name=operator,proto3" json:"operator,omitempty"`
 	// The target value
-	TargetValue *structpb.Value `protobuf:"bytes,2,opt,name=target_value,json=targetValue,proto3" json:"target_value,omitempty"`
+	TargetValue *structpb.Value `protobuf:"bytes,2,opt,name=target_value,json=targetValue,proto3" json:"target_value,omitempty" gorm:"serializer:json"`
 	// Whether this configuration is a default configuration
 	IsDefault bool `protobuf:"varint,3,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
 	// The last time of update
-	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
 	// The metric this configuration belongs to
-	MetricId string `protobuf:"bytes,5,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty"`
+	MetricId string `protobuf:"bytes,5,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty" gorm:"primaryKey"`
 	// The target of evaluation this configuration belongs to
-	TargetOfEvaluationId string `protobuf:"bytes,6,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
+	TargetOfEvaluationId string `protobuf:"bytes,6,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty" gorm:"primaryKey"`
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
@@ -295,13 +295,13 @@ func (x *MetricConfiguration) GetTargetOfEvaluationId() string {
 type MetricImplementation struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The metric which is implemented
-	MetricId string `protobuf:"bytes,1,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty"`
+	MetricId string `protobuf:"bytes,1,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty" gorm:"primaryKey"`
 	// The language this metric is implemented in
 	Lang MetricImplementation_Language `protobuf:"varint,2,opt,name=lang,proto3,enum=clouditor.assessment.v1.MetricImplementation_Language" json:"lang,omitempty"`
 	// The actual implementation
 	Code string `protobuf:"bytes,3,opt,name=code,proto3" json:"code,omitempty"`
 	// The last time of update
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

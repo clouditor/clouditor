@@ -27,7 +27,7 @@
 
 package clouditor
 
-//go:generate buf generate
+//go:generate buf generate --template buf.gotag.gen.yaml
 //go:generate buf generate --template buf.openapi.gen.yaml --path api/assessment -o openapi/assessment
 //go:generate buf generate --template buf.openapi.gen.yaml --path api/evaluation -o openapi/evaluation
 //go:generate buf generate --template buf.openapi.gen.yaml --path api/discovery -o openapi/discovery

@@ -489,14 +489,14 @@ type EvaluationResult struct {
 	// Evaluation status
 	Status EvaluationStatus `protobuf:"varint,8,opt,name=status,proto3,enum=clouditor.evaluation.v1.EvaluationStatus" json:"status,omitempty"`
 	// Time of evaluation
-	Timestamp *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Timestamp *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=timestamp,proto3" json:"timestamp,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
 	// List of assessment results because of which the evaluation status is compliant or not compliant
-	AssessmentResultIds []string `protobuf:"bytes,10,rep,name=assessment_result_ids,json=assessmentResultIds,proto3" json:"assessment_result_ids,omitempty"`
+	AssessmentResultIds []string `protobuf:"bytes,10,rep,name=assessment_result_ids,json=assessmentResultIds,proto3" json:"assessment_result_ids,omitempty" gorm:"serializer:json"`
 	Comment             *string  `protobuf:"bytes,11,opt,name=comment,proto3,oneof" json:"comment,omitempty"`
 	// Optional, but required if the status is one of the "manually" ones. This
 	// denotes how long the (manual) created evaluation result is valid. During
 	// this time, no automatic results are generated for the specific control.
-	ValidUntil    *timestamppb.Timestamp `protobuf:"bytes,20,opt,name=valid_until,json=validUntil,proto3,oneof" json:"valid_until,omitempty"`
+	ValidUntil    *timestamppb.Timestamp `protobuf:"bytes,20,opt,name=valid_until,json=validUntil,proto3,oneof" json:"valid_until,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

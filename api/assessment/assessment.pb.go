@@ -375,11 +375,11 @@ type AssessmentResult struct {
 	// Assessment result id
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// Time of assessment
-	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
 	// Reference to the metric the assessment was based on
 	MetricId string `protobuf:"bytes,3,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty"`
 	// Data corresponding to the metric by the given metric id
-	MetricConfiguration *MetricConfiguration `protobuf:"bytes,4,opt,name=metric_configuration,json=metricConfiguration,proto3" json:"metric_configuration,omitempty"`
+	MetricConfiguration *MetricConfiguration `protobuf:"bytes,4,opt,name=metric_configuration,json=metricConfiguration,proto3" json:"metric_configuration,omitempty" gorm:"serializer:json"`
 	// Compliant case: true or false
 	Compliant bool `protobuf:"varint,5,opt,name=compliant,proto3" json:"compliant,omitempty"`
 	// Reference to the last assessed evidence
@@ -387,19 +387,19 @@ type AssessmentResult struct {
 	// Reference to the resource of the assessed evidence
 	ResourceId string `protobuf:"bytes,7,opt,name=resource_id,json=resourceId,proto3" json:"resource_id,omitempty"`
 	// Resource types
-	ResourceTypes []string `protobuf:"bytes,8,rep,name=resource_types,json=resourceTypes,proto3" json:"resource_types,omitempty"`
+	ResourceTypes []string `protobuf:"bytes,8,rep,name=resource_types,json=resourceTypes,proto3" json:"resource_types,omitempty" gorm:"serializer:json"`
 	// ComplianceComment contains a human readable description on the reason for (non)-compliance.
 	ComplianceComment string `protobuf:"bytes,9,opt,name=compliance_comment,json=complianceComment,proto3" json:"compliance_comment,omitempty"`
 	// ComplianceDetails contains machine-readable details about which comparisons lead to a (non)-compliance.
-	ComplianceDetails []*ComparisonResult `protobuf:"bytes,10,rep,name=compliance_details,json=complianceDetails,proto3" json:"compliance_details,omitempty"`
+	ComplianceDetails []*ComparisonResult `protobuf:"bytes,10,rep,name=compliance_details,json=complianceDetails,proto3" json:"compliance_details,omitempty" gorm:"serializer:json"`
 	// The target of evaluation which this assessment result belongs to
 	TargetOfEvaluationId string `protobuf:"bytes,20,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
 	// Reference to the tool which provided the assessment result
 	ToolId *string `protobuf:"bytes,21,opt,name=tool_id,json=toolId,proto3,oneof" json:"tool_id,omitempty"`
 	// The time of the last update of the assessment result history field
-	HistoryUpdatedAt *timestamppb.Timestamp `protobuf:"bytes,22,opt,name=history_updated_at,json=historyUpdatedAt,proto3" json:"history_updated_at,omitempty"`
+	HistoryUpdatedAt *timestamppb.Timestamp `protobuf:"bytes,22,opt,name=history_updated_at,json=historyUpdatedAt,proto3" json:"history_updated_at,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
 	// Stores the history of evidence IDs and timestamps for evidence that have the same content as the evidence used for this assessment result.
-	History       []*Record `protobuf:"bytes,23,rep,name=history,proto3" json:"history,omitempty"`
+	History       []*Record `protobuf:"bytes,23,rep,name=history,proto3" json:"history,omitempty" gorm:"serializer:json;constraint:OnDelete:CASCADE"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -535,7 +535,7 @@ func (x *AssessmentResult) GetHistory() []*Record {
 type Record struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	EvidenceId         string                 `protobuf:"bytes,1,opt,name=evidence_id,json=evidenceId,proto3" json:"evidence_id,omitempty"`
-	EvidenceRecordedAt *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=evidence_recorded_at,json=evidenceRecordedAt,proto3" json:"evidence_recorded_at,omitempty"`
+	EvidenceRecordedAt *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=evidence_recorded_at,json=evidenceRecordedAt,proto3" json:"evidence_recorded_at,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -594,7 +594,7 @@ type ComparisonResult struct {
 	// Operator is the operator used in the comparison
 	Operator string `protobuf:"bytes,3,opt,name=operator,proto3" json:"operator,omitempty"`
 	// TargetValue is the target value used in the comparison
-	TargetValue *structpb.Value `protobuf:"bytes,4,opt,name=target_value,json=targetValue,proto3" json:"target_value,omitempty"`
+	TargetValue *structpb.Value `protobuf:"bytes,4,opt,name=target_value,json=targetValue,proto3" json:"target_value,omitempty" gorm:"serializer:json"`
 	// Success is true, if the comparison was sucessful
 	Success       bool `protobuf:"varint,5,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields

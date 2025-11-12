@@ -58,20 +58,20 @@ type Evidence struct {
 	// the ID in a uuid format
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// time of evidence creation
-	Timestamp *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Timestamp *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
 	// Reference to a target of evaluation (e.g., service, organization) this evidence was gathered from
 	TargetOfEvaluationId string `protobuf:"bytes,3,opt,name=target_of_evaluation_id,json=targetOfEvaluationId,proto3" json:"target_of_evaluation_id,omitempty"`
 	// Reference to the tool which provided the evidence
 	ToolId string `protobuf:"bytes,4,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`
 	// Semantic representation of the Cloud resource according to our defined
 	// ontology
-	Resource *ontology.Resource `protobuf:"bytes,6,opt,name=resource,proto3" json:"resource,omitempty"`
+	Resource *ontology.Resource `protobuf:"bytes,6,opt,name=resource,proto3" json:"resource,omitempty" gorm:"serializer:json"`
 	// Very experimental property. Use at own risk. This property will be deleted again.
 	//
 	// Related resource IDs. The assessment will wait until all evidences for related resource have arrived in the
 	// assessment and are recent enough. In the future, this will be replaced with information in the "related" edges in
 	// the resource. For now, this needs to be set manually in the evidence.
-	ExperimentalRelatedResourceIds []string `protobuf:"bytes,999,rep,name=experimental_related_resource_ids,json=experimentalRelatedResourceIds,proto3" json:"experimental_related_resource_ids,omitempty"`
+	ExperimentalRelatedResourceIds []string `protobuf:"bytes,999,rep,name=experimental_related_resource_ids,json=experimentalRelatedResourceIds,proto3" json:"experimental_related_resource_ids,omitempty" gorm:"serializer:json"`
 	unknownFields                  protoimpl.UnknownFields
 	sizeCache                      protoimpl.SizeCache
 }
@@ -166,7 +166,7 @@ type Resource struct {
 	ToolId string `protobuf:"bytes,4,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`
 	// Properties contains a protobuf message that describe the resource in the
 	// terms of our Clouditor ontology.
-	Properties    *anypb.Any `protobuf:"bytes,10,opt,name=properties,proto3" json:"properties,omitempty"`
+	Properties    *anypb.Any `protobuf:"bytes,10,opt,name=properties,proto3" json:"properties,omitempty" gorm:"serializer:anypb;type:json"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
