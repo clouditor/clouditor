@@ -33,4 +33,5 @@ package clouditor
 //go:generate buf generate --template buf.openapi.gen.yaml --path api/discovery -o openapi/discovery
 //go:generate buf generate --template buf.openapi.gen.yaml --path api/evidence -o openapi/evidence
 //go:generate buf generate --template buf.openapi.gen.yaml --path api/orchestrator -o openapi/orchestrator
-//go:generate buf generate --template buf.openapi.gen.yaml --path api/ontology -o openapi/ontology
+// //go:generate buf generate --template buf.openapi.gen.yaml --path api/ontology -o openapi/ontology
+//go:generate buf generate --template buf.gen.ontology.yaml --path policies/security-metrics/ontology/1.0/ontology.proto -o api/ontology
