@@ -29,13 +29,13 @@ import (
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// handleNetworkInterfaces creates a network interface resource based on the Clouditor Ontology
-func (d *ionosDiscovery) handleNetworkInterfaces(nic ionoscloud.Nic, dc ionoscloud.Datacenter) (ontology.IsResource, error) {
+// handleNetworkInterface creates a network interface resource based on the Clouditor Ontology
+func (d *ionosDiscovery) handleNetworkInterface(nic ionoscloud.Nic, dc ionoscloud.Datacenter) (ontology.IsResource, error) {
 	r := &ontology.NetworkInterface{
 		Id:           util.Deref(nic.Id),
 		Name:         util.Deref(nic.Properties.Name),

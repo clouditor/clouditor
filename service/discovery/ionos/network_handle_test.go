@@ -104,7 +104,7 @@ func Test_ionosDiscovery_handleNetworkInterfaces(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := tt.fields.ionosDiscovery
-			got, err := d.handleNetworkInterfaces(tt.args.nic, tt.args.dc)
+			got, err := d.handleNetworkInterface(tt.args.nic, tt.args.dc)
 
 			tt.want(t, got)
 			tt.wantErr(t, err)

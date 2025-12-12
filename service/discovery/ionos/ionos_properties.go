@@ -34,14 +34,14 @@ import (
 )
 
 // labels converts the compute labels to the ontology label format.
-func labels(labels ionoscloud.LabelResources) map[string]string {
+func labels(lr ionoscloud.LabelResources) map[string]string {
 	l := make(map[string]string)
 
-	if labels.Items == nil {
+	if lr.Items == nil {
 		return l
 	}
 
-	for _, label := range util.Deref(labels.Items) {
+	for _, label := range util.Deref(lr.Items) {
 		l[util.Deref(label.Properties.GetKey())] = util.Deref(label.Properties.GetValue())
 	}
 
