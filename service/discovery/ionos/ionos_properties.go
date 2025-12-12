@@ -37,6 +37,10 @@ import (
 func labels(labels ionoscloud.LabelResources) map[string]string {
 	l := make(map[string]string)
 
+	if labels.Items == nil {
+		return l
+	}
+
 	for _, label := range util.Deref(labels.Items) {
 		l[util.Deref(label.Properties.GetKey())] = util.Deref(label.Properties.GetValue())
 	}

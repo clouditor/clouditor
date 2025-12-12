@@ -44,6 +44,16 @@ func Test_labels(t *testing.T) {
 		want assert.Want[map[string]string]
 	}{
 		{
+			name: "No labels",
+			args: args{
+				labels: ionoscloud.LabelResources{},
+			},
+			want: func(t *testing.T, got map[string]string) bool {
+				want := map[string]string{}
+				return assert.Equal(t, want, got)
+			},
+		},
+		{
 			name: "Happy path",
 			args: args{
 				labels: ionoscloud.LabelResources{
