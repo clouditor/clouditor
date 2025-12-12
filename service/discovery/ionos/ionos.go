@@ -78,12 +78,8 @@ func init() {
 
 type ionosDiscovery struct {
 	authConfig *ionoscloud.Configuration // authConfig contains the IONOS Cloud configuration, which is used to authenticate against the IONOS Cloud API
-	clients    clients
+	client     *ionoscloud.APIClient
 	ctID       string
-}
-
-type clients struct {
-	client *ionoscloud.APIClient
 }
 
 func NewIonosDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
@@ -163,8 +159,8 @@ func (d *ionosDiscovery) TargetOfEvaluationID() string {
 }
 
 func (d *ionosDiscovery) authorize() {
-	if d.clients.client == nil {
-		d.clients.client = ionoscloud.NewAPIClient(d.authConfig)
+	if d.client == nil {
+		d.client = ionoscloud.NewAPIClient(d.authConfig)
 	}
 }
 

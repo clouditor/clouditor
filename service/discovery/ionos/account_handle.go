@@ -39,7 +39,7 @@ import (
 // handleDatacenter creates a datacenter resource based on the Clouditor Ontology
 func (d *ionosDiscovery) handleDatacenter(dc ionoscloud.Datacenter) (ontology.IsResource, error) {
 	// Getting labels
-	l, _, err := d.clients.client.LabelsApi.
+	l, _, err := d.client.LabelsApi.
 		DatacentersLabelsGet(context.Background(), util.Deref(dc.GetId())).
 		Execute()
 	if err != nil {

@@ -296,9 +296,9 @@ func NewMockIonosDiscovery(roundTrip http.RoundTripper) *ionosDiscovery {
 	}
 
 	if _, ok := d.authConfig.HTTPClient.Transport.(*mockErrorSender); ok {
-		d.clients.client = computeClient(true)
+		d.client = computeClient(true)
 	} else {
-		d.clients.client = computeClient(false)
+		d.client = computeClient(false)
 	}
 
 	return d
@@ -383,7 +383,7 @@ func TestNewIonosDiscovery(t *testing.T) {
 func Test_ionosDiscovery_TargetOfEvaluationID(t *testing.T) {
 	type fields struct {
 		authConfig *ionoscloud.Configuration
-		clients    clients
+		client     *ionoscloud.APIClient
 		ctID       string
 	}
 	tests := []struct {
@@ -403,7 +403,7 @@ func Test_ionosDiscovery_TargetOfEvaluationID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &ionosDiscovery{
 				authConfig: tt.fields.authConfig,
-				clients:    tt.fields.clients,
+				client:     tt.fields.client,
 				ctID:       tt.fields.ctID,
 			}
 			if got := d.TargetOfEvaluationID(); got != tt.want {
@@ -484,7 +484,7 @@ func TestNewAuthorizer(t *testing.T) {
 func Test_ionosDiscovery_authorize(t *testing.T) {
 	type fields struct {
 		authConfig *ionoscloud.Configuration
-		clients    clients
+		client     *ionoscloud.APIClient
 		ctID       string
 	}
 	tests := []struct {
@@ -498,7 +498,7 @@ func Test_ionosDiscovery_authorize(t *testing.T) {
 				authConfig: &ionoscloud.Configuration{
 					HTTPClient: http.DefaultClient,
 				},
-				clients: clients{},
+				client: &ionoscloud.APIClient{},
 			},
 			want: func(t *testing.T, got *ionosDiscovery) bool {
 				return assert.NotEmpty(t, got)
@@ -509,7 +509,7 @@ func Test_ionosDiscovery_authorize(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &ionosDiscovery{
 				authConfig: tt.fields.authConfig,
-				clients:    tt.fields.clients,
+				client:     tt.fields.client,
 				ctID:       tt.fields.ctID,
 			}
 			d.authorize()

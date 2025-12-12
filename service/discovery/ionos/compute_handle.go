@@ -39,7 +39,7 @@ import (
 // handleServer creates a virtual machine resource based on the Clouditor Ontology
 func (d *ionosDiscovery) handleServer(server ionoscloud.Server, dc ionoscloud.Datacenter) (ontology.IsResource, error) {
 	// Getting labels
-	l, _, err := d.clients.client.LabelsApi.
+	l, _, err := d.client.LabelsApi.
 		DatacentersServersLabelsGet(context.Background(), util.Deref(dc.GetId()), util.Deref(server.GetId())).
 		Execute()
 	if err != nil {
@@ -76,7 +76,7 @@ func (d *ionosDiscovery) handleServer(server ionoscloud.Server, dc ionoscloud.Da
 // handleBlockStorage creates a block storage resource based on the Clouditor Ontology
 func (d *ionosDiscovery) handleBlockStorage(blockStorage ionoscloud.Volume, dc ionoscloud.Datacenter) (ontology.IsResource, error) {
 	// Getting labels
-	l, _, err := d.clients.client.LabelsApi.
+	l, _, err := d.client.LabelsApi.
 		DatacentersServersLabelsGet(context.Background(), util.Deref(dc.GetId()), util.Deref(blockStorage.GetId())).
 		Execute()
 	if err != nil {
@@ -105,7 +105,7 @@ func (d *ionosDiscovery) handleBlockStorage(blockStorage ionoscloud.Volume, dc i
 // handleLoadBalancer creates a load balancer resource based on the Clouditor Ontology
 func (d *ionosDiscovery) handleLoadBalancer(loadBalancer ionoscloud.Loadbalancer, dc ionoscloud.Datacenter) (ontology.IsResource, error) {
 	// Getting labels
-	l, _, err := d.clients.client.LabelsApi.
+	l, _, err := d.client.LabelsApi.
 		DatacentersServersLabelsGet(context.Background(), util.Deref(dc.GetId()), util.Deref(loadBalancer.GetId())).
 		Execute()
 	if err != nil {
