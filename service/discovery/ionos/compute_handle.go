@@ -86,9 +86,9 @@ func (d *ionosDiscovery) handleBlockStorage(blockStorage ionoscloud.Volume, dc i
 	r := &ontology.BlockStorage{
 		Id:           util.Deref(blockStorage.Id),
 		Name:         util.Deref(blockStorage.Properties.Name),
-		CreationTime: timestamppb.New(*blockStorage.Metadata.GetCreatedDate()),
+		CreationTime: timestamppb.New(util.Deref(blockStorage.Metadata.GetCreatedDate())),
 		GeoLocation: &ontology.GeoLocation{
-			Region: util.Deref(dc.Properties.Location),
+			Region: util.Deref(dc.Properties.GetLocation()),
 		},
 		Labels:   labels(l),
 		ParentId: dc.GetId(),
@@ -114,7 +114,7 @@ func (d *ionosDiscovery) handleLoadBalancer(loadBalancer ionoscloud.Loadbalancer
 	r := &ontology.LoadBalancer{
 		Id:           util.Deref(loadBalancer.Id),
 		Name:         util.Deref(loadBalancer.Properties.Name),
-		CreationTime: timestamppb.New(*loadBalancer.Metadata.GetCreatedDate()),
+		CreationTime: timestamppb.New(util.Deref(loadBalancer.Metadata.GetCreatedDate())),
 		GeoLocation: &ontology.GeoLocation{
 			Region: util.Deref(dc.Properties.Location),
 		},
