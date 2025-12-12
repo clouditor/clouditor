@@ -48,7 +48,7 @@ func labels(labels ionoscloud.LabelResources) map[string]string {
 	return l
 }
 
-// hasEmptySegmentinURL checks if the URL contains an empty segment, which is indicated by two consecutive slashes (e.g., "http://example.com//path").
-func hasEmptySegmentinURL(s string) bool {
+// hasEmptySegmentInURL checks if the URL contains an empty segment, which is indicated by two consecutive slashes (e.g., "http://example.com//path").
+func hasEmptySegmentInURL(s string) bool {
 	return strings.Contains(s, "//")
 }

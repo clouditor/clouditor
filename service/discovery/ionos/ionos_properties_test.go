@@ -91,7 +91,7 @@ func Test_labels(t *testing.T) {
 	}
 }
 
-func Test_hasEmptySegment(t *testing.T) {
+func Test_hasEmptySegmentInURL(t *testing.T) {
 	type args struct {
 		s string
 	}
@@ -118,7 +118,7 @@ func Test_hasEmptySegment(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := hasEmptySegmentinURL(tt.args.s); got != tt.want {
+			if got := hasEmptySegmentInURL(tt.args.s); got != tt.want {
 				t.Errorf("hasEmptySegment() = %v, want %v", got, tt.want)
 			}
 		})

@@ -63,7 +63,7 @@ func newMockErrorSender() *mockErrorSender {
 func (mockSender) RoundTrip(req *http.Request) (res *http.Response, err error) {
 	// Check if the URL contains an empty segment
 	// (e.g., "http://example.com//path") and return a 404 response if it does.
-	if hasEmptySegmentinURL(req.URL.Path) {
+	if hasEmptySegmentInURL(req.URL.Path) {
 		return createResponse(req, map[string]interface{}{}, 404)
 	} else if strings.HasSuffix(req.URL.Path, "/labels") {
 		// Mock response for labels endpoint
