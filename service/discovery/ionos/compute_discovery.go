@@ -60,7 +60,7 @@ func (d *ionosDiscovery) discoverServers(dc ionoscloud.Datacenter) (list []ontol
 				return nil, fmt.Errorf("could not handle network interfaces: %w", err)
 			}
 
-			log.Infof("Adding network interface '%s'", nic.GetId())
+			log.Infof("Adding network interface '%s'", util.Deref(nic.GetId()))
 
 			list = append(list, networkInterface)
 		}
