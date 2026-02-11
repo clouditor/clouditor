@@ -127,7 +127,7 @@ func prepareMetric(m *assessment.Metric) (err error) {
 	)
 
 	// Load the Rego file
-	metricPath := fmt.Sprintf("%s/%s/%s/metric.rego", defaultMetricsPath, m.Category, m.Id)
+	metricPath := fmt.Sprintf("%s/%s/%s/metric.rego", defaultMetricsPath, m.Category, m.Name)
 
 	m.Implementation, err = loadMetricImplementation(m.Id, metricPath)
 	if err != nil {

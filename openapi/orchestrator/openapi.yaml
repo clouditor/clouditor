@@ -1991,6 +1991,7 @@ components:
         Metric:
             required:
                 - id
+                - name
                 - description
                 - version
                 - category
@@ -1999,6 +2000,9 @@ components:
                 id:
                     type: string
                     description: Required. The unique identifier of the metric.
+                name:
+                    type: string
+                    description: Required. The name of the metric.
                 description:
                     type: string
                     description: The description of the metric

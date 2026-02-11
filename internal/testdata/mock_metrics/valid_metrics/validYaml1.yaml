@@ -1,8 +1,9 @@
 # ====== Metadata ======
-id: TestMetric
+id: 8367f104-3552-48d2-99b3-c0934d0b9d74
+name: TestMetric
 description: Test Metric 1
 category: TestCategory
-version: "1.0"
+version: "v1"
 comments: Test comments
 # ====== Configuration ======
 properties:

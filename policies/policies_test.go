@@ -28,12 +28,13 @@ package policies
 import (
 	"bytes"
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
+
+	"gopkg.in/yaml.v3"
 
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
@@ -111,7 +112,7 @@ func (*mockMetricsSource) Metrics() (metrics []*assessment.Metric, err error) {
 
 func (m *mockMetricsSource) MetricConfiguration(targetID string, metric *assessment.Metric) (*assessment.MetricConfiguration, error) {
 	// Fetch the metric configuration directly from our file
-	bundle := fmt.Sprintf("policies/security-metrics/metrics/%s/%s/data.json", metric.Category, metric.Id)
+	bundle := fmt.Sprintf("policies/security-metrics/metrics/%s/%s/data.json", metric.Category, metric.Name)
 
 	b, err := os.ReadFile(bundle)
 	assert.NoError(m.t, err)
@@ -129,7 +130,7 @@ func (m *mockMetricsSource) MetricConfiguration(targetID string, metric *assessm
 
 func (m *mockMetricsSource) MetricImplementation(_ assessment.MetricImplementation_Language, metric *assessment.Metric) (*assessment.MetricImplementation, error) {
 	// Fetch the metric implementation directly from our file
-	bundle := fmt.Sprintf("policies/security-metrics/metrics/%s/%s/metric.rego", metric.Category, metric.Id)
+	bundle := fmt.Sprintf("policies/security-metrics/metrics/%s/%s/metric.rego", metric.Category, metric.Name)
 
 	b, err := os.ReadFile(bundle)
 	assert.NoError(m.t, err)

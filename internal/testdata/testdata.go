@@ -95,12 +95,14 @@ const (
 	MockSubControlDescription = "This is a mock sub-control"
 
 	// Metric
-	MockMetricID1          = "Mock Metric 1"
+	MockMetricID1          = "8367f104-3552-48d2-99b3-c0934d0b9d72"
+	MockMetricName1        = "Mock Metric 1"
 	MockMetricDescription1 = "This is a mock metric"
 	MockMetricCategory1    = "Mock Category 1"
-	MockMetricVersion1     = "1.0"
+	MockMetricVersion1     = "v1"
 	MockMetricComments1    = "Mock metric comments 1"
-	MockMetricID2          = "Mock Metric 2"
+	MockMetricID2          = "9367f104-3552-48d2-99b3-c0934d0b9d73"
+	MockMetricName2        = "Mock Metric 2"
 	MockMetricDescription2 = "This is mock metric 2"
 	MockMetricCategory2    = "Mock Category 2"
 
