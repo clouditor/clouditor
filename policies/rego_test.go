@@ -349,6 +349,15 @@ func Test_regoEval_Eval(t *testing.T) {
 			args: args{
 				resource: &ontology.Application{
 					Id: "app",
+					Functionalities: []*ontology.Functionality{
+						{
+							Type: &ontology.Functionality_CryptographicHash{
+								CryptographicHash: &ontology.CryptographicHash{
+									Algorithm: "MD5",
+								},
+							},
+						},
+					},
 				},
 				evidenceID: mockVM1EvidenceID,
 				src:        &mockMetricsSource{t: t},
@@ -356,7 +365,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			compliant: map[string]bool{
 				"AutomaticUpdatesEnabled":  false,
 				"AutomaticUpdatesInterval": false,
-				"StrongCryptographicHash":  true,
+				"StrongCryptographicHash":  false,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -424,7 +433,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 					Id:       "84eaed86-759d-4419-9954-f3d3ea1f5200",
 					Name:     "AutomaticUpdatesEnabled",
 					Category: "EndpointSecurity",
-					Version:  "v1",
+					Version:  testdata.MockMetricVersion1,
 					Comments: "Test comments",
 				},
 				baseDir: ".",
@@ -468,7 +477,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 				metric: &assessment.Metric{
 					Id:       "84eaed86-759d-4419-9954-f3d3ea1f5200",
 					Name:     "AutomaticUpdatesEnabled",
-					Version:  "v1",
+					Version:  testdata.MockMetricVersion1,
 					Comments: "Test comments",
 					Category: "EndpointSecurity",
 				},

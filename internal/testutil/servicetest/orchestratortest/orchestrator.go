@@ -299,7 +299,7 @@ var (
 					Name:        testdata.MockMetricName1,
 					Description: testdata.MockMetricDescription1,
 					Category:    testdata.MockMetricCategory1,
-					Version:     "v1",
+					Version:     testdata.MockMetricVersion1,
 					Comments:    testdata.MockMetricComments1,
 				}}},
 		}}
@@ -318,7 +318,7 @@ var (
 			Name:        testdata.MockMetricName1,
 			Description: testdata.MockMetricDescription1,
 			Category:    testdata.MockMetricCategory1,
-			Version:     "v1",
+			Version:     testdata.MockMetricVersion1,
 			Comments:    testdata.MockMetricComments1,
 		},
 		}}
@@ -344,8 +344,8 @@ var (
 					Name:        testdata.MockMetricName2,
 					Description: testdata.MockMetricDescription1,
 					Category:    testdata.MockMetricCategory1,
-					Version:     "v1",
-					Comments:    "This is a comment",
+					Version:     testdata.MockMetricVersion1,
+					Comments:    testdata.MockMetricComments1,
 				}},
 			},
 		},
@@ -381,8 +381,8 @@ var (
 			Name:        testdata.MockMetricName1,
 			Description: testdata.MockMetricDescription1,
 			Category:    testdata.MockMetricCategory1,
-			Version:     "v1",
-			Comments:    "This is a comment",
+			Version:     testdata.MockMetricVersion1,
+			Comments:    testdata.MockMetricComments1,
 		}},
 	}
 	MockControl5 = &orchestrator.Control{
@@ -396,8 +396,8 @@ var (
 			Id:          testdata.MockMetricID1,
 			Description: testdata.MockMetricDescription1,
 			Category:    testdata.MockMetricCategory1,
-			Version:     "v1",
-			Comments:    "This is a comment",
+			Version:     testdata.MockMetricVersion1,
+			Comments:    testdata.MockMetricComments1,
 		}},
 	}
 	// Control without sub-control
@@ -416,8 +416,8 @@ func NewMetric() *assessment.Metric {
 		Id:          testdata.MockMetricID1,
 		Name:        testdata.MockMetricName1,
 		Description: testdata.MockMetricDescription1,
-		Version:     "v1",
-		Comments:    "This is a comment",
+		Version:     testdata.MockMetricVersion1,
+		Comments:    testdata.MockMetricComments1,
 	}
 
 }

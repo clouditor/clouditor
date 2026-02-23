@@ -84,7 +84,7 @@ message Metric {
 message MetricConfiguration {
   // The operator to compare the metric, such as == or >
   string operator = 1 [
-    (buf.validate.field).string.pattern = "^(<|>|<=|>=|==|!=|isIn|allIn)$",
+    (buf.validate.field).string.pattern = "^(<|>|<=|>=|==|isIn|allIn)$",
     (google.api.field_behavior) = REQUIRED
   ];
 

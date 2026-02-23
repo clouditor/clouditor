@@ -1,10 +1,10 @@
 # ====== Metadata ======
-id: 8367f104-3552-48d2-99b3-c0934d0b9d75
-name: TestMetric 2
-description: Test Metric 2
-category: TestCategory
+id: 8367f104-3552-48d2-99b3-c0934d0b9d73
+name: Mock Metric 2
+description: This is a mock metric
+category: Mock Category 2
 version: "v1"
-comments: Test comments
+comments: Mock metric comments 2
 # ====== Configuration ======
 properties:
   prop1:
