@@ -27,7 +27,7 @@ syntax = "proto3";
 
 package clouditor.evidence.v1;
 
-import "api/ontology/ontology.proto";
+import "policies/security-metrics/ontology/v1/ontology.proto";
 import "buf/validate/validate.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/any.proto";
@@ -55,7 +55,7 @@ message Evidence {
 
   // Semantic representation of the Cloud resource according to our defined
   // ontology
-  clouditor.ontology.v1.Resource resource = 6 [(tagger.tags) = "gorm:\"serializer:json\""];
+  confirmate.ontology.v1.Resource resource = 6 [(tagger.tags) = "gorm:\"serializer:json\""];
 
   // Very experimental property. Use at own risk. This property will be deleted again.
   //

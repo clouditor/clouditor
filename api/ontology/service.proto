@@ -27,7 +27,7 @@ syntax = "proto3";
 
 package clouditor.ontology.v1;
 
-import "api/ontology/ontology.proto";
+import "policies/security-metrics/ontology/v1/ontology.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 
@@ -44,5 +44,5 @@ service OntologyService {
 }
 
 message NoopRequest {
-  clouditor.ontology.v1.Resource resource = 1;
+  confirmate.ontology.v1.Resource resource = 1;
 }
