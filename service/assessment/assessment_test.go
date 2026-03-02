@@ -683,11 +683,13 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 							Id:   testdata.MockVirtualMachineID1,
 							Name: testdata.MockVirtualMachineName1,
 							BootLogging: &ontology.BootLogging{
+								Name:              "boot-logging",
 								LoggingServiceIds: []string{"SomeResourceId2"},
 								Enabled:           true,
 								RetentionPeriod:   durationpb.New(time.Hour * 24 * 36),
 							},
 							OsLogging: &ontology.OSLogging{
+								Name:              "os-logging",
 								LoggingServiceIds: []string{"SomeResourceId2"},
 								Enabled:           true,
 								RetentionPeriod:   durationpb.New(time.Hour * 24 * 36),
@@ -697,6 +699,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 								NumberOfThreatsFound: 5,
 								DurationSinceActive:  durationpb.New(time.Hour * 24 * 20),
 								ApplicationLogging: &ontology.ApplicationLogging{
+									Name:              "application-logging",
 									Enabled:           true,
 									LoggingServiceIds: []string{"SomeAnalyticsService?"},
 								},
@@ -935,7 +938,7 @@ func TestService_handleEvidence(t *testing.T) {
 					err := api.Validate(result)
 					assert.NoError(t, err)
 				}
-				return assert.Equal(t, 3, len(got))
+				return assert.Equal(t, 4, len(got))
 			},
 			wantErr: assert.Nil[error],
 		},
