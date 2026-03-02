@@ -908,32 +908,24 @@ func TestService_handleEvidence(t *testing.T) {
 					ToolId:               testdata.MockEvidenceToolID1,
 					Timestamp:            timestamppb.Now(),
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-					Resource: prototest.NewProtobufResource(t, &ontology.Application{
-						Id:   "Application",
-						Name: "Application",
-						Functionalities: []*ontology.Functionality{
-							{
-								Type: &ontology.Functionality_CryptographicHash{
-									CryptographicHash: &ontology.CryptographicHash{
-										Algorithm: "md5",
-										UsesSalt:  false,
-									},
-								},
+					Resource: prototest.NewProtobufResource(t, &ontology.SecurityAdvisoryDocument{
+						Id:          "123Doc",
+						Name:        "docname",
+						Description: "Doc",
+						CryptographicHashs: []*ontology.CryptographicHash{
+							&ontology.CryptographicHash{
+								Algorithm: "md5",
 							},
 						},
 					}),
 				},
-				resource: &ontology.Application{
-					Id:   "Application",
-					Name: "Application",
-					Functionalities: []*ontology.Functionality{
-						{
-							Type: &ontology.Functionality_CryptographicHash{
-								CryptographicHash: &ontology.CryptographicHash{
-									Algorithm: "md5",
-									UsesSalt:  false,
-								},
-							},
+				resource: &ontology.SecurityAdvisoryDocument{
+					Id:          "123Doc",
+					Name:        "docname",
+					Description: "Doc",
+					CryptographicHashs: []*ontology.CryptographicHash{
+						&ontology.CryptographicHash{
+							Algorithm: "md5",
 						},
 					},
 				},

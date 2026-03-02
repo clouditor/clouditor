@@ -347,25 +347,28 @@ func Test_regoEval_Eval(t *testing.T) {
 				pkg:     DefaultRegoPackage,
 			},
 			args: args{
-				resource: &ontology.Application{
-					Id: "app",
-					Functionalities: []*ontology.Functionality{
-						{
-							Type: &ontology.Functionality_CryptographicHash{
-								CryptographicHash: &ontology.CryptographicHash{
-									Algorithm: "MD5",
-								},
-							},
-						},
+				resource: &ontology.LoggingService{
+					Id:                         "loggingservice",
+					Description:                "loggingservice",
+					InternetAccessibleEndpoint: true,
+					TransportEncryption: &ontology.TransportEncryption{
+						Enforced:        false,
+						Enabled:         true,
+						Protocol:        "TLS",
+						ProtocolVersion: 1.3,
 					},
 				},
 				evidenceID: mockVM1EvidenceID,
 				src:        &mockMetricsSource{t: t},
 			},
 			compliant: map[string]bool{
-				"AutomaticUpdatesEnabled":  false,
-				"AutomaticUpdatesInterval": false,
-				"StrongCryptographicHash":  false,
+				"TransportEncryptionEnabled":            true,
+				"TransportEncryptionEnforced":           false,
+				"TransportEncryptionProtocol":           true,
+				"TransportEncryptionProtocolVersion":    true,
+				"TlsCipherSuite":                        false,
+				"TlsDHGroup":                            false,
+				"TransportEncryptionSignatureAlgorithm": false,
 			},
 			wantErr: assert.Nil[error],
 		},

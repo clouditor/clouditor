@@ -4,6 +4,7 @@ plugins:
     out: .
     opt:
       - paths=source_relative
+      - Mpolicies/security-metrics/ontology/v1/ontology.proto=clouditor.io/clouditor/v2/api/ontology
       - Mapi/orchestrator/orchestrator.proto=clouditor.io/api/orchestrator
       - Mapi/assessment/metric.proto=clouditor.io/api/assessment
       - Mapi/assessment/assessment.proto=clouditor.io/api/assessment
