@@ -27,9 +27,11 @@ package evidence
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/cli"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 
@@ -61,7 +63,8 @@ func TestNewUpdateResourceCommand(t *testing.T) {
 	cli.Output = &b
 
 	cmd := NewUpdateResourceCommand()
-	err = cmd.RunE(nil, []string{`{"id": "MyApplication", "targetOfEvaluationId": "00000000-0000-0000-0000-000000000000", "toolId":"test collector id", "resourceType": "Application,Resource", "properties":{"@type":"type.googleapis.com/clouditor.ontology.v1.Application", "id": "MyApplication", "name": "MyApplication"}}`})
+	typeURL := fmt.Sprintf("type.googleapis.com/%s", (&ontology.Application{}).ProtoReflect().Descriptor().FullName())
+	err = cmd.RunE(nil, []string{fmt.Sprintf(`{"id": "MyApplication", "targetOfEvaluationId": "00000000-0000-0000-0000-000000000000", "toolId":"test collector id", "resourceType": "Application,Resource", "properties":{"@type":"%s", "id": "MyApplication", "name": "MyApplication"}}`, typeURL)})
 	assert.NoError(t, err)
 
 	var response = &evidence.Resource{}
