@@ -224,6 +224,7 @@ require (
 )
 
 require (
+	github.com/gophercloud/gophercloud v1.14.1
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2 // indirect
 	github.com/vektah/gqlparser/v2 v2.5.28 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.36.0 // indirect

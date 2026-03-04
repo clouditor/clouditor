@@ -46,16 +46,23 @@ func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontolog
 		Id:           volume.ID,
 		Name:         name,
 		Description:  volume.Description,
-		CreationTime: timestamppb.New(volume.CreatedAt),
+		CreationTime: timestamppb.New(volume.CreatedAt), // Ensure timestamppb is correctly imported
 		GeoLocation: &ontology.GeoLocation{
 			Region: d.region,
 		},
 		ParentId: util.Ref(getParentID(volume)),
 		Labels:   map[string]string{}, // Not available
 		Raw:      discovery.Raw(volume),
+		AtRestEncryption: &ontology.AtRestEncryption{
+			Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
+				CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
+					Enabled: volume.Encrypted,
+					// Algorithm: , // Not available
+				},
+			},
+		},
 	}
-
-	log.Infof("Adding block storage '%s", volume.Name)
+	log.Infof("Adding block storage '%s'", volume.Name)
 
 	return r, nil
 }
