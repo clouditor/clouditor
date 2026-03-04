@@ -71,7 +71,7 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 		Raw:               discovery.Raw(server),
 		MalwareProtection: &ontology.MalwareProtection{},
 		BootLogging:       bootLogging,
-		AutomaticUpdates:  &ontology.AutomaticUpdates{},
+		AutomaticUpdates:  &ontology.AutomaticUpdates{}, // Not available
 	}
 
 	// Get attached block storage IDs
