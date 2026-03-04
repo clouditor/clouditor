@@ -248,7 +248,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 		assert.NoError(t, err)
 
 		cmd := NewGetMetricConfigurationCommand()
-		err = cmd.RunE(nil, []string{target.Id, "TransportEncryptionEnabled"})
+		err = cmd.RunE(nil, []string{target.Id, "642e9b84-4bf9-4853-9c76-555716f0c716"})
 
 		return assert.NoError(t, err)
 	}, server.WithServices(svc))

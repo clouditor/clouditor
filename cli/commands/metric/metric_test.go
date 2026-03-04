@@ -73,7 +73,7 @@ func TestGetMetric(t *testing.T) {
 	cli.Output = &b
 
 	cmd := NewGetMetricCommand()
-	err = cmd.RunE(nil, []string{"TransportEncryptionEnabled"})
+	err = cmd.RunE(nil, []string{"642e9b84-4bf9-4853-9c76-555716f0c716"})
 
 	assert.NoError(t, err)
 }

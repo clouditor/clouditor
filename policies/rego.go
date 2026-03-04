@@ -242,7 +242,7 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 		)
 
 		// Create paths for bundle directory and utility functions file
-		bundle := fmt.Sprintf("%s/policies/security-metrics/metrics/%s/%s/", baseDir, metric.Category, metric.Id)
+		bundle := fmt.Sprintf("%s/policies/security-metrics/metrics/%s/%s/", baseDir, metric.Category, metric.Name)
 		if err != nil {
 			return nil, fmt.Errorf("could not find metric: %w", err)
 		}
@@ -269,7 +269,7 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 		prefix = re.pkg
 
 		// Convert camelCase metric in under_score_style for package name
-		pkg = util.CamelCaseToSnakeCase(metric.Id)
+		pkg = util.CamelCaseToSnakeCase(metric.Name)
 
 		// Fetch the metric implementation, i.e., the Rego code from the metric source
 		impl, err = src.MetricImplementation(assessment.MetricImplementation_LANGUAGE_REGO, metric)
@@ -327,11 +327,10 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 	}
 
 	result = &CombinedResult{
-		Applicable:  results[0].Bindings["applicable"].(bool),
-		Compliant:   results[0].Bindings["compliant"].(bool),
-		Operator:    results[0].Bindings["operator"].(string),
-		TargetValue: results[0].Bindings["target_value"],
-		MetricID:    metric.Id,
+		Applicable: results[0].Bindings["applicable"].(bool),
+		Compliant:  results[0].Bindings["compliant"].(bool),
+		MetricID:   metric.Id,
+		MetricName: metric.Name,
 	}
 
 	// A little trick to convert the map-based metric configuration back to a real object

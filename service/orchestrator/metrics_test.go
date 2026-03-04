@@ -75,9 +75,10 @@ var (
 
 	MockMetric1 = &assessment.Metric{
 		Id:          testdata.MockMetricID1,
+		Name:        testdata.MockMetricName1,
 		Description: testdata.MockMetricDescription1,
 		Category:    testdata.MockMetricCategory1,
-		Version:     "1.0",
+		Version:     "v1",
 		Comments:    "Test comments",
 	}
 )
@@ -126,18 +127,20 @@ func Test_loadMetricsFromMetricsRepository(t *testing.T) {
 			path: validDir,
 			wantMetric: []*assessment.Metric{
 				{
-					Id:          "TestMetric",
-					Description: "Test Metric 1",
-					Category:    "TestCategory",
-					Version:     "1.0",
-					Comments:    "Test comments",
+					Id:          "8367f104-3552-48d2-99b3-c0934d0b9d72",
+					Name:        "Mock Metric 1",
+					Description: "This is a mock metric",
+					Category:    "Mock Category 1",
+					Version:     "v1",
+					Comments:    "Mock metric comments 1",
 				},
 				{
-					Id:          "TestMetric",
-					Description: "Test Metric 2",
-					Category:    "TestCategory",
-					Version:     "1.0",
-					Comments:    "Test comments",
+					Id:          "8367f104-3552-48d2-99b3-c0934d0b9d73",
+					Name:        "Mock Metric 2",
+					Description: "This is a mock metric",
+					Category:    "Mock Category 2",
+					Version:     "v1",
+					Comments:    "Mock metric comments 2",
 				},
 			},
 			wantErr: assert.NoError,
@@ -252,18 +255,20 @@ func TestService_CreateMetric(t *testing.T) {
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
 						Id:          testdata.MockMetricID1,
+						Name:        testdata.MockMetricName1,
 						Description: testdata.MockMetricDescription1,
 						Category:    testdata.MockMetricCategory1,
-						Version:     "1.0",
+						Version:     "v1",
 						Comments:    "Test comments",
 					},
 				},
 			},
 			wantMetric: &assessment.Metric{
 				Id:          testdata.MockMetricID1,
+				Name:        testdata.MockMetricName1,
 				Description: testdata.MockMetricDescription1,
 				Category:    testdata.MockMetricCategory1,
-				Version:     "1.0",
+				Version:     "v1",
 				Comments:    "Test comments",
 			},
 			wantErr: assert.NoError,
@@ -281,7 +286,7 @@ func TestService_CreateMetric(t *testing.T) {
 			},
 			wantMetric: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "metric.id: value length must be at least 1 characters")
+				return assert.ErrorContains(t, err, "metric.id: value is empty")
 			},
 		},
 		{
@@ -293,10 +298,11 @@ func TestService_CreateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:              "TLSVersion",
+						Id:              "8536af06-2e19-4822-b387-7c0d8d8c311b",
+						Name:            "TLSVersion",
 						Description:     testdata.MockMetricDescription1,
 						Category:        testdata.MockMetricCategory1,
-						Version:         "1.0",
+						Version:         "v1",
 						Comments:        "Test comments",
 						DeprecatedSince: timestamppb.Now(),
 					},
@@ -311,17 +317,18 @@ func TestService_CreateMetric(t *testing.T) {
 			name: "Create metric which already exists",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(&assessment.Metric{Id: "TLSVersion"}))
+					assert.NoError(t, s.Create(&assessment.Metric{Id: "1c5b928f-90f7-47c6-9ba4-d06799c9e8af"}))
 				}),
 			},
 			args: args{
 				context.TODO(),
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:          "TLSVersion",
+						Id:          "1c5b928f-90f7-47c6-9ba4-d06799c9e8af",
+						Name:        "TransportEncryptionProtocolVersion",
 						Description: testdata.MockMetricDescription1,
 						Category:    testdata.MockMetricCategory1,
-						Version:     "1.0",
+						Version:     "v1",
 						Comments:    "Test comments",
 					},
 				},
@@ -341,9 +348,10 @@ func TestService_CreateMetric(t *testing.T) {
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
 						Id:          testdata.MockMetricID1,
+						Name:        testdata.MockMetricName1,
 						Description: testdata.MockMetricDescription1,
 						Category:    testdata.MockMetricCategory1,
-						Version:     "1.0",
+						Version:     "v1",
 						Comments:    "Test comments",
 					},
 				},
@@ -363,9 +371,10 @@ func TestService_CreateMetric(t *testing.T) {
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
 						Id:          testdata.MockMetricID1,
+						Name:        testdata.MockMetricName1,
 						Description: testdata.MockMetricDescription1,
 						Category:    testdata.MockMetricCategory1,
-						Version:     "1.0",
+						Version:     "v1",
 						Comments:    "Test comments",
 					},
 				},
@@ -412,7 +421,7 @@ func TestService_UpdateMetric(t *testing.T) {
 			name: "Update existing metric",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(&assessment.Metric{Id: "TransportEncryptionEnabled"})
+					_ = s.Create(&assessment.Metric{Id: "642e9b84-4bf9-4853-9c76-555716f0c716"})
 					_ = s.Create(&orchestrator.TargetOfEvaluation{Id: testdata.MockTargetOfEvaluationID1})
 				}),
 			},
@@ -420,20 +429,22 @@ func TestService_UpdateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:              "TransportEncryptionEnabled",
+						Id:              "642e9b84-4bf9-4853-9c76-555716f0c716",
+						Name:            "TransportEncryptionEnabled",
 						Description:     testdata.MockMetricDescription1,
 						Category:        testdata.MockMetricCategory1,
-						Version:         "1.0",
+						Version:         "v1",
 						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
 					},
 				},
 			},
 			wantMetric: &assessment.Metric{
-				Id:              "TransportEncryptionEnabled",
+				Id:              "642e9b84-4bf9-4853-9c76-555716f0c716",
+				Name:            "TransportEncryptionEnabled",
 				Description:     testdata.MockMetricDescription1,
 				Category:        testdata.MockMetricCategory1,
-				Version:         "1.0",
+				Version:         "v1",
 				Comments:        "Test comments",
 				DeprecatedSince: timestamp,
 			},
@@ -448,10 +459,11 @@ func TestService_UpdateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:              "TransportEncryptionEnabled",
+						Id:              "642e9b84-4bf9-4853-9c76-555716f0c716",
+						Name:            "TransportEncryptionEnabled",
 						Description:     testdata.MockMetricDescription1,
 						Category:        testdata.MockMetricCategory1,
-						Version:         "1.0",
+						Version:         "v1",
 						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
 					},
@@ -469,10 +481,11 @@ func TestService_UpdateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:              "TransportEncryptionEnabled",
+						Id:              "642e9b84-4bf9-4853-9c76-555716f0c716",
+						Name:            "TransportEncryptionEnabled",
 						Description:     testdata.MockMetricDescription1,
 						Category:        testdata.MockMetricCategory1,
-						Version:         "1.0",
+						Version:         "v1",
 						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
 					},
@@ -490,10 +503,11 @@ func TestService_UpdateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:              "DoesProbablyNotExist",
+						Id:              "642e9b84-4bf9-4853-9c76-555716f0c716",
+						Name:            "DoesProbablyNotExist",
 						Description:     testdata.MockMetricDescription1,
 						Category:        testdata.MockMetricCategory1,
-						Version:         "1.0",
+						Version:         "v1",
 						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
 					},
@@ -581,10 +595,11 @@ func TestService_GetMetric(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(&orchestrator.TargetOfEvaluation{Id: testdata.MockTargetOfEvaluationID1})
 					_ = s.Create(&assessment.Metric{
-						Id:          "TransportEncryptionEnabled",
-						Description: "This metric describes, whether transport encryption is turned on or not",
+						Id:          "8536af06-2e19-4822-b387-7c0d8d8c311b",
+						Name:        "TransportEncryptionEnabled",
+						Description: "This rule assesses whether a [Resource] has [TransportEncryption] [p1:enabled] correctly configured.",
 						Category:    testdata.MockMetricCategory1,
-						Version:     "1.0",
+						Version:     "v1",
 						Comments:    "Test comments",
 					})
 				}),
@@ -592,14 +607,15 @@ func TestService_GetMetric(t *testing.T) {
 			args: args{
 				context.TODO(),
 				&orchestrator.GetMetricRequest{
-					MetricId: "TransportEncryptionEnabled",
+					MetricId: "8536af06-2e19-4822-b387-7c0d8d8c311b",
 				},
 			},
 			wantMetric: &assessment.Metric{
-				Id:          "TransportEncryptionEnabled",
-				Description: "This metric describes, whether transport encryption is turned on or not",
+				Id:          "8536af06-2e19-4822-b387-7c0d8d8c311b",
+				Name:        "TransportEncryptionEnabled",
+				Description: "This rule assesses whether a [Resource] has [TransportEncryption] [p1:enabled] correctly configured.",
 				Category:    testdata.MockMetricCategory1,
-				Version:     "1.0",
+				Version:     "v1",
 				Comments:    "Test comments",
 			},
 			wantErr: assert.NoError,
@@ -672,16 +688,18 @@ func TestService_ListMetrics(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(&assessment.Metric{
 						Id:          testdata.MockMetricID1,
+						Name:        testdata.MockMetricName1,
 						Description: testdata.MockMetricDescription1,
 						Category:    testdata.MockMetricCategory1,
-						Version:     "1.0",
+						Version:     "v1",
 						Comments:    "Test comments",
 					})
 					_ = s.Create(&assessment.Metric{
 						Id:              testdata.MockMetricID2,
+						Name:            testdata.MockMetricName2,
 						Description:     testdata.MockMetricDescription2,
 						Category:        testdata.MockMetricCategory1,
-						Version:         "1.0",
+						Version:         "v1",
 						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
 					})
@@ -701,16 +719,18 @@ func TestService_ListMetrics(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(&assessment.Metric{
 						Id:          testdata.MockMetricID1,
+						Name:        testdata.MockMetricName1,
 						Description: testdata.MockMetricDescription1,
 						Category:    testdata.MockMetricCategory1,
-						Version:     "1.0",
+						Version:     "v1",
 						Comments:    "Test comments",
 					})
 					_ = s.Create(&assessment.Metric{
 						Id:              testdata.MockMetricID2,
+						Name:            testdata.MockMetricName2,
 						Description:     testdata.MockMetricDescription2,
 						Category:        testdata.MockMetricCategory1,
-						Version:         "1.0",
+						Version:         "v1",
 						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
 					})
@@ -727,16 +747,18 @@ func TestService_ListMetrics(t *testing.T) {
 				Metrics: []*assessment.Metric{
 					{
 						Id:          testdata.MockMetricID1,
+						Name:        testdata.MockMetricName1,
 						Description: testdata.MockMetricDescription1,
 						Category:    testdata.MockMetricCategory1,
-						Version:     "1.0",
+						Version:     "v1",
 						Comments:    "Test comments",
 					},
 					{
 						Id:              testdata.MockMetricID2,
+						Name:            testdata.MockMetricName2,
 						Description:     testdata.MockMetricDescription2,
 						Category:        testdata.MockMetricCategory1,
-						Version:         "1.0",
+						Version:         "v1",
 						Comments:        "Test comments",
 						DeprecatedSince: timestamp,
 					},
@@ -1736,9 +1758,10 @@ func TestService_RemoveMetric(t *testing.T) {
 					_ = s.Create(&orchestrator.TargetOfEvaluation{Id: testdata.MockTargetOfEvaluationID1})
 					_ = s.Create(&assessment.Metric{
 						Id:              testdata.MockMetricID1,
+						Name:            testdata.MockMetricName1,
 						Description:     testdata.MockMetricDescription1,
 						Category:        testdata.MockMetricCategory1,
-						Version:         "1.0",
+						Version:         "v1",
 						Comments:        "comments",
 						DeprecatedSince: timestamp,
 					},
