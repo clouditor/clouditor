@@ -81,5 +81,12 @@ func (d *openstackDiscovery) discoverProjects() (list []ontology.IsResource, err
 		}
 	}
 
+	// Handle ObjectStorageService, it is no project, but we need the account information
+	objectStorageService, err := d.handleObjectStorageService()
+	if err != nil {
+		return nil, fmt.Errorf("could not handle object storage service: %w", err)
+	}
+	list = append(list, objectStorageService...)
+
 	return list, nil
 }

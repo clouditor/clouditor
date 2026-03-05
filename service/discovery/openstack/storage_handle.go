@@ -33,9 +33,11 @@ import (
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/constants"
 	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
+	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/projects"
 	"github.com/gophercloud/gophercloud/v2/openstack/objectstorage/v1/containers"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -105,6 +107,35 @@ func (d *openstackDiscovery) handleObjectStorage(container *containers.Container
 		Name:         container.Name,
 		Description:  "", // Not available
 		PublicAccess: isPublic,
+	}
+
+	return r, nil
+}
+
+func (d *openstackDiscovery) handleObjectStorageService(project *projects.Project) (ontology.IsResource, error) {
+	var (
+		te *ontology.TransportEncryption
+	)
+	if strings.HasPrefix(d.clients.storageClient.Endpoint, "https://") {
+		te = &ontology.TransportEncryption{
+			Enabled:  true,
+			Enforced: true,
+			Protocol: constants.TLS,
+			// ProtocolVersion: 1.2, // information not available
+		}
+	}
+
+	r := &ontology.ObjectStorageService{
+		Id:   d.clients.storageClient.Endpoint,
+		Name: "Swift Object Storage Service",
+		GeoLocation: &ontology.GeoLocation{
+			Region: d.region,
+		},
+		ParentId: util.Ref(project.ID),
+		HttpEndpoint: &ontology.HttpEndpoint{
+			Url:                 d.clients.storageClient.Endpoint,
+			TransportEncryption: te,
+		},
 	}
 
 	return r, nil
