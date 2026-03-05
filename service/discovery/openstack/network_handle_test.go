@@ -32,13 +32,20 @@ import (
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest/openstacktest"
 	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/v2/testhelper"
+	"github.com/gophercloud/gophercloud/v2/testhelper/client"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
+	testhelper.SetupHTTP()
+	defer testhelper.TeardownHTTP()
+	openstacktest.HandlePortsListSuccessfully(t)
+
 	testTime := time.Date(2000, 01, 20, 9, 20, 12, 123, time.UTC)
 
 	type fields struct {
@@ -62,7 +69,22 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
+				authOpts: &gophercloud.AuthOptions{
+					IdentityEndpoint: testdata.MockOpenstackIdentityEndpoint,
+					Username:         testdata.MockOpenstackUsername,
+					Password:         testdata.MockOpenstackPassword,
+					TenantName:       testdata.MockOpenstackTenantName,
+				},
 				region: "test region",
+				clients: clients{
+					provider: &gophercloud.ProviderClient{
+						TokenID: client.TokenID,
+						EndpointLocator: func(eo gophercloud.EndpointOpts) (string, error) {
+							return testhelper.Endpoint(), nil
+						},
+					},
+					networkClient: client.ServiceClient(),
+				},
 			},
 			args: args{
 				network: &networks.Network{
@@ -81,6 +103,13 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 						Region: "test region",
 					},
 					ParentId: util.Ref(testdata.MockServerTenantID),
+					AccessRestriction: &ontology.AccessRestriction{
+						Type: &ontology.AccessRestriction_L3Firewall{
+							L3Firewall: &ontology.L3Firewall{
+								Enabled: false,
+							},
+						},
+					},
 				}
 
 				gotNew := got.(*ontology.NetworkInterface)

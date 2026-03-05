@@ -26,11 +26,15 @@
 package openstack
 
 import (
+	"context"
+	"strings"
+
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
+	"github.com/gophercloud/gophercloud/v2/openstack/objectstorage/v1/containers"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -46,7 +50,7 @@ func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontolog
 		Id:           volume.ID,
 		Name:         name,
 		Description:  volume.Description,
-		CreationTime: timestamppb.New(volume.CreatedAt), // Ensure timestamppb is correctly imported
+		CreationTime: timestamppb.New(volume.CreatedAt),
 		GeoLocation: &ontology.GeoLocation{
 			Region: d.region,
 		},
@@ -63,6 +67,36 @@ func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontolog
 		},
 	}
 	log.Infof("Adding block storage '%s'", volume.Name)
+
+	return r, nil
+}
+
+// handleObjectStorage creates an object storage resource based on the Clouditor Ontology
+func (d *openstackDiscovery) handleObjectStorage(container *containers.Container) (ontology.IsResource, error) {
+	var (
+		isPublic bool
+	)
+	res := containers.Get(context.Background(), d.clients.storageClient, container.Name, containers.GetOpts{})
+
+	header, err := res.Extract()
+	if err != nil {
+		log.Errorf("Error extracting container details for container '%s': %s", container.Name, err)
+	} else {
+		// Check if the container is public by looking for the "X-Container-Read" header and checking if it contains ".r:*"
+		for _, acl := range header.Read {
+			if strings.Contains(acl, ".r:*") {
+				isPublic = true
+				break
+			}
+		}
+	}
+
+	r := &ontology.ObjectStorage{
+		Id:           container.Name,
+		Name:         container.Name,
+		Description:  "", // Not available
+		PublicAccess: isPublic,
+	}
 
 	return r, nil
 }

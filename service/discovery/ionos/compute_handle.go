@@ -38,7 +38,7 @@ import (
 
 // handleServer creates a virtual machine resource based on the Clouditor Ontology
 func (d *ionosDiscovery) handleServer(server ionoscloud.Server, dc ionoscloud.Datacenter) (ontology.IsResource, error) {
-	// Getting labels
+	// Get labels
 	l, _, err := d.client.LabelsApi.
 		DatacentersServersLabelsGet(context.Background(), util.Deref(dc.GetId()), util.Deref(server.GetId())).
 		Execute()
@@ -94,7 +94,14 @@ func (d *ionosDiscovery) handleBlockStorage(blockStorage ionoscloud.Volume, dc i
 		ParentId: dc.GetId(),
 		Raw:      discovery.Raw(blockStorage, dc),
 		// Description: , // Not available
-		// AtRestEncryption: ,
+		// AtRestEncryption: &ontology.AtRestEncryption{
+		// 	Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+		// 		ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
+		// 			// Enabled:   util.Deref(encryption),
+		// 			// Algorithm: encryption.EncryptionAlgorithm,
+		// 		},
+		// 	},
+		// },
 		// Backups: ,
 
 	}
