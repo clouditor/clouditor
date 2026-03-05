@@ -48,6 +48,7 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 		region   string
 		domain   *domain
 		project  *project
+		projects map[string]ontology.IsResource
 	}
 	type args struct {
 		network *networks.Network
@@ -60,30 +61,89 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Happy path",
+			name: "error getting projectID",
+			fields: fields{
+				region:   "test region",
+				domain:   &domain{},
+				projects: map[string]ontology.IsResource{},
+			},
+			args: args{
+				network: &networks.Network{},
+			},
+			want: assert.Nil[ontology.IsResource],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not get project ID for network interface")
+			},
+		},
+		{
+			name: "Happy path: projectID available",
 			fields: fields{
 				region: "test region",
+				domain: &domain{
+					domainID:   testdata.MockOpenstackDomainID1,
+					domainName: testdata.MockOpenstackDomainName1,
+				},
+				projects: map[string]ontology.IsResource{},
 			},
 			args: args{
 				network: &networks.Network{
-					ID:        testdata.MockNetworkID1,
-					Name:      testdata.MockNetworkName1,
-					ProjectID: testdata.MockServerTenantID,
+					ID:        testdata.MockOpenstackNetworkID1,
+					Name:      testdata.MockOpenstackNetworkName1,
+					ProjectID: testdata.MockOpenstackServerTenantID,
 					CreatedAt: testTime,
 				},
 			},
 			want: func(t *testing.T, got ontology.IsResource) bool {
 				want := &ontology.NetworkInterface{
-					Id:           testdata.MockNetworkID1,
-					Name:         testdata.MockNetworkName1,
+					Id:           testdata.MockOpenstackNetworkID1,
+					Name:         testdata.MockOpenstackNetworkName1,
 					CreationTime: timestamppb.New(testTime),
 					GeoLocation: &ontology.GeoLocation{
 						Region: "test region",
 					},
-					ParentId: util.Ref(testdata.MockServerTenantID),
+					ParentId: util.Ref(testdata.MockOpenstackServerTenantID),
 				}
 
-				gotNew := got.(*ontology.NetworkInterface)
+				gotNew, ok := got.(*ontology.NetworkInterface)
+				assert.True(t, ok)
+
+				assert.NotEmpty(t, gotNew.GetRaw())
+				gotNew.Raw = ""
+				return assert.Equal(t, want, gotNew)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: tenantID available",
+			fields: fields{
+				region: "test region",
+				domain: &domain{
+					domainID:   testdata.MockOpenstackDomainID1,
+					domainName: testdata.MockOpenstackDomainName1,
+				},
+				projects: map[string]ontology.IsResource{},
+			},
+			args: args{
+				network: &networks.Network{
+					ID:        testdata.MockOpenstackNetworkID1,
+					Name:      testdata.MockOpenstackNetworkName1,
+					TenantID:  testdata.MockOpenstackServerTenantID,
+					CreatedAt: testTime,
+				},
+			},
+			want: func(t *testing.T, got ontology.IsResource) bool {
+				want := &ontology.NetworkInterface{
+					Id:           testdata.MockOpenstackNetworkID1,
+					Name:         testdata.MockOpenstackNetworkName1,
+					CreationTime: timestamppb.New(testTime),
+					GeoLocation: &ontology.GeoLocation{
+						Region: "test region",
+					},
+					ParentId: util.Ref(testdata.MockOpenstackServerTenantID),
+				}
+
+				gotNew, ok := got.(*ontology.NetworkInterface)
+				assert.True(t, ok)
 
 				assert.NotEmpty(t, gotNew.GetRaw())
 				gotNew.Raw = ""
@@ -95,12 +155,13 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				region:   tt.fields.region,
-				domain:   tt.fields.domain,
-				project:  tt.fields.project,
+				ctID:               tt.fields.ctID,
+				clients:            tt.fields.clients,
+				authOpts:           tt.fields.authOpts,
+				region:             tt.fields.region,
+				domain:             tt.fields.domain,
+				configuredProject:  tt.fields.project,
+				discoveredProjects: tt.fields.projects,
 			}
 			got, err := d.handleNetworkInterfaces(tt.args.network)
 

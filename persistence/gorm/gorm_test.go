@@ -133,6 +133,7 @@ func Test_storage_Create(t *testing.T) {
 
 	metric = &assessment.Metric{
 		Id:          testdata.MockMetricID1,
+		Name:        testdata.MockMetricName1,
 		Category:    testdata.MockMetricCategory1,
 		Description: testdata.MockMetricDescription1,
 		Version:     testdata.MockMetricVersion1,
@@ -198,6 +199,7 @@ func Test_storage_Get(t *testing.T) {
 
 	var metric = &assessment.Metric{
 		Id:          testdata.MockMetricID1,
+		Name:        testdata.MockMetricName1,
 		Category:    testdata.MockMetricCategory1,
 		Description: testdata.MockMetricDescription1,
 		Version:     testdata.MockMetricVersion1,
@@ -430,6 +432,7 @@ func Test_storage_Update(t *testing.T) {
 		ConfiguredMetrics: []*assessment.Metric{
 			{
 				Id:          testdata.MockMetricID1,
+				Name:        testdata.MockMetricName1,
 				Description: testdata.MockMetricDescription1,
 				Category:    testdata.MockMetricCategory1,
 				Version:     testdata.MockMetricVersion1,

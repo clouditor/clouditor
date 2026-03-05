@@ -59,6 +59,32 @@ func Test_openstackDiscovery_discoverProjects(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
+			name: "error: Project ID not available",
+			fields: fields{
+				project: &project{
+					projectID: "",
+				},
+			},
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "project ID is not available:")
+			},
+		},
+		{
+			name: "error: Project name not available",
+			fields: fields{
+				project: &project{
+					projectID:   testdata.MockOpenstackProjectID1,
+					projectName: "",
+				},
+				domain: &domain{},
+			},
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not handle project")
+			},
+		},
+		{
 			name: "Happy path",
 			fields: fields{
 				authOpts: &gophercloud.AuthOptions{
@@ -97,8 +123,8 @@ func Test_openstackDiscovery_discoverProjects(t *testing.T) {
 					ParentId: util.Ref(""),
 				}
 
-				got0 := got[0].(*ontology.ResourceGroup)
-
+				got0, ok := got[0].(*ontology.ResourceGroup)
+				assert.True(t, ok)
 				assert.NotEmpty(t, got0.GetRaw())
 				got0.Raw = ""
 				return assert.Equal(t, want, got0)
@@ -109,12 +135,12 @@ func Test_openstackDiscovery_discoverProjects(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				region:   tt.fields.region,
-				domain:   tt.fields.domain,
-				project:  tt.fields.project,
+				ctID:              tt.fields.ctID,
+				clients:           tt.fields.clients,
+				authOpts:          tt.fields.authOpts,
+				region:            tt.fields.region,
+				domain:            tt.fields.domain,
+				configuredProject: tt.fields.project,
 			}
 
 			gotList, err := d.discoverProjects()
@@ -173,7 +199,8 @@ func Test_openstackDiscovery_discoverDomain(t *testing.T) {
 					Description: "some description",
 				}
 
-				got0 := got[0].(*ontology.Account)
+				got0, ok := got[0].(*ontology.Account)
+				assert.True(t, ok)
 
 				assert.NotEmpty(t, got0.GetRaw())
 				got0.Raw = ""
@@ -185,11 +212,11 @@ func Test_openstackDiscovery_discoverDomain(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				domain:   tt.fields.domain,
-				project:  tt.fields.project,
+				ctID:              tt.fields.ctID,
+				clients:           tt.fields.clients,
+				authOpts:          tt.fields.authOpts,
+				domain:            tt.fields.domain,
+				configuredProject: tt.fields.project,
 			}
 			gotList, err := d.discoverDomains()
 

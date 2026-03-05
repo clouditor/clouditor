@@ -77,9 +77,14 @@ func Test_openstackDiscovery_discoverCluster(t *testing.T) {
 					},
 					clusterClient: client.ServiceClient(),
 				},
-				region:  "test region",
-				domain:  &domain{},
-				project: &project{},
+				region: "test region",
+				domain: &domain{
+					domainID: testdata.MockOpenstackDomainID1,
+				},
+				project: &project{
+					projectID:   testdata.MockOpenstackProjectID1,
+					projectName: testdata.MockOpenstackProjectName1,
+				},
 			},
 			wantList: func(t *testing.T, got []ontology.IsResource) bool {
 				assert.Equal(t, 2, len(got))
@@ -127,12 +132,12 @@ func Test_openstackDiscovery_discoverCluster(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				region:   tt.fields.region,
-				domain:   tt.fields.domain,
-				project:  tt.fields.project,
+				ctID:              tt.fields.ctID,
+				clients:           tt.fields.clients,
+				authOpts:          tt.fields.authOpts,
+				region:            tt.fields.region,
+				domain:            tt.fields.domain,
+				configuredProject: tt.fields.project,
 			}
 			gotList, err := d.discoverCluster()
 

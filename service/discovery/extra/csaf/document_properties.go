@@ -89,7 +89,7 @@ func clientAuthenticity(res *http.Response) *ontology.Authenticity {
 // checksums located at the URL specified in the [csaf.AdvisoryFile] interface.
 //
 // It uses the [documentChecksum] method to retrieve the respective checksum.
-func (d *csafDiscovery) documentChecksums(file csaf.AdvisoryFile, body []byte) (checksums []*ontology.DocumentChecksum) {
+func (d *csafDiscovery) documentChecksums(file csaf.AdvisoryFile, body []byte) (checksums []*ontology.CryptographicHash) {
 	var toHash = map[string]struct {
 		h   hash.Hash
 		alg string
@@ -116,7 +116,7 @@ func (d *csafDiscovery) documentChecksums(file csaf.AdvisoryFile, body []byte) (
 // The validation result (and any resulting) errors are stored in an [ontology.DocumentChecksum] object. It will return
 // nil, if the document does not exist (because then no checksum exists) or if any other (network) error occurred before
 // we can retrieve the body.
-func (d *csafDiscovery) documentChecksum(checksumURL, filename string, body []byte, algorithm string, h hash.Hash) *ontology.DocumentChecksum {
+func (d *csafDiscovery) documentChecksum(checksumURL, filename string, body []byte, algorithm string, h hash.Hash) *ontology.CryptographicHash {
 	// Retrieve hash from URL
 	res, err := d.client.Get(checksumURL)
 	if err != nil {
@@ -133,7 +133,7 @@ func (d *csafDiscovery) documentChecksum(checksumURL, filename string, body []by
 	// Fetch the body
 	hashBody, err := io.ReadAll(res.Body)
 	if err != nil {
-		return &ontology.DocumentChecksum{
+		return &ontology.CryptographicHash{
 			Errors:    fromError(err),
 			Algorithm: algorithm,
 		}
@@ -142,7 +142,7 @@ func (d *csafDiscovery) documentChecksum(checksumURL, filename string, body []by
 	// Split it into hash and filename
 	hash, _, found := strings.Cut(string(hashBody), filename)
 	if !found || filename == "" {
-		return &ontology.DocumentChecksum{
+		return &ontology.CryptographicHash{
 			Errors:    fromError(errors.New("checksum file does not contain correct filename")),
 			Algorithm: algorithm,
 		}
@@ -155,14 +155,14 @@ func (d *csafDiscovery) documentChecksum(checksumURL, filename string, body []by
 	_, _ = h.Write(body)
 	want := hex.EncodeToString(h.Sum(nil)[:])
 	if subtle.ConstantTimeCompare([]byte(hash), []byte(want)) == 0 {
-		return &ontology.DocumentChecksum{
+		return &ontology.CryptographicHash{
 			Errors:    fromError(errors.New("checksum mismatch")),
 			Algorithm: algorithm,
 		}
 	}
 
 	// If we arrived here, everything is good
-	return &ontology.DocumentChecksum{
+	return &ontology.CryptographicHash{
 		Errors:    nil,
 		Algorithm: algorithm,
 	}

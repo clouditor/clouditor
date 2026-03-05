@@ -46,27 +46,27 @@ func Test_getParentID(t *testing.T) {
 			name: "Happy path: no attached server available",
 			args: args{
 				&volumes.Volume{
-					TenantID: testdata.MockVolumeTenantID,
+					TenantID: testdata.MockOpenstackVolumeTenantID,
 				},
 			},
 			want: func(t *testing.T, got string) bool {
-				return assert.Equal(t, testdata.MockVolumeTenantID, got)
+				return assert.Equal(t, testdata.MockOpenstackVolumeTenantID, got)
 			},
 		},
 		{
 			name: "Happy path: attached serverID",
 			args: args{
 				&volumes.Volume{
-					TenantID: testdata.MockVolumeTenantID,
+					TenantID: testdata.MockOpenstackVolumeTenantID,
 					Attachments: []volumes.Attachment{
 						{
-							ServerID: testdata.MockServerID1,
+							ServerID: testdata.MockOpenstackServerID1,
 						},
 					},
 				},
 			},
 			want: func(t *testing.T, got string) bool {
-				return assert.Equal(t, testdata.MockServerID1, got)
+				return assert.Equal(t, testdata.MockOpenstackServerID1, got)
 			},
 		},
 	}

@@ -28,6 +28,7 @@ package openstack
 import (
 	"context"
 	"strings"
+	"fmt"
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
@@ -79,7 +80,7 @@ func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) 
 			Region: d.region,
 		},
 		Labels:   labels(util.Ref(network.Tags)),
-		ParentId: util.Ref(network.ProjectID),
+		ParentId: util.Ref(projectId),
 		Raw:      discovery.Raw(network),
 		AccessRestriction: &ontology.AccessRestriction{
 			Type: &ontology.AccessRestriction_L3Firewall{
@@ -91,7 +92,13 @@ func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) 
 		},
 	}
 
-	log.Infof("Adding network interface '%s", network.Name)
+	// Create project resource for the parentId if not available
+	err = d.addProjectIfMissing(projectId, projectId, d.domain.domainID)
+	if err != nil {
+		return nil, fmt.Errorf("could not handle project for network interface '%s': %w", network.Name, err)
+	}
+
+	log.Infof("Adding network interface '%s", r.Name)
 
 	return r, nil
 }

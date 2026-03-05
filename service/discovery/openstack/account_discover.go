@@ -69,19 +69,16 @@ func (d *openstackDiscovery) discoverProjects() (list []ontology.IsResource, err
 	if err != nil {
 		log.Debugf("Could not discover projects/tenants due to insufficient permissions, but we can proceed with less project/tenant information: %v", err)
 
-		if d.project.projectID == "" {
-			err := fmt.Errorf("domain ID is not available: %v", err)
+		if d.configuredProject.projectID == "" {
+			err := fmt.Errorf("project ID is not available: %v", err)
 			return nil, err
 		}
 
-		r := &ontology.ResourceGroup{
-			Id:       d.project.projectID,
-			Name:     d.project.projectName,
-			ParentId: &d.domain.domainID,
-			Raw:      discovery.Raw("Project/Tenant information manually added."),
+		// Create and add manual created project resource to the list of projects
+		err := d.addProjectIfMissing(d.configuredProject.projectID, d.configuredProject.projectName, d.domain.domainID)
+		if err != nil {
+			return nil, fmt.Errorf("could not handle project '%s': %w", d.configuredProject.projectName, err)
 		}
-
-		list = append(list, r)
 	}
 
 	return list, nil

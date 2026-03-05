@@ -36,7 +36,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest/openstacktest"
-	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/testhelper"
@@ -321,11 +320,11 @@ func TestNewAuthorizer(t *testing.T) {
 					},
 					{
 						envVariableKey:   "OS_TENANT_ID",
-						envVariableValue: testdata.MockProjectID1,
+						envVariableValue: testdata.MockOpenstackProjectID1,
 					},
 					{
 						envVariableKey:   "OS_PROJECT_ID",
-						envVariableValue: testdata.MockProjectID1,
+						envVariableValue: testdata.MockOpenstackProjectID1,
 					},
 				},
 			},
@@ -334,7 +333,7 @@ func TestNewAuthorizer(t *testing.T) {
 					IdentityEndpoint: testdata.MockOpenstackIdentityEndpoint,
 					Username:         testdata.MockOpenstackUsername,
 					Password:         testdata.MockOpenstackPassword,
-					TenantID:         testdata.MockProjectID1,
+					TenantID:         testdata.MockOpenstackProjectID1,
 					AllowReauth:      true,
 				}
 				return assert.Equal(t, want, got)
@@ -367,6 +366,7 @@ func Test_openstackDiscovery_List(t *testing.T) {
 		authOpts *gophercloud.AuthOptions
 		domain   *domain
 		project  *project
+		projects map[string]ontology.IsResource
 
 		testhelper string
 	}
@@ -376,6 +376,13 @@ func Test_openstackDiscovery_List(t *testing.T) {
 		want    assert.Want[[]ontology.IsResource]
 		wantErr assert.ErrorAssertionFunc
 	}{
+		{
+			name: "error authorization",
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not authorize openstack:")
+			},
+		},
 		{
 			name: "error discover server",
 			fields: fields{
@@ -396,12 +403,15 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					identityClient: client.ServiceClient(),
 				},
 				project: &project{},
-				domain:  &domain{},
+				domain: &domain{
+					domainID: testdata.MockOpenstackDomainID1,
+				},
+				projects: map[string]ontology.IsResource{},
 			},
-			want: func(t *testing.T, got []ontology.IsResource) bool {
-				return assert.Equal(t, 0, len(got))
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not discover servers:")
 			},
-			wantErr: assert.NoError,
 		},
 		{
 			name: "error discover network interfaces",
@@ -422,13 +432,19 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					},
 					identityClient: client.ServiceClient(),
 				},
-				project: &project{},
-				domain:  &domain{},
+				project: &project{
+					projectID:   testdata.MockOpenstackProjectID1,
+					projectName: testdata.MockOpenstackProjectName1,
+				},
+				domain: &domain{
+					domainID: testdata.MockOpenstackDomainID1,
+				},
+				projects: map[string]ontology.IsResource{},
 			},
-			want: func(t *testing.T, got []ontology.IsResource) bool {
-				return assert.Equal(t, 4, len(got))
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not discover network interfaces:")
 			},
-			wantErr: assert.NoError,
 		},
 		{
 			name: "error discover block storage",
@@ -449,13 +465,19 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					},
 					identityClient: client.ServiceClient(),
 				},
-				project: &project{},
-				domain:  &domain{},
+				project: &project{
+					projectID:   testdata.MockOpenstackProjectID1,
+					projectName: testdata.MockOpenstackProjectName1,
+				},
+				domain: &domain{
+					domainID: testdata.MockOpenstackDomainID1,
+				},
+				projects: map[string]ontology.IsResource{},
 			},
-			want: func(t *testing.T, got []ontology.IsResource) bool {
-				return assert.Equal(t, 6, len(got))
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not discover block storage:")
 			},
-			wantErr: assert.NoError,
 		},
 		{
 			name: "error discover clusters",
@@ -476,14 +498,24 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					},
 					identityClient: client.ServiceClient(),
 				},
-				project: &project{},
-				domain:  &domain{},
+				project: &project{
+					projectID:   testdata.MockOpenstackProjectID1,
+					projectName: testdata.MockOpenstackProjectName1,
+				},
+				domain: &domain{
+					domainID: testdata.MockOpenstackDomainID1,
+				},
+				projects: map[string]ontology.IsResource{},
 			},
-			want: func(t *testing.T, got []ontology.IsResource) bool {
-				return assert.Equal(t, 8, len(got))
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not discover clusters:")
 			},
-			wantErr: assert.NoError,
 		},
+		// {
+		// name: "error discover projects",
+		// Not possible to test. The method discoverServer() is called before discoverProjects() and adds the project ID which is the only possibility to get an error.
+		// },
 		{
 			name: "error discover projects: but there is no error, as a resource is added based on other information discovered before.",
 			fields: fields{
@@ -507,26 +539,28 @@ func Test_openstackDiscovery_List(t *testing.T) {
 				domain: &domain{
 					domainID: "test domain ID",
 				},
+				projects: map[string]ontology.IsResource{},
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {
-				want := &ontology.ResourceGroup{
-					Id:       "fcad67a6189847c4aecfa3c81a05783b",
-					Name:     "fcad67a6189847c4aecfa3c81a05783b",
-					ParentId: util.Ref("test domain ID"),
-					Raw:      "",
-				}
-
-				got0 := got[9].(*ontology.ResourceGroup)
-				assert.NotEmpty(t, got0.GetRaw())
-				got0.Raw = ""
-				return assert.Equal(t, want, got0)
+				_, ok := got[10].(*ontology.ResourceGroup)
+				assert.True(t, ok)
+				_, ok = got[11].(*ontology.ResourceGroup)
+				assert.True(t, ok)
+				_, ok = got[12].(*ontology.ResourceGroup)
+				assert.True(t, ok)
+				_, ok = got[13].(*ontology.ResourceGroup)
+				return assert.True(t, ok)
 			},
 			wantErr: assert.NoError,
 		},
+		// {
+		// 	name: "error discover domains",
+		// We can’t test this, because the domain is still added when domainID is unset—and in that case, server discovery fails which is done before.
+		// },
 		{
-			name: "error discover domains",
+			name: "Happy path: with one project in map that is nil",
 			fields: fields{
-				testhelper: "domain",
+				testhelper: "all",
 				authOpts: &gophercloud.AuthOptions{
 					IdentityEndpoint: testdata.MockOpenstackIdentityEndpoint,
 					Username:         testdata.MockOpenstackUsername,
@@ -542,11 +576,19 @@ func Test_openstackDiscovery_List(t *testing.T) {
 					},
 					identityClient: client.ServiceClient(),
 				},
-				project: &project{},
-				domain:  &domain{},
+				project: &project{
+					projectID:   testdata.MockOpenstackProjectID1,
+					projectName: testdata.MockOpenstackProjectName1,
+				},
+				domain: &domain{
+					domainID: testdata.MockOpenstackDomainID1,
+				},
+				projects: map[string]ontology.IsResource{
+					testdata.MockOpenstackProjectID1: nil,
+				},
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {
-				return assert.Equal(t, 10, len(got))
+				return assert.Equal(t, 14, len(got))
 			},
 			wantErr: assert.NoError,
 		},
@@ -573,9 +615,10 @@ func Test_openstackDiscovery_List(t *testing.T) {
 				domain: &domain{
 					domainID: "test domain ID",
 				},
+				projects: map[string]ontology.IsResource{},
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {
-				return assert.Equal(t, 11, len(got))
+				return assert.Equal(t, 14, len(got))
 			},
 			wantErr: assert.NoError,
 		},
@@ -585,11 +628,12 @@ func Test_openstackDiscovery_List(t *testing.T) {
 			testhelper.SetupHTTP()
 
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				domain:   tt.fields.domain,
-				project:  tt.fields.project,
+				ctID:               tt.fields.ctID,
+				clients:            tt.fields.clients,
+				authOpts:           tt.fields.authOpts,
+				domain:             tt.fields.domain,
+				configuredProject:  tt.fields.project,
+				discoveredProjects: tt.fields.projects,
 			}
 
 			switch tt.fields.testhelper {

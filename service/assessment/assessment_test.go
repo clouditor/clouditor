@@ -483,7 +483,7 @@ func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached
 	assert.NoError(t, err)
 }
 
-func TestService_AssessEvidences(t *testing.T) {
+func TestService_AssessStreamEvidence(t *testing.T) {
 	type fields struct {
 		ResultHooks          []assessment.ResultHookFunc
 		evidenceStoreStreams *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
@@ -623,12 +623,12 @@ func TestService_AssessEvidences(t *testing.T) {
 			}
 
 			if tt.args.streamToServer != nil {
-				err = s.AssessEvidences(tt.args.streamToServer)
+				err = s.AssessEvidenceStream(tt.args.streamToServer)
 				responseFromServer = <-tt.args.streamToServer.SentFromServer
 			} else if tt.args.streamToClientWithSendErr != nil {
-				err = s.AssessEvidences(tt.args.streamToClientWithSendErr)
+				err = s.AssessEvidenceStream(tt.args.streamToClientWithSendErr)
 			} else if tt.args.streamToServerWithRecvErr != nil {
-				err = s.AssessEvidences(tt.args.streamToServerWithRecvErr)
+				err = s.AssessEvidenceStream(tt.args.streamToServerWithRecvErr)
 			}
 
 			tt.wantErr(t, err)
@@ -683,11 +683,13 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 							Id:   testdata.MockVirtualMachineID1,
 							Name: testdata.MockVirtualMachineName1,
 							BootLogging: &ontology.BootLogging{
+								Name:              "boot-logging",
 								LoggingServiceIds: []string{"SomeResourceId2"},
 								Enabled:           true,
 								RetentionPeriod:   durationpb.New(time.Hour * 24 * 36),
 							},
 							OsLogging: &ontology.OSLogging{
+								Name:              "os-logging",
 								LoggingServiceIds: []string{"SomeResourceId2"},
 								Enabled:           true,
 								RetentionPeriod:   durationpb.New(time.Hour * 24 * 36),
@@ -697,6 +699,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 								NumberOfThreatsFound: 5,
 								DurationSinceActive:  durationpb.New(time.Hour * 24 * 20),
 								ApplicationLogging: &ontology.ApplicationLogging{
+									Name:              "application-logging",
 									Enabled:           true,
 									LoggingServiceIds: []string{"SomeAnalyticsService?"},
 								},
@@ -908,32 +911,24 @@ func TestService_handleEvidence(t *testing.T) {
 					ToolId:               testdata.MockEvidenceToolID1,
 					Timestamp:            timestamppb.Now(),
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-					Resource: prototest.NewProtobufResource(t, &ontology.Application{
-						Id:   "Application",
-						Name: "Application",
-						Functionalities: []*ontology.Functionality{
-							{
-								Type: &ontology.Functionality_CryptographicHash{
-									CryptographicHash: &ontology.CryptographicHash{
-										Algorithm: "md5",
-										UsesSalt:  false,
-									},
-								},
+					Resource: prototest.NewProtobufResource(t, &ontology.SecurityAdvisoryDocument{
+						Id:          "123Doc",
+						Name:        "docname",
+						Description: "Doc",
+						CryptographicHashs: []*ontology.CryptographicHash{
+							&ontology.CryptographicHash{
+								Algorithm: "md5",
 							},
 						},
 					}),
 				},
-				resource: &ontology.Application{
-					Id:   "Application",
-					Name: "Application",
-					Functionalities: []*ontology.Functionality{
-						{
-							Type: &ontology.Functionality_CryptographicHash{
-								CryptographicHash: &ontology.CryptographicHash{
-									Algorithm: "md5",
-									UsesSalt:  false,
-								},
-							},
+				resource: &ontology.SecurityAdvisoryDocument{
+					Id:          "123Doc",
+					Name:        "docname",
+					Description: "Doc",
+					CryptographicHashs: []*ontology.CryptographicHash{
+						&ontology.CryptographicHash{
+							Algorithm: "md5",
 						},
 					},
 				},
@@ -943,7 +938,7 @@ func TestService_handleEvidence(t *testing.T) {
 					err := api.Validate(result)
 					assert.NoError(t, err)
 				}
-				return assert.Equal(t, 3, len(got))
+				return assert.Equal(t, 4, len(got))
 			},
 			wantErr: assert.Nil[error],
 		},
