@@ -33,6 +33,7 @@ import (
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
 
+	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -40,8 +41,9 @@ import (
 // handleServer creates a virtual machine resource based on the Clouditor Ontology
 func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsResource, error) {
 	var (
-		err         error
-		bootLogging *ontology.BootLogging
+		err                error
+		bootLogging        *ontology.BootLogging
+		activityLogEnabled bool
 	)
 
 	// we cannot directly retrieve OS logging information
@@ -59,6 +61,24 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 		}
 	}
 
+	// get information about the activity logging of the server
+	// Unfortunately, OpenStack does not provide a direct way to check if activity logging is enabled for a server. However, we can check if the OpenStack Telemetry service  is available and if the server has any associated alarms or meters that would indicate activity logging. This is a heuristic approach and may not be 100% accurate.
+	// We check for event and metering.
+	eventEndpoint, errEvent := d.clients.provider.EndpointLocator(gophercloud.EndpointOpts{
+		Type:   "event",
+		Region: d.region,
+	})
+	meteringEndpoint, errMetering := d.clients.provider.EndpointLocator(gophercloud.EndpointOpts{
+		Type:   "metering",
+		Region: d.region,
+	})
+	if errEvent == nil && eventEndpoint != "" || errMetering == nil && meteringEndpoint != "" {
+		log.Debugf("Activity logging is likely enabled for server '%s' because the OpenStack Telemetry service is available.", server.Name)
+		activityLogEnabled = true
+	} else {
+		log.Debugf("Activity logging is likely not enabled for server '%s' because the OpenStack Telemetry service is not available.", server.Name)
+	}
+
 	r := &ontology.VirtualMachine{
 		Id:           server.ID,
 		Name:         server.Name,
@@ -72,6 +92,9 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 		MalwareProtection: &ontology.MalwareProtection{},
 		BootLogging:       bootLogging,
 		AutomaticUpdates:  &ontology.AutomaticUpdates{}, // Not available
+		ActivityLogging: &ontology.ActivityLogging{
+			Enabled: activityLogEnabled,
+		},
 	}
 
 	// Get attached block storage IDs
