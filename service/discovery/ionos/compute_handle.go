@@ -75,7 +75,7 @@ func (d *ionosDiscovery) handleServer(server ionoscloud.Server, dc ionoscloud.Da
 
 // handleBlockStorage creates a block storage resource based on the Clouditor Ontology
 func (d *ionosDiscovery) handleBlockStorage(blockStorage ionoscloud.Volume, dc ionoscloud.Datacenter) (ontology.IsResource, error) {
-	// Getting labels
+	// Get labels
 	l, _, err := d.client.LabelsApi.
 		DatacentersServersLabelsGet(context.Background(), util.Deref(dc.GetId()), util.Deref(blockStorage.GetId())).
 		Execute()

@@ -46,6 +46,7 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 		activityLogEnabled bool
 	)
 
+	// Get OS logging information
 	// we cannot directly retrieve OS logging information
 	// boot logging is logged in the console log
 	consoleOutput := servers.ShowConsoleOutput(context.Background(), d.clients.computeClient, server.ID, servers.ShowConsoleOutputOpts{})
@@ -61,6 +62,7 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 		}
 	}
 
+	// Get activity logging information
 	// get information about the activity logging of the server
 	// Unfortunately, OpenStack does not provide a direct way to check if activity logging is enabled for a server. However, we can check if the OpenStack Telemetry service  is available and if the server has any associated alarms or meters that would indicate activity logging. This is a heuristic approach and may not be 100% accurate.
 	// We check for event and metering.
