@@ -81,6 +81,13 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 						Region: "test region",
 					},
 					ParentId: util.Ref(testdata.MockVolumeTenantID),
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
+							CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
+								Enabled: false,
+							},
+						},
+					},
 				}
 
 				gotNew := got.(*ontology.BlockStorage)
@@ -113,6 +120,13 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 						Region: "test region",
 					},
 					ParentId: util.Ref(testdata.MockVolumeTenantID),
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
+							CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
+								Enabled: false,
+							},
+						},
+					},
 				}
 
 				gotNew := got.(*ontology.BlockStorage)
