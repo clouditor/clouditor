@@ -94,16 +94,7 @@ func (d *ionosDiscovery) handleBlockStorage(blockStorage ionoscloud.Volume, dc i
 		ParentId: dc.GetId(),
 		Raw:      discovery.Raw(blockStorage, dc),
 		// Description: , // Not available
-		// AtRestEncryption: &ontology.AtRestEncryption{
-		// 	Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
-		// 		ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-		// 			// Enabled:   util.Deref(encryption),
-		// 			// Algorithm: encryption.EncryptionAlgorithm,
-		// 		},
-		// 	},
-		// },
-		// Backups: ,
-
+		// AtRestEncryption: , // Not available
 	}
 
 	return r, nil

@@ -37,7 +37,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
-	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/projects"
 	"github.com/gophercloud/gophercloud/v2/openstack/objectstorage/v1/containers"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -105,14 +104,16 @@ func (d *openstackDiscovery) handleObjectStorage(container *containers.Container
 	r := &ontology.ObjectStorage{
 		Id:           container.Name,
 		Name:         container.Name,
-		Description:  "", // Not available
+		Description:  "",                                         // Not available
+		ParentId:     util.Ref(d.clients.storageClient.Endpoint), // parent is the object storage service stored in the endpoint
 		PublicAccess: isPublic,
 	}
 
 	return r, nil
 }
 
-func (d *openstackDiscovery) handleObjectStorageService(project *projects.Project) (ontology.IsResource, error) {
+// handleObjectStorageService creates an object storage service resource based on the Clouditor Ontology
+func (d *openstackDiscovery) handleObjectStorageService() (ontology.IsResource, error) {
 	var (
 		te *ontology.TransportEncryption
 	)
@@ -131,7 +132,7 @@ func (d *openstackDiscovery) handleObjectStorageService(project *projects.Projec
 		GeoLocation: &ontology.GeoLocation{
 			Region: d.region,
 		},
-		ParentId: util.Ref(project.ID),
+		ParentId: util.Ref(d.configuredProject.projectID),
 		HttpEndpoint: &ontology.HttpEndpoint{
 			Url:                 d.clients.storageClient.Endpoint,
 			TransportEncryption: te,

@@ -48,4 +48,14 @@ func (d *openstackDiscovery) discoverObjectStorage() (list []ontology.IsResource
 	return
 }
 
-// handleObjectStorageService() is called in discoverProjects() in account_discover.go to handle the object storage service, because that method already has the necessary information.
+func (d *openstackDiscovery) discoverObjectStorageService() (list []ontology.IsResource, err error) {
+
+	resource, err := d.handleObjectStorageService()
+	if err != nil {
+		return
+	}
+
+	list = append(list, resource)
+
+	return
+}
