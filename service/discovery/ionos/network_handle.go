@@ -26,6 +26,8 @@
 package ionos
 
 import (
+	"strings"
+
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
@@ -50,7 +52,7 @@ func (d *ionosDiscovery) handleNetworkInterface(nic ionoscloud.Nic, dc ionosclou
 			Type: &ontology.AccessRestriction_L3Firewall{
 				L3Firewall: &ontology.L3Firewall{
 					Enabled:         util.Deref(nic.Properties.GetFirewallActive()),
-					RestrictedPorts: "",
+					RestrictedPorts: strings.Join(d.getRestrictedPorts(nic), ", "),
 				},
 			},
 		},
