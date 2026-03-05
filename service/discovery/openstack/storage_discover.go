@@ -29,12 +29,21 @@ import (
 	"clouditor.io/clouditor/v2/api/ontology"
 
 	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
+	"github.com/gophercloud/gophercloud/v2/openstack/objectstorage/v1/containers"
 )
 
 // discoverBlockStorage discovers block storages
 func (d *openstackDiscovery) discoverBlockStorage() (list []ontology.IsResource, err error) {
 	var opts volumes.ListOptsBuilder = &volumes.ListOpts{}
 	list, err = genericList(d, d.storageClient, volumes.List, d.handleBlockStorage, volumes.ExtractVolumes, opts)
+
+	return
+}
+
+// discoverObjectStorage discovers object storages
+func (d *openstackDiscovery) discoverObjectStorage() (list []ontology.IsResource, err error) {
+	var opts containers.ListOptsBuilder = &containers.ListOpts{}
+	list, err = genericList(d, d.storageClient, containers.List, d.handleObjectStorage, containers.ExtractInfo, opts)
 
 	return
 }
