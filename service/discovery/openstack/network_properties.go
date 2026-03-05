@@ -27,6 +27,7 @@ package openstack
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/v2/pagination"
@@ -59,11 +60,11 @@ func (d *openstackDiscovery) getRestrictedPorts(portSecurityGroup []string) []st
 								restrictedPortsList = append(restrictedPortsList, "all")
 							} else if rule.PortRangeMin == rule.PortRangeMax {
 								// If the port range is a single port, add that port to the list
-								restrictedPortsList = append(restrictedPortsList, string(rule.PortRangeMin))
-							} else {
+								restrictedPortsList = append(restrictedPortsList, fmt.Sprint(rule.PortRangeMin))
+							} else if rule.PortRangeMin != 0 && rule.PortRangeMax != 0 {
 								// If the port range is specified, add each port in the range to the list
 								for port := rule.PortRangeMin; port <= rule.PortRangeMax; port++ {
-									restrictedPortsList = append(restrictedPortsList, string(port))
+									restrictedPortsList = append(restrictedPortsList, fmt.Sprint(port))
 								}
 
 							}
