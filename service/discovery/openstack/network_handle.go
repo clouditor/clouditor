@@ -107,8 +107,3 @@ func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) 
 
 	return r, nil
 }
-
-func (d *openstackDiscovery) handlePorts(network *networks.Network) (ontology.IsResource, error) {
-
-	return nil, nil
-}
