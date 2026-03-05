@@ -104,12 +104,12 @@ func (d *csafDiscovery) handleAdvisory(label csaf.TLPLabel, file csaf.AdvisoryFi
 			},
 		},
 		CreationTime: timestamppb.New(t),
-		SchemaValidation: &ontology.SchemaValidation{
+		ValidatedBy: &ontology.SchemaValidation{
 			SchemaUrl: "https://docs.oasis-open.org/csaf/csaf/v2.0/csaf_json_schema.json",
 			Format:    "Common Security Advisory Framework",
 			Errors:    documentValidationErrors(msg),
 		},
-		DocumentChecksums: d.documentChecksums(file, body),
+		CryptographicHashs: d.documentChecksums(file, body),
 		DocumentSignatures: []*ontology.DocumentSignature{
 			d.documentPGPSignature(file.SignURL(), body, keyring),
 		},

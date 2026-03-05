@@ -60,7 +60,7 @@ func (d *csafDiscovery) handleProvider(lpmd *csaf.LoadedProviderMetadata) (resou
 				},
 			},
 		},
-		SchemaValidation: &ontology.SchemaValidation{
+		ValidatedBy: &ontology.SchemaValidation{
 			Format:    "CSAF provider metadata",
 			SchemaUrl: "https://docs.oasis-open.org/csaf/csaf/v2.0/provider_json_schema.json",
 			Errors:    providerValidationErrors(lpmd.Messages),

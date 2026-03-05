@@ -26,6 +26,8 @@
 package openstack
 
 import (
+	"fmt"
+
 	"context"
 	"strings"
 
@@ -68,6 +70,13 @@ func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontolog
 	}
 	log.Infof("Adding block storage '%s'", volume.Name)
 
+	// Create project resource for the parentId if not available
+	err := d.addProjectIfMissing(volume.TenantID, volume.TenantID, d.domain.domainID)
+	if err != nil {
+		return nil, fmt.Errorf("could not handle project for block storage %s: %w", volume.ID, err)
+	}
+
+	log.Infof("Adding block storage '%s", r.Name)
 	return r, nil
 }
 

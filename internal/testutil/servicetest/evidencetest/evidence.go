@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/util"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -41,6 +42,20 @@ var (
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 		ToolId:               testdata.MockEvidenceToolID2,
 		Resource:             nil,
+	}
+	MockEvidence3 = &evidence.Evidence{
+		Id:                   testdata.MockEvidenceID2,
+		Timestamp:            timestamppb.Now(),
+		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
+		ToolId:               testdata.MockEvidenceToolID2,
+		Resource: &ontology.Resource{
+			Type: &ontology.Resource_VirtualMachine{
+				VirtualMachine: &ontology.VirtualMachine{
+					Id:   testdata.MockVirtualMachineID1,
+					Name: testdata.MockVirtualMachineName1,
+				},
+			},
+		},
 	}
 	MockVirtualMachineResource1 = &evidence.Resource{
 		Id:                   testdata.MockVirtualMachineID1,

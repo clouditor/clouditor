@@ -44,6 +44,8 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 	testhelper.SetupHTTP()
 	defer testhelper.TeardownHTTP()
 	openstacktest.HandleNetworkListSuccessfully(t)
+	openstacktest.HandlePortsListSuccessfully(t)
+
 	type fields struct {
 		ctID     string
 		clients  clients
@@ -51,6 +53,7 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 		region   string
 		domain   *domain
 		project  *project
+		projects map[string]ontology.IsResource
 	}
 	tests := []struct {
 		name     string
@@ -76,9 +79,16 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 					},
 					networkClient: client.ServiceClient(),
 				},
-				region:  "test region",
-				domain:  &domain{},
-				project: &project{},
+				region: "test region",
+				domain: &domain{
+					domainID:   testdata.MockOpenstackDomainID1,
+					domainName: testdata.MockOpenstackDomainName1,
+				},
+				project: &project{
+					projectID:   testdata.MockOpenstackProjectID1,
+					projectName: testdata.MockOpenstackProjectName1,
+				},
+				projects: map[string]ontology.IsResource{},
 			},
 			wantList: func(t *testing.T, got []ontology.IsResource) bool {
 				assert.Equal(t, 2, len(got))
@@ -102,7 +112,8 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 					},
 				}
 
-				got0 := got[0].(*ontology.NetworkInterface)
+				got0, ok := got[0].(*ontology.NetworkInterface)
+				assert.True(t, ok)
 
 				assert.NotEmpty(t, got0.GetRaw())
 				got0.Raw = ""
@@ -114,12 +125,13 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				region:   tt.fields.region,
-				domain:   tt.fields.domain,
-				project:  tt.fields.project,
+				ctID:               tt.fields.ctID,
+				clients:            tt.fields.clients,
+				authOpts:           tt.fields.authOpts,
+				region:             tt.fields.region,
+				domain:             tt.fields.domain,
+				configuredProject:  tt.fields.project,
+				discoveredProjects: tt.fields.projects,
 			}
 			gotList, err := d.discoverNetworkInterfaces()
 

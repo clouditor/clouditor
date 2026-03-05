@@ -28,6 +28,7 @@ package openstack
 import (
 	"testing"
 
+	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
@@ -63,26 +64,27 @@ func Test_openstackDiscovery_handleProject(t *testing.T) {
 			},
 			args: args{
 				project: &projects.Project{
-					ID:          testdata.MockProjectID1,
-					Name:        testdata.MockProjectName1,
-					Description: testdata.MockProjectDescription1,
+					ID:          testdata.MockOpenstackProjectID1,
+					Name:        testdata.MockOpenstackProjectName1,
+					Description: testdata.MockOpenstackProjectDescription1,
 					Tags:        []string{},
-					ParentID:    testdata.MockProjectParentID1,
+					ParentID:    testdata.MockOpenstackProjectParentID1,
 				},
 			},
 			want: func(t *testing.T, got ontology.IsResource) bool {
 				want := &ontology.ResourceGroup{
-					Id:   testdata.MockProjectID1,
-					Name: testdata.MockProjectName1,
+					Id:   testdata.MockOpenstackProjectID1,
+					Name: testdata.MockOpenstackProjectName1,
 					GeoLocation: &ontology.GeoLocation{
 						Region: "test region",
 					},
-					Description: testdata.MockProjectDescription1,
+					Description: testdata.MockOpenstackProjectDescription1,
 					Labels:      labels(util.Ref([]string{})),
-					ParentId:    util.Ref(testdata.MockProjectParentID1),
+					ParentId:    util.Ref(testdata.MockOpenstackProjectParentID1),
 				}
 
-				gotNew := got.(*ontology.ResourceGroup)
+				gotNew, ok := got.(*ontology.ResourceGroup)
+				assert.True(t, ok)
 				assert.NotEmpty(t, gotNew.GetRaw())
 				gotNew.Raw = ""
 				return assert.Equal(t, want, gotNew)
@@ -92,12 +94,12 @@ func Test_openstackDiscovery_handleProject(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				region:   tt.fields.region,
-				domain:   tt.fields.domain,
-				project:  tt.fields.project,
+				ctID:              tt.fields.ctID,
+				clients:           tt.fields.clients,
+				authOpts:          tt.fields.authOpts,
+				region:            tt.fields.region,
+				domain:            tt.fields.domain,
+				configuredProject: tt.fields.project,
 			}
 			got, err := d.handleProject(tt.args.project)
 
@@ -129,19 +131,20 @@ func Test_openstackDiscovery_handleDomain(t *testing.T) {
 			name: "Happy path",
 			args: args{
 				domain: &domains.Domain{
-					ID:          testdata.MockDomainID1,
-					Name:        testdata.MockDomainName1,
-					Description: testdata.MockDomainDescription1,
+					ID:          testdata.MockOpenstackDomainID1,
+					Name:        testdata.MockOpenstackDomainName1,
+					Description: testdata.MockOpenstackDomainDescription1,
 				},
 			},
 			want: func(t *testing.T, got ontology.IsResource) bool {
 				want := &ontology.Account{
-					Id:          testdata.MockDomainID1,
-					Name:        testdata.MockDomainName1,
-					Description: testdata.MockDomainDescription1,
+					Id:          testdata.MockOpenstackDomainID1,
+					Name:        testdata.MockOpenstackDomainName1,
+					Description: testdata.MockOpenstackDomainDescription1,
 				}
 
-				gotNew := got.(*ontology.Account)
+				gotNew, ok := got.(*ontology.Account)
+				assert.True(t, ok)
 				assert.NotEmpty(t, gotNew.GetRaw())
 				gotNew.Raw = ""
 				return assert.Equal(t, want, gotNew)
@@ -152,15 +155,124 @@ func Test_openstackDiscovery_handleDomain(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				ctID:     tt.fields.ctID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
-				domain:   tt.fields.domain,
-				project:  tt.fields.project,
+				ctID:              tt.fields.ctID,
+				clients:           tt.fields.clients,
+				authOpts:          tt.fields.authOpts,
+				domain:            tt.fields.domain,
+				configuredProject: tt.fields.project,
 			}
 			got, err := d.handleDomain(tt.args.domain)
 
 			tt.want(t, got)
+			tt.wantErr(t, err)
+		})
+	}
+}
+
+func Test_openstackDiscovery_checkAndHandleManualCreatedProject(t *testing.T) {
+	type fields struct {
+		ctID     string
+		clients  clients
+		authOpts *gophercloud.AuthOptions
+		region   string
+		domain   *domain
+		project  *project
+		projects map[string]ontology.IsResource
+	}
+	type args struct {
+		id     string
+		name   string
+		domain string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    assert.Want[*openstackDiscovery]
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "error: no new  id, name, or domain is empty",
+			fields: fields{
+				projects: map[string]ontology.IsResource{},
+			},
+			args: args{},
+			want: func(t *testing.T, d *openstackDiscovery) bool {
+				return assert.Empty(t, d.discoveredProjects)
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "cannot create project resource: project ID, project name, or domain ID is empty")
+			},
+		},
+		{
+			name: "ResourceGroup already exists",
+			fields: fields{
+				projects: map[string]ontology.IsResource{
+					testdata.MockOpenstackProjectID1: &ontology.ResourceGroup{
+						Id:       testdata.MockOpenstackProjectID1,
+						Name:     testdata.MockOpenstackProjectName1,
+						ParentId: util.Ref(testdata.MockOpenstackDomainID1),
+						Raw:      discovery.Raw("Project/Tenant information manually added."),
+					},
+				},
+			},
+			args: args{
+				id:     testdata.MockOpenstackProjectID1,
+				name:   testdata.MockOpenstackProjectName1,
+				domain: testdata.MockOpenstackDomainID1,
+			},
+			want: func(t *testing.T, d *openstackDiscovery) bool {
+				want := &ontology.ResourceGroup{
+					Id:       testdata.MockOpenstackProjectID1,
+					Name:     testdata.MockOpenstackProjectName1,
+					ParentId: util.Ref(testdata.MockOpenstackDomainID1),
+					Raw:      discovery.Raw("Project/Tenant information manually added."),
+				}
+				got, ok := d.discoveredProjects[testdata.MockOpenstackProjectID1].(*ontology.ResourceGroup)
+				assert.True(t, ok)
+
+				return assert.Equal(t, want, got)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				projects: map[string]ontology.IsResource{},
+			},
+			args: args{
+				id:     testdata.MockOpenstackProjectID1,
+				name:   testdata.MockOpenstackProjectName1,
+				domain: testdata.MockOpenstackDomainID1,
+			},
+			want: func(t *testing.T, d *openstackDiscovery) bool {
+				want := &ontology.ResourceGroup{
+					Id:       testdata.MockOpenstackProjectID1,
+					Name:     testdata.MockOpenstackProjectName1,
+					ParentId: util.Ref(testdata.MockOpenstackDomainID1),
+					Raw:      discovery.Raw("Project/Tenant information manually added."),
+				}
+				got, ok := d.discoveredProjects[testdata.MockOpenstackProjectID1].(*ontology.ResourceGroup)
+				assert.True(t, ok)
+				return assert.Equal(t, want, got)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &openstackDiscovery{
+				ctID:               tt.fields.ctID,
+				clients:            tt.fields.clients,
+				authOpts:           tt.fields.authOpts,
+				region:             tt.fields.region,
+				domain:             tt.fields.domain,
+				configuredProject:  tt.fields.project,
+				discoveredProjects: tt.fields.projects,
+			}
+			err := d.addProjectIfMissing(tt.args.id, tt.args.name, tt.args.domain)
+
+			tt.want(t, d)
 			tt.wantErr(t, err)
 		})
 	}

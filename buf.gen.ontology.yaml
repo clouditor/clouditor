@@ -1,0 +1,8 @@
+version: v2
+plugins:
+  - remote: buf.build/protocolbuffers/go
+    out: .
+    opt: module=confirmate.io/core/api/ontology
+  - remote: buf.build/connectrpc/go
+    out: .
+    opt: module=confirmate.io/core/api/ontology

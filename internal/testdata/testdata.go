@@ -17,6 +17,38 @@ const (
 	MockResourceGroupID        = "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"
 	MockResourceGroup          = "TestResourceGroup"
 
+	// OpenStack
+	// auth options
+	MockOpenstackIdentityEndpoint = "https://identityHost:portNumber/v2.0" //"https://openstack.test:8888/v2.0"
+	MockOpenstackUsername         = "username"
+	MockOpenstackPassword         = "password"
+	MockOpenstackTenantName       = "openstackTenant"
+
+	// domain
+	MockOpenstackDomainID1          = "00000000000000000000000000000000"
+	MockOpenstackDomainName1        = "Domain 1"
+	MockOpenstackDomainDescription1 = "This is a mock domain description (1)"
+
+	// project
+	MockOpenstackProjectID1          = "00000000000000000000000000000001"
+	MockOpenstackProjectName1        = "Project 1"
+	MockOpenstackProjectDescription1 = "This is a mock project description (1)."
+	MockOpenstackProjectParentID1    = MockOpenstackDomainID1
+
+	// server
+	MockOpenstackServerID1      = "00000000000000000000000000000002"
+	MockOpenstackServerName1    = "Server 1"
+	MockOpenstackServerTenantID = MockOpenstackDomainID1
+
+	// volume
+	MockOpenstackVolumeID1      = "00000000000000000000000000000003"
+	MockOpenstackVolumeName1    = "Volume 1"
+	MockOpenstackVolumeTenantID = MockOpenstackDomainID1
+
+	// network
+	MockOpenstackNetworkID1   = "00000000000000000000000000000004"
+	MockOpenstackNetworkName1 = "Network 1"
+
 	// Audit Scope
 	MockAuditScopeID1   = "11111111-1111-1111-1111-111111111123"
 	MockAuditScopeName1 = "Mock Audit Scope 1"
@@ -65,12 +97,14 @@ const (
 	MockSubControlDescription = "This is a mock sub-control"
 
 	// Metric
-	MockMetricID1          = "Mock Metric 1"
+	MockMetricID1          = "8367f104-3552-48d2-99b3-c0934d0b9d72"
+	MockMetricName1        = "Mock Metric 1"
 	MockMetricDescription1 = "This is a mock metric"
 	MockMetricCategory1    = "Mock Category 1"
-	MockMetricVersion1     = "1.0"
+	MockMetricVersion1     = "v1"
 	MockMetricComments1    = "Mock metric comments 1"
-	MockMetricID2          = "Mock Metric 2"
+	MockMetricID2          = "9367f104-3552-48d2-99b3-c0934d0b9d73"
+	MockMetricName2        = "Mock Metric 2"
 	MockMetricDescription2 = "This is mock metric 2"
 	MockMetricCategory2    = "Mock Category 2"
 

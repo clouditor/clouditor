@@ -27,6 +27,7 @@ package openstack
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"clouditor.io/clouditor/v2/api/discovery"
@@ -46,12 +47,17 @@ func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) 
 		restrictedPortsList = []string{}
 	)
 
+	projectId, err := getProjectID(network)
+	if err != nil {
+		return nil, fmt.Errorf("could not get project ID for network interface '%s': %w", network.Name, err)
+	}
+
 	// Check if any port associated with the network has security groups enabled.
 	// If at least one port has security groups, we consider the L3 firewall to be enabled for the entire network.
 	pager := ports.List(d.clients.networkClient, ports.ListOpts{
 		NetworkID: network.ID,
 	})
-	err := pager.EachPage(context.Background(), func(ctx context.Context, page pagination.Page) (bool, error) {
+	err = pager.EachPage(context.Background(), func(ctx context.Context, page pagination.Page) (bool, error) {
 		portList, err := ports.ExtractPorts(page)
 		if err != nil {
 			return false, err
@@ -79,7 +85,7 @@ func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) 
 			Region: d.region,
 		},
 		Labels:   labels(util.Ref(network.Tags)),
-		ParentId: util.Ref(network.ProjectID),
+		ParentId: util.Ref(projectId),
 		Raw:      discovery.Raw(network),
 		AccessRestriction: &ontology.AccessRestriction{
 			Type: &ontology.AccessRestriction_L3Firewall{
@@ -91,7 +97,13 @@ func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) 
 		},
 	}
 
-	log.Infof("Adding network interface '%s", network.Name)
+	// Create project resource for the parentId if not available
+	err = d.addProjectIfMissing(projectId, projectId, d.domain.domainID)
+	if err != nil {
+		return nil, fmt.Errorf("could not handle project for network interface '%s': %w", network.Name, err)
+	}
+
+	log.Infof("Adding network interface '%s", r.Name)
 
 	return r, nil
 }

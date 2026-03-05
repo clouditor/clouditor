@@ -198,7 +198,7 @@ func Test_csafDiscovery_documentChecksum(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   *ontology.DocumentChecksum
+		want   *ontology.CryptographicHash
 	}{
 		{
 			name: "checksum mismatch",
@@ -211,7 +211,7 @@ func Test_csafDiscovery_documentChecksum(t *testing.T) {
 				algorithm:   constants.SHA_256,
 				h:           sha256.New(),
 			},
-			want: &ontology.DocumentChecksum{
+			want: &ontology.CryptographicHash{
 				Errors:    fromError(errors.New("checksum mismatch")),
 				Algorithm: constants.SHA_256,
 			},
@@ -227,7 +227,7 @@ func Test_csafDiscovery_documentChecksum(t *testing.T) {
 				algorithm:   constants.SHA_256,
 				h:           sha256.New(),
 			},
-			want: &ontology.DocumentChecksum{
+			want: &ontology.CryptographicHash{
 				Errors:    fromError(errors.New("checksum file does not contain correct filename")),
 				Algorithm: constants.SHA_256,
 			},

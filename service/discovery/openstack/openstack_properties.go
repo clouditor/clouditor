@@ -33,7 +33,8 @@ import (
 	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/attachinterfaces"
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
-	"github.com/gophercloud/gophercloud/v2/openstack/containerinfra/v1/clusters"
+	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/domains"
+	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/projects"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/v2/pagination"
 )
@@ -81,22 +82,89 @@ func (d *openstackDiscovery) getAttachedNetworkInterfaces(serverID string) ([]st
 }
 
 // setProjectInfo stores the project ID and name based on the given resource
-func (d *openstackDiscovery) setProjectInfo(x interface{}) {
+func (d *openstackDiscovery) setProjectInfo(x interface{}) error {
+	var (
+		projectID   string
+		projectName string
+		err         error
+	)
 
-	switch v := x.(type) {
-	case []volumes.Volume:
-		d.project.projectID = v[0].TenantID
-		d.project.projectName = v[0].TenantID // it is not possible to extract the project name
+	switch resource := x.(type) {
 	case []servers.Server:
-		d.project.projectID = v[0].TenantID
-		d.project.projectName = v[0].TenantID // it is not possible to extract the project name
+		projectID, err = getProjectID(resource[0])
+		projectName = projectID // it is not possible to extract the project name
 	case []networks.Network:
-		d.project.projectID = v[0].TenantID
-		d.project.projectName = v[0].TenantID // it is not possible to extract the project name
-	case []clusters.Cluster:
-		d.project.projectID = v[0].ProjectID
-		d.project.projectName = v[0].ProjectID // it is not possible to extract the project name
+		projectID, err = getProjectID(resource[0])
+		projectName = projectID // it is not possible to extract the project name
+	case []volumes.Volume:
+		projectID, err = getProjectID(resource[0])
+		projectName = projectID // it is not possible to extract the project name
+	case []projects.Project:
+		projectID = resource[0].ID
+		projectName = resource[0].Name
+	case []domains.Domain:
+		// Domain does not have a project ID or name, so we skip this
+		return nil
 	default:
-		log.Debugf("no known resource type found")
+		return fmt.Errorf("unknown resource type: %T", resource)
 	}
+
+	if err != nil {
+		return fmt.Errorf("error getting project ID")
+	}
+
+	d.configuredProject.projectID = projectID
+	d.configuredProject.projectName = projectName
+	return nil
+}
+
+type resourceTypes interface {
+	servers.Server | *servers.Server |
+		networks.Network | *networks.Network |
+		volumes.Volume | *volumes.Volume
+}
+
+// getProjectID returns the project/tenant ID from the given ionoscloud resouce object
+func getProjectID[T resourceTypes](r T) (string, error) {
+	switch v := any(r).(type) {
+	case volumes.Volume:
+		if v.TenantID != "" {
+			return v.TenantID, nil
+		}
+	case *volumes.Volume:
+		if v != nil && v.TenantID != "" {
+			return v.TenantID, nil
+		}
+
+	case servers.Server:
+		if v.TenantID != "" {
+			return v.TenantID, nil
+		}
+	case *servers.Server:
+		if v != nil && v.TenantID != "" {
+			return v.TenantID, nil
+		}
+
+	case networks.Network:
+		if v.TenantID != "" {
+			return v.TenantID, nil
+		}
+		if v.ProjectID != "" {
+			return v.ProjectID, nil
+		}
+	case *networks.Network:
+		if v != nil {
+			if v.TenantID != "" {
+				return v.TenantID, nil
+			}
+			if v.ProjectID != "" {
+				return v.ProjectID, nil
+			}
+		}
+	default:
+		return "", fmt.Errorf("unknown resource type: %T", r)
+	}
+
+	return "", fmt.Errorf("no tenant or project ID available")
+
 }

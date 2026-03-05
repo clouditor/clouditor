@@ -4,11 +4,14 @@ plugins:
     out: .
     opt:
       - paths=source_relative
+      - Mpolicies/security-metrics/ontology/v1/ontology.proto=clouditor.io/clouditor/v2/api/ontology
   - plugin: buf.build/grpc/go
     out: .
     opt:
       - paths=source_relative
+      - Mpolicies/security-metrics/ontology/v1/ontology.proto=clouditor.io/clouditor/v2/api/ontology
   - plugin: buf.build/grpc-ecosystem/gateway
     out: .
     opt:
       - paths=source_relative
+      - Mpolicies/security-metrics/ontology/v1/ontology.proto=clouditor.io/clouditor/v2/api/ontology
