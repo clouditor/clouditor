@@ -73,7 +73,7 @@ func WithTargetOfEvaluationID(ctID string) DiscoveryOption {
 }
 
 func init() {
-	log = logrus.WithField("component", "azure-discovery")
+	log = logrus.WithField("component", "IONOS")
 }
 
 type ionosDiscovery struct {
