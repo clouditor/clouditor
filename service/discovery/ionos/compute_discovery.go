@@ -38,7 +38,7 @@ import (
 // discoverServers lists all virtual machines and corresponding network interfaces in the given datacenter and returns them as a list of ontology resources
 func (d *ionosDiscovery) discoverServers(dc ionoscloud.Datacenter) (list []ontology.IsResource, err error) {
 	// List all servers in the datacenter
-	servers, _, err := d.client.ServersApi.DatacentersServersGet(context.Background(), util.Deref(dc.Id)).Depth(3).Execute() // Depth(3) to include the volumes and NICs
+	servers, _, err := d.client.ServersApi.DatacentersServersGet(context.Background(), util.Deref(dc.Id)).Depth(5).Execute() // Depth(5) returns all available properties
 	if err != nil {
 		return nil, fmt.Errorf("could not list servers for datacenter %s: %w", util.Deref(dc.Id), err)
 	}
@@ -90,7 +90,7 @@ func (d *ionosDiscovery) discoverBlockStorages(dc ionoscloud.Datacenter) (list [
 
 // discoverLoadBalancers lists all load balancers and corresponding network interfaces in the given datacenter and returns them as a list of ontology resources
 func (d *ionosDiscovery) discoverLoadBalancers(dc ionoscloud.Datacenter) (list []ontology.IsResource, err error) {
-	loadBalancers, _, err := d.client.LoadBalancersApi.DatacentersLoadbalancersGet(context.Background(), util.Deref(dc.Id)).Depth(1).Execute()
+	loadBalancers, _, err := d.client.LoadBalancersApi.DatacentersLoadbalancersGet(context.Background(), util.Deref(dc.Id)).Depth(5).Execute() // Depth(5) returns all available properties
 	if err != nil {
 		return nil, fmt.Errorf("could not list load balancers for datacenter %s: %w", util.Deref(dc.Id), err)
 	}

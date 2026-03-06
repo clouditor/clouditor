@@ -109,6 +109,7 @@ func (d *ionosDiscovery) handleLoadBalancer(loadBalancer ionoscloud.Loadbalancer
 	if err != nil {
 		log.Errorf("error getting labels for load balancer %s: %s", util.Deref(loadBalancer.Id), err)
 	}
+
 	r := &ontology.LoadBalancer{
 		Id:           util.Deref(loadBalancer.Id),
 		Name:         util.Deref(loadBalancer.Properties.Name),
