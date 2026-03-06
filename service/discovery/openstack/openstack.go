@@ -270,6 +270,20 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 	}
 	list = append(list, storages...)
 
+	// Discover object storage service
+	objectStorageService, err := d.discoverObjectStorageService()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover object storage service: %v", err)
+	}
+	list = append(list, objectStorageService...)
+
+	// Discover object storage
+	objectStorages, err := d.discoverObjectStorage()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover object storage: %v", err)
+	}
+	list = append(list, objectStorages...)
+
 	// Discover clusters
 	clusters, err = d.discoverCluster()
 	if err != nil {

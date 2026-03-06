@@ -1,4 +1,4 @@
-// Copyright 2024 Fraunhofer AISEC
+// Copyright 2025 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,39 +23,40 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package openstack
+package ionos
 
 import (
-	"clouditor.io/clouditor/v2/api/ontology"
+	"strings"
 
-	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
-	"github.com/gophercloud/gophercloud/v2/openstack/objectstorage/v1/containers"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/util"
+
+	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// discoverBlockStorage discovers block storages
-func (d *openstackDiscovery) discoverBlockStorage() (list []ontology.IsResource, err error) {
-	var opts volumes.ListOptsBuilder = &volumes.ListOpts{}
-	list, err = genericList(d, d.storageClient, volumes.List, d.handleBlockStorage, volumes.ExtractVolumes, opts)
-
-	return
-}
-
-// discoverObjectStorage discovers object storages
-func (d *openstackDiscovery) discoverObjectStorage() (list []ontology.IsResource, err error) {
-	var opts containers.ListOptsBuilder = &containers.ListOpts{}
-	list, err = genericList(d, d.storageClient, containers.List, d.handleObjectStorage, containers.ExtractInfo, opts)
-
-	return
-}
-
-func (d *openstackDiscovery) discoverObjectStorageService() (list []ontology.IsResource, err error) {
-
-	resource, err := d.handleObjectStorageService()
-	if err != nil {
-		return
+// handleNetworkInterface creates a network interface resource based on the Clouditor Ontology
+func (d *ionosDiscovery) handleNetworkInterface(nic ionoscloud.Nic, dc ionoscloud.Datacenter) (ontology.IsResource, error) {
+	r := &ontology.NetworkInterface{
+		Id:           util.Deref(nic.Id),
+		Name:         util.Deref(nic.Properties.Name),
+		CreationTime: timestamppb.New(util.Deref(nic.Metadata.GetCreatedDate())),
+		GeoLocation: &ontology.GeoLocation{
+			Region: util.Deref(dc.Properties.GetLocation()),
+		},
+		// Labels:   , // Not available
+		ParentId: dc.GetId(),
+		Raw:      discovery.Raw(nic, dc),
+		AccessRestriction: &ontology.AccessRestriction{
+			Type: &ontology.AccessRestriction_L3Firewall{
+				L3Firewall: &ontology.L3Firewall{
+					Enabled:         util.Deref(nic.Properties.GetFirewallActive()),
+					RestrictedPorts: strings.Join(d.getRestrictedPorts(nic), ", "),
+				},
+			},
+		},
 	}
 
-	list = append(list, resource)
-
-	return
+	return r, nil
 }

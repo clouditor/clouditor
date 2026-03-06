@@ -23,39 +23,32 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package openstack
+package ionos
 
 import (
-	"clouditor.io/clouditor/v2/api/ontology"
+	"strings"
 
-	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
-	"github.com/gophercloud/gophercloud/v2/openstack/objectstorage/v1/containers"
+	"clouditor.io/clouditor/v2/internal/util"
+
+	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 )
 
-// discoverBlockStorage discovers block storages
-func (d *openstackDiscovery) discoverBlockStorage() (list []ontology.IsResource, err error) {
-	var opts volumes.ListOptsBuilder = &volumes.ListOpts{}
-	list, err = genericList(d, d.storageClient, volumes.List, d.handleBlockStorage, volumes.ExtractVolumes, opts)
+// labels converts the compute labels to the ontology label format.
+func labels(lr ionoscloud.LabelResources) map[string]string {
+	l := make(map[string]string)
 
-	return
-}
-
-// discoverObjectStorage discovers object storages
-func (d *openstackDiscovery) discoverObjectStorage() (list []ontology.IsResource, err error) {
-	var opts containers.ListOptsBuilder = &containers.ListOpts{}
-	list, err = genericList(d, d.storageClient, containers.List, d.handleObjectStorage, containers.ExtractInfo, opts)
-
-	return
-}
-
-func (d *openstackDiscovery) discoverObjectStorageService() (list []ontology.IsResource, err error) {
-
-	resource, err := d.handleObjectStorageService()
-	if err != nil {
-		return
+	if lr.Items == nil {
+		return l
 	}
 
-	list = append(list, resource)
+	for _, label := range util.Deref(lr.Items) {
+		l[util.Deref(label.Properties.GetKey())] = util.Deref(label.Properties.GetValue())
+	}
 
-	return
+	return l
+}
+
+// hasEmptySegmentInURL checks if the URL contains an empty segment, which is indicated by two consecutive slashes (e.g., "http://example.com//path").
+func hasEmptySegmentInURL(s string) bool {
+	return strings.Contains(s, "//")
 }
