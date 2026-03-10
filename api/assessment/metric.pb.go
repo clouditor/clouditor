@@ -306,7 +306,7 @@ type MetricImplementation struct {
 	// The metric which is implemented
 	MetricId string `protobuf:"bytes,1,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty" gorm:"primaryKey"`
 	// The language this metric is implemented in
-	Lang MetricImplementation_Language `protobuf:"varint,2,opt,name=lang,proto3,enum=clouditor.assessment.v1.MetricImplementation_Language" json:"lang,omitempty"`
+	Lang MetricImplementation_Language `protobuf:"varint,2,opt,name=lang,proto3,enum=confirmate.assessment.v1.MetricImplementation_Language" json:"lang,omitempty"`
 	// The actual implementation
 	Code string `protobuf:"bytes,3,opt,name=code,proto3" json:"code,omitempty"`
 	// The last time of update
@@ -377,7 +377,7 @@ var File_api_assessment_metric_proto protoreflect.FileDescriptor
 
 const file_api_assessment_metric_proto_rawDesc = "" +
 	"\n" +
-	"\x1bapi/assessment/metric.proto\x12\x17clouditor.assessment.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\xe0\x03\n" +
+	"\x1bapi/assessment/metric.proto\x12\x18confirmate.assessment.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\xe1\x03\n" +
 	"\x06Metric\x12\x1b\n" +
 	"\x02id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x1e\n" +
 	"\x04name\x18\x02 \x01(\tB\n" +
@@ -388,8 +388,8 @@ const file_api_assessment_metric_proto_rawDesc = "" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\aversion\x12\x1a\n" +
 	"\bcomments\x18\x05 \x01(\tR\bcomments\x12&\n" +
 	"\bcategory\x18\x06 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bcategory\x12Z\n" +
-	"\x0eimplementation\x18\a \x01(\v2-.clouditor.assessment.v1.MetricImplementationH\x00R\x0eimplementation\x88\x01\x01\x12}\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bcategory\x12[\n" +
+	"\x0eimplementation\x18\a \x01(\v2..confirmate.assessment.v1.MetricImplementationH\x00R\x0eimplementation\x88\x01\x01\x12}\n" +
 	"\x10deprecated_since\x18\b \x01(\v2\x1a.google.protobuf.TimestampB1\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"H\x01R\x0fdeprecatedSince\x88\x01\x01B\x11\n" +
 	"\x0f_implementationB\x13\n" +
 	"\x11_deprecated_since\"\xe4\x03\n" +
@@ -401,10 +401,10 @@ const file_api_assessment_metric_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampB1\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\tupdatedAt\x12=\n" +
 	"\tmetric_id\x18\x05 \x01(\tB \xe0A\x02\xbaH\x04r\x02\x10\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\bmetricId\x12X\n" +
-	"\x17target_of_evaluation_id\x18\x06 \x01(\tB!\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\x14targetOfEvaluationId\"\xf2\x02\n" +
+	"\x17target_of_evaluation_id\x18\x06 \x01(\tB!\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\x14targetOfEvaluationId\"\xf3\x02\n" +
 	"\x14MetricImplementation\x12=\n" +
-	"\tmetric_id\x18\x01 \x01(\tB \xe0A\x02\xbaH\x04r\x02\x10\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\bmetricId\x12T\n" +
-	"\x04lang\x18\x02 \x01(\x0e26.clouditor.assessment.v1.MetricImplementation.LanguageB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04lang\x12\x1e\n" +
+	"\tmetric_id\x18\x01 \x01(\tB \xe0A\x02\xbaH\x04r\x02\x10\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\bmetricId\x12U\n" +
+	"\x04lang\x18\x02 \x01(\x0e27.confirmate.assessment.v1.MetricImplementation.LanguageB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04lang\x12\x1e\n" +
 	"\x04code\x18\x03 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x04code\x12l\n" +
 	"\n" +
@@ -428,20 +428,20 @@ func file_api_assessment_metric_proto_rawDescGZIP() []byte {
 var file_api_assessment_metric_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_api_assessment_metric_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_api_assessment_metric_proto_goTypes = []any{
-	(MetricImplementation_Language)(0), // 0: clouditor.assessment.v1.MetricImplementation.Language
-	(*Metric)(nil),                     // 1: clouditor.assessment.v1.Metric
-	(*MetricConfiguration)(nil),        // 2: clouditor.assessment.v1.MetricConfiguration
-	(*MetricImplementation)(nil),       // 3: clouditor.assessment.v1.MetricImplementation
+	(MetricImplementation_Language)(0), // 0: confirmate.assessment.v1.MetricImplementation.Language
+	(*Metric)(nil),                     // 1: confirmate.assessment.v1.Metric
+	(*MetricConfiguration)(nil),        // 2: confirmate.assessment.v1.MetricConfiguration
+	(*MetricImplementation)(nil),       // 3: confirmate.assessment.v1.MetricImplementation
 	(*timestamppb.Timestamp)(nil),      // 4: google.protobuf.Timestamp
 	(*structpb.Value)(nil),             // 5: google.protobuf.Value
 }
 var file_api_assessment_metric_proto_depIdxs = []int32{
-	3, // 0: clouditor.assessment.v1.Metric.implementation:type_name -> clouditor.assessment.v1.MetricImplementation
-	4, // 1: clouditor.assessment.v1.Metric.deprecated_since:type_name -> google.protobuf.Timestamp
-	5, // 2: clouditor.assessment.v1.MetricConfiguration.target_value:type_name -> google.protobuf.Value
-	4, // 3: clouditor.assessment.v1.MetricConfiguration.updated_at:type_name -> google.protobuf.Timestamp
-	0, // 4: clouditor.assessment.v1.MetricImplementation.lang:type_name -> clouditor.assessment.v1.MetricImplementation.Language
-	4, // 5: clouditor.assessment.v1.MetricImplementation.updated_at:type_name -> google.protobuf.Timestamp
+	3, // 0: confirmate.assessment.v1.Metric.implementation:type_name -> confirmate.assessment.v1.MetricImplementation
+	4, // 1: confirmate.assessment.v1.Metric.deprecated_since:type_name -> google.protobuf.Timestamp
+	5, // 2: confirmate.assessment.v1.MetricConfiguration.target_value:type_name -> google.protobuf.Value
+	4, // 3: confirmate.assessment.v1.MetricConfiguration.updated_at:type_name -> google.protobuf.Timestamp
+	0, // 4: confirmate.assessment.v1.MetricImplementation.lang:type_name -> confirmate.assessment.v1.MetricImplementation.Language
+	4, // 5: confirmate.assessment.v1.MetricImplementation.updated_at:type_name -> google.protobuf.Timestamp
 	6, // [6:6] is the sub-list for method output_type
 	6, // [6:6] is the sub-list for method input_type
 	6, // [6:6] is the sub-list for extension type_name

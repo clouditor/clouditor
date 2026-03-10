@@ -25,7 +25,7 @@
 
 syntax = "proto3";
 
-package clouditor.runtime.v1;
+package confirmate.runtime.v1;
 
 import "google/protobuf/timestamp.proto";
 

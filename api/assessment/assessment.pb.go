@@ -270,7 +270,7 @@ func (x *AssessEvidenceRequest) GetEvidence() *evidence.Evidence {
 // convention. Since no return values are required, this is empty.
 type AssessEvidenceResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        AssessmentStatus       `protobuf:"varint,1,opt,name=status,proto3,enum=clouditor.assessment.v1.AssessmentStatus" json:"status,omitempty"`
+	Status        AssessmentStatus       `protobuf:"varint,1,opt,name=status,proto3,enum=confirmate.assessment.v1.AssessmentStatus" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -318,7 +318,7 @@ func (x *AssessEvidenceResponse) GetStatus() AssessmentStatus {
 // status and its message in the response for error handling.
 type AssessEvidencesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        AssessmentStatus       `protobuf:"varint,1,opt,name=status,proto3,enum=clouditor.assessment.v1.AssessmentStatus" json:"status,omitempty"`
+	Status        AssessmentStatus       `protobuf:"varint,1,opt,name=status,proto3,enum=confirmate.assessment.v1.AssessmentStatus" json:"status,omitempty"`
 	StatusMessage string                 `protobuf:"bytes,2,opt,name=status_message,json=statusMessage,proto3" json:"status_message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -670,26 +670,26 @@ var File_api_assessment_assessment_proto protoreflect.FileDescriptor
 
 const file_api_assessment_assessment_proto_rawDesc = "" +
 	"\n" +
-	"\x1fapi/assessment/assessment.proto\x12\x17clouditor.assessment.v1\x1a\x1bapi/assessment/metric.proto\x1a\x1bapi/evidence/evidence.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\x1c\n" +
+	"\x1fapi/assessment/assessment.proto\x12\x18confirmate.assessment.v1\x1a\x1bapi/assessment/metric.proto\x1a\x1bapi/evidence/evidence.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\x1c\n" +
 	"\x1aConfigureAssessmentRequest\"\x1d\n" +
 	"\x1bConfigureAssessmentResponse\";\n" +
 	"\x1aCalculateComplianceRequest\x12\x1d\n" +
 	"\n" +
-	"control_id\x18\x01 \x01(\tR\tcontrolId\"\\\n" +
-	"\x15AssessEvidenceRequest\x12C\n" +
-	"\bevidence\x18\x01 \x01(\v2\x1f.clouditor.evidence.v1.EvidenceB\x06\xbaH\x03\xc8\x01\x01R\bevidence\"[\n" +
-	"\x16AssessEvidenceResponse\x12A\n" +
-	"\x06status\x18\x01 \x01(\x0e2).clouditor.assessment.v1.AssessmentStatusR\x06status\"\x83\x01\n" +
-	"\x17AssessEvidencesResponse\x12A\n" +
-	"\x06status\x18\x01 \x01(\x0e2).clouditor.assessment.v1.AssessmentStatusR\x06status\x12%\n" +
-	"\x0estatus_message\x18\x02 \x01(\tR\rstatusMessage\"\xcf\b\n" +
+	"control_id\x18\x01 \x01(\tR\tcontrolId\"]\n" +
+	"\x15AssessEvidenceRequest\x12D\n" +
+	"\bevidence\x18\x01 \x01(\v2 .confirmate.evidence.v1.EvidenceB\x06\xbaH\x03\xc8\x01\x01R\bevidence\"\\\n" +
+	"\x16AssessEvidenceResponse\x12B\n" +
+	"\x06status\x18\x01 \x01(\x0e2*.confirmate.assessment.v1.AssessmentStatusR\x06status\"\x84\x01\n" +
+	"\x17AssessEvidencesResponse\x12B\n" +
+	"\x06status\x18\x01 \x01(\x0e2*.confirmate.assessment.v1.AssessmentStatusR\x06status\x12%\n" +
+	"\x0estatus_message\x18\x02 \x01(\tR\rstatusMessage\"\xd2\b\n" +
 	"\x10AssessmentResult\x12\x1b\n" +
 	"\x02id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12u\n" +
 	"\n" +
 	"created_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB:\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\tcreatedAt\x12'\n" +
 	"\tmetric_id\x18\x03 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\x12\x85\x01\n" +
-	"\x14metric_configuration\x18\x04 \x01(\v2,.clouditor.assessment.v1.MetricConfigurationB$\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\x13metricConfiguration\x12\x1c\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\x12\x86\x01\n" +
+	"\x14metric_configuration\x18\x04 \x01(\v2-.confirmate.assessment.v1.MetricConfigurationB$\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\x13metricConfiguration\x12\x1c\n" +
 	"\tcompliant\x18\x05 \x01(\bR\tcompliant\x12,\n" +
 	"\vevidence_id\x18\x06 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\n" +
 	"evidenceId\x12+\n" +
@@ -698,14 +698,14 @@ const file_api_assessment_assessment_proto_rawDesc = "" +
 	"resourceId\x12M\n" +
 	"\x0eresource_types\x18\b \x03(\tB&\xe0A\x02\xbaH\x05\x92\x01\x02\b\x01\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\rresourceTypes\x129\n" +
 	"\x12compliance_comment\x18\t \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x11complianceComment\x12u\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x11complianceComment\x12v\n" +
 	"\x12compliance_details\x18\n" +
-	" \x03(\v2).clouditor.assessment.v1.ComparisonResultB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\x11complianceDetails\x12B\n" +
+	" \x03(\v2*.confirmate.assessment.v1.ComparisonResultB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\x11complianceDetails\x12B\n" +
 	"\x17target_of_evaluation_id\x18\x14 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12(\n" +
 	"\atool_id\x18\x15 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01H\x00R\x06toolId\x88\x01\x01\x12\x84\x01\n" +
-	"\x12history_updated_at\x18\x16 \x01(\v2\x1a.google.protobuf.TimestampB:\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\x10historyUpdatedAt\x12{\n" +
-	"\ahistory\x18\x17 \x03(\v2\x1f.clouditor.assessment.v1.RecordB@\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x032gorm:\"serializer:json;constraint:OnDelete:CASCADE\"R\ahistoryB\n" +
+	"\x12history_updated_at\x18\x16 \x01(\v2\x1a.google.protobuf.TimestampB:\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\x10historyUpdatedAt\x12|\n" +
+	"\ahistory\x18\x17 \x03(\v2 .confirmate.assessment.v1.RecordB@\xe0A\x02\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x032gorm:\"serializer:json;constraint:OnDelete:CASCADE\"R\ahistoryB\n" +
 	"\n" +
 	"\b_tool_id\"\xc1\x01\n" +
 	"\x06Record\x12,\n" +
@@ -723,12 +723,12 @@ const file_api_assessment_assessment_proto_rawDesc = "" +
 	"\x1dASSESSMENT_STATUS_UNSPECIFIED\x10\x00\x12)\n" +
 	"%ASSESSMENT_STATUS_WAITING_FOR_RELATED\x10\x01\x12\x1e\n" +
 	"\x1aASSESSMENT_STATUS_ASSESSED\x10\x02\x12\x1c\n" +
-	"\x18ASSESSMENT_STATUS_FAILED\x10\x032\x92\x03\n" +
+	"\x18ASSESSMENT_STATUS_FAILED\x10\x032\x98\x03\n" +
 	"\n" +
-	"Assessment\x12d\n" +
-	"\x13CalculateCompliance\x123.clouditor.assessment.v1.CalculateComplianceRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x9d\x01\n" +
-	"\x0eAssessEvidence\x12..clouditor.assessment.v1.AssessEvidenceRequest\x1a/.clouditor.assessment.v1.AssessEvidenceResponse\"*\x82\xd3\xe4\x93\x02$:\bevidence\"\x18/v1/assessment/evidences\x12~\n" +
-	"\x14AssessEvidenceStream\x12..clouditor.assessment.v1.AssessEvidenceRequest\x1a0.clouditor.assessment.v1.AssessEvidencesResponse\"\x00(\x010\x01B*Z(clouditor.io/clouditor/v2/api/assessmentb\x06proto3"
+	"Assessment\x12e\n" +
+	"\x13CalculateCompliance\x124.confirmate.assessment.v1.CalculateComplianceRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x9f\x01\n" +
+	"\x0eAssessEvidence\x12/.confirmate.assessment.v1.AssessEvidenceRequest\x1a0.confirmate.assessment.v1.AssessEvidenceResponse\"*\x82\xd3\xe4\x93\x02$:\bevidence\"\x18/v1/assessment/evidences\x12\x80\x01\n" +
+	"\x14AssessEvidenceStream\x12/.confirmate.assessment.v1.AssessEvidenceRequest\x1a1.confirmate.assessment.v1.AssessEvidencesResponse\"\x00(\x010\x01B*Z(clouditor.io/clouditor/v2/api/assessmentb\x06proto3"
 
 var (
 	file_api_assessment_assessment_proto_rawDescOnce sync.Once
@@ -745,40 +745,40 @@ func file_api_assessment_assessment_proto_rawDescGZIP() []byte {
 var file_api_assessment_assessment_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_api_assessment_assessment_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_api_assessment_assessment_proto_goTypes = []any{
-	(AssessmentStatus)(0),               // 0: clouditor.assessment.v1.AssessmentStatus
-	(*ConfigureAssessmentRequest)(nil),  // 1: clouditor.assessment.v1.ConfigureAssessmentRequest
-	(*ConfigureAssessmentResponse)(nil), // 2: clouditor.assessment.v1.ConfigureAssessmentResponse
-	(*CalculateComplianceRequest)(nil),  // 3: clouditor.assessment.v1.CalculateComplianceRequest
-	(*AssessEvidenceRequest)(nil),       // 4: clouditor.assessment.v1.AssessEvidenceRequest
-	(*AssessEvidenceResponse)(nil),      // 5: clouditor.assessment.v1.AssessEvidenceResponse
-	(*AssessEvidencesResponse)(nil),     // 6: clouditor.assessment.v1.AssessEvidencesResponse
-	(*AssessmentResult)(nil),            // 7: clouditor.assessment.v1.AssessmentResult
-	(*Record)(nil),                      // 8: clouditor.assessment.v1.Record
-	(*ComparisonResult)(nil),            // 9: clouditor.assessment.v1.ComparisonResult
-	(*evidence.Evidence)(nil),           // 10: clouditor.evidence.v1.Evidence
+	(AssessmentStatus)(0),               // 0: confirmate.assessment.v1.AssessmentStatus
+	(*ConfigureAssessmentRequest)(nil),  // 1: confirmate.assessment.v1.ConfigureAssessmentRequest
+	(*ConfigureAssessmentResponse)(nil), // 2: confirmate.assessment.v1.ConfigureAssessmentResponse
+	(*CalculateComplianceRequest)(nil),  // 3: confirmate.assessment.v1.CalculateComplianceRequest
+	(*AssessEvidenceRequest)(nil),       // 4: confirmate.assessment.v1.AssessEvidenceRequest
+	(*AssessEvidenceResponse)(nil),      // 5: confirmate.assessment.v1.AssessEvidenceResponse
+	(*AssessEvidencesResponse)(nil),     // 6: confirmate.assessment.v1.AssessEvidencesResponse
+	(*AssessmentResult)(nil),            // 7: confirmate.assessment.v1.AssessmentResult
+	(*Record)(nil),                      // 8: confirmate.assessment.v1.Record
+	(*ComparisonResult)(nil),            // 9: confirmate.assessment.v1.ComparisonResult
+	(*evidence.Evidence)(nil),           // 10: confirmate.evidence.v1.Evidence
 	(*timestamppb.Timestamp)(nil),       // 11: google.protobuf.Timestamp
-	(*MetricConfiguration)(nil),         // 12: clouditor.assessment.v1.MetricConfiguration
+	(*MetricConfiguration)(nil),         // 12: confirmate.assessment.v1.MetricConfiguration
 	(*structpb.Value)(nil),              // 13: google.protobuf.Value
 	(*emptypb.Empty)(nil),               // 14: google.protobuf.Empty
 }
 var file_api_assessment_assessment_proto_depIdxs = []int32{
-	10, // 0: clouditor.assessment.v1.AssessEvidenceRequest.evidence:type_name -> clouditor.evidence.v1.Evidence
-	0,  // 1: clouditor.assessment.v1.AssessEvidenceResponse.status:type_name -> clouditor.assessment.v1.AssessmentStatus
-	0,  // 2: clouditor.assessment.v1.AssessEvidencesResponse.status:type_name -> clouditor.assessment.v1.AssessmentStatus
-	11, // 3: clouditor.assessment.v1.AssessmentResult.created_at:type_name -> google.protobuf.Timestamp
-	12, // 4: clouditor.assessment.v1.AssessmentResult.metric_configuration:type_name -> clouditor.assessment.v1.MetricConfiguration
-	9,  // 5: clouditor.assessment.v1.AssessmentResult.compliance_details:type_name -> clouditor.assessment.v1.ComparisonResult
-	11, // 6: clouditor.assessment.v1.AssessmentResult.history_updated_at:type_name -> google.protobuf.Timestamp
-	8,  // 7: clouditor.assessment.v1.AssessmentResult.history:type_name -> clouditor.assessment.v1.Record
-	11, // 8: clouditor.assessment.v1.Record.evidence_recorded_at:type_name -> google.protobuf.Timestamp
-	13, // 9: clouditor.assessment.v1.ComparisonResult.value:type_name -> google.protobuf.Value
-	13, // 10: clouditor.assessment.v1.ComparisonResult.target_value:type_name -> google.protobuf.Value
-	3,  // 11: clouditor.assessment.v1.Assessment.CalculateCompliance:input_type -> clouditor.assessment.v1.CalculateComplianceRequest
-	4,  // 12: clouditor.assessment.v1.Assessment.AssessEvidence:input_type -> clouditor.assessment.v1.AssessEvidenceRequest
-	4,  // 13: clouditor.assessment.v1.Assessment.AssessEvidenceStream:input_type -> clouditor.assessment.v1.AssessEvidenceRequest
-	14, // 14: clouditor.assessment.v1.Assessment.CalculateCompliance:output_type -> google.protobuf.Empty
-	5,  // 15: clouditor.assessment.v1.Assessment.AssessEvidence:output_type -> clouditor.assessment.v1.AssessEvidenceResponse
-	6,  // 16: clouditor.assessment.v1.Assessment.AssessEvidenceStream:output_type -> clouditor.assessment.v1.AssessEvidencesResponse
+	10, // 0: confirmate.assessment.v1.AssessEvidenceRequest.evidence:type_name -> confirmate.evidence.v1.Evidence
+	0,  // 1: confirmate.assessment.v1.AssessEvidenceResponse.status:type_name -> confirmate.assessment.v1.AssessmentStatus
+	0,  // 2: confirmate.assessment.v1.AssessEvidencesResponse.status:type_name -> confirmate.assessment.v1.AssessmentStatus
+	11, // 3: confirmate.assessment.v1.AssessmentResult.created_at:type_name -> google.protobuf.Timestamp
+	12, // 4: confirmate.assessment.v1.AssessmentResult.metric_configuration:type_name -> confirmate.assessment.v1.MetricConfiguration
+	9,  // 5: confirmate.assessment.v1.AssessmentResult.compliance_details:type_name -> confirmate.assessment.v1.ComparisonResult
+	11, // 6: confirmate.assessment.v1.AssessmentResult.history_updated_at:type_name -> google.protobuf.Timestamp
+	8,  // 7: confirmate.assessment.v1.AssessmentResult.history:type_name -> confirmate.assessment.v1.Record
+	11, // 8: confirmate.assessment.v1.Record.evidence_recorded_at:type_name -> google.protobuf.Timestamp
+	13, // 9: confirmate.assessment.v1.ComparisonResult.value:type_name -> google.protobuf.Value
+	13, // 10: confirmate.assessment.v1.ComparisonResult.target_value:type_name -> google.protobuf.Value
+	3,  // 11: confirmate.assessment.v1.Assessment.CalculateCompliance:input_type -> confirmate.assessment.v1.CalculateComplianceRequest
+	4,  // 12: confirmate.assessment.v1.Assessment.AssessEvidence:input_type -> confirmate.assessment.v1.AssessEvidenceRequest
+	4,  // 13: confirmate.assessment.v1.Assessment.AssessEvidenceStream:input_type -> confirmate.assessment.v1.AssessEvidenceRequest
+	14, // 14: confirmate.assessment.v1.Assessment.CalculateCompliance:output_type -> google.protobuf.Empty
+	5,  // 15: confirmate.assessment.v1.Assessment.AssessEvidence:output_type -> confirmate.assessment.v1.AssessEvidenceResponse
+	6,  // 16: confirmate.assessment.v1.Assessment.AssessEvidenceStream:output_type -> confirmate.assessment.v1.AssessEvidencesResponse
 	14, // [14:17] is the sub-list for method output_type
 	11, // [11:14] is the sub-list for method input_type
 	11, // [11:11] is the sub-list for extension type_name

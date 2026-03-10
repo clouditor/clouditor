@@ -204,7 +204,7 @@ func RegisterEvidenceStoreHandlerServer(ctx context.Context, mux *runtime.ServeM
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/StoreEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidence"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/confirmate.evidence.v1.EvidenceStore/StoreEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidence"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -224,7 +224,7 @@ func RegisterEvidenceStoreHandlerServer(ctx context.Context, mux *runtime.ServeM
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/ListEvidences", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/confirmate.evidence.v1.EvidenceStore/ListEvidences", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -244,7 +244,7 @@ func RegisterEvidenceStoreHandlerServer(ctx context.Context, mux *runtime.ServeM
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/GetEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences/{evidence_id}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/confirmate.evidence.v1.EvidenceStore/GetEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences/{evidence_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -264,7 +264,7 @@ func RegisterEvidenceStoreHandlerServer(ctx context.Context, mux *runtime.ServeM
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/ListSupportedResourceTypes", runtime.WithHTTPPathPattern("/v1/evidence_store/supported_resource_types"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/confirmate.evidence.v1.EvidenceStore/ListSupportedResourceTypes", runtime.WithHTTPPathPattern("/v1/evidence_store/supported_resource_types"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -284,7 +284,7 @@ func RegisterEvidenceStoreHandlerServer(ctx context.Context, mux *runtime.ServeM
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/ListResources", runtime.WithHTTPPathPattern("/v1/evidence_store/resources"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/confirmate.evidence.v1.EvidenceStore/ListResources", runtime.WithHTTPPathPattern("/v1/evidence_store/resources"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -342,7 +342,7 @@ func RegisterEvidenceStoreHandlerClient(ctx context.Context, mux *runtime.ServeM
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/StoreEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidence"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/confirmate.evidence.v1.EvidenceStore/StoreEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidence"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -359,7 +359,7 @@ func RegisterEvidenceStoreHandlerClient(ctx context.Context, mux *runtime.ServeM
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/ListEvidences", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/confirmate.evidence.v1.EvidenceStore/ListEvidences", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -376,7 +376,7 @@ func RegisterEvidenceStoreHandlerClient(ctx context.Context, mux *runtime.ServeM
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/GetEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences/{evidence_id}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/confirmate.evidence.v1.EvidenceStore/GetEvidence", runtime.WithHTTPPathPattern("/v1/evidence_store/evidences/{evidence_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -393,7 +393,7 @@ func RegisterEvidenceStoreHandlerClient(ctx context.Context, mux *runtime.ServeM
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/ListSupportedResourceTypes", runtime.WithHTTPPathPattern("/v1/evidence_store/supported_resource_types"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/confirmate.evidence.v1.EvidenceStore/ListSupportedResourceTypes", runtime.WithHTTPPathPattern("/v1/evidence_store/supported_resource_types"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -410,7 +410,7 @@ func RegisterEvidenceStoreHandlerClient(ctx context.Context, mux *runtime.ServeM
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.evidence.v1.EvidenceStore/ListResources", runtime.WithHTTPPathPattern("/v1/evidence_store/resources"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/confirmate.evidence.v1.EvidenceStore/ListResources", runtime.WithHTTPPathPattern("/v1/evidence_store/resources"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return

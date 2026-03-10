@@ -25,7 +25,7 @@
 
 syntax = "proto3";
 
-package clouditor.evaluation.v1;
+package confirmate.evaluation.v1;
 
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";

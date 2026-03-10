@@ -25,7 +25,7 @@
 
 syntax = "proto3";
 
-package clouditor.assessment.v1;
+package confirmate.assessment.v1;
 
 import "api/assessment/metric.proto";
 import "api/evidence/evidence.proto";
@@ -68,7 +68,7 @@ message CalculateComplianceRequest {
 }
 
 message AssessEvidenceRequest {
-  clouditor.evidence.v1.Evidence evidence = 1 [(buf.validate.field).required = true];
+  confirmate.evidence.v1.Evidence evidence = 1 [(buf.validate.field).required = true];
 }
 
 enum AssessmentStatus {
@@ -118,7 +118,7 @@ message AssessmentResult {
   ];
 
   // Data corresponding to the metric by the given metric id
-  clouditor.assessment.v1.MetricConfiguration metric_configuration = 4 [
+  confirmate.assessment.v1.MetricConfiguration metric_configuration = 4 [
     (tagger.tags) = "gorm:\"serializer:json\"",
     (buf.validate.field).required = true,
     (google.api.field_behavior) = REQUIRED

@@ -25,7 +25,7 @@
 
 syntax = "proto3";
 
-package clouditor.evidence.v1;
+package confirmate.evidence.v1;
 
 import "policies/security-metrics/ontology/v1/ontology.proto";
 import "buf/validate/validate.proto";

@@ -127,7 +127,7 @@ func RegisterExperimentalResourcesHandlerServer(ctx context.Context, mux *runtim
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evidence.v1experimental.ExperimentalResources/UpdateResource", runtime.WithHTTPPathPattern("/v1experimental/evidence_store/resources/{resource.id}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/confirmate.evidence.v1experimental.ExperimentalResources/UpdateResource", runtime.WithHTTPPathPattern("/v1experimental/evidence_store/resources/{resource.id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -147,7 +147,7 @@ func RegisterExperimentalResourcesHandlerServer(ctx context.Context, mux *runtim
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evidence.v1experimental.ExperimentalResources/ListGraphEdges", runtime.WithHTTPPathPattern("/v1experimental/evidence/graph/edges"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/confirmate.evidence.v1experimental.ExperimentalResources/ListGraphEdges", runtime.WithHTTPPathPattern("/v1experimental/evidence/graph/edges"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -205,7 +205,7 @@ func RegisterExperimentalResourcesHandlerClient(ctx context.Context, mux *runtim
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.evidence.v1experimental.ExperimentalResources/UpdateResource", runtime.WithHTTPPathPattern("/v1experimental/evidence_store/resources/{resource.id}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/confirmate.evidence.v1experimental.ExperimentalResources/UpdateResource", runtime.WithHTTPPathPattern("/v1experimental/evidence_store/resources/{resource.id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -222,7 +222,7 @@ func RegisterExperimentalResourcesHandlerClient(ctx context.Context, mux *runtim
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.evidence.v1experimental.ExperimentalResources/ListGraphEdges", runtime.WithHTTPPathPattern("/v1experimental/evidence/graph/edges"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/confirmate.evidence.v1experimental.ExperimentalResources/ListGraphEdges", runtime.WithHTTPPathPattern("/v1experimental/evidence/graph/edges"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return

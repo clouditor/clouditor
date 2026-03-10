@@ -44,8 +44,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ExperimentalResources_UpdateResource_FullMethodName = "/clouditor.evidence.v1experimental.ExperimentalResources/UpdateResource"
-	ExperimentalResources_ListGraphEdges_FullMethodName = "/clouditor.evidence.v1experimental.ExperimentalResources/ListGraphEdges"
+	ExperimentalResources_UpdateResource_FullMethodName = "/confirmate.evidence.v1experimental.ExperimentalResources/UpdateResource"
+	ExperimentalResources_ListGraphEdges_FullMethodName = "/confirmate.evidence.v1experimental.ExperimentalResources/ListGraphEdges"
 )
 
 // ExperimentalResourcesClient is the client API for ExperimentalResources service.
@@ -191,7 +191,7 @@ func _ExperimentalResources_ListGraphEdges_Handler(srv interface{}, ctx context.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var ExperimentalResources_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "clouditor.evidence.v1experimental.ExperimentalResources",
+	ServiceName: "confirmate.evidence.v1experimental.ExperimentalResources",
 	HandlerType: (*ExperimentalResourcesServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
