@@ -45,7 +45,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	OntologyService_Noop_FullMethodName = "/clouditor.ontology.v1.OntologyService/Noop"
+	OntologyService_Noop_FullMethodName = "/confirmate.ontology.v1.OntologyService/Noop"
 )
 
 // OntologyServiceClient is the client API for OntologyService service.
@@ -138,7 +138,7 @@ func _OntologyService_Noop_Handler(srv interface{}, ctx context.Context, dec fun
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var OntologyService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "clouditor.ontology.v1.OntologyService",
+	ServiceName: "confirmate.ontology.v1.OntologyService",
 	HandlerType: (*OntologyServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

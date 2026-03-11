@@ -1700,7 +1700,7 @@ func (*SubscribeMetricChangeEventRequest) Descriptor() ([]byte, []int) {
 // implementation.
 type MetricChangeEvent struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	Type  MetricChangeEvent_Type `protobuf:"varint,1,opt,name=type,proto3,enum=clouditor.orchestrator.v1.MetricChangeEvent_Type" json:"type,omitempty"`
+	Type  MetricChangeEvent_Type `protobuf:"varint,1,opt,name=type,proto3,enum=confirmate.orchestrator.v1.MetricChangeEvent_Type" json:"type,omitempty"`
 	// The metric that is changing.
 	MetricId string `protobuf:"bytes,2,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty"`
 	// The target of evaluation id that is affected by this change. Primarily
@@ -1845,7 +1845,7 @@ type TargetOfEvaluation struct {
 	// additional metadata of the target of evaluation, mostly used for the UI
 	Metadata *TargetOfEvaluation_Metadata `protobuf:"bytes,10,opt,name=metadata,proto3,oneof" json:"metadata,omitempty" gorm:"serializer:json"`
 	// type of the target to be evaluated: cloud, product or organization
-	TargetType    TargetOfEvaluation_TargetType `protobuf:"varint,11,opt,name=target_type,json=targetType,proto3,enum=clouditor.orchestrator.v1.TargetOfEvaluation_TargetType" json:"target_type,omitempty"`
+	TargetType    TargetOfEvaluation_TargetType `protobuf:"varint,11,opt,name=target_type,json=targetType,proto3,enum=confirmate.orchestrator.v1.TargetOfEvaluation_TargetType" json:"target_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3998,7 +3998,7 @@ func (x *State) GetCertificateId() string {
 // function can be informed about the reason of its call.
 type AuditScopeChangeEvent struct {
 	state protoimpl.MessageState     `protogen:"open.v1"`
-	Type  AuditScopeChangeEvent_Type `protobuf:"varint,1,opt,name=type,proto3,enum=clouditor.orchestrator.v1.AuditScopeChangeEvent_Type" json:"type,omitempty"`
+	Type  AuditScopeChangeEvent_Type `protobuf:"varint,1,opt,name=type,proto3,enum=confirmate.orchestrator.v1.AuditScopeChangeEvent_Type" json:"type,omitempty"`
 	// Optional. If the type is a AUDIT_SCOPE_* the audit_scope
 	// field must be set
 	AuditScope    *AuditScope `protobuf:"bytes,2,opt,name=audit_scope,json=auditScope,proto3,oneof" json:"audit_scope,omitempty"`
@@ -4421,11 +4421,11 @@ var File_api_orchestrator_orchestrator_proto protoreflect.FileDescriptor
 
 const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\n" +
-	"#api/orchestrator/orchestrator.proto\x12\x19clouditor.orchestrator.v1\x1a\x1fapi/assessment/assessment.proto\x1a\x1bapi/assessment/metric.proto\x1a\x19api/runtime/runtime.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"i\n" +
-	"\x1dRegisterAssessmentToolRequest\x12H\n" +
-	"\x04tool\x18\x01 \x01(\v2).clouditor.orchestrator.v1.AssessmentToolB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x04tool\"\xf5\x01\n" +
-	"\x1aListAssessmentToolsRequest\x12Y\n" +
-	"\x06filter\x18\x01 \x01(\v2<.clouditor.orchestrator.v1.ListAssessmentToolsRequest.FilterH\x00R\x06filter\x88\x01\x01\x12\x1b\n" +
+	"#api/orchestrator/orchestrator.proto\x12\x1aconfirmate.orchestrator.v1\x1a\x1fapi/assessment/assessment.proto\x1a\x1bapi/assessment/metric.proto\x1a\x19api/runtime/runtime.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"j\n" +
+	"\x1dRegisterAssessmentToolRequest\x12I\n" +
+	"\x04tool\x18\x01 \x01(\v2*.confirmate.orchestrator.v1.AssessmentToolB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x04tool\"\xf6\x01\n" +
+	"\x1aListAssessmentToolsRequest\x12Z\n" +
+	"\x06filter\x18\x01 \x01(\v2=.confirmate.orchestrator.v1.ListAssessmentToolsRequest.FilterH\x00R\x06filter\x88\x01\x01\x12\x1b\n" +
 	"\tpage_size\x18\n" +
 	" \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
@@ -4433,33 +4433,33 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
 	"\x03asc\x18\r \x01(\bR\x03asc\x1a\b\n" +
 	"\x06FilterB\t\n" +
-	"\a_filter\"\x86\x01\n" +
-	"\x1bListAssessmentToolsResponse\x12?\n" +
-	"\x05tools\x18\x01 \x03(\v2).clouditor.orchestrator.v1.AssessmentToolR\x05tools\x12&\n" +
+	"\a_filter\"\x87\x01\n" +
+	"\x1bListAssessmentToolsResponse\x12@\n" +
+	"\x05tools\x18\x01 \x03(\v2*.confirmate.orchestrator.v1.AssessmentToolR\x05tools\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"?\n" +
 	"\x18GetAssessmentToolRequest\x12#\n" +
 	"\atool_id\x18\x01 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x06toolId\"g\n" +
-	"\x1bUpdateAssessmentToolRequest\x12H\n" +
-	"\x04tool\x18\x02 \x01(\v2).clouditor.orchestrator.v1.AssessmentToolB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x04tool\"F\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x06toolId\"h\n" +
+	"\x1bUpdateAssessmentToolRequest\x12I\n" +
+	"\x04tool\x18\x02 \x01(\v2*.confirmate.orchestrator.v1.AssessmentToolB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x04tool\"F\n" +
 	"\x1fDeregisterAssessmentToolRequest\x12#\n" +
 	"\atool_id\x18\x01 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x06toolId\"l\n" +
-	"\x1cStoreAssessmentResultRequest\x12L\n" +
-	"\x06result\x18\x01 \x01(\v2).clouditor.assessment.v1.AssessmentResultB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x06result\"\x1f\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x06toolId\"m\n" +
+	"\x1cStoreAssessmentResultRequest\x12M\n" +
+	"\x06result\x18\x01 \x01(\v2*.confirmate.assessment.v1.AssessmentResultB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x06result\"\x1f\n" +
 	"\x1dStoreAssessmentResultResponse\"_\n" +
 	"\x1eStoreAssessmentResultsResponse\x12\x16\n" +
 	"\x06status\x18\x01 \x01(\bR\x06status\x12%\n" +
-	"\x0estatus_message\x18\x02 \x01(\tR\rstatusMessage\"Y\n" +
-	"\x13CreateMetricRequest\x12B\n" +
-	"\x06metric\x18\x01 \x01(\v2\x1f.clouditor.assessment.v1.MetricB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x06metric\"Y\n" +
-	"\x13UpdateMetricRequest\x12B\n" +
-	"\x06metric\x18\x01 \x01(\v2\x1f.clouditor.assessment.v1.MetricB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x06metric\";\n" +
+	"\x0estatus_message\x18\x02 \x01(\tR\rstatusMessage\"Z\n" +
+	"\x13CreateMetricRequest\x12C\n" +
+	"\x06metric\x18\x01 \x01(\v2 .confirmate.assessment.v1.MetricB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x06metric\"Z\n" +
+	"\x13UpdateMetricRequest\x12C\n" +
+	"\x06metric\x18\x01 \x01(\v2 .confirmate.assessment.v1.MetricB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x06metric\";\n" +
 	"\x10GetMetricRequest\x12'\n" +
 	"\tmetric_id\x18\x01 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\"\xb0\x02\n" +
-	"\x12ListMetricsRequest\x12Q\n" +
-	"\x06filter\x18\x01 \x01(\v24.clouditor.orchestrator.v1.ListMetricsRequest.FilterH\x00R\x06filter\x88\x01\x01\x12\x1b\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\"\xb1\x02\n" +
+	"\x12ListMetricsRequest\x12R\n" +
+	"\x06filter\x18\x01 \x01(\v25.confirmate.orchestrator.v1.ListMetricsRequest.FilterH\x00R\x06filter\x88\x01\x01\x12\x1b\n" +
 	"\tpage_size\x18\n" +
 	" \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
@@ -4472,16 +4472,16 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\a_filter\">\n" +
 	"\x13RemoveMetricRequest\x12'\n" +
 	"\tmetric_id\x18\x01 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\"}\n" +
-	"\x13ListMetricsResponse\x12>\n" +
-	"\ametrics\x18\x01 \x03(\v2\x1f.clouditor.assessment.v1.MetricB\x03\xe0A\x02R\ametrics\x12&\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\"~\n" +
+	"\x13ListMetricsResponse\x12?\n" +
+	"\ametrics\x18\x01 \x03(\v2 .confirmate.assessment.v1.MetricB\x03\xe0A\x02R\ametrics\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"b\n" +
 	"\x1cGetTargetOfEvaluationRequest\x12B\n" +
-	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"\x8d\x01\n" +
-	"\x1fCreateTargetOfEvaluationRequest\x12j\n" +
-	"\x14target_of_evaluation\x18\x01 \x01(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x12targetOfEvaluation\"\x8d\x01\n" +
-	"\x1fUpdateTargetOfEvaluationRequest\x12j\n" +
-	"\x14target_of_evaluation\x18\x01 \x01(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x12targetOfEvaluation\"e\n" +
+	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"\x8e\x01\n" +
+	"\x1fCreateTargetOfEvaluationRequest\x12k\n" +
+	"\x14target_of_evaluation\x18\x01 \x01(\v2..confirmate.orchestrator.v1.TargetOfEvaluationB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x12targetOfEvaluation\"\x8e\x01\n" +
+	"\x1fUpdateTargetOfEvaluationRequest\x12k\n" +
+	"\x14target_of_evaluation\x18\x01 \x01(\v2..confirmate.orchestrator.v1.TargetOfEvaluationB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x12targetOfEvaluation\"e\n" +
 	"\x1fRemoveTargetOfEvaluationRequest\x12B\n" +
 	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"\x89\x01\n" +
 	"\x1eListTargetsOfEvaluationRequest\x12\x1b\n" +
@@ -4490,9 +4490,9 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\n" +
 	"page_token\x18\v \x01(\tR\tpageToken\x12\x19\n" +
 	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
-	"\x03asc\x18\r \x01(\bR\x03asc\"\x97\x01\n" +
-	"\x1fListTargetsOfEvaluationResponse\x12L\n" +
-	"\atargets\x18\x01 \x03(\v2-.clouditor.orchestrator.v1.TargetOfEvaluationB\x03\xe0A\x02R\atargets\x12&\n" +
+	"\x03asc\x18\r \x01(\bR\x03asc\"\x98\x01\n" +
+	"\x1fListTargetsOfEvaluationResponse\x12M\n" +
+	"\atargets\x18\x01 \x03(\v2..confirmate.orchestrator.v1.TargetOfEvaluationB\x03\xe0A\x02R\atargets\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"l\n" +
 	"&GetTargetOfEvaluationStatisticsRequest\x12B\n" +
 	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"\x9e\x02\n" +
@@ -4500,32 +4500,32 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x1enumber_of_discovered_resources\x18\x01 \x01(\x03R\x1bnumberOfDiscoveredResources\x12?\n" +
 	"\x1cnumber_of_assessment_results\x18\x02 \x01(\x03R\x19numberOfAssessmentResults\x12.\n" +
 	"\x13number_of_evidences\x18\x03 \x01(\x03R\x11numberOfEvidences\x12=\n" +
-	"\x1bnumber_of_selected_catalogs\x18\x04 \x01(\x03R\x18numberOfSelectedCatalogs\"\xee\x01\n" +
+	"\x1bnumber_of_selected_catalogs\x18\x04 \x01(\x03R\x18numberOfSelectedCatalogs\"\xef\x01\n" +
 	" UpdateMetricConfigurationRequest\x12B\n" +
 	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12'\n" +
 	"\tmetric_id\x18\x02 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\x12]\n" +
-	"\rconfiguration\x18\x03 \x01(\v2,.clouditor.assessment.v1.MetricConfigurationB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\rconfiguration\"\x8c\x01\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\x12^\n" +
+	"\rconfiguration\x18\x03 \x01(\v2-.confirmate.assessment.v1.MetricConfigurationB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\rconfiguration\"\x8c\x01\n" +
 	"\x1dGetMetricConfigurationRequest\x12B\n" +
 	"\x17target_of_evaluation_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12'\n" +
 	"\tmetric_id\x18\x02 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\"d\n" +
 	"\x1eListMetricConfigurationRequest\x12B\n" +
 	"\x17target_of_evaluation_id\x18\n" +
-	" \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"\x8a\x02\n" +
-	"\x1fListMetricConfigurationResponse\x12v\n" +
-	"\x0econfigurations\x18\x01 \x03(\v2N.clouditor.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntryR\x0econfigurations\x1ao\n" +
+	" \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"\x8c\x02\n" +
+	"\x1fListMetricConfigurationResponse\x12w\n" +
+	"\x0econfigurations\x18\x01 \x03(\v2O.confirmate.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntryR\x0econfigurations\x1ap\n" +
 	"\x13ConfigurationsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12B\n" +
-	"\x05value\x18\x02 \x01(\v2,.clouditor.assessment.v1.MetricConfigurationR\x05value:\x028\x01\"\x85\x01\n" +
-	"!UpdateMetricImplementationRequest\x12`\n" +
-	"\x0eimplementation\x18\x01 \x01(\v2-.clouditor.assessment.v1.MetricImplementationB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x0eimplementation\"I\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12C\n" +
+	"\x05value\x18\x02 \x01(\v2-.confirmate.assessment.v1.MetricConfigurationR\x05value:\x028\x01\"\x86\x01\n" +
+	"!UpdateMetricImplementationRequest\x12a\n" +
+	"\x0eimplementation\x18\x01 \x01(\v2..confirmate.assessment.v1.MetricImplementationB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\x0eimplementation\"I\n" +
 	"\x1eGetMetricImplementationRequest\x12'\n" +
 	"\tmetric_id\x18\x01 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\"#\n" +
-	"!SubscribeMetricChangeEventRequest\"\xc7\x02\n" +
-	"\x11MetricChangeEvent\x12R\n" +
-	"\x04type\x18\x01 \x01(\x0e21.clouditor.orchestrator.v1.MetricChangeEvent.TypeB\v\xe0A\x02\xbaH\x05\x82\x01\x02\x10\x01R\x04type\x12'\n" +
+	"!SubscribeMetricChangeEventRequest\"\xc8\x02\n" +
+	"\x11MetricChangeEvent\x12S\n" +
+	"\x04type\x18\x01 \x01(\x0e22.confirmate.orchestrator.v1.MetricChangeEvent.TypeB\v\xe0A\x02\xbaH\x05\x82\x01\x02\x10\x01R\x04type\x12'\n" +
 	"\tmetric_id\x18\x02 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\bmetricId\x12B\n" +
 	"\x17target_of_evaluation_id\x18\x03 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\"q\n" +
@@ -4539,23 +4539,23 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x04name\x18\x02 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x04name\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12<\n" +
-	"\x11available_metrics\x18\x04 \x03(\tB\x0f\xe0A\x02\xbaH\t\x92\x01\x06\"\x04r\x02\x10\x01R\x10availableMetrics\"\xad\b\n" +
+	"\x11available_metrics\x18\x04 \x03(\tB\x0f\xe0A\x02\xbaH\t\x92\x01\x06\"\x04r\x02\x10\x01R\x10availableMetrics\"\xb1\b\n" +
 	"\x12TargetOfEvaluation\x12\x1b\n" +
 	"\x02id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x1e\n" +
 	"\x04name\x18\x02 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x04name\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x89\x01\n" +
-	"\x12configured_metrics\x18\x05 \x03(\v2\x1f.clouditor.assessment.v1.MetricB9\xe0A\x02\xbaH\b\x92\x01\x05\"\x03\xc8\x01\x01\x9a\x84\x9e\x03&gorm:\"many2many:metric_configurations\"R\x11configuredMetrics\x12q\n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x8a\x01\n" +
+	"\x12configured_metrics\x18\x05 \x03(\v2 .confirmate.assessment.v1.MetricB9\xe0A\x02\xbaH\b\x92\x01\x05\"\x03\xc8\x01\x01\x9a\x84\x9e\x03&gorm:\"many2many:metric_configurations\"R\x11configuredMetrics\x12q\n" +
 	"\n" +
 	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampB1\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"H\x00R\tcreatedAt\x88\x01\x01\x12q\n" +
 	"\n" +
-	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampB1\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"H\x01R\tupdatedAt\x88\x01\x01\x12t\n" +
+	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampB1\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"H\x01R\tupdatedAt\x88\x01\x01\x12u\n" +
 	"\bmetadata\x18\n" +
-	" \x01(\v26.clouditor.orchestrator.v1.TargetOfEvaluation.MetadataB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"H\x02R\bmetadata\x88\x01\x01\x12f\n" +
-	"\vtarget_type\x18\v \x01(\x0e28.clouditor.orchestrator.v1.TargetOfEvaluation.TargetTypeB\v\xe0A\x02\xbaH\x05\x82\x01\x02\x10\x01R\n" +
-	"targetType\x1a\xc3\x01\n" +
-	"\bMetadata\x12Z\n" +
-	"\x06labels\x18\x01 \x03(\v2B.clouditor.orchestrator.v1.TargetOfEvaluation.Metadata.LabelsEntryR\x06labels\x12\x17\n" +
+	" \x01(\v27.confirmate.orchestrator.v1.TargetOfEvaluation.MetadataB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"H\x02R\bmetadata\x88\x01\x01\x12g\n" +
+	"\vtarget_type\x18\v \x01(\x0e29.confirmate.orchestrator.v1.TargetOfEvaluation.TargetTypeB\v\xe0A\x02\xbaH\x05\x82\x01\x02\x10\x01R\n" +
+	"targetType\x1a\xc4\x01\n" +
+	"\bMetadata\x12[\n" +
+	"\x06labels\x18\x01 \x03(\v2C.confirmate.orchestrator.v1.TargetOfEvaluation.Metadata.LabelsEntryR\x06labels\x12\x17\n" +
 	"\x04icon\x18\x02 \x01(\tH\x00R\x04icon\x88\x01\x01\x1a9\n" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
@@ -4569,41 +4569,41 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x18TARGET_TYPE_ORGANIZATION\x10\x03B\r\n" +
 	"\v_created_atB\r\n" +
 	"\v_updated_atB\v\n" +
-	"\t_metadata\"\x9a\x04\n" +
+	"\t_metadata\"\x9c\x04\n" +
 	"\aCatalog\x12\x1a\n" +
 	"\x02id\x18\x01 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\x12\x1e\n" +
 	"\x04name\x18\x02 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x04name\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12z\n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12{\n" +
 	"\n" +
-	"categories\x18\x04 \x03(\v2#.clouditor.orchestrator.v1.CategoryB5\xe0A\x02\xbaH\b\x92\x01\x05\"\x03\xc8\x01\x01\x9a\x84\x9e\x03\"gorm:\"constraint:OnDelete:CASCADE\"R\n" +
+	"categories\x18\x04 \x03(\v2$.confirmate.orchestrator.v1.CategoryB5\xe0A\x02\xbaH\b\x92\x01\x05\"\x03\xc8\x01\x01\x9a\x84\x9e\x03\"gorm:\"constraint:OnDelete:CASCADE\"R\n" +
 	"categories\x12 \n" +
 	"\fall_in_scope\x18\x05 \x01(\bR\n" +
 	"allInScope\x12F\n" +
 	"\x10assurance_levels\x18\a \x03(\tB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\x0fassuranceLevels\x12\"\n" +
 	"\n" +
-	"short_name\x18\t \x01(\tB\x03\xe0A\x02R\tshortName\x12i\n" +
-	"\bmetadata\x18\x06 \x01(\v2+.clouditor.orchestrator.v1.Catalog.MetadataB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"H\x00R\bmetadata\x88\x01\x01\x1a/\n" +
+	"short_name\x18\t \x01(\tB\x03\xe0A\x02R\tshortName\x12j\n" +
+	"\bmetadata\x18\x06 \x01(\v2,.confirmate.orchestrator.v1.Catalog.MetadataB\x1b\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"H\x00R\bmetadata\x88\x01\x01\x1a/\n" +
 	"\bMetadata\x12\x19\n" +
 	"\x05color\x18\x03 \x01(\tH\x00R\x05color\x88\x01\x01B\b\n" +
 	"\x06_colorB\v\n" +
-	"\t_metadata\"\xe3\x02\n" +
+	"\t_metadata\"\xe4\x02\n" +
 	"\bCategory\x124\n" +
 	"\x04name\x18\x01 \x01(\tB \xe0A\x02\xbaH\x04r\x02\x10\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\x04name\x12?\n" +
 	"\n" +
 	"catalog_id\x18\x02 \x01(\tB \xe0A\x02\xbaH\x04r\x02\x10\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\tcatalogId\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\xbd\x01\n" +
-	"\bcontrols\x18\x04 \x03(\v2\".clouditor.orchestrator.v1.ControlB}\xe0A\x02\xbaH\b\x92\x01\x05\"\x03\xc8\x01\x01\x9a\x84\x9e\x03jgorm:\"foreignKey:category_name,category_catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE\"R\bcontrols\"\x91\b\n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\xbe\x01\n" +
+	"\bcontrols\x18\x04 \x03(\v2#.confirmate.orchestrator.v1.ControlB}\xe0A\x02\xbaH\b\x92\x01\x05\"\x03\xc8\x01\x01\x9a\x84\x9e\x03jgorm:\"foreignKey:category_name,category_catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE\"R\bcontrols\"\x93\b\n" +
 	"\aControl\x120\n" +
 	"\x02id\x18\x01 \x01(\tB \xe0A\x02\xbaH\x04r\x02\x10\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\x02id\x12E\n" +
 	"\rcategory_name\x18\x02 \x01(\tB \xe0A\x02\xbaH\x04r\x02\x10\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\fcategoryName\x12P\n" +
 	"\x13category_catalog_id\x18\x03 \x01(\tB \xe0A\x02\xbaH\x04r\x02\x10\x01\x9a\x84\x9e\x03\x11gorm:\"primaryKey\"R\x11categoryCatalogId\x12\x1e\n" +
 	"\x04name\x18\x04 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x04name\x12 \n" +
-	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\xe8\x01\n" +
-	"\bcontrols\x18\x06 \x03(\v2\".clouditor.orchestrator.v1.ControlB\xa7\x01\xe0A\x02\xbaH\b\x92\x01\x05\"\x03\xc8\x01\x01\x9a\x84\x9e\x03\x93\x01gorm:\"foreignKey:parent_control_id,parent_control_category_name,parent_control_category_catalog_id;references=id,category_name;category_catalog_id\"R\bcontrols\x12\x8a\x01\n" +
-	"\ametrics\x18\a \x03(\v2\x1f.clouditor.assessment.v1.MetricBO\xe0A\x02\xbaH\b\x92\x01\x05\"\x03\xc8\x01\x01\x9a\x84\x9e\x03<gorm:\"many2many:control_metrics;constraint:OnDelete:CASCADE\"R\ametrics\x128\n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\xe9\x01\n" +
+	"\bcontrols\x18\x06 \x03(\v2#.confirmate.orchestrator.v1.ControlB\xa7\x01\xe0A\x02\xbaH\b\x92\x01\x05\"\x03\xc8\x01\x01\x9a\x84\x9e\x03\x93\x01gorm:\"foreignKey:parent_control_id,parent_control_category_name,parent_control_category_catalog_id;references=id,category_name;category_catalog_id\"R\bcontrols\x12\x8b\x01\n" +
+	"\ametrics\x18\a \x03(\v2 .confirmate.assessment.v1.MetricBO\xe0A\x02\xbaH\b\x92\x01\x05\"\x03\xc8\x01\x01\x9a\x84\x9e\x03<gorm:\"many2many:control_metrics;constraint:OnDelete:CASCADE\"R\ametrics\x128\n" +
 	"\x11parent_control_id\x18\b \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\x0fparentControlId\x88\x01\x01\x12M\n" +
 	"\x1cparent_control_category_name\x18\t \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x01R\x19parentControlCategoryName\x88\x01\x01\x12X\n" +
 	"\"parent_control_category_catalog_id\x18\n" +
@@ -4625,9 +4625,9 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x0fassurance_level\x18\x03 \x01(\tH\x00R\x0eassuranceLevel\x88\x01\x01B\x12\n" +
 	"\x10_assurance_level\"6\n" +
 	"\x1aGetAssessmentResultRequest\x12\x18\n" +
-	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"\xba\x05\n" +
-	"\x1cListAssessmentResultsRequest\x12[\n" +
-	"\x06filter\x18\x01 \x01(\v2>.clouditor.orchestrator.v1.ListAssessmentResultsRequest.FilterH\x00R\x06filter\x88\x01\x01\x126\n" +
+	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"\xbb\x05\n" +
+	"\x1cListAssessmentResultsRequest\x12\\\n" +
+	"\x06filter\x18\x01 \x01(\v2?.confirmate.orchestrator.v1.ListAssessmentResultsRequest.FilterH\x00R\x06filter\x88\x01\x01\x126\n" +
 	"\x15latest_by_resource_id\x18\x02 \x01(\bH\x01R\x12latestByResourceId\x88\x01\x01\x12\x1b\n" +
 	"\tpage_size\x18\n" +
 	" \x01(\x05R\bpageSize\x12\x1d\n" +
@@ -4651,20 +4651,20 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\n" +
 	"\b_tool_idB\t\n" +
 	"\a_filterB\x18\n" +
-	"\x16_latest_by_resource_id\"\x8c\x01\n" +
-	"\x1dListAssessmentResultsResponse\x12C\n" +
-	"\aresults\x18\x01 \x03(\v2).clouditor.assessment.v1.AssessmentResultR\aresults\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"l\n" +
-	"\x17CreateAuditScopeRequest\x12Q\n" +
-	"\vaudit_scope\x18\x01 \x01(\v2%.clouditor.orchestrator.v1.AuditScopeB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\n" +
+	"\x16_latest_by_resource_id\"\x8d\x01\n" +
+	"\x1dListAssessmentResultsResponse\x12D\n" +
+	"\aresults\x18\x01 \x03(\v2*.confirmate.assessment.v1.AssessmentResultR\aresults\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"m\n" +
+	"\x17CreateAuditScopeRequest\x12R\n" +
+	"\vaudit_scope\x18\x01 \x01(\v2&.confirmate.orchestrator.v1.AuditScopeB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\n" +
 	"auditScope\"\x88\x01\n" +
 	"\x17RemoveAuditScopeRequest\x121\n" +
 	"\x0eaudit_scope_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\fauditScopeId\x12:\n" +
 	"\x19remove_evaluation_results\x18\x02 \x01(\bR\x17removeEvaluationResults\"I\n" +
 	"\x14GetAuditScopeRequest\x121\n" +
-	"\x0eaudit_scope_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\fauditScopeId\"\xf9\x02\n" +
-	"\x16ListAuditScopesRequest\x12U\n" +
-	"\x06filter\x18\x01 \x01(\v28.clouditor.orchestrator.v1.ListAuditScopesRequest.FilterH\x00R\x06filter\x88\x01\x01\x12\x1b\n" +
+	"\x0eaudit_scope_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\fauditScopeId\"\xfa\x02\n" +
+	"\x16ListAuditScopesRequest\x12V\n" +
+	"\x06filter\x18\x01 \x01(\v29.confirmate.orchestrator.v1.ListAuditScopesRequest.FilterH\x00R\x06filter\x88\x01\x01\x12\x1b\n" +
 	"\tpage_size\x18\n" +
 	" \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
@@ -4677,12 +4677,12 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"catalog_id\x18\x02 \x01(\tH\x01R\tcatalogId\x88\x01\x01B\x1a\n" +
 	"\x18_target_of_evaluation_idB\r\n" +
 	"\v_catalog_idB\t\n" +
-	"\a_filter\"\x8b\x01\n" +
-	"\x17ListAuditScopesResponse\x12H\n" +
-	"\faudit_scopes\x18\x01 \x03(\v2%.clouditor.orchestrator.v1.AuditScopeR\vauditScopes\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"l\n" +
-	"\x17UpdateAuditScopeRequest\x12Q\n" +
-	"\vaudit_scope\x18\x03 \x01(\v2%.clouditor.orchestrator.v1.AuditScopeB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\n" +
+	"\a_filter\"\x8c\x01\n" +
+	"\x17ListAuditScopesResponse\x12I\n" +
+	"\faudit_scopes\x18\x01 \x03(\v2&.confirmate.orchestrator.v1.AuditScopeR\vauditScopes\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"m\n" +
+	"\x17UpdateAuditScopeRequest\x12R\n" +
+	"\vaudit_scope\x18\x03 \x01(\v2&.confirmate.orchestrator.v1.AuditScopeB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\n" +
 	"auditScope\"J\n" +
 	"\x15GetCertificateRequest\x121\n" +
 	"\x0ecertificate_id\x18\x01 \x01(\tB\n" +
@@ -4693,9 +4693,9 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\n" +
 	"page_token\x18\v \x01(\tR\tpageToken\x12\x19\n" +
 	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
-	"\x03asc\x18\r \x01(\bR\x03asc\"\x8e\x01\n" +
-	"\x18ListCertificatesResponse\x12J\n" +
-	"\fcertificates\x18\x01 \x03(\v2&.clouditor.orchestrator.v1.CertificateR\fcertificates\x12&\n" +
+	"\x03asc\x18\r \x01(\bR\x03asc\"\x8f\x01\n" +
+	"\x18ListCertificatesResponse\x12K\n" +
+	"\fcertificates\x18\x01 \x03(\v2'.confirmate.orchestrator.v1.CertificateR\fcertificates\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\x88\x01\n" +
 	"\x1dListPublicCertificatesRequest\x12\x1b\n" +
 	"\tpage_size\x18\n" +
@@ -4703,14 +4703,14 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\n" +
 	"page_token\x18\v \x01(\tR\tpageToken\x12\x19\n" +
 	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
-	"\x03asc\x18\r \x01(\bR\x03asc\"\x94\x01\n" +
-	"\x1eListPublicCertificatesResponse\x12J\n" +
-	"\fcertificates\x18\x01 \x03(\v2&.clouditor.orchestrator.v1.CertificateR\fcertificates\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"o\n" +
-	"\x18UpdateCertificateRequest\x12S\n" +
-	"\vcertificate\x18\x01 \x01(\v2&.clouditor.orchestrator.v1.CertificateB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\vcertificate\"_\n" +
-	"\x14CreateCatalogRequest\x12G\n" +
-	"\acatalog\x18\x01 \x01(\v2\".clouditor.orchestrator.v1.CatalogB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\acatalog\"A\n" +
+	"\x03asc\x18\r \x01(\bR\x03asc\"\x95\x01\n" +
+	"\x1eListPublicCertificatesResponse\x12K\n" +
+	"\fcertificates\x18\x01 \x03(\v2'.confirmate.orchestrator.v1.CertificateR\fcertificates\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"p\n" +
+	"\x18UpdateCertificateRequest\x12T\n" +
+	"\vcertificate\x18\x01 \x01(\v2'.confirmate.orchestrator.v1.CertificateB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\vcertificate\"`\n" +
+	"\x14CreateCatalogRequest\x12H\n" +
+	"\acatalog\x18\x01 \x01(\v2#.confirmate.orchestrator.v1.CatalogB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\acatalog\"A\n" +
 	"\x14RemoveCatalogRequest\x12)\n" +
 	"\n" +
 	"catalog_id\x18\x01 \x01(\tB\n" +
@@ -4725,12 +4725,12 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\n" +
 	"page_token\x18\v \x01(\tR\tpageToken\x12\x19\n" +
 	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
-	"\x03asc\x18\r \x01(\bR\x03asc\"~\n" +
-	"\x14ListCatalogsResponse\x12>\n" +
-	"\bcatalogs\x18\x01 \x03(\v2\".clouditor.orchestrator.v1.CatalogR\bcatalogs\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"_\n" +
-	"\x14UpdateCatalogRequest\x12G\n" +
-	"\acatalog\x18\x01 \x01(\v2\".clouditor.orchestrator.v1.CatalogB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\acatalog\"p\n" +
+	"\x03asc\x18\r \x01(\bR\x03asc\"\x7f\n" +
+	"\x14ListCatalogsResponse\x12?\n" +
+	"\bcatalogs\x18\x01 \x03(\v2#.confirmate.orchestrator.v1.CatalogR\bcatalogs\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"`\n" +
+	"\x14UpdateCatalogRequest\x12H\n" +
+	"\acatalog\x18\x01 \x01(\v2#.confirmate.orchestrator.v1.CatalogB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\acatalog\"p\n" +
 	"\x12GetCategoryRequest\x12)\n" +
 	"\n" +
 	"catalog_id\x18\x01 \x01(\tB\n" +
@@ -4745,12 +4745,12 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\fcategoryName\x12)\n" +
 	"\n" +
 	"control_id\x18\x03 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\tcontrolId\"\xe4\x02\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\tcontrolId\"\xe5\x02\n" +
 	"\x13ListControlsRequest\x12\x1d\n" +
 	"\n" +
 	"catalog_id\x18\x01 \x01(\tR\tcatalogId\x12#\n" +
-	"\rcategory_name\x18\x02 \x01(\tR\fcategoryName\x12R\n" +
-	"\x06filter\x18\x03 \x01(\v25.clouditor.orchestrator.v1.ListControlsRequest.FilterH\x00R\x06filter\x88\x01\x01\x12\x1b\n" +
+	"\rcategory_name\x18\x02 \x01(\tR\fcategoryName\x12S\n" +
+	"\x06filter\x18\x03 \x01(\v26.confirmate.orchestrator.v1.ListControlsRequest.FilterH\x00R\x06filter\x88\x01\x01\x12\x1b\n" +
 	"\tpage_size\x18\n" +
 	" \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
@@ -4759,15 +4759,15 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\x03asc\x18\r \x01(\bR\x03asc\x1aA\n" +
 	"\x06Filter\x127\n" +
 	"\x10assurance_levels\x18\x01 \x03(\tB\f\xbaH\t\x92\x01\x06\"\x04r\x02\x10\x01R\x0fassuranceLevelsB\t\n" +
-	"\a_filter\"~\n" +
-	"\x14ListControlsResponse\x12>\n" +
-	"\bcontrols\x18\x01 \x03(\v2\".clouditor.orchestrator.v1.ControlR\bcontrols\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"o\n" +
-	"\x18CreateCertificateRequest\x12S\n" +
-	"\vcertificate\x18\x01 \x01(\v2&.clouditor.orchestrator.v1.CertificateB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\vcertificate\"M\n" +
+	"\a_filter\"\x7f\n" +
+	"\x14ListControlsResponse\x12?\n" +
+	"\bcontrols\x18\x01 \x03(\v2#.confirmate.orchestrator.v1.ControlR\bcontrols\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"p\n" +
+	"\x18CreateCertificateRequest\x12T\n" +
+	"\vcertificate\x18\x01 \x01(\v2'.confirmate.orchestrator.v1.CertificateB\t\xe0A\x02\xbaH\x03\xc8\x01\x01R\vcertificate\"M\n" +
 	"\x18RemoveCertificateRequest\x121\n" +
 	"\x0ecertificate_id\x18\x01 \x01(\tB\n" +
-	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\rcertificateId\"\xb1\x03\n" +
+	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\rcertificateId\"\xb2\x03\n" +
 	"\vCertificate\x12\x1a\n" +
 	"\x02id\x18\x01 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x02id\x12\x1e\n" +
@@ -4780,74 +4780,74 @@ const file_api_orchestrator_orchestrator_proto_rawDesc = "" +
 	"\bstandard\x18\x06 \x01(\tR\bstandard\x12'\n" +
 	"\x0fassurance_level\x18\a \x01(\tR\x0eassuranceLevel\x12\x10\n" +
 	"\x03cab\x18\b \x01(\tR\x03cab\x12 \n" +
-	"\vdescription\x18\t \x01(\tR\vdescription\x12a\n" +
+	"\vdescription\x18\t \x01(\tR\vdescription\x12b\n" +
 	"\x06states\x18\n" +
-	" \x03(\v2 .clouditor.orchestrator.v1.StateB'\x9a\x84\x9e\x03\"gorm:\"constraint:OnDelete:CASCADE\"R\x06states\"\x8b\x01\n" +
+	" \x03(\v2!.confirmate.orchestrator.v1.StateB'\x9a\x84\x9e\x03\"gorm:\"constraint:OnDelete:CASCADE\"R\x06states\"\x8b\x01\n" +
 	"\x05State\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05state\x18\x02 \x01(\tR\x05state\x12\x17\n" +
 	"\atree_id\x18\x03 \x01(\tR\x06treeId\x12\x1c\n" +
 	"\ttimestamp\x18\x04 \x01(\tR\ttimestamp\x12%\n" +
-	"\x0ecertificate_id\x18\x05 \x01(\tR\rcertificateId\"\xc9\x02\n" +
-	"\x15AuditScopeChangeEvent\x12S\n" +
-	"\x04type\x18\x01 \x01(\x0e25.clouditor.orchestrator.v1.AuditScopeChangeEvent.TypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\x12S\n" +
-	"\vaudit_scope\x18\x02 \x01(\v2%.clouditor.orchestrator.v1.AuditScopeB\x06\xbaH\x03\xc8\x01\x01H\x00R\n" +
+	"\x0ecertificate_id\x18\x05 \x01(\tR\rcertificateId\"\xcb\x02\n" +
+	"\x15AuditScopeChangeEvent\x12T\n" +
+	"\x04type\x18\x01 \x01(\x0e26.confirmate.orchestrator.v1.AuditScopeChangeEvent.TypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\x12T\n" +
+	"\vaudit_scope\x18\x02 \x01(\v2&.confirmate.orchestrator.v1.AuditScopeB\x06\xbaH\x03\xc8\x01\x01H\x00R\n" +
 	"auditScope\x88\x01\x01\"v\n" +
 	"\x04Type\x12\x14\n" +
 	"\x10TYPE_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18TYPE_AUDIT_SCOPE_CREATED\x10\x01\x12\x1c\n" +
 	"\x18TYPE_AUDIT_SCOPE_UPDATED\x10\x02\x12\x1c\n" +
 	"\x18TYPE_AUDIT_SCOPE_REMOVED\x10\x03B\x0e\n" +
-	"\f_audit_scope2\xf1@\n" +
-	"\fOrchestrator\x12\xae\x01\n" +
-	"\x16RegisterAssessmentTool\x128.clouditor.orchestrator.v1.RegisterAssessmentToolRequest\x1a).clouditor.orchestrator.v1.AssessmentTool\"/\x82\xd3\xe4\x93\x02):\x04tool\"!/v1/orchestrator/assessment_tools\x12\xaf\x01\n" +
-	"\x13ListAssessmentTools\x125.clouditor.orchestrator.v1.ListAssessmentToolsRequest\x1a6.clouditor.orchestrator.v1.ListAssessmentToolsResponse\")\x82\xd3\xe4\x93\x02#\x12!/v1/orchestrator/assessment_tools\x12\xa8\x01\n" +
-	"\x11GetAssessmentTool\x123.clouditor.orchestrator.v1.GetAssessmentToolRequest\x1a).clouditor.orchestrator.v1.AssessmentTool\"3\x82\xd3\xe4\x93\x02-\x12+/v1/orchestrator/assessment_tools/{tool_id}\x12\xb4\x01\n" +
-	"\x14UpdateAssessmentTool\x126.clouditor.orchestrator.v1.UpdateAssessmentToolRequest\x1a).clouditor.orchestrator.v1.AssessmentTool\"9\x82\xd3\xe4\x93\x023:\x04tool\x1a+/v1/orchestrator/assessment_tools/{tool.id}\x12\xa3\x01\n" +
-	"\x18DeregisterAssessmentTool\x12:.clouditor.orchestrator.v1.DeregisterAssessmentToolRequest\x1a\x16.google.protobuf.Empty\"3\x82\xd3\xe4\x93\x02-*+/v1/orchestrator/assessment_tools/{tool_id}\x12\xbf\x01\n" +
-	"\x15StoreAssessmentResult\x127.clouditor.orchestrator.v1.StoreAssessmentResultRequest\x1a8.clouditor.orchestrator.v1.StoreAssessmentResultResponse\"3\x82\xd3\xe4\x93\x02-:\x06result\"#/v1/orchestrator/assessment_results\x12\x90\x01\n" +
-	"\x16StoreAssessmentResults\x127.clouditor.orchestrator.v1.StoreAssessmentResultRequest\x1a9.clouditor.orchestrator.v1.StoreAssessmentResultsResponse(\x010\x01\x12\xa9\x01\n" +
-	"\x13GetAssessmentResult\x125.clouditor.orchestrator.v1.GetAssessmentResultRequest\x1a).clouditor.assessment.v1.AssessmentResult\"0\x82\xd3\xe4\x93\x02*\x12(/v1/orchestrator/assessment_results/{id}\x12\xb7\x01\n" +
-	"\x15ListAssessmentResults\x127.clouditor.orchestrator.v1.ListAssessmentResultsRequest\x1a8.clouditor.orchestrator.v1.ListAssessmentResultsResponse\"+\x82\xd3\xe4\x93\x02%\x12#/v1/orchestrator/assessment_results\x12\x89\x01\n" +
-	"\fCreateMetric\x12..clouditor.orchestrator.v1.CreateMetricRequest\x1a\x1f.clouditor.assessment.v1.Metric\"(\x82\xd3\xe4\x93\x02\":\x06metric\"\x18/v1/orchestrator/metrics\x12\x95\x01\n" +
-	"\fUpdateMetric\x12..clouditor.orchestrator.v1.UpdateMetricRequest\x1a\x1f.clouditor.assessment.v1.Metric\"4\x82\xd3\xe4\x93\x02.:\x06metric\x1a$/v1/orchestrator/metrics/{metric.id}\x12\x87\x01\n" +
-	"\tGetMetric\x12+.clouditor.orchestrator.v1.GetMetricRequest\x1a\x1f.clouditor.assessment.v1.Metric\",\x82\xd3\xe4\x93\x02&\x12$/v1/orchestrator/metrics/{metric_id}\x12\x8e\x01\n" +
-	"\vListMetrics\x12-.clouditor.orchestrator.v1.ListMetricsRequest\x1a..clouditor.orchestrator.v1.ListMetricsResponse\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/v1/orchestrator/metrics\x12\x84\x01\n" +
-	"\fRemoveMetric\x12..clouditor.orchestrator.v1.RemoveMetricRequest\x1a\x16.google.protobuf.Empty\",\x82\xd3\xe4\x93\x02&*$/v1/orchestrator/metrics/{metric_id}\x12\xcb\x01\n" +
-	"\x18CreateTargetOfEvaluation\x12:.clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest\x1a-.clouditor.orchestrator.v1.TargetOfEvaluation\"D\x82\xd3\xe4\x93\x02>:\x14target_of_evaluation\"&/v1/orchestrator/targets_of_evaluation\x12\xe5\x01\n" +
-	"\x18UpdateTargetOfEvaluation\x12:.clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest\x1a-.clouditor.orchestrator.v1.TargetOfEvaluation\"^\x82\xd3\xe4\x93\x02X:\x14target_of_evaluation\x1a@/v1/orchestrator/targets_of_evaluation/{target_of_evaluation.id}\x12\xc9\x01\n" +
-	"\x15GetTargetOfEvaluation\x127.clouditor.orchestrator.v1.GetTargetOfEvaluationRequest\x1a-.clouditor.orchestrator.v1.TargetOfEvaluation\"H\x82\xd3\xe4\x93\x02B\x12@/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}\x12\xc0\x01\n" +
-	"\x17ListTargetsOfEvaluation\x129.clouditor.orchestrator.v1.ListTargetsOfEvaluationRequest\x1a:.clouditor.orchestrator.v1.ListTargetsOfEvaluationResponse\".\x82\xd3\xe4\x93\x02(\x12&/v1/orchestrator/targets_of_evaluation\x12\xb8\x01\n" +
-	"\x18RemoveTargetOfEvaluation\x12:.clouditor.orchestrator.v1.RemoveTargetOfEvaluationRequest\x1a\x16.google.protobuf.Empty\"H\x82\xd3\xe4\x93\x02B*@/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}\x12\xe3\x01\n" +
-	"\x1fGetTargetOfEvaluationStatistics\x12A.clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsRequest\x1aB.clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsResponse\"9\x82\xd3\xe4\x93\x023\x121/v1/orchestrator/targets_of_evaluation/statistics\x12\x81\x02\n" +
-	"\x19UpdateMetricConfiguration\x12;.clouditor.orchestrator.v1.UpdateMetricConfigurationRequest\x1a,.clouditor.assessment.v1.MetricConfiguration\"y\x82\xd3\xe4\x93\x02s:\rconfiguration\x1ab/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}/metric_configurations/{metric_id}\x12\xec\x01\n" +
-	"\x16GetMetricConfiguration\x128.clouditor.orchestrator.v1.GetMetricConfigurationRequest\x1a,.clouditor.assessment.v1.MetricConfiguration\"j\x82\xd3\xe4\x93\x02d\x12b/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}/metric_configurations/{metric_id}\x12\xf1\x01\n" +
-	"\x18ListMetricConfigurations\x129.clouditor.orchestrator.v1.ListMetricConfigurationRequest\x1a:.clouditor.orchestrator.v1.ListMetricConfigurationResponse\"^\x82\xd3\xe4\x93\x02X\x12V/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}/metric_configurations\x12\xe5\x01\n" +
-	"\x1aUpdateMetricImplementation\x12<.clouditor.orchestrator.v1.UpdateMetricImplementationRequest\x1a-.clouditor.assessment.v1.MetricImplementation\"Z\x82\xd3\xe4\x93\x02T:\x0eimplementation\x1aB/v1/orchestrator/metrics/{implementation.metric_id}/implementation\x12\xc0\x01\n" +
-	"\x17GetMetricImplementation\x129.clouditor.orchestrator.v1.GetMetricImplementationRequest\x1a-.clouditor.assessment.v1.MetricImplementation\";\x82\xd3\xe4\x93\x025\x123/v1/orchestrator/metrics/{metric_id}/implementation\x12\x8d\x01\n" +
-	"\x1bSubscribeMetricChangeEvents\x12<.clouditor.orchestrator.v1.SubscribeMetricChangeEventRequest\x1a,.clouditor.orchestrator.v1.MetricChangeEvent\"\x000\x01\x12\xa4\x01\n" +
-	"\x11CreateCertificate\x123.clouditor.orchestrator.v1.CreateCertificateRequest\x1a&.clouditor.orchestrator.v1.Certificate\"2\x82\xd3\xe4\x93\x02,:\vcertificate\"\x1d/v1/orchestrator/certificates\x12\xa2\x01\n" +
-	"\x0eGetCertificate\x120.clouditor.orchestrator.v1.GetCertificateRequest\x1a&.clouditor.orchestrator.v1.Certificate\"6\x82\xd3\xe4\x93\x020\x12./v1/orchestrator/certificates/{certificate_id}\x12\xa2\x01\n" +
-	"\x10ListCertificates\x122.clouditor.orchestrator.v1.ListCertificatesRequest\x1a3.clouditor.orchestrator.v1.ListCertificatesResponse\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/orchestrator/certificates\x12\xbb\x01\n" +
-	"\x16ListPublicCertificates\x128.clouditor.orchestrator.v1.ListPublicCertificatesRequest\x1a9.clouditor.orchestrator.v1.ListPublicCertificatesResponse\",\x82\xd3\xe4\x93\x02&\x12$/v1/orchestrator/public/certificates\x12\xb5\x01\n" +
-	"\x11UpdateCertificate\x123.clouditor.orchestrator.v1.UpdateCertificateRequest\x1a&.clouditor.orchestrator.v1.Certificate\"C\x82\xd3\xe4\x93\x02=:\vcertificate\x1a./v1/orchestrator/certificates/{certificate.id}\x12\x98\x01\n" +
-	"\x11RemoveCertificate\x123.clouditor.orchestrator.v1.RemoveCertificateRequest\x1a\x16.google.protobuf.Empty\"6\x82\xd3\xe4\x93\x020*./v1/orchestrator/certificates/{certificate_id}\x12\x90\x01\n" +
-	"\rCreateCatalog\x12/.clouditor.orchestrator.v1.CreateCatalogRequest\x1a\".clouditor.orchestrator.v1.Catalog\"*\x82\xd3\xe4\x93\x02$:\acatalog\"\x19/v1/orchestrator/catalogs\x12\x92\x01\n" +
-	"\fListCatalogs\x12..clouditor.orchestrator.v1.ListCatalogsRequest\x1a/.clouditor.orchestrator.v1.ListCatalogsResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/v1/orchestrator/catalogs\x12\x8e\x01\n" +
+	"\f_audit_scope2\xc7A\n" +
+	"\fOrchestrator\x12\xb0\x01\n" +
+	"\x16RegisterAssessmentTool\x129.confirmate.orchestrator.v1.RegisterAssessmentToolRequest\x1a*.confirmate.orchestrator.v1.AssessmentTool\"/\x82\xd3\xe4\x93\x02):\x04tool\"!/v1/orchestrator/assessment_tools\x12\xb1\x01\n" +
+	"\x13ListAssessmentTools\x126.confirmate.orchestrator.v1.ListAssessmentToolsRequest\x1a7.confirmate.orchestrator.v1.ListAssessmentToolsResponse\")\x82\xd3\xe4\x93\x02#\x12!/v1/orchestrator/assessment_tools\x12\xaa\x01\n" +
+	"\x11GetAssessmentTool\x124.confirmate.orchestrator.v1.GetAssessmentToolRequest\x1a*.confirmate.orchestrator.v1.AssessmentTool\"3\x82\xd3\xe4\x93\x02-\x12+/v1/orchestrator/assessment_tools/{tool_id}\x12\xb6\x01\n" +
+	"\x14UpdateAssessmentTool\x127.confirmate.orchestrator.v1.UpdateAssessmentToolRequest\x1a*.confirmate.orchestrator.v1.AssessmentTool\"9\x82\xd3\xe4\x93\x023:\x04tool\x1a+/v1/orchestrator/assessment_tools/{tool.id}\x12\xa4\x01\n" +
+	"\x18DeregisterAssessmentTool\x12;.confirmate.orchestrator.v1.DeregisterAssessmentToolRequest\x1a\x16.google.protobuf.Empty\"3\x82\xd3\xe4\x93\x02-*+/v1/orchestrator/assessment_tools/{tool_id}\x12\xc1\x01\n" +
+	"\x15StoreAssessmentResult\x128.confirmate.orchestrator.v1.StoreAssessmentResultRequest\x1a9.confirmate.orchestrator.v1.StoreAssessmentResultResponse\"3\x82\xd3\xe4\x93\x02-:\x06result\"#/v1/orchestrator/assessment_results\x12\x92\x01\n" +
+	"\x16StoreAssessmentResults\x128.confirmate.orchestrator.v1.StoreAssessmentResultRequest\x1a:.confirmate.orchestrator.v1.StoreAssessmentResultsResponse(\x010\x01\x12\xab\x01\n" +
+	"\x13GetAssessmentResult\x126.confirmate.orchestrator.v1.GetAssessmentResultRequest\x1a*.confirmate.assessment.v1.AssessmentResult\"0\x82\xd3\xe4\x93\x02*\x12(/v1/orchestrator/assessment_results/{id}\x12\xb9\x01\n" +
+	"\x15ListAssessmentResults\x128.confirmate.orchestrator.v1.ListAssessmentResultsRequest\x1a9.confirmate.orchestrator.v1.ListAssessmentResultsResponse\"+\x82\xd3\xe4\x93\x02%\x12#/v1/orchestrator/assessment_results\x12\x8b\x01\n" +
+	"\fCreateMetric\x12/.confirmate.orchestrator.v1.CreateMetricRequest\x1a .confirmate.assessment.v1.Metric\"(\x82\xd3\xe4\x93\x02\":\x06metric\"\x18/v1/orchestrator/metrics\x12\x97\x01\n" +
+	"\fUpdateMetric\x12/.confirmate.orchestrator.v1.UpdateMetricRequest\x1a .confirmate.assessment.v1.Metric\"4\x82\xd3\xe4\x93\x02.:\x06metric\x1a$/v1/orchestrator/metrics/{metric.id}\x12\x89\x01\n" +
+	"\tGetMetric\x12,.confirmate.orchestrator.v1.GetMetricRequest\x1a .confirmate.assessment.v1.Metric\",\x82\xd3\xe4\x93\x02&\x12$/v1/orchestrator/metrics/{metric_id}\x12\x90\x01\n" +
+	"\vListMetrics\x12..confirmate.orchestrator.v1.ListMetricsRequest\x1a/.confirmate.orchestrator.v1.ListMetricsResponse\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/v1/orchestrator/metrics\x12\x85\x01\n" +
+	"\fRemoveMetric\x12/.confirmate.orchestrator.v1.RemoveMetricRequest\x1a\x16.google.protobuf.Empty\",\x82\xd3\xe4\x93\x02&*$/v1/orchestrator/metrics/{metric_id}\x12\xcd\x01\n" +
+	"\x18CreateTargetOfEvaluation\x12;.confirmate.orchestrator.v1.CreateTargetOfEvaluationRequest\x1a..confirmate.orchestrator.v1.TargetOfEvaluation\"D\x82\xd3\xe4\x93\x02>:\x14target_of_evaluation\"&/v1/orchestrator/targets_of_evaluation\x12\xe7\x01\n" +
+	"\x18UpdateTargetOfEvaluation\x12;.confirmate.orchestrator.v1.UpdateTargetOfEvaluationRequest\x1a..confirmate.orchestrator.v1.TargetOfEvaluation\"^\x82\xd3\xe4\x93\x02X:\x14target_of_evaluation\x1a@/v1/orchestrator/targets_of_evaluation/{target_of_evaluation.id}\x12\xcb\x01\n" +
+	"\x15GetTargetOfEvaluation\x128.confirmate.orchestrator.v1.GetTargetOfEvaluationRequest\x1a..confirmate.orchestrator.v1.TargetOfEvaluation\"H\x82\xd3\xe4\x93\x02B\x12@/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}\x12\xc2\x01\n" +
+	"\x17ListTargetsOfEvaluation\x12:.confirmate.orchestrator.v1.ListTargetsOfEvaluationRequest\x1a;.confirmate.orchestrator.v1.ListTargetsOfEvaluationResponse\".\x82\xd3\xe4\x93\x02(\x12&/v1/orchestrator/targets_of_evaluation\x12\xb9\x01\n" +
+	"\x18RemoveTargetOfEvaluation\x12;.confirmate.orchestrator.v1.RemoveTargetOfEvaluationRequest\x1a\x16.google.protobuf.Empty\"H\x82\xd3\xe4\x93\x02B*@/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}\x12\xe5\x01\n" +
+	"\x1fGetTargetOfEvaluationStatistics\x12B.confirmate.orchestrator.v1.GetTargetOfEvaluationStatisticsRequest\x1aC.confirmate.orchestrator.v1.GetTargetOfEvaluationStatisticsResponse\"9\x82\xd3\xe4\x93\x023\x121/v1/orchestrator/targets_of_evaluation/statistics\x12\x83\x02\n" +
+	"\x19UpdateMetricConfiguration\x12<.confirmate.orchestrator.v1.UpdateMetricConfigurationRequest\x1a-.confirmate.assessment.v1.MetricConfiguration\"y\x82\xd3\xe4\x93\x02s:\rconfiguration\x1ab/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}/metric_configurations/{metric_id}\x12\xee\x01\n" +
+	"\x16GetMetricConfiguration\x129.confirmate.orchestrator.v1.GetMetricConfigurationRequest\x1a-.confirmate.assessment.v1.MetricConfiguration\"j\x82\xd3\xe4\x93\x02d\x12b/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}/metric_configurations/{metric_id}\x12\xf3\x01\n" +
+	"\x18ListMetricConfigurations\x12:.confirmate.orchestrator.v1.ListMetricConfigurationRequest\x1a;.confirmate.orchestrator.v1.ListMetricConfigurationResponse\"^\x82\xd3\xe4\x93\x02X\x12V/v1/orchestrator/targets_of_evaluation/{target_of_evaluation_id}/metric_configurations\x12\xe7\x01\n" +
+	"\x1aUpdateMetricImplementation\x12=.confirmate.orchestrator.v1.UpdateMetricImplementationRequest\x1a..confirmate.assessment.v1.MetricImplementation\"Z\x82\xd3\xe4\x93\x02T:\x0eimplementation\x1aB/v1/orchestrator/metrics/{implementation.metric_id}/implementation\x12\xc2\x01\n" +
+	"\x17GetMetricImplementation\x12:.confirmate.orchestrator.v1.GetMetricImplementationRequest\x1a..confirmate.assessment.v1.MetricImplementation\";\x82\xd3\xe4\x93\x025\x123/v1/orchestrator/metrics/{metric_id}/implementation\x12\x8f\x01\n" +
+	"\x1bSubscribeMetricChangeEvents\x12=.confirmate.orchestrator.v1.SubscribeMetricChangeEventRequest\x1a-.confirmate.orchestrator.v1.MetricChangeEvent\"\x000\x01\x12\xa6\x01\n" +
+	"\x11CreateCertificate\x124.confirmate.orchestrator.v1.CreateCertificateRequest\x1a'.confirmate.orchestrator.v1.Certificate\"2\x82\xd3\xe4\x93\x02,:\vcertificate\"\x1d/v1/orchestrator/certificates\x12\xa4\x01\n" +
+	"\x0eGetCertificate\x121.confirmate.orchestrator.v1.GetCertificateRequest\x1a'.confirmate.orchestrator.v1.Certificate\"6\x82\xd3\xe4\x93\x020\x12./v1/orchestrator/certificates/{certificate_id}\x12\xa4\x01\n" +
+	"\x10ListCertificates\x123.confirmate.orchestrator.v1.ListCertificatesRequest\x1a4.confirmate.orchestrator.v1.ListCertificatesResponse\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/orchestrator/certificates\x12\xbd\x01\n" +
+	"\x16ListPublicCertificates\x129.confirmate.orchestrator.v1.ListPublicCertificatesRequest\x1a:.confirmate.orchestrator.v1.ListPublicCertificatesResponse\",\x82\xd3\xe4\x93\x02&\x12$/v1/orchestrator/public/certificates\x12\xb7\x01\n" +
+	"\x11UpdateCertificate\x124.confirmate.orchestrator.v1.UpdateCertificateRequest\x1a'.confirmate.orchestrator.v1.Certificate\"C\x82\xd3\xe4\x93\x02=:\vcertificate\x1a./v1/orchestrator/certificates/{certificate.id}\x12\x99\x01\n" +
+	"\x11RemoveCertificate\x124.confirmate.orchestrator.v1.RemoveCertificateRequest\x1a\x16.google.protobuf.Empty\"6\x82\xd3\xe4\x93\x020*./v1/orchestrator/certificates/{certificate_id}\x12\x92\x01\n" +
+	"\rCreateCatalog\x120.confirmate.orchestrator.v1.CreateCatalogRequest\x1a#.confirmate.orchestrator.v1.Catalog\"*\x82\xd3\xe4\x93\x02$:\acatalog\"\x19/v1/orchestrator/catalogs\x12\x94\x01\n" +
+	"\fListCatalogs\x12/.confirmate.orchestrator.v1.ListCatalogsRequest\x1a0.confirmate.orchestrator.v1.ListCatalogsResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/v1/orchestrator/catalogs\x12\x90\x01\n" +
 	"\n" +
-	"GetCatalog\x12,.clouditor.orchestrator.v1.GetCatalogRequest\x1a\".clouditor.orchestrator.v1.Catalog\".\x82\xd3\xe4\x93\x02(\x12&/v1/orchestrator/catalogs/{catalog_id}\x12\x88\x01\n" +
-	"\rRemoveCatalog\x12/.clouditor.orchestrator.v1.RemoveCatalogRequest\x1a\x16.google.protobuf.Empty\".\x82\xd3\xe4\x93\x02(*&/v1/orchestrator/catalogs/{catalog_id}\x12\x9d\x01\n" +
-	"\rUpdateCatalog\x12/.clouditor.orchestrator.v1.UpdateCatalogRequest\x1a\".clouditor.orchestrator.v1.Catalog\"7\x82\xd3\xe4\x93\x021:\acatalog\x1a&/v1/orchestrator/catalogs/{catalog.id}\x12\xaa\x01\n" +
-	"\vGetCategory\x12-.clouditor.orchestrator.v1.GetCategoryRequest\x1a#.clouditor.orchestrator.v1.Category\"G\x82\xd3\xe4\x93\x02A\x12?/v1/orchestrator/catalogs/{catalog_id}/category/{category_name}\x12\x95\x02\n" +
-	"\fListControls\x12..clouditor.orchestrator.v1.ListControlsRequest\x1a/.clouditor.orchestrator.v1.ListControlsResponse\"\xa3\x01\x82\xd3\xe4\x93\x02\x9c\x01Z1\x12//v1/orchestrator/catalogs/{catalog_id}/controlsZL\x12J/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/controls\x12\x19/v1/orchestrator/controls\x12\xbf\x01\n" +
+	"GetCatalog\x12-.confirmate.orchestrator.v1.GetCatalogRequest\x1a#.confirmate.orchestrator.v1.Catalog\".\x82\xd3\xe4\x93\x02(\x12&/v1/orchestrator/catalogs/{catalog_id}\x12\x89\x01\n" +
+	"\rRemoveCatalog\x120.confirmate.orchestrator.v1.RemoveCatalogRequest\x1a\x16.google.protobuf.Empty\".\x82\xd3\xe4\x93\x02(*&/v1/orchestrator/catalogs/{catalog_id}\x12\x9f\x01\n" +
+	"\rUpdateCatalog\x120.confirmate.orchestrator.v1.UpdateCatalogRequest\x1a#.confirmate.orchestrator.v1.Catalog\"7\x82\xd3\xe4\x93\x021:\acatalog\x1a&/v1/orchestrator/catalogs/{catalog.id}\x12\xac\x01\n" +
+	"\vGetCategory\x12..confirmate.orchestrator.v1.GetCategoryRequest\x1a$.confirmate.orchestrator.v1.Category\"G\x82\xd3\xe4\x93\x02A\x12?/v1/orchestrator/catalogs/{catalog_id}/category/{category_name}\x12\x97\x02\n" +
+	"\fListControls\x12/.confirmate.orchestrator.v1.ListControlsRequest\x1a0.confirmate.orchestrator.v1.ListControlsResponse\"\xa3\x01\x82\xd3\xe4\x93\x02\x9c\x01Z1\x12//v1/orchestrator/catalogs/{catalog_id}/controlsZL\x12J/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/controls\x12\x19/v1/orchestrator/controls\x12\xc1\x01\n" +
 	"\n" +
-	"GetControl\x12,.clouditor.orchestrator.v1.GetControlRequest\x1a\".clouditor.orchestrator.v1.Control\"_\x82\xd3\xe4\x93\x02Y\x12W/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/controls/{control_id}\x12\xa1\x01\n" +
-	"\x10CreateAuditScope\x122.clouditor.orchestrator.v1.CreateAuditScopeRequest\x1a%.clouditor.orchestrator.v1.AuditScope\"2\x82\xd3\xe4\x93\x02,:\vaudit_scope\"\x1d/v1/orchestrator/audit_scopes\x12\x9f\x01\n" +
-	"\rGetAuditScope\x12/.clouditor.orchestrator.v1.GetAuditScopeRequest\x1a%.clouditor.orchestrator.v1.AuditScope\"6\x82\xd3\xe4\x93\x020\x12./v1/orchestrator/audit_scopes/{audit_scope_id}\x12\x9f\x01\n" +
-	"\x0fListAuditScopes\x121.clouditor.orchestrator.v1.ListAuditScopesRequest\x1a2.clouditor.orchestrator.v1.ListAuditScopesResponse\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/orchestrator/audit_scopes\x12\xf8\x01\n" +
-	"\x10UpdateAuditScope\x122.clouditor.orchestrator.v1.UpdateAuditScopeRequest\x1a%.clouditor.orchestrator.v1.AuditScope\"\x88\x01\x82\xd3\xe4\x93\x02\x81\x01:\vaudit_scope\x1ar/v1/orchestrator/targets_of_evaluation/{audit_scope.target_of_evaluation_id}/audit_scopes/{audit_scope.catalog_id}\x12\x96\x01\n" +
-	"\x10RemoveAuditScope\x122.clouditor.orchestrator.v1.RemoveAuditScopeRequest\x1a\x16.google.protobuf.Empty\"6\x82\xd3\xe4\x93\x020*./v1/orchestrator/audit_scopes/{audit_scope_id}\x12\x83\x01\n" +
-	"\x0eGetRuntimeInfo\x12+.clouditor.runtime.v1.GetRuntimeInfoRequest\x1a\x1d.clouditor.runtime.v1.Runtime\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/orchestrator/runtime_infoB,Z*clouditor.io/clouditor/v2/api/orchestratorb\x06proto3"
+	"GetControl\x12-.confirmate.orchestrator.v1.GetControlRequest\x1a#.confirmate.orchestrator.v1.Control\"_\x82\xd3\xe4\x93\x02Y\x12W/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/controls/{control_id}\x12\xa3\x01\n" +
+	"\x10CreateAuditScope\x123.confirmate.orchestrator.v1.CreateAuditScopeRequest\x1a&.confirmate.orchestrator.v1.AuditScope\"2\x82\xd3\xe4\x93\x02,:\vaudit_scope\"\x1d/v1/orchestrator/audit_scopes\x12\xa1\x01\n" +
+	"\rGetAuditScope\x120.confirmate.orchestrator.v1.GetAuditScopeRequest\x1a&.confirmate.orchestrator.v1.AuditScope\"6\x82\xd3\xe4\x93\x020\x12./v1/orchestrator/audit_scopes/{audit_scope_id}\x12\xa1\x01\n" +
+	"\x0fListAuditScopes\x122.confirmate.orchestrator.v1.ListAuditScopesRequest\x1a3.confirmate.orchestrator.v1.ListAuditScopesResponse\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/orchestrator/audit_scopes\x12\xfa\x01\n" +
+	"\x10UpdateAuditScope\x123.confirmate.orchestrator.v1.UpdateAuditScopeRequest\x1a&.confirmate.orchestrator.v1.AuditScope\"\x88\x01\x82\xd3\xe4\x93\x02\x81\x01:\vaudit_scope\x1ar/v1/orchestrator/targets_of_evaluation/{audit_scope.target_of_evaluation_id}/audit_scopes/{audit_scope.catalog_id}\x12\x97\x01\n" +
+	"\x10RemoveAuditScope\x123.confirmate.orchestrator.v1.RemoveAuditScopeRequest\x1a\x16.google.protobuf.Empty\"6\x82\xd3\xe4\x93\x020*./v1/orchestrator/audit_scopes/{audit_scope_id}\x12\x85\x01\n" +
+	"\x0eGetRuntimeInfo\x12,.confirmate.runtime.v1.GetRuntimeInfoRequest\x1a\x1e.confirmate.runtime.v1.Runtime\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/orchestrator/runtime_infoB,Z*clouditor.io/clouditor/v2/api/orchestratorb\x06proto3"
 
 var (
 	file_api_orchestrator_orchestrator_proto_rawDescOnce sync.Once
@@ -4864,233 +4864,233 @@ func file_api_orchestrator_orchestrator_proto_rawDescGZIP() []byte {
 var file_api_orchestrator_orchestrator_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
 var file_api_orchestrator_orchestrator_proto_msgTypes = make([]protoimpl.MessageInfo, 76)
 var file_api_orchestrator_orchestrator_proto_goTypes = []any{
-	(MetricChangeEvent_Type)(0),                     // 0: clouditor.orchestrator.v1.MetricChangeEvent.Type
-	(TargetOfEvaluation_TargetType)(0),              // 1: clouditor.orchestrator.v1.TargetOfEvaluation.TargetType
-	(AuditScopeChangeEvent_Type)(0),                 // 2: clouditor.orchestrator.v1.AuditScopeChangeEvent.Type
-	(*RegisterAssessmentToolRequest)(nil),           // 3: clouditor.orchestrator.v1.RegisterAssessmentToolRequest
-	(*ListAssessmentToolsRequest)(nil),              // 4: clouditor.orchestrator.v1.ListAssessmentToolsRequest
-	(*ListAssessmentToolsResponse)(nil),             // 5: clouditor.orchestrator.v1.ListAssessmentToolsResponse
-	(*GetAssessmentToolRequest)(nil),                // 6: clouditor.orchestrator.v1.GetAssessmentToolRequest
-	(*UpdateAssessmentToolRequest)(nil),             // 7: clouditor.orchestrator.v1.UpdateAssessmentToolRequest
-	(*DeregisterAssessmentToolRequest)(nil),         // 8: clouditor.orchestrator.v1.DeregisterAssessmentToolRequest
-	(*StoreAssessmentResultRequest)(nil),            // 9: clouditor.orchestrator.v1.StoreAssessmentResultRequest
-	(*StoreAssessmentResultResponse)(nil),           // 10: clouditor.orchestrator.v1.StoreAssessmentResultResponse
-	(*StoreAssessmentResultsResponse)(nil),          // 11: clouditor.orchestrator.v1.StoreAssessmentResultsResponse
-	(*CreateMetricRequest)(nil),                     // 12: clouditor.orchestrator.v1.CreateMetricRequest
-	(*UpdateMetricRequest)(nil),                     // 13: clouditor.orchestrator.v1.UpdateMetricRequest
-	(*GetMetricRequest)(nil),                        // 14: clouditor.orchestrator.v1.GetMetricRequest
-	(*ListMetricsRequest)(nil),                      // 15: clouditor.orchestrator.v1.ListMetricsRequest
-	(*RemoveMetricRequest)(nil),                     // 16: clouditor.orchestrator.v1.RemoveMetricRequest
-	(*ListMetricsResponse)(nil),                     // 17: clouditor.orchestrator.v1.ListMetricsResponse
-	(*GetTargetOfEvaluationRequest)(nil),            // 18: clouditor.orchestrator.v1.GetTargetOfEvaluationRequest
-	(*CreateTargetOfEvaluationRequest)(nil),         // 19: clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest
-	(*UpdateTargetOfEvaluationRequest)(nil),         // 20: clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest
-	(*RemoveTargetOfEvaluationRequest)(nil),         // 21: clouditor.orchestrator.v1.RemoveTargetOfEvaluationRequest
-	(*ListTargetsOfEvaluationRequest)(nil),          // 22: clouditor.orchestrator.v1.ListTargetsOfEvaluationRequest
-	(*ListTargetsOfEvaluationResponse)(nil),         // 23: clouditor.orchestrator.v1.ListTargetsOfEvaluationResponse
-	(*GetTargetOfEvaluationStatisticsRequest)(nil),  // 24: clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsRequest
-	(*GetTargetOfEvaluationStatisticsResponse)(nil), // 25: clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsResponse
-	(*UpdateMetricConfigurationRequest)(nil),        // 26: clouditor.orchestrator.v1.UpdateMetricConfigurationRequest
-	(*GetMetricConfigurationRequest)(nil),           // 27: clouditor.orchestrator.v1.GetMetricConfigurationRequest
-	(*ListMetricConfigurationRequest)(nil),          // 28: clouditor.orchestrator.v1.ListMetricConfigurationRequest
-	(*ListMetricConfigurationResponse)(nil),         // 29: clouditor.orchestrator.v1.ListMetricConfigurationResponse
-	(*UpdateMetricImplementationRequest)(nil),       // 30: clouditor.orchestrator.v1.UpdateMetricImplementationRequest
-	(*GetMetricImplementationRequest)(nil),          // 31: clouditor.orchestrator.v1.GetMetricImplementationRequest
-	(*SubscribeMetricChangeEventRequest)(nil),       // 32: clouditor.orchestrator.v1.SubscribeMetricChangeEventRequest
-	(*MetricChangeEvent)(nil),                       // 33: clouditor.orchestrator.v1.MetricChangeEvent
-	(*AssessmentTool)(nil),                          // 34: clouditor.orchestrator.v1.AssessmentTool
-	(*TargetOfEvaluation)(nil),                      // 35: clouditor.orchestrator.v1.TargetOfEvaluation
-	(*Catalog)(nil),                                 // 36: clouditor.orchestrator.v1.Catalog
-	(*Category)(nil),                                // 37: clouditor.orchestrator.v1.Category
-	(*Control)(nil),                                 // 38: clouditor.orchestrator.v1.Control
-	(*AuditScope)(nil),                              // 39: clouditor.orchestrator.v1.AuditScope
-	(*GetAssessmentResultRequest)(nil),              // 40: clouditor.orchestrator.v1.GetAssessmentResultRequest
-	(*ListAssessmentResultsRequest)(nil),            // 41: clouditor.orchestrator.v1.ListAssessmentResultsRequest
-	(*ListAssessmentResultsResponse)(nil),           // 42: clouditor.orchestrator.v1.ListAssessmentResultsResponse
-	(*CreateAuditScopeRequest)(nil),                 // 43: clouditor.orchestrator.v1.CreateAuditScopeRequest
-	(*RemoveAuditScopeRequest)(nil),                 // 44: clouditor.orchestrator.v1.RemoveAuditScopeRequest
-	(*GetAuditScopeRequest)(nil),                    // 45: clouditor.orchestrator.v1.GetAuditScopeRequest
-	(*ListAuditScopesRequest)(nil),                  // 46: clouditor.orchestrator.v1.ListAuditScopesRequest
-	(*ListAuditScopesResponse)(nil),                 // 47: clouditor.orchestrator.v1.ListAuditScopesResponse
-	(*UpdateAuditScopeRequest)(nil),                 // 48: clouditor.orchestrator.v1.UpdateAuditScopeRequest
-	(*GetCertificateRequest)(nil),                   // 49: clouditor.orchestrator.v1.GetCertificateRequest
-	(*ListCertificatesRequest)(nil),                 // 50: clouditor.orchestrator.v1.ListCertificatesRequest
-	(*ListCertificatesResponse)(nil),                // 51: clouditor.orchestrator.v1.ListCertificatesResponse
-	(*ListPublicCertificatesRequest)(nil),           // 52: clouditor.orchestrator.v1.ListPublicCertificatesRequest
-	(*ListPublicCertificatesResponse)(nil),          // 53: clouditor.orchestrator.v1.ListPublicCertificatesResponse
-	(*UpdateCertificateRequest)(nil),                // 54: clouditor.orchestrator.v1.UpdateCertificateRequest
-	(*CreateCatalogRequest)(nil),                    // 55: clouditor.orchestrator.v1.CreateCatalogRequest
-	(*RemoveCatalogRequest)(nil),                    // 56: clouditor.orchestrator.v1.RemoveCatalogRequest
-	(*GetCatalogRequest)(nil),                       // 57: clouditor.orchestrator.v1.GetCatalogRequest
-	(*ListCatalogsRequest)(nil),                     // 58: clouditor.orchestrator.v1.ListCatalogsRequest
-	(*ListCatalogsResponse)(nil),                    // 59: clouditor.orchestrator.v1.ListCatalogsResponse
-	(*UpdateCatalogRequest)(nil),                    // 60: clouditor.orchestrator.v1.UpdateCatalogRequest
-	(*GetCategoryRequest)(nil),                      // 61: clouditor.orchestrator.v1.GetCategoryRequest
-	(*GetControlRequest)(nil),                       // 62: clouditor.orchestrator.v1.GetControlRequest
-	(*ListControlsRequest)(nil),                     // 63: clouditor.orchestrator.v1.ListControlsRequest
-	(*ListControlsResponse)(nil),                    // 64: clouditor.orchestrator.v1.ListControlsResponse
-	(*CreateCertificateRequest)(nil),                // 65: clouditor.orchestrator.v1.CreateCertificateRequest
-	(*RemoveCertificateRequest)(nil),                // 66: clouditor.orchestrator.v1.RemoveCertificateRequest
-	(*Certificate)(nil),                             // 67: clouditor.orchestrator.v1.Certificate
-	(*State)(nil),                                   // 68: clouditor.orchestrator.v1.State
-	(*AuditScopeChangeEvent)(nil),                   // 69: clouditor.orchestrator.v1.AuditScopeChangeEvent
-	(*ListAssessmentToolsRequest_Filter)(nil),       // 70: clouditor.orchestrator.v1.ListAssessmentToolsRequest.Filter
-	(*ListMetricsRequest_Filter)(nil),               // 71: clouditor.orchestrator.v1.ListMetricsRequest.Filter
-	nil,                                             // 72: clouditor.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntry
-	(*TargetOfEvaluation_Metadata)(nil),             // 73: clouditor.orchestrator.v1.TargetOfEvaluation.Metadata
-	nil,                                             // 74: clouditor.orchestrator.v1.TargetOfEvaluation.Metadata.LabelsEntry
-	(*Catalog_Metadata)(nil),                        // 75: clouditor.orchestrator.v1.Catalog.Metadata
-	(*ListAssessmentResultsRequest_Filter)(nil),     // 76: clouditor.orchestrator.v1.ListAssessmentResultsRequest.Filter
-	(*ListAuditScopesRequest_Filter)(nil),           // 77: clouditor.orchestrator.v1.ListAuditScopesRequest.Filter
-	(*ListControlsRequest_Filter)(nil),              // 78: clouditor.orchestrator.v1.ListControlsRequest.Filter
-	(*assessment.AssessmentResult)(nil),             // 79: clouditor.assessment.v1.AssessmentResult
-	(*assessment.Metric)(nil),                       // 80: clouditor.assessment.v1.Metric
-	(*assessment.MetricConfiguration)(nil),          // 81: clouditor.assessment.v1.MetricConfiguration
-	(*assessment.MetricImplementation)(nil),         // 82: clouditor.assessment.v1.MetricImplementation
+	(MetricChangeEvent_Type)(0),                     // 0: confirmate.orchestrator.v1.MetricChangeEvent.Type
+	(TargetOfEvaluation_TargetType)(0),              // 1: confirmate.orchestrator.v1.TargetOfEvaluation.TargetType
+	(AuditScopeChangeEvent_Type)(0),                 // 2: confirmate.orchestrator.v1.AuditScopeChangeEvent.Type
+	(*RegisterAssessmentToolRequest)(nil),           // 3: confirmate.orchestrator.v1.RegisterAssessmentToolRequest
+	(*ListAssessmentToolsRequest)(nil),              // 4: confirmate.orchestrator.v1.ListAssessmentToolsRequest
+	(*ListAssessmentToolsResponse)(nil),             // 5: confirmate.orchestrator.v1.ListAssessmentToolsResponse
+	(*GetAssessmentToolRequest)(nil),                // 6: confirmate.orchestrator.v1.GetAssessmentToolRequest
+	(*UpdateAssessmentToolRequest)(nil),             // 7: confirmate.orchestrator.v1.UpdateAssessmentToolRequest
+	(*DeregisterAssessmentToolRequest)(nil),         // 8: confirmate.orchestrator.v1.DeregisterAssessmentToolRequest
+	(*StoreAssessmentResultRequest)(nil),            // 9: confirmate.orchestrator.v1.StoreAssessmentResultRequest
+	(*StoreAssessmentResultResponse)(nil),           // 10: confirmate.orchestrator.v1.StoreAssessmentResultResponse
+	(*StoreAssessmentResultsResponse)(nil),          // 11: confirmate.orchestrator.v1.StoreAssessmentResultsResponse
+	(*CreateMetricRequest)(nil),                     // 12: confirmate.orchestrator.v1.CreateMetricRequest
+	(*UpdateMetricRequest)(nil),                     // 13: confirmate.orchestrator.v1.UpdateMetricRequest
+	(*GetMetricRequest)(nil),                        // 14: confirmate.orchestrator.v1.GetMetricRequest
+	(*ListMetricsRequest)(nil),                      // 15: confirmate.orchestrator.v1.ListMetricsRequest
+	(*RemoveMetricRequest)(nil),                     // 16: confirmate.orchestrator.v1.RemoveMetricRequest
+	(*ListMetricsResponse)(nil),                     // 17: confirmate.orchestrator.v1.ListMetricsResponse
+	(*GetTargetOfEvaluationRequest)(nil),            // 18: confirmate.orchestrator.v1.GetTargetOfEvaluationRequest
+	(*CreateTargetOfEvaluationRequest)(nil),         // 19: confirmate.orchestrator.v1.CreateTargetOfEvaluationRequest
+	(*UpdateTargetOfEvaluationRequest)(nil),         // 20: confirmate.orchestrator.v1.UpdateTargetOfEvaluationRequest
+	(*RemoveTargetOfEvaluationRequest)(nil),         // 21: confirmate.orchestrator.v1.RemoveTargetOfEvaluationRequest
+	(*ListTargetsOfEvaluationRequest)(nil),          // 22: confirmate.orchestrator.v1.ListTargetsOfEvaluationRequest
+	(*ListTargetsOfEvaluationResponse)(nil),         // 23: confirmate.orchestrator.v1.ListTargetsOfEvaluationResponse
+	(*GetTargetOfEvaluationStatisticsRequest)(nil),  // 24: confirmate.orchestrator.v1.GetTargetOfEvaluationStatisticsRequest
+	(*GetTargetOfEvaluationStatisticsResponse)(nil), // 25: confirmate.orchestrator.v1.GetTargetOfEvaluationStatisticsResponse
+	(*UpdateMetricConfigurationRequest)(nil),        // 26: confirmate.orchestrator.v1.UpdateMetricConfigurationRequest
+	(*GetMetricConfigurationRequest)(nil),           // 27: confirmate.orchestrator.v1.GetMetricConfigurationRequest
+	(*ListMetricConfigurationRequest)(nil),          // 28: confirmate.orchestrator.v1.ListMetricConfigurationRequest
+	(*ListMetricConfigurationResponse)(nil),         // 29: confirmate.orchestrator.v1.ListMetricConfigurationResponse
+	(*UpdateMetricImplementationRequest)(nil),       // 30: confirmate.orchestrator.v1.UpdateMetricImplementationRequest
+	(*GetMetricImplementationRequest)(nil),          // 31: confirmate.orchestrator.v1.GetMetricImplementationRequest
+	(*SubscribeMetricChangeEventRequest)(nil),       // 32: confirmate.orchestrator.v1.SubscribeMetricChangeEventRequest
+	(*MetricChangeEvent)(nil),                       // 33: confirmate.orchestrator.v1.MetricChangeEvent
+	(*AssessmentTool)(nil),                          // 34: confirmate.orchestrator.v1.AssessmentTool
+	(*TargetOfEvaluation)(nil),                      // 35: confirmate.orchestrator.v1.TargetOfEvaluation
+	(*Catalog)(nil),                                 // 36: confirmate.orchestrator.v1.Catalog
+	(*Category)(nil),                                // 37: confirmate.orchestrator.v1.Category
+	(*Control)(nil),                                 // 38: confirmate.orchestrator.v1.Control
+	(*AuditScope)(nil),                              // 39: confirmate.orchestrator.v1.AuditScope
+	(*GetAssessmentResultRequest)(nil),              // 40: confirmate.orchestrator.v1.GetAssessmentResultRequest
+	(*ListAssessmentResultsRequest)(nil),            // 41: confirmate.orchestrator.v1.ListAssessmentResultsRequest
+	(*ListAssessmentResultsResponse)(nil),           // 42: confirmate.orchestrator.v1.ListAssessmentResultsResponse
+	(*CreateAuditScopeRequest)(nil),                 // 43: confirmate.orchestrator.v1.CreateAuditScopeRequest
+	(*RemoveAuditScopeRequest)(nil),                 // 44: confirmate.orchestrator.v1.RemoveAuditScopeRequest
+	(*GetAuditScopeRequest)(nil),                    // 45: confirmate.orchestrator.v1.GetAuditScopeRequest
+	(*ListAuditScopesRequest)(nil),                  // 46: confirmate.orchestrator.v1.ListAuditScopesRequest
+	(*ListAuditScopesResponse)(nil),                 // 47: confirmate.orchestrator.v1.ListAuditScopesResponse
+	(*UpdateAuditScopeRequest)(nil),                 // 48: confirmate.orchestrator.v1.UpdateAuditScopeRequest
+	(*GetCertificateRequest)(nil),                   // 49: confirmate.orchestrator.v1.GetCertificateRequest
+	(*ListCertificatesRequest)(nil),                 // 50: confirmate.orchestrator.v1.ListCertificatesRequest
+	(*ListCertificatesResponse)(nil),                // 51: confirmate.orchestrator.v1.ListCertificatesResponse
+	(*ListPublicCertificatesRequest)(nil),           // 52: confirmate.orchestrator.v1.ListPublicCertificatesRequest
+	(*ListPublicCertificatesResponse)(nil),          // 53: confirmate.orchestrator.v1.ListPublicCertificatesResponse
+	(*UpdateCertificateRequest)(nil),                // 54: confirmate.orchestrator.v1.UpdateCertificateRequest
+	(*CreateCatalogRequest)(nil),                    // 55: confirmate.orchestrator.v1.CreateCatalogRequest
+	(*RemoveCatalogRequest)(nil),                    // 56: confirmate.orchestrator.v1.RemoveCatalogRequest
+	(*GetCatalogRequest)(nil),                       // 57: confirmate.orchestrator.v1.GetCatalogRequest
+	(*ListCatalogsRequest)(nil),                     // 58: confirmate.orchestrator.v1.ListCatalogsRequest
+	(*ListCatalogsResponse)(nil),                    // 59: confirmate.orchestrator.v1.ListCatalogsResponse
+	(*UpdateCatalogRequest)(nil),                    // 60: confirmate.orchestrator.v1.UpdateCatalogRequest
+	(*GetCategoryRequest)(nil),                      // 61: confirmate.orchestrator.v1.GetCategoryRequest
+	(*GetControlRequest)(nil),                       // 62: confirmate.orchestrator.v1.GetControlRequest
+	(*ListControlsRequest)(nil),                     // 63: confirmate.orchestrator.v1.ListControlsRequest
+	(*ListControlsResponse)(nil),                    // 64: confirmate.orchestrator.v1.ListControlsResponse
+	(*CreateCertificateRequest)(nil),                // 65: confirmate.orchestrator.v1.CreateCertificateRequest
+	(*RemoveCertificateRequest)(nil),                // 66: confirmate.orchestrator.v1.RemoveCertificateRequest
+	(*Certificate)(nil),                             // 67: confirmate.orchestrator.v1.Certificate
+	(*State)(nil),                                   // 68: confirmate.orchestrator.v1.State
+	(*AuditScopeChangeEvent)(nil),                   // 69: confirmate.orchestrator.v1.AuditScopeChangeEvent
+	(*ListAssessmentToolsRequest_Filter)(nil),       // 70: confirmate.orchestrator.v1.ListAssessmentToolsRequest.Filter
+	(*ListMetricsRequest_Filter)(nil),               // 71: confirmate.orchestrator.v1.ListMetricsRequest.Filter
+	nil,                                             // 72: confirmate.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntry
+	(*TargetOfEvaluation_Metadata)(nil),             // 73: confirmate.orchestrator.v1.TargetOfEvaluation.Metadata
+	nil,                                             // 74: confirmate.orchestrator.v1.TargetOfEvaluation.Metadata.LabelsEntry
+	(*Catalog_Metadata)(nil),                        // 75: confirmate.orchestrator.v1.Catalog.Metadata
+	(*ListAssessmentResultsRequest_Filter)(nil),     // 76: confirmate.orchestrator.v1.ListAssessmentResultsRequest.Filter
+	(*ListAuditScopesRequest_Filter)(nil),           // 77: confirmate.orchestrator.v1.ListAuditScopesRequest.Filter
+	(*ListControlsRequest_Filter)(nil),              // 78: confirmate.orchestrator.v1.ListControlsRequest.Filter
+	(*assessment.AssessmentResult)(nil),             // 79: confirmate.assessment.v1.AssessmentResult
+	(*assessment.Metric)(nil),                       // 80: confirmate.assessment.v1.Metric
+	(*assessment.MetricConfiguration)(nil),          // 81: confirmate.assessment.v1.MetricConfiguration
+	(*assessment.MetricImplementation)(nil),         // 82: confirmate.assessment.v1.MetricImplementation
 	(*timestamppb.Timestamp)(nil),                   // 83: google.protobuf.Timestamp
-	(*runtime.GetRuntimeInfoRequest)(nil),           // 84: clouditor.runtime.v1.GetRuntimeInfoRequest
+	(*runtime.GetRuntimeInfoRequest)(nil),           // 84: confirmate.runtime.v1.GetRuntimeInfoRequest
 	(*emptypb.Empty)(nil),                           // 85: google.protobuf.Empty
-	(*runtime.Runtime)(nil),                         // 86: clouditor.runtime.v1.Runtime
+	(*runtime.Runtime)(nil),                         // 86: confirmate.runtime.v1.Runtime
 }
 var file_api_orchestrator_orchestrator_proto_depIdxs = []int32{
-	34, // 0: clouditor.orchestrator.v1.RegisterAssessmentToolRequest.tool:type_name -> clouditor.orchestrator.v1.AssessmentTool
-	70, // 1: clouditor.orchestrator.v1.ListAssessmentToolsRequest.filter:type_name -> clouditor.orchestrator.v1.ListAssessmentToolsRequest.Filter
-	34, // 2: clouditor.orchestrator.v1.ListAssessmentToolsResponse.tools:type_name -> clouditor.orchestrator.v1.AssessmentTool
-	34, // 3: clouditor.orchestrator.v1.UpdateAssessmentToolRequest.tool:type_name -> clouditor.orchestrator.v1.AssessmentTool
-	79, // 4: clouditor.orchestrator.v1.StoreAssessmentResultRequest.result:type_name -> clouditor.assessment.v1.AssessmentResult
-	80, // 5: clouditor.orchestrator.v1.CreateMetricRequest.metric:type_name -> clouditor.assessment.v1.Metric
-	80, // 6: clouditor.orchestrator.v1.UpdateMetricRequest.metric:type_name -> clouditor.assessment.v1.Metric
-	71, // 7: clouditor.orchestrator.v1.ListMetricsRequest.filter:type_name -> clouditor.orchestrator.v1.ListMetricsRequest.Filter
-	80, // 8: clouditor.orchestrator.v1.ListMetricsResponse.metrics:type_name -> clouditor.assessment.v1.Metric
-	35, // 9: clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest.target_of_evaluation:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
-	35, // 10: clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest.target_of_evaluation:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
-	35, // 11: clouditor.orchestrator.v1.ListTargetsOfEvaluationResponse.targets:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
-	81, // 12: clouditor.orchestrator.v1.UpdateMetricConfigurationRequest.configuration:type_name -> clouditor.assessment.v1.MetricConfiguration
-	72, // 13: clouditor.orchestrator.v1.ListMetricConfigurationResponse.configurations:type_name -> clouditor.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntry
-	82, // 14: clouditor.orchestrator.v1.UpdateMetricImplementationRequest.implementation:type_name -> clouditor.assessment.v1.MetricImplementation
-	0,  // 15: clouditor.orchestrator.v1.MetricChangeEvent.type:type_name -> clouditor.orchestrator.v1.MetricChangeEvent.Type
-	80, // 16: clouditor.orchestrator.v1.TargetOfEvaluation.configured_metrics:type_name -> clouditor.assessment.v1.Metric
-	83, // 17: clouditor.orchestrator.v1.TargetOfEvaluation.created_at:type_name -> google.protobuf.Timestamp
-	83, // 18: clouditor.orchestrator.v1.TargetOfEvaluation.updated_at:type_name -> google.protobuf.Timestamp
-	73, // 19: clouditor.orchestrator.v1.TargetOfEvaluation.metadata:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation.Metadata
-	1,  // 20: clouditor.orchestrator.v1.TargetOfEvaluation.target_type:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation.TargetType
-	37, // 21: clouditor.orchestrator.v1.Catalog.categories:type_name -> clouditor.orchestrator.v1.Category
-	75, // 22: clouditor.orchestrator.v1.Catalog.metadata:type_name -> clouditor.orchestrator.v1.Catalog.Metadata
-	38, // 23: clouditor.orchestrator.v1.Category.controls:type_name -> clouditor.orchestrator.v1.Control
-	38, // 24: clouditor.orchestrator.v1.Control.controls:type_name -> clouditor.orchestrator.v1.Control
-	80, // 25: clouditor.orchestrator.v1.Control.metrics:type_name -> clouditor.assessment.v1.Metric
-	76, // 26: clouditor.orchestrator.v1.ListAssessmentResultsRequest.filter:type_name -> clouditor.orchestrator.v1.ListAssessmentResultsRequest.Filter
-	79, // 27: clouditor.orchestrator.v1.ListAssessmentResultsResponse.results:type_name -> clouditor.assessment.v1.AssessmentResult
-	39, // 28: clouditor.orchestrator.v1.CreateAuditScopeRequest.audit_scope:type_name -> clouditor.orchestrator.v1.AuditScope
-	77, // 29: clouditor.orchestrator.v1.ListAuditScopesRequest.filter:type_name -> clouditor.orchestrator.v1.ListAuditScopesRequest.Filter
-	39, // 30: clouditor.orchestrator.v1.ListAuditScopesResponse.audit_scopes:type_name -> clouditor.orchestrator.v1.AuditScope
-	39, // 31: clouditor.orchestrator.v1.UpdateAuditScopeRequest.audit_scope:type_name -> clouditor.orchestrator.v1.AuditScope
-	67, // 32: clouditor.orchestrator.v1.ListCertificatesResponse.certificates:type_name -> clouditor.orchestrator.v1.Certificate
-	67, // 33: clouditor.orchestrator.v1.ListPublicCertificatesResponse.certificates:type_name -> clouditor.orchestrator.v1.Certificate
-	67, // 34: clouditor.orchestrator.v1.UpdateCertificateRequest.certificate:type_name -> clouditor.orchestrator.v1.Certificate
-	36, // 35: clouditor.orchestrator.v1.CreateCatalogRequest.catalog:type_name -> clouditor.orchestrator.v1.Catalog
-	36, // 36: clouditor.orchestrator.v1.ListCatalogsResponse.catalogs:type_name -> clouditor.orchestrator.v1.Catalog
-	36, // 37: clouditor.orchestrator.v1.UpdateCatalogRequest.catalog:type_name -> clouditor.orchestrator.v1.Catalog
-	78, // 38: clouditor.orchestrator.v1.ListControlsRequest.filter:type_name -> clouditor.orchestrator.v1.ListControlsRequest.Filter
-	38, // 39: clouditor.orchestrator.v1.ListControlsResponse.controls:type_name -> clouditor.orchestrator.v1.Control
-	67, // 40: clouditor.orchestrator.v1.CreateCertificateRequest.certificate:type_name -> clouditor.orchestrator.v1.Certificate
-	68, // 41: clouditor.orchestrator.v1.Certificate.states:type_name -> clouditor.orchestrator.v1.State
-	2,  // 42: clouditor.orchestrator.v1.AuditScopeChangeEvent.type:type_name -> clouditor.orchestrator.v1.AuditScopeChangeEvent.Type
-	39, // 43: clouditor.orchestrator.v1.AuditScopeChangeEvent.audit_scope:type_name -> clouditor.orchestrator.v1.AuditScope
-	81, // 44: clouditor.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntry.value:type_name -> clouditor.assessment.v1.MetricConfiguration
-	74, // 45: clouditor.orchestrator.v1.TargetOfEvaluation.Metadata.labels:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation.Metadata.LabelsEntry
-	3,  // 46: clouditor.orchestrator.v1.Orchestrator.RegisterAssessmentTool:input_type -> clouditor.orchestrator.v1.RegisterAssessmentToolRequest
-	4,  // 47: clouditor.orchestrator.v1.Orchestrator.ListAssessmentTools:input_type -> clouditor.orchestrator.v1.ListAssessmentToolsRequest
-	6,  // 48: clouditor.orchestrator.v1.Orchestrator.GetAssessmentTool:input_type -> clouditor.orchestrator.v1.GetAssessmentToolRequest
-	7,  // 49: clouditor.orchestrator.v1.Orchestrator.UpdateAssessmentTool:input_type -> clouditor.orchestrator.v1.UpdateAssessmentToolRequest
-	8,  // 50: clouditor.orchestrator.v1.Orchestrator.DeregisterAssessmentTool:input_type -> clouditor.orchestrator.v1.DeregisterAssessmentToolRequest
-	9,  // 51: clouditor.orchestrator.v1.Orchestrator.StoreAssessmentResult:input_type -> clouditor.orchestrator.v1.StoreAssessmentResultRequest
-	9,  // 52: clouditor.orchestrator.v1.Orchestrator.StoreAssessmentResults:input_type -> clouditor.orchestrator.v1.StoreAssessmentResultRequest
-	40, // 53: clouditor.orchestrator.v1.Orchestrator.GetAssessmentResult:input_type -> clouditor.orchestrator.v1.GetAssessmentResultRequest
-	41, // 54: clouditor.orchestrator.v1.Orchestrator.ListAssessmentResults:input_type -> clouditor.orchestrator.v1.ListAssessmentResultsRequest
-	12, // 55: clouditor.orchestrator.v1.Orchestrator.CreateMetric:input_type -> clouditor.orchestrator.v1.CreateMetricRequest
-	13, // 56: clouditor.orchestrator.v1.Orchestrator.UpdateMetric:input_type -> clouditor.orchestrator.v1.UpdateMetricRequest
-	14, // 57: clouditor.orchestrator.v1.Orchestrator.GetMetric:input_type -> clouditor.orchestrator.v1.GetMetricRequest
-	15, // 58: clouditor.orchestrator.v1.Orchestrator.ListMetrics:input_type -> clouditor.orchestrator.v1.ListMetricsRequest
-	16, // 59: clouditor.orchestrator.v1.Orchestrator.RemoveMetric:input_type -> clouditor.orchestrator.v1.RemoveMetricRequest
-	19, // 60: clouditor.orchestrator.v1.Orchestrator.CreateTargetOfEvaluation:input_type -> clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest
-	20, // 61: clouditor.orchestrator.v1.Orchestrator.UpdateTargetOfEvaluation:input_type -> clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest
-	18, // 62: clouditor.orchestrator.v1.Orchestrator.GetTargetOfEvaluation:input_type -> clouditor.orchestrator.v1.GetTargetOfEvaluationRequest
-	22, // 63: clouditor.orchestrator.v1.Orchestrator.ListTargetsOfEvaluation:input_type -> clouditor.orchestrator.v1.ListTargetsOfEvaluationRequest
-	21, // 64: clouditor.orchestrator.v1.Orchestrator.RemoveTargetOfEvaluation:input_type -> clouditor.orchestrator.v1.RemoveTargetOfEvaluationRequest
-	24, // 65: clouditor.orchestrator.v1.Orchestrator.GetTargetOfEvaluationStatistics:input_type -> clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsRequest
-	26, // 66: clouditor.orchestrator.v1.Orchestrator.UpdateMetricConfiguration:input_type -> clouditor.orchestrator.v1.UpdateMetricConfigurationRequest
-	27, // 67: clouditor.orchestrator.v1.Orchestrator.GetMetricConfiguration:input_type -> clouditor.orchestrator.v1.GetMetricConfigurationRequest
-	28, // 68: clouditor.orchestrator.v1.Orchestrator.ListMetricConfigurations:input_type -> clouditor.orchestrator.v1.ListMetricConfigurationRequest
-	30, // 69: clouditor.orchestrator.v1.Orchestrator.UpdateMetricImplementation:input_type -> clouditor.orchestrator.v1.UpdateMetricImplementationRequest
-	31, // 70: clouditor.orchestrator.v1.Orchestrator.GetMetricImplementation:input_type -> clouditor.orchestrator.v1.GetMetricImplementationRequest
-	32, // 71: clouditor.orchestrator.v1.Orchestrator.SubscribeMetricChangeEvents:input_type -> clouditor.orchestrator.v1.SubscribeMetricChangeEventRequest
-	65, // 72: clouditor.orchestrator.v1.Orchestrator.CreateCertificate:input_type -> clouditor.orchestrator.v1.CreateCertificateRequest
-	49, // 73: clouditor.orchestrator.v1.Orchestrator.GetCertificate:input_type -> clouditor.orchestrator.v1.GetCertificateRequest
-	50, // 74: clouditor.orchestrator.v1.Orchestrator.ListCertificates:input_type -> clouditor.orchestrator.v1.ListCertificatesRequest
-	52, // 75: clouditor.orchestrator.v1.Orchestrator.ListPublicCertificates:input_type -> clouditor.orchestrator.v1.ListPublicCertificatesRequest
-	54, // 76: clouditor.orchestrator.v1.Orchestrator.UpdateCertificate:input_type -> clouditor.orchestrator.v1.UpdateCertificateRequest
-	66, // 77: clouditor.orchestrator.v1.Orchestrator.RemoveCertificate:input_type -> clouditor.orchestrator.v1.RemoveCertificateRequest
-	55, // 78: clouditor.orchestrator.v1.Orchestrator.CreateCatalog:input_type -> clouditor.orchestrator.v1.CreateCatalogRequest
-	58, // 79: clouditor.orchestrator.v1.Orchestrator.ListCatalogs:input_type -> clouditor.orchestrator.v1.ListCatalogsRequest
-	57, // 80: clouditor.orchestrator.v1.Orchestrator.GetCatalog:input_type -> clouditor.orchestrator.v1.GetCatalogRequest
-	56, // 81: clouditor.orchestrator.v1.Orchestrator.RemoveCatalog:input_type -> clouditor.orchestrator.v1.RemoveCatalogRequest
-	60, // 82: clouditor.orchestrator.v1.Orchestrator.UpdateCatalog:input_type -> clouditor.orchestrator.v1.UpdateCatalogRequest
-	61, // 83: clouditor.orchestrator.v1.Orchestrator.GetCategory:input_type -> clouditor.orchestrator.v1.GetCategoryRequest
-	63, // 84: clouditor.orchestrator.v1.Orchestrator.ListControls:input_type -> clouditor.orchestrator.v1.ListControlsRequest
-	62, // 85: clouditor.orchestrator.v1.Orchestrator.GetControl:input_type -> clouditor.orchestrator.v1.GetControlRequest
-	43, // 86: clouditor.orchestrator.v1.Orchestrator.CreateAuditScope:input_type -> clouditor.orchestrator.v1.CreateAuditScopeRequest
-	45, // 87: clouditor.orchestrator.v1.Orchestrator.GetAuditScope:input_type -> clouditor.orchestrator.v1.GetAuditScopeRequest
-	46, // 88: clouditor.orchestrator.v1.Orchestrator.ListAuditScopes:input_type -> clouditor.orchestrator.v1.ListAuditScopesRequest
-	48, // 89: clouditor.orchestrator.v1.Orchestrator.UpdateAuditScope:input_type -> clouditor.orchestrator.v1.UpdateAuditScopeRequest
-	44, // 90: clouditor.orchestrator.v1.Orchestrator.RemoveAuditScope:input_type -> clouditor.orchestrator.v1.RemoveAuditScopeRequest
-	84, // 91: clouditor.orchestrator.v1.Orchestrator.GetRuntimeInfo:input_type -> clouditor.runtime.v1.GetRuntimeInfoRequest
-	34, // 92: clouditor.orchestrator.v1.Orchestrator.RegisterAssessmentTool:output_type -> clouditor.orchestrator.v1.AssessmentTool
-	5,  // 93: clouditor.orchestrator.v1.Orchestrator.ListAssessmentTools:output_type -> clouditor.orchestrator.v1.ListAssessmentToolsResponse
-	34, // 94: clouditor.orchestrator.v1.Orchestrator.GetAssessmentTool:output_type -> clouditor.orchestrator.v1.AssessmentTool
-	34, // 95: clouditor.orchestrator.v1.Orchestrator.UpdateAssessmentTool:output_type -> clouditor.orchestrator.v1.AssessmentTool
-	85, // 96: clouditor.orchestrator.v1.Orchestrator.DeregisterAssessmentTool:output_type -> google.protobuf.Empty
-	10, // 97: clouditor.orchestrator.v1.Orchestrator.StoreAssessmentResult:output_type -> clouditor.orchestrator.v1.StoreAssessmentResultResponse
-	11, // 98: clouditor.orchestrator.v1.Orchestrator.StoreAssessmentResults:output_type -> clouditor.orchestrator.v1.StoreAssessmentResultsResponse
-	79, // 99: clouditor.orchestrator.v1.Orchestrator.GetAssessmentResult:output_type -> clouditor.assessment.v1.AssessmentResult
-	42, // 100: clouditor.orchestrator.v1.Orchestrator.ListAssessmentResults:output_type -> clouditor.orchestrator.v1.ListAssessmentResultsResponse
-	80, // 101: clouditor.orchestrator.v1.Orchestrator.CreateMetric:output_type -> clouditor.assessment.v1.Metric
-	80, // 102: clouditor.orchestrator.v1.Orchestrator.UpdateMetric:output_type -> clouditor.assessment.v1.Metric
-	80, // 103: clouditor.orchestrator.v1.Orchestrator.GetMetric:output_type -> clouditor.assessment.v1.Metric
-	17, // 104: clouditor.orchestrator.v1.Orchestrator.ListMetrics:output_type -> clouditor.orchestrator.v1.ListMetricsResponse
-	85, // 105: clouditor.orchestrator.v1.Orchestrator.RemoveMetric:output_type -> google.protobuf.Empty
-	35, // 106: clouditor.orchestrator.v1.Orchestrator.CreateTargetOfEvaluation:output_type -> clouditor.orchestrator.v1.TargetOfEvaluation
-	35, // 107: clouditor.orchestrator.v1.Orchestrator.UpdateTargetOfEvaluation:output_type -> clouditor.orchestrator.v1.TargetOfEvaluation
-	35, // 108: clouditor.orchestrator.v1.Orchestrator.GetTargetOfEvaluation:output_type -> clouditor.orchestrator.v1.TargetOfEvaluation
-	23, // 109: clouditor.orchestrator.v1.Orchestrator.ListTargetsOfEvaluation:output_type -> clouditor.orchestrator.v1.ListTargetsOfEvaluationResponse
-	85, // 110: clouditor.orchestrator.v1.Orchestrator.RemoveTargetOfEvaluation:output_type -> google.protobuf.Empty
-	25, // 111: clouditor.orchestrator.v1.Orchestrator.GetTargetOfEvaluationStatistics:output_type -> clouditor.orchestrator.v1.GetTargetOfEvaluationStatisticsResponse
-	81, // 112: clouditor.orchestrator.v1.Orchestrator.UpdateMetricConfiguration:output_type -> clouditor.assessment.v1.MetricConfiguration
-	81, // 113: clouditor.orchestrator.v1.Orchestrator.GetMetricConfiguration:output_type -> clouditor.assessment.v1.MetricConfiguration
-	29, // 114: clouditor.orchestrator.v1.Orchestrator.ListMetricConfigurations:output_type -> clouditor.orchestrator.v1.ListMetricConfigurationResponse
-	82, // 115: clouditor.orchestrator.v1.Orchestrator.UpdateMetricImplementation:output_type -> clouditor.assessment.v1.MetricImplementation
-	82, // 116: clouditor.orchestrator.v1.Orchestrator.GetMetricImplementation:output_type -> clouditor.assessment.v1.MetricImplementation
-	33, // 117: clouditor.orchestrator.v1.Orchestrator.SubscribeMetricChangeEvents:output_type -> clouditor.orchestrator.v1.MetricChangeEvent
-	67, // 118: clouditor.orchestrator.v1.Orchestrator.CreateCertificate:output_type -> clouditor.orchestrator.v1.Certificate
-	67, // 119: clouditor.orchestrator.v1.Orchestrator.GetCertificate:output_type -> clouditor.orchestrator.v1.Certificate
-	51, // 120: clouditor.orchestrator.v1.Orchestrator.ListCertificates:output_type -> clouditor.orchestrator.v1.ListCertificatesResponse
-	53, // 121: clouditor.orchestrator.v1.Orchestrator.ListPublicCertificates:output_type -> clouditor.orchestrator.v1.ListPublicCertificatesResponse
-	67, // 122: clouditor.orchestrator.v1.Orchestrator.UpdateCertificate:output_type -> clouditor.orchestrator.v1.Certificate
-	85, // 123: clouditor.orchestrator.v1.Orchestrator.RemoveCertificate:output_type -> google.protobuf.Empty
-	36, // 124: clouditor.orchestrator.v1.Orchestrator.CreateCatalog:output_type -> clouditor.orchestrator.v1.Catalog
-	59, // 125: clouditor.orchestrator.v1.Orchestrator.ListCatalogs:output_type -> clouditor.orchestrator.v1.ListCatalogsResponse
-	36, // 126: clouditor.orchestrator.v1.Orchestrator.GetCatalog:output_type -> clouditor.orchestrator.v1.Catalog
-	85, // 127: clouditor.orchestrator.v1.Orchestrator.RemoveCatalog:output_type -> google.protobuf.Empty
-	36, // 128: clouditor.orchestrator.v1.Orchestrator.UpdateCatalog:output_type -> clouditor.orchestrator.v1.Catalog
-	37, // 129: clouditor.orchestrator.v1.Orchestrator.GetCategory:output_type -> clouditor.orchestrator.v1.Category
-	64, // 130: clouditor.orchestrator.v1.Orchestrator.ListControls:output_type -> clouditor.orchestrator.v1.ListControlsResponse
-	38, // 131: clouditor.orchestrator.v1.Orchestrator.GetControl:output_type -> clouditor.orchestrator.v1.Control
-	39, // 132: clouditor.orchestrator.v1.Orchestrator.CreateAuditScope:output_type -> clouditor.orchestrator.v1.AuditScope
-	39, // 133: clouditor.orchestrator.v1.Orchestrator.GetAuditScope:output_type -> clouditor.orchestrator.v1.AuditScope
-	47, // 134: clouditor.orchestrator.v1.Orchestrator.ListAuditScopes:output_type -> clouditor.orchestrator.v1.ListAuditScopesResponse
-	39, // 135: clouditor.orchestrator.v1.Orchestrator.UpdateAuditScope:output_type -> clouditor.orchestrator.v1.AuditScope
-	85, // 136: clouditor.orchestrator.v1.Orchestrator.RemoveAuditScope:output_type -> google.protobuf.Empty
-	86, // 137: clouditor.orchestrator.v1.Orchestrator.GetRuntimeInfo:output_type -> clouditor.runtime.v1.Runtime
+	34, // 0: confirmate.orchestrator.v1.RegisterAssessmentToolRequest.tool:type_name -> confirmate.orchestrator.v1.AssessmentTool
+	70, // 1: confirmate.orchestrator.v1.ListAssessmentToolsRequest.filter:type_name -> confirmate.orchestrator.v1.ListAssessmentToolsRequest.Filter
+	34, // 2: confirmate.orchestrator.v1.ListAssessmentToolsResponse.tools:type_name -> confirmate.orchestrator.v1.AssessmentTool
+	34, // 3: confirmate.orchestrator.v1.UpdateAssessmentToolRequest.tool:type_name -> confirmate.orchestrator.v1.AssessmentTool
+	79, // 4: confirmate.orchestrator.v1.StoreAssessmentResultRequest.result:type_name -> confirmate.assessment.v1.AssessmentResult
+	80, // 5: confirmate.orchestrator.v1.CreateMetricRequest.metric:type_name -> confirmate.assessment.v1.Metric
+	80, // 6: confirmate.orchestrator.v1.UpdateMetricRequest.metric:type_name -> confirmate.assessment.v1.Metric
+	71, // 7: confirmate.orchestrator.v1.ListMetricsRequest.filter:type_name -> confirmate.orchestrator.v1.ListMetricsRequest.Filter
+	80, // 8: confirmate.orchestrator.v1.ListMetricsResponse.metrics:type_name -> confirmate.assessment.v1.Metric
+	35, // 9: confirmate.orchestrator.v1.CreateTargetOfEvaluationRequest.target_of_evaluation:type_name -> confirmate.orchestrator.v1.TargetOfEvaluation
+	35, // 10: confirmate.orchestrator.v1.UpdateTargetOfEvaluationRequest.target_of_evaluation:type_name -> confirmate.orchestrator.v1.TargetOfEvaluation
+	35, // 11: confirmate.orchestrator.v1.ListTargetsOfEvaluationResponse.targets:type_name -> confirmate.orchestrator.v1.TargetOfEvaluation
+	81, // 12: confirmate.orchestrator.v1.UpdateMetricConfigurationRequest.configuration:type_name -> confirmate.assessment.v1.MetricConfiguration
+	72, // 13: confirmate.orchestrator.v1.ListMetricConfigurationResponse.configurations:type_name -> confirmate.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntry
+	82, // 14: confirmate.orchestrator.v1.UpdateMetricImplementationRequest.implementation:type_name -> confirmate.assessment.v1.MetricImplementation
+	0,  // 15: confirmate.orchestrator.v1.MetricChangeEvent.type:type_name -> confirmate.orchestrator.v1.MetricChangeEvent.Type
+	80, // 16: confirmate.orchestrator.v1.TargetOfEvaluation.configured_metrics:type_name -> confirmate.assessment.v1.Metric
+	83, // 17: confirmate.orchestrator.v1.TargetOfEvaluation.created_at:type_name -> google.protobuf.Timestamp
+	83, // 18: confirmate.orchestrator.v1.TargetOfEvaluation.updated_at:type_name -> google.protobuf.Timestamp
+	73, // 19: confirmate.orchestrator.v1.TargetOfEvaluation.metadata:type_name -> confirmate.orchestrator.v1.TargetOfEvaluation.Metadata
+	1,  // 20: confirmate.orchestrator.v1.TargetOfEvaluation.target_type:type_name -> confirmate.orchestrator.v1.TargetOfEvaluation.TargetType
+	37, // 21: confirmate.orchestrator.v1.Catalog.categories:type_name -> confirmate.orchestrator.v1.Category
+	75, // 22: confirmate.orchestrator.v1.Catalog.metadata:type_name -> confirmate.orchestrator.v1.Catalog.Metadata
+	38, // 23: confirmate.orchestrator.v1.Category.controls:type_name -> confirmate.orchestrator.v1.Control
+	38, // 24: confirmate.orchestrator.v1.Control.controls:type_name -> confirmate.orchestrator.v1.Control
+	80, // 25: confirmate.orchestrator.v1.Control.metrics:type_name -> confirmate.assessment.v1.Metric
+	76, // 26: confirmate.orchestrator.v1.ListAssessmentResultsRequest.filter:type_name -> confirmate.orchestrator.v1.ListAssessmentResultsRequest.Filter
+	79, // 27: confirmate.orchestrator.v1.ListAssessmentResultsResponse.results:type_name -> confirmate.assessment.v1.AssessmentResult
+	39, // 28: confirmate.orchestrator.v1.CreateAuditScopeRequest.audit_scope:type_name -> confirmate.orchestrator.v1.AuditScope
+	77, // 29: confirmate.orchestrator.v1.ListAuditScopesRequest.filter:type_name -> confirmate.orchestrator.v1.ListAuditScopesRequest.Filter
+	39, // 30: confirmate.orchestrator.v1.ListAuditScopesResponse.audit_scopes:type_name -> confirmate.orchestrator.v1.AuditScope
+	39, // 31: confirmate.orchestrator.v1.UpdateAuditScopeRequest.audit_scope:type_name -> confirmate.orchestrator.v1.AuditScope
+	67, // 32: confirmate.orchestrator.v1.ListCertificatesResponse.certificates:type_name -> confirmate.orchestrator.v1.Certificate
+	67, // 33: confirmate.orchestrator.v1.ListPublicCertificatesResponse.certificates:type_name -> confirmate.orchestrator.v1.Certificate
+	67, // 34: confirmate.orchestrator.v1.UpdateCertificateRequest.certificate:type_name -> confirmate.orchestrator.v1.Certificate
+	36, // 35: confirmate.orchestrator.v1.CreateCatalogRequest.catalog:type_name -> confirmate.orchestrator.v1.Catalog
+	36, // 36: confirmate.orchestrator.v1.ListCatalogsResponse.catalogs:type_name -> confirmate.orchestrator.v1.Catalog
+	36, // 37: confirmate.orchestrator.v1.UpdateCatalogRequest.catalog:type_name -> confirmate.orchestrator.v1.Catalog
+	78, // 38: confirmate.orchestrator.v1.ListControlsRequest.filter:type_name -> confirmate.orchestrator.v1.ListControlsRequest.Filter
+	38, // 39: confirmate.orchestrator.v1.ListControlsResponse.controls:type_name -> confirmate.orchestrator.v1.Control
+	67, // 40: confirmate.orchestrator.v1.CreateCertificateRequest.certificate:type_name -> confirmate.orchestrator.v1.Certificate
+	68, // 41: confirmate.orchestrator.v1.Certificate.states:type_name -> confirmate.orchestrator.v1.State
+	2,  // 42: confirmate.orchestrator.v1.AuditScopeChangeEvent.type:type_name -> confirmate.orchestrator.v1.AuditScopeChangeEvent.Type
+	39, // 43: confirmate.orchestrator.v1.AuditScopeChangeEvent.audit_scope:type_name -> confirmate.orchestrator.v1.AuditScope
+	81, // 44: confirmate.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntry.value:type_name -> confirmate.assessment.v1.MetricConfiguration
+	74, // 45: confirmate.orchestrator.v1.TargetOfEvaluation.Metadata.labels:type_name -> confirmate.orchestrator.v1.TargetOfEvaluation.Metadata.LabelsEntry
+	3,  // 46: confirmate.orchestrator.v1.Orchestrator.RegisterAssessmentTool:input_type -> confirmate.orchestrator.v1.RegisterAssessmentToolRequest
+	4,  // 47: confirmate.orchestrator.v1.Orchestrator.ListAssessmentTools:input_type -> confirmate.orchestrator.v1.ListAssessmentToolsRequest
+	6,  // 48: confirmate.orchestrator.v1.Orchestrator.GetAssessmentTool:input_type -> confirmate.orchestrator.v1.GetAssessmentToolRequest
+	7,  // 49: confirmate.orchestrator.v1.Orchestrator.UpdateAssessmentTool:input_type -> confirmate.orchestrator.v1.UpdateAssessmentToolRequest
+	8,  // 50: confirmate.orchestrator.v1.Orchestrator.DeregisterAssessmentTool:input_type -> confirmate.orchestrator.v1.DeregisterAssessmentToolRequest
+	9,  // 51: confirmate.orchestrator.v1.Orchestrator.StoreAssessmentResult:input_type -> confirmate.orchestrator.v1.StoreAssessmentResultRequest
+	9,  // 52: confirmate.orchestrator.v1.Orchestrator.StoreAssessmentResults:input_type -> confirmate.orchestrator.v1.StoreAssessmentResultRequest
+	40, // 53: confirmate.orchestrator.v1.Orchestrator.GetAssessmentResult:input_type -> confirmate.orchestrator.v1.GetAssessmentResultRequest
+	41, // 54: confirmate.orchestrator.v1.Orchestrator.ListAssessmentResults:input_type -> confirmate.orchestrator.v1.ListAssessmentResultsRequest
+	12, // 55: confirmate.orchestrator.v1.Orchestrator.CreateMetric:input_type -> confirmate.orchestrator.v1.CreateMetricRequest
+	13, // 56: confirmate.orchestrator.v1.Orchestrator.UpdateMetric:input_type -> confirmate.orchestrator.v1.UpdateMetricRequest
+	14, // 57: confirmate.orchestrator.v1.Orchestrator.GetMetric:input_type -> confirmate.orchestrator.v1.GetMetricRequest
+	15, // 58: confirmate.orchestrator.v1.Orchestrator.ListMetrics:input_type -> confirmate.orchestrator.v1.ListMetricsRequest
+	16, // 59: confirmate.orchestrator.v1.Orchestrator.RemoveMetric:input_type -> confirmate.orchestrator.v1.RemoveMetricRequest
+	19, // 60: confirmate.orchestrator.v1.Orchestrator.CreateTargetOfEvaluation:input_type -> confirmate.orchestrator.v1.CreateTargetOfEvaluationRequest
+	20, // 61: confirmate.orchestrator.v1.Orchestrator.UpdateTargetOfEvaluation:input_type -> confirmate.orchestrator.v1.UpdateTargetOfEvaluationRequest
+	18, // 62: confirmate.orchestrator.v1.Orchestrator.GetTargetOfEvaluation:input_type -> confirmate.orchestrator.v1.GetTargetOfEvaluationRequest
+	22, // 63: confirmate.orchestrator.v1.Orchestrator.ListTargetsOfEvaluation:input_type -> confirmate.orchestrator.v1.ListTargetsOfEvaluationRequest
+	21, // 64: confirmate.orchestrator.v1.Orchestrator.RemoveTargetOfEvaluation:input_type -> confirmate.orchestrator.v1.RemoveTargetOfEvaluationRequest
+	24, // 65: confirmate.orchestrator.v1.Orchestrator.GetTargetOfEvaluationStatistics:input_type -> confirmate.orchestrator.v1.GetTargetOfEvaluationStatisticsRequest
+	26, // 66: confirmate.orchestrator.v1.Orchestrator.UpdateMetricConfiguration:input_type -> confirmate.orchestrator.v1.UpdateMetricConfigurationRequest
+	27, // 67: confirmate.orchestrator.v1.Orchestrator.GetMetricConfiguration:input_type -> confirmate.orchestrator.v1.GetMetricConfigurationRequest
+	28, // 68: confirmate.orchestrator.v1.Orchestrator.ListMetricConfigurations:input_type -> confirmate.orchestrator.v1.ListMetricConfigurationRequest
+	30, // 69: confirmate.orchestrator.v1.Orchestrator.UpdateMetricImplementation:input_type -> confirmate.orchestrator.v1.UpdateMetricImplementationRequest
+	31, // 70: confirmate.orchestrator.v1.Orchestrator.GetMetricImplementation:input_type -> confirmate.orchestrator.v1.GetMetricImplementationRequest
+	32, // 71: confirmate.orchestrator.v1.Orchestrator.SubscribeMetricChangeEvents:input_type -> confirmate.orchestrator.v1.SubscribeMetricChangeEventRequest
+	65, // 72: confirmate.orchestrator.v1.Orchestrator.CreateCertificate:input_type -> confirmate.orchestrator.v1.CreateCertificateRequest
+	49, // 73: confirmate.orchestrator.v1.Orchestrator.GetCertificate:input_type -> confirmate.orchestrator.v1.GetCertificateRequest
+	50, // 74: confirmate.orchestrator.v1.Orchestrator.ListCertificates:input_type -> confirmate.orchestrator.v1.ListCertificatesRequest
+	52, // 75: confirmate.orchestrator.v1.Orchestrator.ListPublicCertificates:input_type -> confirmate.orchestrator.v1.ListPublicCertificatesRequest
+	54, // 76: confirmate.orchestrator.v1.Orchestrator.UpdateCertificate:input_type -> confirmate.orchestrator.v1.UpdateCertificateRequest
+	66, // 77: confirmate.orchestrator.v1.Orchestrator.RemoveCertificate:input_type -> confirmate.orchestrator.v1.RemoveCertificateRequest
+	55, // 78: confirmate.orchestrator.v1.Orchestrator.CreateCatalog:input_type -> confirmate.orchestrator.v1.CreateCatalogRequest
+	58, // 79: confirmate.orchestrator.v1.Orchestrator.ListCatalogs:input_type -> confirmate.orchestrator.v1.ListCatalogsRequest
+	57, // 80: confirmate.orchestrator.v1.Orchestrator.GetCatalog:input_type -> confirmate.orchestrator.v1.GetCatalogRequest
+	56, // 81: confirmate.orchestrator.v1.Orchestrator.RemoveCatalog:input_type -> confirmate.orchestrator.v1.RemoveCatalogRequest
+	60, // 82: confirmate.orchestrator.v1.Orchestrator.UpdateCatalog:input_type -> confirmate.orchestrator.v1.UpdateCatalogRequest
+	61, // 83: confirmate.orchestrator.v1.Orchestrator.GetCategory:input_type -> confirmate.orchestrator.v1.GetCategoryRequest
+	63, // 84: confirmate.orchestrator.v1.Orchestrator.ListControls:input_type -> confirmate.orchestrator.v1.ListControlsRequest
+	62, // 85: confirmate.orchestrator.v1.Orchestrator.GetControl:input_type -> confirmate.orchestrator.v1.GetControlRequest
+	43, // 86: confirmate.orchestrator.v1.Orchestrator.CreateAuditScope:input_type -> confirmate.orchestrator.v1.CreateAuditScopeRequest
+	45, // 87: confirmate.orchestrator.v1.Orchestrator.GetAuditScope:input_type -> confirmate.orchestrator.v1.GetAuditScopeRequest
+	46, // 88: confirmate.orchestrator.v1.Orchestrator.ListAuditScopes:input_type -> confirmate.orchestrator.v1.ListAuditScopesRequest
+	48, // 89: confirmate.orchestrator.v1.Orchestrator.UpdateAuditScope:input_type -> confirmate.orchestrator.v1.UpdateAuditScopeRequest
+	44, // 90: confirmate.orchestrator.v1.Orchestrator.RemoveAuditScope:input_type -> confirmate.orchestrator.v1.RemoveAuditScopeRequest
+	84, // 91: confirmate.orchestrator.v1.Orchestrator.GetRuntimeInfo:input_type -> confirmate.runtime.v1.GetRuntimeInfoRequest
+	34, // 92: confirmate.orchestrator.v1.Orchestrator.RegisterAssessmentTool:output_type -> confirmate.orchestrator.v1.AssessmentTool
+	5,  // 93: confirmate.orchestrator.v1.Orchestrator.ListAssessmentTools:output_type -> confirmate.orchestrator.v1.ListAssessmentToolsResponse
+	34, // 94: confirmate.orchestrator.v1.Orchestrator.GetAssessmentTool:output_type -> confirmate.orchestrator.v1.AssessmentTool
+	34, // 95: confirmate.orchestrator.v1.Orchestrator.UpdateAssessmentTool:output_type -> confirmate.orchestrator.v1.AssessmentTool
+	85, // 96: confirmate.orchestrator.v1.Orchestrator.DeregisterAssessmentTool:output_type -> google.protobuf.Empty
+	10, // 97: confirmate.orchestrator.v1.Orchestrator.StoreAssessmentResult:output_type -> confirmate.orchestrator.v1.StoreAssessmentResultResponse
+	11, // 98: confirmate.orchestrator.v1.Orchestrator.StoreAssessmentResults:output_type -> confirmate.orchestrator.v1.StoreAssessmentResultsResponse
+	79, // 99: confirmate.orchestrator.v1.Orchestrator.GetAssessmentResult:output_type -> confirmate.assessment.v1.AssessmentResult
+	42, // 100: confirmate.orchestrator.v1.Orchestrator.ListAssessmentResults:output_type -> confirmate.orchestrator.v1.ListAssessmentResultsResponse
+	80, // 101: confirmate.orchestrator.v1.Orchestrator.CreateMetric:output_type -> confirmate.assessment.v1.Metric
+	80, // 102: confirmate.orchestrator.v1.Orchestrator.UpdateMetric:output_type -> confirmate.assessment.v1.Metric
+	80, // 103: confirmate.orchestrator.v1.Orchestrator.GetMetric:output_type -> confirmate.assessment.v1.Metric
+	17, // 104: confirmate.orchestrator.v1.Orchestrator.ListMetrics:output_type -> confirmate.orchestrator.v1.ListMetricsResponse
+	85, // 105: confirmate.orchestrator.v1.Orchestrator.RemoveMetric:output_type -> google.protobuf.Empty
+	35, // 106: confirmate.orchestrator.v1.Orchestrator.CreateTargetOfEvaluation:output_type -> confirmate.orchestrator.v1.TargetOfEvaluation
+	35, // 107: confirmate.orchestrator.v1.Orchestrator.UpdateTargetOfEvaluation:output_type -> confirmate.orchestrator.v1.TargetOfEvaluation
+	35, // 108: confirmate.orchestrator.v1.Orchestrator.GetTargetOfEvaluation:output_type -> confirmate.orchestrator.v1.TargetOfEvaluation
+	23, // 109: confirmate.orchestrator.v1.Orchestrator.ListTargetsOfEvaluation:output_type -> confirmate.orchestrator.v1.ListTargetsOfEvaluationResponse
+	85, // 110: confirmate.orchestrator.v1.Orchestrator.RemoveTargetOfEvaluation:output_type -> google.protobuf.Empty
+	25, // 111: confirmate.orchestrator.v1.Orchestrator.GetTargetOfEvaluationStatistics:output_type -> confirmate.orchestrator.v1.GetTargetOfEvaluationStatisticsResponse
+	81, // 112: confirmate.orchestrator.v1.Orchestrator.UpdateMetricConfiguration:output_type -> confirmate.assessment.v1.MetricConfiguration
+	81, // 113: confirmate.orchestrator.v1.Orchestrator.GetMetricConfiguration:output_type -> confirmate.assessment.v1.MetricConfiguration
+	29, // 114: confirmate.orchestrator.v1.Orchestrator.ListMetricConfigurations:output_type -> confirmate.orchestrator.v1.ListMetricConfigurationResponse
+	82, // 115: confirmate.orchestrator.v1.Orchestrator.UpdateMetricImplementation:output_type -> confirmate.assessment.v1.MetricImplementation
+	82, // 116: confirmate.orchestrator.v1.Orchestrator.GetMetricImplementation:output_type -> confirmate.assessment.v1.MetricImplementation
+	33, // 117: confirmate.orchestrator.v1.Orchestrator.SubscribeMetricChangeEvents:output_type -> confirmate.orchestrator.v1.MetricChangeEvent
+	67, // 118: confirmate.orchestrator.v1.Orchestrator.CreateCertificate:output_type -> confirmate.orchestrator.v1.Certificate
+	67, // 119: confirmate.orchestrator.v1.Orchestrator.GetCertificate:output_type -> confirmate.orchestrator.v1.Certificate
+	51, // 120: confirmate.orchestrator.v1.Orchestrator.ListCertificates:output_type -> confirmate.orchestrator.v1.ListCertificatesResponse
+	53, // 121: confirmate.orchestrator.v1.Orchestrator.ListPublicCertificates:output_type -> confirmate.orchestrator.v1.ListPublicCertificatesResponse
+	67, // 122: confirmate.orchestrator.v1.Orchestrator.UpdateCertificate:output_type -> confirmate.orchestrator.v1.Certificate
+	85, // 123: confirmate.orchestrator.v1.Orchestrator.RemoveCertificate:output_type -> google.protobuf.Empty
+	36, // 124: confirmate.orchestrator.v1.Orchestrator.CreateCatalog:output_type -> confirmate.orchestrator.v1.Catalog
+	59, // 125: confirmate.orchestrator.v1.Orchestrator.ListCatalogs:output_type -> confirmate.orchestrator.v1.ListCatalogsResponse
+	36, // 126: confirmate.orchestrator.v1.Orchestrator.GetCatalog:output_type -> confirmate.orchestrator.v1.Catalog
+	85, // 127: confirmate.orchestrator.v1.Orchestrator.RemoveCatalog:output_type -> google.protobuf.Empty
+	36, // 128: confirmate.orchestrator.v1.Orchestrator.UpdateCatalog:output_type -> confirmate.orchestrator.v1.Catalog
+	37, // 129: confirmate.orchestrator.v1.Orchestrator.GetCategory:output_type -> confirmate.orchestrator.v1.Category
+	64, // 130: confirmate.orchestrator.v1.Orchestrator.ListControls:output_type -> confirmate.orchestrator.v1.ListControlsResponse
+	38, // 131: confirmate.orchestrator.v1.Orchestrator.GetControl:output_type -> confirmate.orchestrator.v1.Control
+	39, // 132: confirmate.orchestrator.v1.Orchestrator.CreateAuditScope:output_type -> confirmate.orchestrator.v1.AuditScope
+	39, // 133: confirmate.orchestrator.v1.Orchestrator.GetAuditScope:output_type -> confirmate.orchestrator.v1.AuditScope
+	47, // 134: confirmate.orchestrator.v1.Orchestrator.ListAuditScopes:output_type -> confirmate.orchestrator.v1.ListAuditScopesResponse
+	39, // 135: confirmate.orchestrator.v1.Orchestrator.UpdateAuditScope:output_type -> confirmate.orchestrator.v1.AuditScope
+	85, // 136: confirmate.orchestrator.v1.Orchestrator.RemoveAuditScope:output_type -> google.protobuf.Empty
+	86, // 137: confirmate.orchestrator.v1.Orchestrator.GetRuntimeInfo:output_type -> confirmate.runtime.v1.Runtime
 	92, // [92:138] is the sub-list for method output_type
 	46, // [46:92] is the sub-list for method input_type
 	46, // [46:46] is the sub-list for extension type_name

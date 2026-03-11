@@ -44,7 +44,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Discovery_Start_FullMethodName = "/clouditor.discovery.v1.Discovery/Start"
+	Discovery_Start_FullMethodName = "/confirmate.discovery.v1.Discovery/Start"
 )
 
 // DiscoveryClient is the client API for Discovery service.
@@ -141,7 +141,7 @@ func _Discovery_Start_Handler(srv interface{}, ctx context.Context, dec func(int
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Discovery_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "clouditor.discovery.v1.Discovery",
+	ServiceName: "confirmate.discovery.v1.Discovery",
 	HandlerType: (*DiscoveryServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

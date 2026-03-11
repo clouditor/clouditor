@@ -44,12 +44,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	EvidenceStore_StoreEvidence_FullMethodName              = "/clouditor.evidence.v1.EvidenceStore/StoreEvidence"
-	EvidenceStore_StoreEvidences_FullMethodName             = "/clouditor.evidence.v1.EvidenceStore/StoreEvidences"
-	EvidenceStore_ListEvidences_FullMethodName              = "/clouditor.evidence.v1.EvidenceStore/ListEvidences"
-	EvidenceStore_GetEvidence_FullMethodName                = "/clouditor.evidence.v1.EvidenceStore/GetEvidence"
-	EvidenceStore_ListSupportedResourceTypes_FullMethodName = "/clouditor.evidence.v1.EvidenceStore/ListSupportedResourceTypes"
-	EvidenceStore_ListResources_FullMethodName              = "/clouditor.evidence.v1.EvidenceStore/ListResources"
+	EvidenceStore_StoreEvidence_FullMethodName              = "/confirmate.evidence.v1.EvidenceStore/StoreEvidence"
+	EvidenceStore_StoreEvidences_FullMethodName             = "/confirmate.evidence.v1.EvidenceStore/StoreEvidences"
+	EvidenceStore_ListEvidences_FullMethodName              = "/confirmate.evidence.v1.EvidenceStore/ListEvidences"
+	EvidenceStore_GetEvidence_FullMethodName                = "/confirmate.evidence.v1.EvidenceStore/GetEvidence"
+	EvidenceStore_ListSupportedResourceTypes_FullMethodName = "/confirmate.evidence.v1.EvidenceStore/ListSupportedResourceTypes"
+	EvidenceStore_ListResources_FullMethodName              = "/confirmate.evidence.v1.EvidenceStore/ListResources"
 )
 
 // EvidenceStoreClient is the client API for EvidenceStore service.
@@ -317,7 +317,7 @@ func _EvidenceStore_ListResources_Handler(srv interface{}, ctx context.Context, 
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var EvidenceStore_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "clouditor.evidence.v1.EvidenceStore",
+	ServiceName: "confirmate.evidence.v1.EvidenceStore",
 	HandlerType: (*EvidenceStoreServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

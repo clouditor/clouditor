@@ -96,11 +96,11 @@ var File_api_ontology_service_proto protoreflect.FileDescriptor
 
 const file_api_ontology_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1aapi/ontology/service.proto\x12\x15clouditor.ontology.v1\x1a4policies/security-metrics/ontology/v1/ontology.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\"K\n" +
+	"\x1aapi/ontology/service.proto\x12\x16confirmate.ontology.v1\x1a4policies/security-metrics/ontology/v1/ontology.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\"K\n" +
 	"\vNoopRequest\x12<\n" +
-	"\bresource\x18\x01 \x01(\v2 .confirmate.ontology.v1.ResourceR\bresource2z\n" +
-	"\x0fOntologyService\x12g\n" +
-	"\x04Noop\x12\".clouditor.ontology.v1.NoopRequest\x1a\x16.google.protobuf.Empty\"#\x82\xd3\xe4\x93\x02\x1d:\bresource\"\x11/v1/ontology/noopB(Z&clouditor.io/clouditor/v2/api/ontologyb\x06proto3"
+	"\bresource\x18\x01 \x01(\v2 .confirmate.ontology.v1.ResourceR\bresource2{\n" +
+	"\x0fOntologyService\x12h\n" +
+	"\x04Noop\x12#.confirmate.ontology.v1.NoopRequest\x1a\x16.google.protobuf.Empty\"#\x82\xd3\xe4\x93\x02\x1d:\bresource\"\x11/v1/ontology/noopB(Z&clouditor.io/clouditor/v2/api/ontologyb\x06proto3"
 
 var (
 	file_api_ontology_service_proto_rawDescOnce sync.Once
@@ -116,14 +116,14 @@ func file_api_ontology_service_proto_rawDescGZIP() []byte {
 
 var file_api_ontology_service_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_api_ontology_service_proto_goTypes = []any{
-	(*NoopRequest)(nil),   // 0: clouditor.ontology.v1.NoopRequest
+	(*NoopRequest)(nil),   // 0: confirmate.ontology.v1.NoopRequest
 	(*Resource)(nil),      // 1: confirmate.ontology.v1.Resource
 	(*emptypb.Empty)(nil), // 2: google.protobuf.Empty
 }
 var file_api_ontology_service_proto_depIdxs = []int32{
-	1, // 0: clouditor.ontology.v1.NoopRequest.resource:type_name -> confirmate.ontology.v1.Resource
-	0, // 1: clouditor.ontology.v1.OntologyService.Noop:input_type -> clouditor.ontology.v1.NoopRequest
-	2, // 2: clouditor.ontology.v1.OntologyService.Noop:output_type -> google.protobuf.Empty
+	1, // 0: confirmate.ontology.v1.NoopRequest.resource:type_name -> confirmate.ontology.v1.Resource
+	0, // 1: confirmate.ontology.v1.OntologyService.Noop:input_type -> confirmate.ontology.v1.NoopRequest
+	2, // 2: confirmate.ontology.v1.OntologyService.Noop:output_type -> google.protobuf.Empty
 	2, // [2:3] is the sub-list for method output_type
 	1, // [1:2] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name

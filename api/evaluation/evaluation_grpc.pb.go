@@ -44,10 +44,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Evaluation_StartEvaluation_FullMethodName        = "/clouditor.evaluation.v1.Evaluation/StartEvaluation"
-	Evaluation_StopEvaluation_FullMethodName         = "/clouditor.evaluation.v1.Evaluation/StopEvaluation"
-	Evaluation_ListEvaluationResults_FullMethodName  = "/clouditor.evaluation.v1.Evaluation/ListEvaluationResults"
-	Evaluation_CreateEvaluationResult_FullMethodName = "/clouditor.evaluation.v1.Evaluation/CreateEvaluationResult"
+	Evaluation_StartEvaluation_FullMethodName        = "/confirmate.evaluation.v1.Evaluation/StartEvaluation"
+	Evaluation_StopEvaluation_FullMethodName         = "/confirmate.evaluation.v1.Evaluation/StopEvaluation"
+	Evaluation_ListEvaluationResults_FullMethodName  = "/confirmate.evaluation.v1.Evaluation/ListEvaluationResults"
+	Evaluation_CreateEvaluationResult_FullMethodName = "/confirmate.evaluation.v1.Evaluation/CreateEvaluationResult"
 )
 
 // EvaluationClient is the client API for Evaluation service.
@@ -255,7 +255,7 @@ func _Evaluation_CreateEvaluationResult_Handler(srv interface{}, ctx context.Con
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Evaluation_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "clouditor.evaluation.v1.Evaluation",
+	ServiceName: "confirmate.evaluation.v1.Evaluation",
 	HandlerType: (*EvaluationServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
