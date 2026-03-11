@@ -267,7 +267,7 @@ func TestAnySerializer_Value(t *testing.T) {
 				assert.NoError(t, err)
 
 				return assert.Equal(t, m, map[string]interface{}{
-					"@type": "type.googleapis.com/clouditor.orchestrator.v1.TargetOfEvaluation",
+					"@type": "type.googleapis.com/confirmate.orchestrator.v1.TargetOfEvaluation",
 					"id":    "my-target",
 				})
 			},
