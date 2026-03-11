@@ -25,7 +25,7 @@
 
 syntax = "proto3";
 
-package clouditor.ontology.v1;
+package confirmate.ontology.v1;
 
 import "buf/validate/validate.proto";
 import "google/protobuf/descriptor.proto";

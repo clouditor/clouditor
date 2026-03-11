@@ -25,7 +25,7 @@
 
 syntax = "proto3";
 
-package clouditor.ontology.v1;
+package confirmate.ontology.v1;
 
 import "policies/security-metrics/ontology/v1/ontology.proto";
 import "google/api/annotations.proto";

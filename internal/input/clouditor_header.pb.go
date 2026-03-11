@@ -53,7 +53,7 @@ var File_internal_input_clouditor_header_proto protoreflect.FileDescriptor
 
 const file_internal_input_clouditor_header_proto_rawDesc = "" +
 	"\n" +
-	"%internal/input/clouditor_header.proto\x12\x15clouditor.ontology.v1\x1a\x1bbuf/validate/validate.proto\x1a google/protobuf/descriptor.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1fgoogle/protobuf/timestamp.protoB(Z&clouditor.io/clouditor/v2/api/ontologyb\x06proto3"
+	"%internal/input/clouditor_header.proto\x12\x16confirmate.ontology.v1\x1a\x1bbuf/validate/validate.proto\x1a google/protobuf/descriptor.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1fgoogle/protobuf/timestamp.protoB(Z&clouditor.io/clouditor/v2/api/ontologyb\x06proto3"
 
 var file_internal_input_clouditor_header_proto_goTypes = []any{}
 var file_internal_input_clouditor_header_proto_depIdxs = []int32{

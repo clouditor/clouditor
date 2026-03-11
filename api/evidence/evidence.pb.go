@@ -240,7 +240,7 @@ var File_api_evidence_evidence_proto protoreflect.FileDescriptor
 
 const file_api_evidence_evidence_proto_rawDesc = "" +
 	"\n" +
-	"\x1bapi/evidence/evidence.proto\x12\x15clouditor.evidence.v1\x1a4policies/security-metrics/ontology/v1/ontology.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x19google/protobuf/any.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\xbe\x03\n" +
+	"\x1bapi/evidence/evidence.proto\x12\x16confirmate.evidence.v1\x1a4policies/security-metrics/ontology/v1/ontology.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x19google/protobuf/any.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\xbe\x03\n" +
 	"\bEvidence\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12q\n" +
 	"\ttimestamp\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB7\xbaH\x03\xc8\x01\x01\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\ttimestamp\x12?\n" +
@@ -275,16 +275,16 @@ func file_api_evidence_evidence_proto_rawDescGZIP() []byte {
 
 var file_api_evidence_evidence_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_api_evidence_evidence_proto_goTypes = []any{
-	(*Evidence)(nil),              // 0: clouditor.evidence.v1.Evidence
-	(*Resource)(nil),              // 1: clouditor.evidence.v1.Resource
+	(*Evidence)(nil),              // 0: confirmate.evidence.v1.Evidence
+	(*Resource)(nil),              // 1: confirmate.evidence.v1.Resource
 	(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
 	(*ontology.Resource)(nil),     // 3: confirmate.ontology.v1.Resource
 	(*anypb.Any)(nil),             // 4: google.protobuf.Any
 }
 var file_api_evidence_evidence_proto_depIdxs = []int32{
-	2, // 0: clouditor.evidence.v1.Evidence.timestamp:type_name -> google.protobuf.Timestamp
-	3, // 1: clouditor.evidence.v1.Evidence.resource:type_name -> confirmate.ontology.v1.Resource
-	4, // 2: clouditor.evidence.v1.Resource.properties:type_name -> google.protobuf.Any
+	2, // 0: confirmate.evidence.v1.Evidence.timestamp:type_name -> google.protobuf.Timestamp
+	3, // 1: confirmate.evidence.v1.Evidence.resource:type_name -> confirmate.ontology.v1.Resource
+	4, // 2: confirmate.evidence.v1.Resource.properties:type_name -> google.protobuf.Any
 	3, // [3:3] is the sub-list for method output_type
 	3, // [3:3] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name

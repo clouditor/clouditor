@@ -74,7 +74,7 @@ func RegisterOntologyServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.ontology.v1.OntologyService/Noop", runtime.WithHTTPPathPattern("/v1/ontology/noop"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/confirmate.ontology.v1.OntologyService/Noop", runtime.WithHTTPPathPattern("/v1/ontology/noop"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -132,7 +132,7 @@ func RegisterOntologyServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.ontology.v1.OntologyService/Noop", runtime.WithHTTPPathPattern("/v1/ontology/noop"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/confirmate.ontology.v1.OntologyService/Noop", runtime.WithHTTPPathPattern("/v1/ontology/noop"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return

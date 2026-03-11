@@ -45,9 +45,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Assessment_CalculateCompliance_FullMethodName  = "/clouditor.assessment.v1.Assessment/CalculateCompliance"
-	Assessment_AssessEvidence_FullMethodName       = "/clouditor.assessment.v1.Assessment/AssessEvidence"
-	Assessment_AssessEvidenceStream_FullMethodName = "/clouditor.assessment.v1.Assessment/AssessEvidenceStream"
+	Assessment_CalculateCompliance_FullMethodName  = "/confirmate.assessment.v1.Assessment/CalculateCompliance"
+	Assessment_AssessEvidence_FullMethodName       = "/confirmate.assessment.v1.Assessment/AssessEvidence"
+	Assessment_AssessEvidenceStream_FullMethodName = "/confirmate.assessment.v1.Assessment/AssessEvidenceStream"
 )
 
 // AssessmentClient is the client API for Assessment service.
@@ -212,7 +212,7 @@ type Assessment_AssessEvidenceStreamServer = grpc.BidiStreamingServer[AssessEvid
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Assessment_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "clouditor.assessment.v1.Assessment",
+	ServiceName: "confirmate.assessment.v1.Assessment",
 	HandlerType: (*AssessmentServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

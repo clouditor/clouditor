@@ -487,7 +487,7 @@ type EvaluationResult struct {
 	// Optionally, specifies the parent control ID, if this is a sub-control
 	ParentControlId *string `protobuf:"bytes,7,opt,name=parent_control_id,json=parentControlId,proto3,oneof" json:"parent_control_id,omitempty"`
 	// Evaluation status
-	Status EvaluationStatus `protobuf:"varint,8,opt,name=status,proto3,enum=clouditor.evaluation.v1.EvaluationStatus" json:"status,omitempty"`
+	Status EvaluationStatus `protobuf:"varint,8,opt,name=status,proto3,enum=confirmate.evaluation.v1.EvaluationStatus" json:"status,omitempty"`
 	// Time of evaluation
 	Timestamp *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=timestamp,proto3" json:"timestamp,omitempty" gorm:"serializer:timestamppb;type:timestamp"`
 	// List of assessment results because of which the evaluation status is compliant or not compliant
@@ -711,7 +711,7 @@ var File_api_evaluation_evaluation_proto protoreflect.FileDescriptor
 
 const file_api_evaluation_evaluation_proto_rawDesc = "" +
 	"\n" +
-	"\x1fapi/evaluation/evaluation.proto\x12\x17clouditor.evaluation.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\x82\x01\n" +
+	"\x1fapi/evaluation/evaluation.proto\x12\x18confirmate.evaluation.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13tagger/tagger.proto\"\x82\x01\n" +
 	"\x16StartEvaluationRequest\x121\n" +
 	"\x0eaudit_scope_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\fauditScopeId\x12(\n" +
 	"\binterval\x18\x03 \x01(\x05B\a\xbaH\x04\x1a\x02 \x00H\x00R\binterval\x88\x01\x01B\v\n" +
@@ -719,14 +719,14 @@ const file_api_evaluation_evaluation_proto_rawDesc = "" +
 	"\x17StartEvaluationResponse\x12\x1e\n" +
 	"\n" +
 	"successful\x18\x01 \x01(\bR\n" +
-	"successful\"j\n" +
-	"\x1dCreateEvaluationResultRequest\x12I\n" +
-	"\x06result\x18\x01 \x01(\v2).clouditor.evaluation.v1.EvaluationResultB\x06\xbaH\x03\xc8\x01\x01R\x06result\"J\n" +
+	"successful\"k\n" +
+	"\x1dCreateEvaluationResultRequest\x12J\n" +
+	"\x06result\x18\x01 \x01(\v2*.confirmate.evaluation.v1.EvaluationResultB\x06\xbaH\x03\xc8\x01\x01R\x06result\"J\n" +
 	"\x15StopEvaluationRequest\x121\n" +
 	"\x0eaudit_scope_id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\fauditScopeId\"\x18\n" +
-	"\x16StopEvaluationResponse\"\xe3\x05\n" +
-	"\x1cListEvaluationResultsRequest\x12Y\n" +
-	"\x06filter\x18\x01 \x01(\v2<.clouditor.evaluation.v1.ListEvaluationResultsRequest.FilterH\x00R\x06filter\x88\x01\x01\x124\n" +
+	"\x16StopEvaluationResponse\"\xe4\x05\n" +
+	"\x1cListEvaluationResultsRequest\x12Z\n" +
+	"\x06filter\x18\x01 \x01(\v2=.confirmate.evaluation.v1.ListEvaluationResultsRequest.FilterH\x00R\x06filter\x88\x01\x01\x124\n" +
 	"\x14latest_by_control_id\x18\x02 \x01(\bH\x01R\x11latestByControlId\x88\x01\x01\x12\x1b\n" +
 	"\tpage_size\x18\n" +
 	" \x01(\x05R\bpageSize\x12\x1d\n" +
@@ -750,10 +750,10 @@ const file_api_evaluation_evaluation_proto_rawDesc = "" +
 	"\r_parents_onlyB\x14\n" +
 	"\x12_valid_manual_onlyB\t\n" +
 	"\a_filterB\x17\n" +
-	"\x15_latest_by_control_id\"\x8c\x01\n" +
-	"\x1dListEvaluationResultsResponse\x12C\n" +
-	"\aresults\x18\x01 \x03(\v2).clouditor.evaluation.v1.EvaluationResultR\aresults\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xd3\x06\n" +
+	"\x15_latest_by_control_id\"\x8d\x01\n" +
+	"\x1dListEvaluationResultsResponse\x12D\n" +
+	"\aresults\x18\x01 \x03(\v2*.confirmate.evaluation.v1.EvaluationResultR\aresults\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xd4\x06\n" +
 	"\x10EvaluationResult\x12\x1b\n" +
 	"\x02id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12?\n" +
 	"\x17target_of_evaluation_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x14targetOfEvaluationId\x12.\n" +
@@ -762,8 +762,8 @@ const file_api_evaluation_evaluation_proto_rawDesc = "" +
 	"control_id\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tcontrolId\x12;\n" +
 	"\x15control_category_name\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x13controlCategoryName\x125\n" +
 	"\x12control_catalog_id\x18\x06 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x10controlCatalogId\x12/\n" +
-	"\x11parent_control_id\x18\a \x01(\tH\x00R\x0fparentControlId\x88\x01\x01\x12N\n" +
-	"\x06status\x18\b \x01(\x0e2).clouditor.evaluation.v1.EvaluationStatusB\v\xe0A\x02\xbaH\x05\x82\x01\x02\x10\x01R\x06status\x12n\n" +
+	"\x11parent_control_id\x18\a \x01(\tH\x00R\x0fparentControlId\x88\x01\x01\x12O\n" +
+	"\x06status\x18\b \x01(\x0e2*.confirmate.evaluation.v1.EvaluationStatusB\v\xe0A\x02\xbaH\x05\x82\x01\x02\x10\x01R\x06status\x12n\n" +
 	"\ttimestamp\x18\t \x01(\v2\x1a.google.protobuf.TimestampB4\xe0A\x02\x9a\x84\x9e\x03,gorm:\"serializer:timestamppb;type:timestamp\"R\ttimestamp\x12^\n" +
 	"\x15assessment_result_ids\x18\n" +
 	" \x03(\tB*\xe0A\x02\xbaH\t\x92\x01\x06\"\x04r\x02\x10\x01\x9a\x84\x9e\x03\x16gorm:\"serializer:json\"R\x13assessmentResultIds\x12\x1d\n" +
@@ -781,13 +781,13 @@ const file_api_evaluation_evaluation_proto_rawDesc = "" +
 	"\x1fEVALUATION_STATUS_NOT_COMPLIANT\x10\x03\x12,\n" +
 	"(EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY\x10\x04\x12\x1d\n" +
 	"\x19EVALUATION_STATUS_PENDING\x10\n" +
-	"2\xb5\x05\n" +
+	"2\xbd\x05\n" +
 	"\n" +
-	"Evaluation\x12\xac\x01\n" +
-	"\x0fStartEvaluation\x12/.clouditor.evaluation.v1.StartEvaluationRequest\x1a0.clouditor.evaluation.v1.StartEvaluationResponse\"6\x82\xd3\xe4\x93\x020\"./v1/evaluation/evaluate/{audit_scope_id}/start\x12\xa8\x01\n" +
-	"\x0eStopEvaluation\x12..clouditor.evaluation.v1.StopEvaluationRequest\x1a/.clouditor.evaluation.v1.StopEvaluationResponse\"5\x82\xd3\xe4\x93\x02/\"-/v1/evaluation/evaluate/{audit_scope_id}/stop\x12\xa6\x01\n" +
-	"\x15ListEvaluationResults\x125.clouditor.evaluation.v1.ListEvaluationResultsRequest\x1a6.clouditor.evaluation.v1.ListEvaluationResultsResponse\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/v1/evaluation/results\x12\xa3\x01\n" +
-	"\x16CreateEvaluationResult\x126.clouditor.evaluation.v1.CreateEvaluationResultRequest\x1a).clouditor.evaluation.v1.EvaluationResult\"&\x82\xd3\xe4\x93\x02 :\x06result\"\x16/v1/evaluation/resultsB*Z(clouditor.io/clouditor/v2/api/evaluationb\x06proto3"
+	"Evaluation\x12\xae\x01\n" +
+	"\x0fStartEvaluation\x120.confirmate.evaluation.v1.StartEvaluationRequest\x1a1.confirmate.evaluation.v1.StartEvaluationResponse\"6\x82\xd3\xe4\x93\x020\"./v1/evaluation/evaluate/{audit_scope_id}/start\x12\xaa\x01\n" +
+	"\x0eStopEvaluation\x12/.confirmate.evaluation.v1.StopEvaluationRequest\x1a0.confirmate.evaluation.v1.StopEvaluationResponse\"5\x82\xd3\xe4\x93\x02/\"-/v1/evaluation/evaluate/{audit_scope_id}/stop\x12\xa8\x01\n" +
+	"\x15ListEvaluationResults\x126.confirmate.evaluation.v1.ListEvaluationResultsRequest\x1a7.confirmate.evaluation.v1.ListEvaluationResultsResponse\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/v1/evaluation/results\x12\xa5\x01\n" +
+	"\x16CreateEvaluationResult\x127.confirmate.evaluation.v1.CreateEvaluationResultRequest\x1a*.confirmate.evaluation.v1.EvaluationResult\"&\x82\xd3\xe4\x93\x02 :\x06result\"\x16/v1/evaluation/resultsB*Z(clouditor.io/clouditor/v2/api/evaluationb\x06proto3"
 
 var (
 	file_api_evaluation_evaluation_proto_rawDescOnce sync.Once
@@ -804,33 +804,33 @@ func file_api_evaluation_evaluation_proto_rawDescGZIP() []byte {
 var file_api_evaluation_evaluation_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_api_evaluation_evaluation_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_api_evaluation_evaluation_proto_goTypes = []any{
-	(EvaluationStatus)(0),                       // 0: clouditor.evaluation.v1.EvaluationStatus
-	(*StartEvaluationRequest)(nil),              // 1: clouditor.evaluation.v1.StartEvaluationRequest
-	(*StartEvaluationResponse)(nil),             // 2: clouditor.evaluation.v1.StartEvaluationResponse
-	(*CreateEvaluationResultRequest)(nil),       // 3: clouditor.evaluation.v1.CreateEvaluationResultRequest
-	(*StopEvaluationRequest)(nil),               // 4: clouditor.evaluation.v1.StopEvaluationRequest
-	(*StopEvaluationResponse)(nil),              // 5: clouditor.evaluation.v1.StopEvaluationResponse
-	(*ListEvaluationResultsRequest)(nil),        // 6: clouditor.evaluation.v1.ListEvaluationResultsRequest
-	(*ListEvaluationResultsResponse)(nil),       // 7: clouditor.evaluation.v1.ListEvaluationResultsResponse
-	(*EvaluationResult)(nil),                    // 8: clouditor.evaluation.v1.EvaluationResult
-	(*ListEvaluationResultsRequest_Filter)(nil), // 9: clouditor.evaluation.v1.ListEvaluationResultsRequest.Filter
+	(EvaluationStatus)(0),                       // 0: confirmate.evaluation.v1.EvaluationStatus
+	(*StartEvaluationRequest)(nil),              // 1: confirmate.evaluation.v1.StartEvaluationRequest
+	(*StartEvaluationResponse)(nil),             // 2: confirmate.evaluation.v1.StartEvaluationResponse
+	(*CreateEvaluationResultRequest)(nil),       // 3: confirmate.evaluation.v1.CreateEvaluationResultRequest
+	(*StopEvaluationRequest)(nil),               // 4: confirmate.evaluation.v1.StopEvaluationRequest
+	(*StopEvaluationResponse)(nil),              // 5: confirmate.evaluation.v1.StopEvaluationResponse
+	(*ListEvaluationResultsRequest)(nil),        // 6: confirmate.evaluation.v1.ListEvaluationResultsRequest
+	(*ListEvaluationResultsResponse)(nil),       // 7: confirmate.evaluation.v1.ListEvaluationResultsResponse
+	(*EvaluationResult)(nil),                    // 8: confirmate.evaluation.v1.EvaluationResult
+	(*ListEvaluationResultsRequest_Filter)(nil), // 9: confirmate.evaluation.v1.ListEvaluationResultsRequest.Filter
 	(*timestamppb.Timestamp)(nil),               // 10: google.protobuf.Timestamp
 }
 var file_api_evaluation_evaluation_proto_depIdxs = []int32{
-	8,  // 0: clouditor.evaluation.v1.CreateEvaluationResultRequest.result:type_name -> clouditor.evaluation.v1.EvaluationResult
-	9,  // 1: clouditor.evaluation.v1.ListEvaluationResultsRequest.filter:type_name -> clouditor.evaluation.v1.ListEvaluationResultsRequest.Filter
-	8,  // 2: clouditor.evaluation.v1.ListEvaluationResultsResponse.results:type_name -> clouditor.evaluation.v1.EvaluationResult
-	0,  // 3: clouditor.evaluation.v1.EvaluationResult.status:type_name -> clouditor.evaluation.v1.EvaluationStatus
-	10, // 4: clouditor.evaluation.v1.EvaluationResult.timestamp:type_name -> google.protobuf.Timestamp
-	10, // 5: clouditor.evaluation.v1.EvaluationResult.valid_until:type_name -> google.protobuf.Timestamp
-	1,  // 6: clouditor.evaluation.v1.Evaluation.StartEvaluation:input_type -> clouditor.evaluation.v1.StartEvaluationRequest
-	4,  // 7: clouditor.evaluation.v1.Evaluation.StopEvaluation:input_type -> clouditor.evaluation.v1.StopEvaluationRequest
-	6,  // 8: clouditor.evaluation.v1.Evaluation.ListEvaluationResults:input_type -> clouditor.evaluation.v1.ListEvaluationResultsRequest
-	3,  // 9: clouditor.evaluation.v1.Evaluation.CreateEvaluationResult:input_type -> clouditor.evaluation.v1.CreateEvaluationResultRequest
-	2,  // 10: clouditor.evaluation.v1.Evaluation.StartEvaluation:output_type -> clouditor.evaluation.v1.StartEvaluationResponse
-	5,  // 11: clouditor.evaluation.v1.Evaluation.StopEvaluation:output_type -> clouditor.evaluation.v1.StopEvaluationResponse
-	7,  // 12: clouditor.evaluation.v1.Evaluation.ListEvaluationResults:output_type -> clouditor.evaluation.v1.ListEvaluationResultsResponse
-	8,  // 13: clouditor.evaluation.v1.Evaluation.CreateEvaluationResult:output_type -> clouditor.evaluation.v1.EvaluationResult
+	8,  // 0: confirmate.evaluation.v1.CreateEvaluationResultRequest.result:type_name -> confirmate.evaluation.v1.EvaluationResult
+	9,  // 1: confirmate.evaluation.v1.ListEvaluationResultsRequest.filter:type_name -> confirmate.evaluation.v1.ListEvaluationResultsRequest.Filter
+	8,  // 2: confirmate.evaluation.v1.ListEvaluationResultsResponse.results:type_name -> confirmate.evaluation.v1.EvaluationResult
+	0,  // 3: confirmate.evaluation.v1.EvaluationResult.status:type_name -> confirmate.evaluation.v1.EvaluationStatus
+	10, // 4: confirmate.evaluation.v1.EvaluationResult.timestamp:type_name -> google.protobuf.Timestamp
+	10, // 5: confirmate.evaluation.v1.EvaluationResult.valid_until:type_name -> google.protobuf.Timestamp
+	1,  // 6: confirmate.evaluation.v1.Evaluation.StartEvaluation:input_type -> confirmate.evaluation.v1.StartEvaluationRequest
+	4,  // 7: confirmate.evaluation.v1.Evaluation.StopEvaluation:input_type -> confirmate.evaluation.v1.StopEvaluationRequest
+	6,  // 8: confirmate.evaluation.v1.Evaluation.ListEvaluationResults:input_type -> confirmate.evaluation.v1.ListEvaluationResultsRequest
+	3,  // 9: confirmate.evaluation.v1.Evaluation.CreateEvaluationResult:input_type -> confirmate.evaluation.v1.CreateEvaluationResultRequest
+	2,  // 10: confirmate.evaluation.v1.Evaluation.StartEvaluation:output_type -> confirmate.evaluation.v1.StartEvaluationResponse
+	5,  // 11: confirmate.evaluation.v1.Evaluation.StopEvaluation:output_type -> confirmate.evaluation.v1.StopEvaluationResponse
+	7,  // 12: confirmate.evaluation.v1.Evaluation.ListEvaluationResults:output_type -> confirmate.evaluation.v1.ListEvaluationResultsResponse
+	8,  // 13: confirmate.evaluation.v1.Evaluation.CreateEvaluationResult:output_type -> confirmate.evaluation.v1.EvaluationResult
 	10, // [10:14] is the sub-list for method output_type
 	6,  // [6:10] is the sub-list for method input_type
 	6,  // [6:6] is the sub-list for extension type_name

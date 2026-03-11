@@ -327,7 +327,6 @@ type ActivityLogging struct {
 	state                    protoimpl.MessageState `protogen:"open.v1"`
 	Enabled                  bool                   `protobuf:"varint,18133,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	MonitoringLogDataEnabled bool                   `protobuf:"varint,13626,opt,name=monitoring_log_data_enabled,json=monitoringLogDataEnabled,proto3" json:"monitoring_log_data_enabled,omitempty"`
-	Name                     string                 `protobuf:"bytes,10561,opt,name=name,proto3" json:"name,omitempty"`
 	RetentionPeriod          *durationpb.Duration   `protobuf:"bytes,10788,opt,name=retention_period,json=retentionPeriod,proto3" json:"retention_period,omitempty"`
 	SecurityAlertsEnabled    bool                   `protobuf:"varint,17680,opt,name=security_alerts_enabled,json=securityAlertsEnabled,proto3" json:"security_alerts_enabled,omitempty"`
 	LoggingServiceIds        []string               `protobuf:"bytes,16760,rep,name=logging_service_ids,json=loggingServiceIds,proto3" json:"logging_service_ids,omitempty"`
@@ -377,13 +376,6 @@ func (x *ActivityLogging) GetMonitoringLogDataEnabled() bool {
 		return x.MonitoringLogDataEnabled
 	}
 	return false
-}
-
-func (x *ActivityLogging) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
 }
 
 func (x *ActivityLogging) GetRetentionPeriod() *durationpb.Duration {
@@ -917,7 +909,6 @@ type ApplicationLogging struct {
 	state                    protoimpl.MessageState `protogen:"open.v1"`
 	Enabled                  bool                   `protobuf:"varint,13571,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	MonitoringLogDataEnabled bool                   `protobuf:"varint,4205,opt,name=monitoring_log_data_enabled,json=monitoringLogDataEnabled,proto3" json:"monitoring_log_data_enabled,omitempty"`
-	Name                     string                 `protobuf:"bytes,4460,opt,name=name,proto3" json:"name,omitempty"`
 	RetentionPeriod          *durationpb.Duration   `protobuf:"bytes,6319,opt,name=retention_period,json=retentionPeriod,proto3" json:"retention_period,omitempty"`
 	SecurityAlertsEnabled    bool                   `protobuf:"varint,17870,opt,name=security_alerts_enabled,json=securityAlertsEnabled,proto3" json:"security_alerts_enabled,omitempty"`
 	LoggingServiceIds        []string               `protobuf:"bytes,3884,rep,name=logging_service_ids,json=loggingServiceIds,proto3" json:"logging_service_ids,omitempty"`
@@ -967,13 +958,6 @@ func (x *ApplicationLogging) GetMonitoringLogDataEnabled() bool {
 		return x.MonitoringLogDataEnabled
 	}
 	return false
-}
-
-func (x *ApplicationLogging) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
 }
 
 func (x *ApplicationLogging) GetRetentionPeriod() *durationpb.Duration {
@@ -2587,7 +2571,6 @@ type BootLogging struct {
 	state                    protoimpl.MessageState `protogen:"open.v1"`
 	Enabled                  bool                   `protobuf:"varint,17321,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	MonitoringLogDataEnabled bool                   `protobuf:"varint,9135,opt,name=monitoring_log_data_enabled,json=monitoringLogDataEnabled,proto3" json:"monitoring_log_data_enabled,omitempty"`
-	Name                     string                 `protobuf:"bytes,12593,opt,name=name,proto3" json:"name,omitempty"`
 	RetentionPeriod          *durationpb.Duration   `protobuf:"bytes,2338,opt,name=retention_period,json=retentionPeriod,proto3" json:"retention_period,omitempty"`
 	SecurityAlertsEnabled    bool                   `protobuf:"varint,3133,opt,name=security_alerts_enabled,json=securityAlertsEnabled,proto3" json:"security_alerts_enabled,omitempty"`
 	LoggingServiceIds        []string               `protobuf:"bytes,17105,rep,name=logging_service_ids,json=loggingServiceIds,proto3" json:"logging_service_ids,omitempty"`
@@ -2637,13 +2620,6 @@ func (x *BootLogging) GetMonitoringLogDataEnabled() bool {
 		return x.MonitoringLogDataEnabled
 	}
 	return false
-}
-
-func (x *BootLogging) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
 }
 
 func (x *BootLogging) GetRetentionPeriod() *durationpb.Duration {
@@ -19253,7 +19229,6 @@ type OSLogging struct {
 	state                    protoimpl.MessageState `protogen:"open.v1"`
 	Enabled                  bool                   `protobuf:"varint,207,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	MonitoringLogDataEnabled bool                   `protobuf:"varint,12434,opt,name=monitoring_log_data_enabled,json=monitoringLogDataEnabled,proto3" json:"monitoring_log_data_enabled,omitempty"`
-	Name                     string                 `protobuf:"bytes,1176,opt,name=name,proto3" json:"name,omitempty"`
 	RetentionPeriod          *durationpb.Duration   `protobuf:"bytes,11358,opt,name=retention_period,json=retentionPeriod,proto3" json:"retention_period,omitempty"`
 	SecurityAlertsEnabled    bool                   `protobuf:"varint,7453,opt,name=security_alerts_enabled,json=securityAlertsEnabled,proto3" json:"security_alerts_enabled,omitempty"`
 	LoggingServiceIds        []string               `protobuf:"bytes,14966,rep,name=logging_service_ids,json=loggingServiceIds,proto3" json:"logging_service_ids,omitempty"`
@@ -19303,13 +19278,6 @@ func (x *OSLogging) GetMonitoringLogDataEnabled() bool {
 		return x.MonitoringLogDataEnabled
 	}
 	return false
-}
-
-func (x *OSLogging) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
 }
 
 func (x *OSLogging) GetRetentionPeriod() *durationpb.Duration {
@@ -24705,7 +24673,6 @@ type ResourceLogging struct {
 	state                    protoimpl.MessageState `protogen:"open.v1"`
 	Enabled                  bool                   `protobuf:"varint,1509,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	MonitoringLogDataEnabled bool                   `protobuf:"varint,6804,opt,name=monitoring_log_data_enabled,json=monitoringLogDataEnabled,proto3" json:"monitoring_log_data_enabled,omitempty"`
-	Name                     string                 `protobuf:"bytes,2313,opt,name=name,proto3" json:"name,omitempty"`
 	RetentionPeriod          *durationpb.Duration   `protobuf:"bytes,6776,opt,name=retention_period,json=retentionPeriod,proto3" json:"retention_period,omitempty"`
 	SecurityAlertsEnabled    bool                   `protobuf:"varint,6099,opt,name=security_alerts_enabled,json=securityAlertsEnabled,proto3" json:"security_alerts_enabled,omitempty"`
 	LoggingServiceIds        []string               `protobuf:"bytes,3295,rep,name=logging_service_ids,json=loggingServiceIds,proto3" json:"logging_service_ids,omitempty"`
@@ -24755,13 +24722,6 @@ func (x *ResourceLogging) GetMonitoringLogDataEnabled() bool {
 		return x.MonitoringLogDataEnabled
 	}
 	return false
-}
-
-func (x *ResourceLogging) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
 }
 
 func (x *ResourceLogging) GetRetentionPeriod() *durationpb.Duration {
@@ -28662,7 +28622,6 @@ type Vulnerability struct {
 	Cve           string   `protobuf:"bytes,205,opt,name=cve,proto3" json:"cve,omitempty"`
 	Cwe           []string `protobuf:"bytes,18325,rep,name=cwe,proto3" json:"cwe,omitempty"`
 	Description   string   `protobuf:"bytes,10690,opt,name=description,proto3" json:"description,omitempty"`
-	Name          string   `protobuf:"bytes,13528,opt,name=name,proto3" json:"name,omitempty"`
 	Url           string   `protobuf:"bytes,11925,opt,name=url,proto3" json:"url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -28722,13 +28681,6 @@ func (x *Vulnerability) GetCwe() []string {
 func (x *Vulnerability) GetDescription() string {
 	if x != nil {
 		return x.Description
-	}
-	return ""
-}
-
-func (x *Vulnerability) GetName() string {
-	if x != nil {
-		return x.Name
 	}
 	return ""
 }
@@ -29132,11 +29084,10 @@ const file_policies_security_metrics_ontology_v1_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:)\x82\xa6\x1d\aAccount\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-	"_parent_id\"\xfc\x02\n" +
+	"_parent_id\"\xdf\x02\n" +
 	"\x0fActivityLogging\x12\x1a\n" +
 	"\aenabled\x18Ս\x01 \x01(\bR\aenabled\x12>\n" +
-	"\x1bmonitoring_log_data_enabled\x18\xbaj \x01(\bR\x18monitoringLogDataEnabled\x12\x1b\n" +
-	"\x04name\x18\xc1R \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12E\n" +
+	"\x1bmonitoring_log_data_enabled\x18\xbaj \x01(\bR\x18monitoringLogDataEnabled\x12E\n" +
 	"\x10retention_period\x18\xa4T \x01(\v2\x19.google.protobuf.DurationR\x0fretentionPeriod\x128\n" +
 	"\x17security_alerts_enabled\x18\x90\x8a\x01 \x01(\bR\x15securityAlertsEnabled\x120\n" +
 	"\x13logging_service_ids\x18\xf8\x82\x01 \x03(\tR\x11loggingServiceIds:=\x82\xa6\x1d\x0fActivityLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xf2\x04\n" +
@@ -29207,11 +29158,10 @@ const file_policies_security_metrics_ontology_v1_ontology_proto_rawDesc = "" +
 	"\x13_code_repository_idB\r\n" +
 	"\v_compute_idB\f\n" +
 	"\n" +
-	"_parent_id\"\x80\x03\n" +
+	"_parent_id\"\xe3\x02\n" +
 	"\x12ApplicationLogging\x12\x19\n" +
 	"\aenabled\x18\x83j \x01(\bR\aenabled\x12>\n" +
-	"\x1bmonitoring_log_data_enabled\x18\xed  \x01(\bR\x18monitoringLogDataEnabled\x12\x1b\n" +
-	"\x04name\x18\xec\" \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12E\n" +
+	"\x1bmonitoring_log_data_enabled\x18\xed  \x01(\bR\x18monitoringLogDataEnabled\x12E\n" +
 	"\x10retention_period\x18\xaf1 \x01(\v2\x19.google.protobuf.DurationR\x0fretentionPeriod\x128\n" +
 	"\x17security_alerts_enabled\x18\u038b\x01 \x01(\bR\x15securityAlertsEnabled\x12/\n" +
 	"\x13logging_service_ids\x18\xac\x1e \x03(\tR\x11loggingServiceIds:@\x82\xa6\x1d\x12ApplicationLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xde\x01\n" +
@@ -29337,11 +29287,10 @@ const file_policies_security_metrics_ontology_v1_ontology_proto_rawDesc = "" +
 	"\x10block_storage_id\x18\xa5i \x01(\tH\x00R\x0eblockStorageId\x88\x01\x01\x12D\n" +
 	"\vcode_region\x18\xc4\x15 \x01(\v2\".confirmate.ontology.v1.CodeRegionR\n" +
 	"codeRegion:7\x82\xa6\x1d\x15BlockStorageOperation\x82\xa6\x1d\tOperation\x82\xa6\x1d\rFunctionalityB\x13\n" +
-	"\x11_block_storage_id\"\xf3\x02\n" +
+	"\x11_block_storage_id\"\xd6\x02\n" +
 	"\vBootLogging\x12\x1a\n" +
 	"\aenabled\x18\xa9\x87\x01 \x01(\bR\aenabled\x12>\n" +
-	"\x1bmonitoring_log_data_enabled\x18\xafG \x01(\bR\x18monitoringLogDataEnabled\x12\x1b\n" +
-	"\x04name\x18\xb1b \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12E\n" +
+	"\x1bmonitoring_log_data_enabled\x18\xafG \x01(\bR\x18monitoringLogDataEnabled\x12E\n" +
 	"\x10retention_period\x18\xa2\x12 \x01(\v2\x19.google.protobuf.DurationR\x0fretentionPeriod\x127\n" +
 	"\x17security_alerts_enabled\x18\xbd\x18 \x01(\bR\x15securityAlertsEnabled\x120\n" +
 	"\x13logging_service_ids\x18х\x01 \x03(\tR\x11loggingServiceIds:9\x82\xa6\x1d\vBootLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\")\n" +
@@ -30955,11 +30904,10 @@ const file_policies_security_metrics_ontology_v1_ontology_proto_rawDesc = "" +
 	"\x04type\"\xa8\x01\n" +
 	"\x10NoAuthentication\x12-\n" +
 	"\x12context_is_checked\x18\xf7] \x01(\bR\x10contextIsChecked\x12,\n" +
-	"\x11rotation_interval\x18\xceW \x01(\x05R\x10rotationInterval:7\x82\xa6\x1d\x10NoAuthentication\x82\xa6\x1d\fAuthenticity\x82\xa6\x1d\x0fSecurityFeature\"\xed\x02\n" +
+	"\x11rotation_interval\x18\xceW \x01(\x05R\x10rotationInterval:7\x82\xa6\x1d\x10NoAuthentication\x82\xa6\x1d\fAuthenticity\x82\xa6\x1d\x0fSecurityFeature\"\xd0\x02\n" +
 	"\tOSLogging\x12\x19\n" +
 	"\aenabled\x18\xcf\x01 \x01(\bR\aenabled\x12>\n" +
-	"\x1bmonitoring_log_data_enabled\x18\x92a \x01(\bR\x18monitoringLogDataEnabled\x12\x1b\n" +
-	"\x04name\x18\x98\t \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12E\n" +
+	"\x1bmonitoring_log_data_enabled\x18\x92a \x01(\bR\x18monitoringLogDataEnabled\x12E\n" +
 	"\x10retention_period\x18\xdeX \x01(\v2\x19.google.protobuf.DurationR\x0fretentionPeriod\x127\n" +
 	"\x17security_alerts_enabled\x18\x9d: \x01(\bR\x15securityAlertsEnabled\x12/\n" +
 	"\x13logging_service_ids\x18\xf6t \x03(\tR\x11loggingServiceIds:7\x82\xa6\x1d\tOSLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"\xd4\x01\n" +
@@ -31465,11 +31413,10 @@ const file_policies_security_metrics_ontology_v1_ontology_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:/\x82\xa6\x1d\rResourceGroup\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-	"_parent_id\"\xf9\x02\n" +
+	"_parent_id\"\xdc\x02\n" +
 	"\x0fResourceLogging\x12\x19\n" +
 	"\aenabled\x18\xe5\v \x01(\bR\aenabled\x12>\n" +
-	"\x1bmonitoring_log_data_enabled\x18\x945 \x01(\bR\x18monitoringLogDataEnabled\x12\x1b\n" +
-	"\x04name\x18\x89\x12 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12E\n" +
+	"\x1bmonitoring_log_data_enabled\x18\x945 \x01(\bR\x18monitoringLogDataEnabled\x12E\n" +
 	"\x10retention_period\x18\xf84 \x01(\v2\x19.google.protobuf.DurationR\x0fretentionPeriod\x127\n" +
 	"\x17security_alerts_enabled\x18\xd3/ \x01(\bR\x15securityAlertsEnabled\x12/\n" +
 	"\x13logging_service_ids\x18\xdf\x19 \x03(\tR\x11loggingServiceIds:=\x82\xa6\x1d\x0fResourceLogging\x82\xa6\x1d\aLogging\x82\xa6\x1d\bAuditing\x82\xa6\x1d\x0fSecurityFeature\"(\n" +
@@ -31862,13 +31809,12 @@ const file_policies_security_metrics_ontology_v1_ontology_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:A\x82\xa6\x1d\x11VirtualSubNetwork\x82\xa6\x1d\n" +
 	"Networking\x82\xa6\x1d\x0eInfrastructure\x82\xa6\x1d\bResourceB\f\n" +
 	"\n" +
-	"_parent_id\"\xd0\x01\n" +
+	"_parent_id\"\xb3\x01\n" +
 	"\rVulnerability\x12!\n" +
 	"\vcriticality\x18\xf2M \x01(\tR\vcriticality\x12\x11\n" +
 	"\x03cve\x18\xcd\x01 \x01(\tR\x03cve\x12\x12\n" +
 	"\x03cwe\x18\x95\x8f\x01 \x03(\tR\x03cwe\x12!\n" +
-	"\vdescription\x18\xc2S \x01(\tR\vdescription\x12\x1b\n" +
-	"\x04name\x18\xd8i \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\x11\n" +
+	"\vdescription\x18\xc2S \x01(\tR\vdescription\x12\x11\n" +
 	"\x03url\x18\x95] \x01(\tR\x03url:\"\x82\xa6\x1d\rVulnerability\x82\xa6\x1d\rFunctionality\"\x94\x01\n" +
 	"\x16WebApplicationFirewall\x12\x19\n" +
 	"\aenabled\x18\x81F \x01(\bR\aenabled:_\x82\xa6\x1d\x16WebApplicationFirewall\x82\xa6\x1d\bFirewall\x82\xa6\x1d\x11AccessRestriction\x82\xa6\x1d\rAuthorization\x82\xa6\x1d\x0fSecurityFeature\"\xeb\x04\n" +

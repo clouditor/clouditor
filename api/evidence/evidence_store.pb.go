@@ -181,7 +181,7 @@ func (*StoreEvidenceResponse) Descriptor() ([]byte, []int) {
 // StoreEvidencesResponse belongs to StoreEvidences, which uses a custom bidirectional streaming RPC and therefore requires a response message according to the style convention. The bidirectional streaming needs the status and its message in the response for error handling.
 type StoreEvidencesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        EvidenceStatus         `protobuf:"varint,1,opt,name=status,proto3,enum=clouditor.evidence.v1.EvidenceStatus" json:"status,omitempty"`
+	Status        EvidenceStatus         `protobuf:"varint,1,opt,name=status,proto3,enum=confirmate.evidence.v1.EvidenceStatus" json:"status,omitempty"`
 	StatusMessage string                 `protobuf:"bytes,2,opt,name=status_message,json=statusMessage,proto3" json:"status_message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -729,15 +729,15 @@ var File_api_evidence_evidence_store_proto protoreflect.FileDescriptor
 
 const file_api_evidence_evidence_store_proto_rawDesc = "" +
 	"\n" +
-	"!api/evidence/evidence_store.proto\x12\x15clouditor.evidence.v1\x1a\x1bapi/evidence/evidence.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\"[\n" +
-	"\x14StoreEvidenceRequest\x12C\n" +
-	"\bevidence\x18\x01 \x01(\v2\x1f.clouditor.evidence.v1.EvidenceB\x06\xbaH\x03\xc8\x01\x01R\bevidence\"\x17\n" +
-	"\x15StoreEvidenceResponse\"~\n" +
-	"\x16StoreEvidencesResponse\x12=\n" +
-	"\x06status\x18\x01 \x01(\x0e2%.clouditor.evidence.v1.EvidenceStatusR\x06status\x12%\n" +
-	"\x0estatus_message\x18\x02 \x01(\tR\rstatusMessage\"\xc6\x01\n" +
-	"\x14ListEvidencesRequest\x12:\n" +
-	"\x06filter\x18\x01 \x01(\v2\x1d.clouditor.evidence.v1.FilterH\x00R\x06filter\x88\x01\x01\x12\x1b\n" +
+	"!api/evidence/evidence_store.proto\x12\x16confirmate.evidence.v1\x1a\x1bapi/evidence/evidence.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\"\\\n" +
+	"\x14StoreEvidenceRequest\x12D\n" +
+	"\bevidence\x18\x01 \x01(\v2 .confirmate.evidence.v1.EvidenceB\x06\xbaH\x03\xc8\x01\x01R\bevidence\"\x17\n" +
+	"\x15StoreEvidenceResponse\"\x7f\n" +
+	"\x16StoreEvidencesResponse\x12>\n" +
+	"\x06status\x18\x01 \x01(\x0e2&.confirmate.evidence.v1.EvidenceStatusR\x06status\x12%\n" +
+	"\x0estatus_message\x18\x02 \x01(\tR\rstatusMessage\"\xc7\x01\n" +
+	"\x14ListEvidencesRequest\x12;\n" +
+	"\x06filter\x18\x01 \x01(\v2\x1e.confirmate.evidence.v1.FilterH\x00R\x06filter\x88\x01\x01\x12\x1b\n" +
 	"\tpage_size\x18\n" +
 	" \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
@@ -750,18 +750,18 @@ const file_api_evidence_evidence_store_proto_rawDesc = "" +
 	"\atool_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x01R\x06toolId\x88\x01\x01B\x1a\n" +
 	"\x18_target_of_evaluation_idB\n" +
 	"\n" +
-	"\b_tool_id\"~\n" +
-	"\x15ListEvidencesResponse\x12=\n" +
-	"\tevidences\x18\x01 \x03(\v2\x1f.clouditor.evidence.v1.EvidenceR\tevidences\x12&\n" +
+	"\b_tool_id\"\x7f\n" +
+	"\x15ListEvidencesResponse\x12>\n" +
+	"\tevidences\x18\x01 \x03(\v2 .confirmate.evidence.v1.EvidenceR\tevidences\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"?\n" +
 	"\x12GetEvidenceRequest\x12)\n" +
 	"\vevidence_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\n" +
 	"evidenceId\"#\n" +
 	"!ListSupportedResourceTypesRequest\"S\n" +
 	"\"ListSupportedResourceTypesResponse\x12-\n" +
-	"\rresource_type\x18\x01 \x03(\tB\b\xbaH\x05\x92\x01\x02\b\x01R\fresourceType\"\x8a\x03\n" +
-	"\x14ListResourcesRequest\x12O\n" +
-	"\x06filter\x18\x01 \x01(\v22.clouditor.evidence.v1.ListResourcesRequest.FilterH\x00R\x06filter\x88\x01\x01\x12\x1b\n" +
+	"\rresource_type\x18\x01 \x03(\tB\b\xbaH\x05\x92\x01\x02\b\x01R\fresourceType\"\x8b\x03\n" +
+	"\x14ListResourcesRequest\x12P\n" +
+	"\x06filter\x18\x01 \x01(\v23.confirmate.evidence.v1.ListResourcesRequest.FilterH\x00R\x06filter\x88\x01\x01\x12\x1b\n" +
 	"\tpage_size\x18\n" +
 	" \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
@@ -776,21 +776,21 @@ const file_api_evidence_evidence_store_proto_rawDesc = "" +
 	"\x18_target_of_evaluation_idB\n" +
 	"\n" +
 	"\b_tool_idB\t\n" +
-	"\a_filter\"\x7f\n" +
-	"\x15ListResourcesResponse\x12>\n" +
-	"\aresults\x18\x01 \x03(\v2\x1f.clouditor.evidence.v1.ResourceB\x03\xe0A\x02R\aresults\x12&\n" +
+	"\a_filter\"\x80\x01\n" +
+	"\x15ListResourcesResponse\x12?\n" +
+	"\aresults\x18\x01 \x03(\v2 .confirmate.evidence.v1.ResourceB\x03\xe0A\x02R\aresults\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken*d\n" +
 	"\x0eEvidenceStatus\x12\x1f\n" +
 	"\x1bEVIDENCE_STATUS_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12EVIDENCE_STATUS_OK\x10\x01\x12\x19\n" +
-	"\x15EVIDENCE_STATUS_ERROR\x10\x022\x9e\a\n" +
-	"\rEvidenceStore\x12\x99\x01\n" +
-	"\rStoreEvidence\x12+.clouditor.evidence.v1.StoreEvidenceRequest\x1a,.clouditor.evidence.v1.StoreEvidenceResponse\"-\x82\xd3\xe4\x93\x02':\bevidence\"\x1b/v1/evidence_store/evidence\x12r\n" +
-	"\x0eStoreEvidences\x12+.clouditor.evidence.v1.StoreEvidenceRequest\x1a-.clouditor.evidence.v1.StoreEvidencesResponse\"\x00(\x010\x01\x12\x90\x01\n" +
-	"\rListEvidences\x12+.clouditor.evidence.v1.ListEvidencesRequest\x1a,.clouditor.evidence.v1.ListEvidencesResponse\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/evidence_store/evidences\x12\x8d\x01\n" +
-	"\vGetEvidence\x12).clouditor.evidence.v1.GetEvidenceRequest\x1a\x1f.clouditor.evidence.v1.Evidence\"2\x82\xd3\xe4\x93\x02,\x12*/v1/evidence_store/evidences/{evidence_id}\x12\xc6\x01\n" +
-	"\x1aListSupportedResourceTypes\x128.clouditor.evidence.v1.ListSupportedResourceTypesRequest\x1a9.clouditor.evidence.v1.ListSupportedResourceTypesResponse\"3\x82\xd3\xe4\x93\x02-\x12+/v1/evidence_store/supported_resource_types\x12\x90\x01\n" +
-	"\rListResources\x12+.clouditor.evidence.v1.ListResourcesRequest\x1a,.clouditor.evidence.v1.ListResourcesResponse\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/evidence_store/resourcesB(Z&clouditor.io/clouditor/v2/api/evidenceb\x06proto3"
+	"\x15EVIDENCE_STATUS_ERROR\x10\x022\xaa\a\n" +
+	"\rEvidenceStore\x12\x9b\x01\n" +
+	"\rStoreEvidence\x12,.confirmate.evidence.v1.StoreEvidenceRequest\x1a-.confirmate.evidence.v1.StoreEvidenceResponse\"-\x82\xd3\xe4\x93\x02':\bevidence\"\x1b/v1/evidence_store/evidence\x12t\n" +
+	"\x0eStoreEvidences\x12,.confirmate.evidence.v1.StoreEvidenceRequest\x1a..confirmate.evidence.v1.StoreEvidencesResponse\"\x00(\x010\x01\x12\x92\x01\n" +
+	"\rListEvidences\x12,.confirmate.evidence.v1.ListEvidencesRequest\x1a-.confirmate.evidence.v1.ListEvidencesResponse\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/evidence_store/evidences\x12\x8f\x01\n" +
+	"\vGetEvidence\x12*.confirmate.evidence.v1.GetEvidenceRequest\x1a .confirmate.evidence.v1.Evidence\"2\x82\xd3\xe4\x93\x02,\x12*/v1/evidence_store/evidences/{evidence_id}\x12\xc8\x01\n" +
+	"\x1aListSupportedResourceTypes\x129.confirmate.evidence.v1.ListSupportedResourceTypesRequest\x1a:.confirmate.evidence.v1.ListSupportedResourceTypesResponse\"3\x82\xd3\xe4\x93\x02-\x12+/v1/evidence_store/supported_resource_types\x12\x92\x01\n" +
+	"\rListResources\x12,.confirmate.evidence.v1.ListResourcesRequest\x1a-.confirmate.evidence.v1.ListResourcesResponse\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/evidence_store/resourcesB(Z&clouditor.io/clouditor/v2/api/evidenceb\x06proto3"
 
 var (
 	file_api_evidence_evidence_store_proto_rawDescOnce sync.Once
@@ -807,41 +807,41 @@ func file_api_evidence_evidence_store_proto_rawDescGZIP() []byte {
 var file_api_evidence_evidence_store_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_api_evidence_evidence_store_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_api_evidence_evidence_store_proto_goTypes = []any{
-	(EvidenceStatus)(0),                        // 0: clouditor.evidence.v1.EvidenceStatus
-	(*StoreEvidenceRequest)(nil),               // 1: clouditor.evidence.v1.StoreEvidenceRequest
-	(*StoreEvidenceResponse)(nil),              // 2: clouditor.evidence.v1.StoreEvidenceResponse
-	(*StoreEvidencesResponse)(nil),             // 3: clouditor.evidence.v1.StoreEvidencesResponse
-	(*ListEvidencesRequest)(nil),               // 4: clouditor.evidence.v1.ListEvidencesRequest
-	(*Filter)(nil),                             // 5: clouditor.evidence.v1.Filter
-	(*ListEvidencesResponse)(nil),              // 6: clouditor.evidence.v1.ListEvidencesResponse
-	(*GetEvidenceRequest)(nil),                 // 7: clouditor.evidence.v1.GetEvidenceRequest
-	(*ListSupportedResourceTypesRequest)(nil),  // 8: clouditor.evidence.v1.ListSupportedResourceTypesRequest
-	(*ListSupportedResourceTypesResponse)(nil), // 9: clouditor.evidence.v1.ListSupportedResourceTypesResponse
-	(*ListResourcesRequest)(nil),               // 10: clouditor.evidence.v1.ListResourcesRequest
-	(*ListResourcesResponse)(nil),              // 11: clouditor.evidence.v1.ListResourcesResponse
-	(*ListResourcesRequest_Filter)(nil),        // 12: clouditor.evidence.v1.ListResourcesRequest.Filter
-	(*Evidence)(nil),                           // 13: clouditor.evidence.v1.Evidence
-	(*Resource)(nil),                           // 14: clouditor.evidence.v1.Resource
+	(EvidenceStatus)(0),                        // 0: confirmate.evidence.v1.EvidenceStatus
+	(*StoreEvidenceRequest)(nil),               // 1: confirmate.evidence.v1.StoreEvidenceRequest
+	(*StoreEvidenceResponse)(nil),              // 2: confirmate.evidence.v1.StoreEvidenceResponse
+	(*StoreEvidencesResponse)(nil),             // 3: confirmate.evidence.v1.StoreEvidencesResponse
+	(*ListEvidencesRequest)(nil),               // 4: confirmate.evidence.v1.ListEvidencesRequest
+	(*Filter)(nil),                             // 5: confirmate.evidence.v1.Filter
+	(*ListEvidencesResponse)(nil),              // 6: confirmate.evidence.v1.ListEvidencesResponse
+	(*GetEvidenceRequest)(nil),                 // 7: confirmate.evidence.v1.GetEvidenceRequest
+	(*ListSupportedResourceTypesRequest)(nil),  // 8: confirmate.evidence.v1.ListSupportedResourceTypesRequest
+	(*ListSupportedResourceTypesResponse)(nil), // 9: confirmate.evidence.v1.ListSupportedResourceTypesResponse
+	(*ListResourcesRequest)(nil),               // 10: confirmate.evidence.v1.ListResourcesRequest
+	(*ListResourcesResponse)(nil),              // 11: confirmate.evidence.v1.ListResourcesResponse
+	(*ListResourcesRequest_Filter)(nil),        // 12: confirmate.evidence.v1.ListResourcesRequest.Filter
+	(*Evidence)(nil),                           // 13: confirmate.evidence.v1.Evidence
+	(*Resource)(nil),                           // 14: confirmate.evidence.v1.Resource
 }
 var file_api_evidence_evidence_store_proto_depIdxs = []int32{
-	13, // 0: clouditor.evidence.v1.StoreEvidenceRequest.evidence:type_name -> clouditor.evidence.v1.Evidence
-	0,  // 1: clouditor.evidence.v1.StoreEvidencesResponse.status:type_name -> clouditor.evidence.v1.EvidenceStatus
-	5,  // 2: clouditor.evidence.v1.ListEvidencesRequest.filter:type_name -> clouditor.evidence.v1.Filter
-	13, // 3: clouditor.evidence.v1.ListEvidencesResponse.evidences:type_name -> clouditor.evidence.v1.Evidence
-	12, // 4: clouditor.evidence.v1.ListResourcesRequest.filter:type_name -> clouditor.evidence.v1.ListResourcesRequest.Filter
-	14, // 5: clouditor.evidence.v1.ListResourcesResponse.results:type_name -> clouditor.evidence.v1.Resource
-	1,  // 6: clouditor.evidence.v1.EvidenceStore.StoreEvidence:input_type -> clouditor.evidence.v1.StoreEvidenceRequest
-	1,  // 7: clouditor.evidence.v1.EvidenceStore.StoreEvidences:input_type -> clouditor.evidence.v1.StoreEvidenceRequest
-	4,  // 8: clouditor.evidence.v1.EvidenceStore.ListEvidences:input_type -> clouditor.evidence.v1.ListEvidencesRequest
-	7,  // 9: clouditor.evidence.v1.EvidenceStore.GetEvidence:input_type -> clouditor.evidence.v1.GetEvidenceRequest
-	8,  // 10: clouditor.evidence.v1.EvidenceStore.ListSupportedResourceTypes:input_type -> clouditor.evidence.v1.ListSupportedResourceTypesRequest
-	10, // 11: clouditor.evidence.v1.EvidenceStore.ListResources:input_type -> clouditor.evidence.v1.ListResourcesRequest
-	2,  // 12: clouditor.evidence.v1.EvidenceStore.StoreEvidence:output_type -> clouditor.evidence.v1.StoreEvidenceResponse
-	3,  // 13: clouditor.evidence.v1.EvidenceStore.StoreEvidences:output_type -> clouditor.evidence.v1.StoreEvidencesResponse
-	6,  // 14: clouditor.evidence.v1.EvidenceStore.ListEvidences:output_type -> clouditor.evidence.v1.ListEvidencesResponse
-	13, // 15: clouditor.evidence.v1.EvidenceStore.GetEvidence:output_type -> clouditor.evidence.v1.Evidence
-	9,  // 16: clouditor.evidence.v1.EvidenceStore.ListSupportedResourceTypes:output_type -> clouditor.evidence.v1.ListSupportedResourceTypesResponse
-	11, // 17: clouditor.evidence.v1.EvidenceStore.ListResources:output_type -> clouditor.evidence.v1.ListResourcesResponse
+	13, // 0: confirmate.evidence.v1.StoreEvidenceRequest.evidence:type_name -> confirmate.evidence.v1.Evidence
+	0,  // 1: confirmate.evidence.v1.StoreEvidencesResponse.status:type_name -> confirmate.evidence.v1.EvidenceStatus
+	5,  // 2: confirmate.evidence.v1.ListEvidencesRequest.filter:type_name -> confirmate.evidence.v1.Filter
+	13, // 3: confirmate.evidence.v1.ListEvidencesResponse.evidences:type_name -> confirmate.evidence.v1.Evidence
+	12, // 4: confirmate.evidence.v1.ListResourcesRequest.filter:type_name -> confirmate.evidence.v1.ListResourcesRequest.Filter
+	14, // 5: confirmate.evidence.v1.ListResourcesResponse.results:type_name -> confirmate.evidence.v1.Resource
+	1,  // 6: confirmate.evidence.v1.EvidenceStore.StoreEvidence:input_type -> confirmate.evidence.v1.StoreEvidenceRequest
+	1,  // 7: confirmate.evidence.v1.EvidenceStore.StoreEvidences:input_type -> confirmate.evidence.v1.StoreEvidenceRequest
+	4,  // 8: confirmate.evidence.v1.EvidenceStore.ListEvidences:input_type -> confirmate.evidence.v1.ListEvidencesRequest
+	7,  // 9: confirmate.evidence.v1.EvidenceStore.GetEvidence:input_type -> confirmate.evidence.v1.GetEvidenceRequest
+	8,  // 10: confirmate.evidence.v1.EvidenceStore.ListSupportedResourceTypes:input_type -> confirmate.evidence.v1.ListSupportedResourceTypesRequest
+	10, // 11: confirmate.evidence.v1.EvidenceStore.ListResources:input_type -> confirmate.evidence.v1.ListResourcesRequest
+	2,  // 12: confirmate.evidence.v1.EvidenceStore.StoreEvidence:output_type -> confirmate.evidence.v1.StoreEvidenceResponse
+	3,  // 13: confirmate.evidence.v1.EvidenceStore.StoreEvidences:output_type -> confirmate.evidence.v1.StoreEvidencesResponse
+	6,  // 14: confirmate.evidence.v1.EvidenceStore.ListEvidences:output_type -> confirmate.evidence.v1.ListEvidencesResponse
+	13, // 15: confirmate.evidence.v1.EvidenceStore.GetEvidence:output_type -> confirmate.evidence.v1.Evidence
+	9,  // 16: confirmate.evidence.v1.EvidenceStore.ListSupportedResourceTypes:output_type -> confirmate.evidence.v1.ListSupportedResourceTypesResponse
+	11, // 17: confirmate.evidence.v1.EvidenceStore.ListResources:output_type -> confirmate.evidence.v1.ListResourcesResponse
 	12, // [12:18] is the sub-list for method output_type
 	6,  // [6:12] is the sub-list for method input_type
 	6,  // [6:6] is the sub-list for extension type_name

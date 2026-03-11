@@ -201,7 +201,7 @@ func RegisterEvaluationHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/StartEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{audit_scope_id}/start"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/confirmate.evaluation.v1.Evaluation/StartEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{audit_scope_id}/start"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -221,7 +221,7 @@ func RegisterEvaluationHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/StopEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{audit_scope_id}/stop"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/confirmate.evaluation.v1.Evaluation/StopEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{audit_scope_id}/stop"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -241,7 +241,7 @@ func RegisterEvaluationHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/ListEvaluationResults", runtime.WithHTTPPathPattern("/v1/evaluation/results"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/confirmate.evaluation.v1.Evaluation/ListEvaluationResults", runtime.WithHTTPPathPattern("/v1/evaluation/results"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -261,7 +261,7 @@ func RegisterEvaluationHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/CreateEvaluationResult", runtime.WithHTTPPathPattern("/v1/evaluation/results"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/confirmate.evaluation.v1.Evaluation/CreateEvaluationResult", runtime.WithHTTPPathPattern("/v1/evaluation/results"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -319,7 +319,7 @@ func RegisterEvaluationHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/StartEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{audit_scope_id}/start"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/confirmate.evaluation.v1.Evaluation/StartEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{audit_scope_id}/start"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -336,7 +336,7 @@ func RegisterEvaluationHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/StopEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{audit_scope_id}/stop"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/confirmate.evaluation.v1.Evaluation/StopEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{audit_scope_id}/stop"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -353,7 +353,7 @@ func RegisterEvaluationHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/ListEvaluationResults", runtime.WithHTTPPathPattern("/v1/evaluation/results"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/confirmate.evaluation.v1.Evaluation/ListEvaluationResults", runtime.WithHTTPPathPattern("/v1/evaluation/results"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -370,7 +370,7 @@ func RegisterEvaluationHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/CreateEvaluationResult", runtime.WithHTTPPathPattern("/v1/evaluation/results"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/confirmate.evaluation.v1.Evaluation/CreateEvaluationResult", runtime.WithHTTPPathPattern("/v1/evaluation/results"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return

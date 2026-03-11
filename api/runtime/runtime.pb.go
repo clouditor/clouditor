@@ -229,7 +229,7 @@ var File_api_runtime_runtime_proto protoreflect.FileDescriptor
 
 const file_api_runtime_runtime_proto_rawDesc = "" +
 	"\n" +
-	"\x19api/runtime/runtime.proto\x12\x14clouditor.runtime.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa8\x02\n" +
+	"\x19api/runtime/runtime.proto\x12\x15confirmate.runtime.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa9\x02\n" +
 	"\aRuntime\x12,\n" +
 	"\x0frelease_version\x18\x01 \x01(\tH\x00R\x0ereleaseVersion\x88\x01\x01\x12\x10\n" +
 	"\x03vcs\x18\x02 \x01(\tR\x03vcs\x12\x1f\n" +
@@ -237,8 +237,8 @@ const file_api_runtime_runtime_proto_rawDesc = "" +
 	"commitHash\x12;\n" +
 	"\vcommit_time\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"commitTime\x12%\n" +
-	"\x0egolang_version\x18\x05 \x01(\tR\rgolangVersion\x12D\n" +
-	"\fdependencies\x18\x06 \x03(\v2 .clouditor.runtime.v1.DependencyR\fdependenciesB\x12\n" +
+	"\x0egolang_version\x18\x05 \x01(\tR\rgolangVersion\x12E\n" +
+	"\fdependencies\x18\x06 \x03(\v2!.confirmate.runtime.v1.DependencyR\fdependenciesB\x12\n" +
 	"\x10_release_version\":\n" +
 	"\n" +
 	"Dependency\x12\x12\n" +
@@ -260,14 +260,14 @@ func file_api_runtime_runtime_proto_rawDescGZIP() []byte {
 
 var file_api_runtime_runtime_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_api_runtime_runtime_proto_goTypes = []any{
-	(*Runtime)(nil),               // 0: clouditor.runtime.v1.Runtime
-	(*Dependency)(nil),            // 1: clouditor.runtime.v1.Dependency
-	(*GetRuntimeInfoRequest)(nil), // 2: clouditor.runtime.v1.GetRuntimeInfoRequest
+	(*Runtime)(nil),               // 0: confirmate.runtime.v1.Runtime
+	(*Dependency)(nil),            // 1: confirmate.runtime.v1.Dependency
+	(*GetRuntimeInfoRequest)(nil), // 2: confirmate.runtime.v1.GetRuntimeInfoRequest
 	(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
 }
 var file_api_runtime_runtime_proto_depIdxs = []int32{
-	3, // 0: clouditor.runtime.v1.Runtime.commit_time:type_name -> google.protobuf.Timestamp
-	1, // 1: clouditor.runtime.v1.Runtime.dependencies:type_name -> clouditor.runtime.v1.Dependency
+	3, // 0: confirmate.runtime.v1.Runtime.commit_time:type_name -> google.protobuf.Timestamp
+	1, // 1: confirmate.runtime.v1.Runtime.dependencies:type_name -> confirmate.runtime.v1.Dependency
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

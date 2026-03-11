@@ -284,18 +284,18 @@ var File_api_evidence_experimental_proto protoreflect.FileDescriptor
 
 const file_api_evidence_experimental_proto_rawDesc = "" +
 	"\n" +
-	"\x1fapi/evidence/experimental.proto\x12!clouditor.evidence.v1experimental\x1a\x1bapi/evidence/evidence.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\"Y\n" +
-	"\x15UpdateResourceRequest\x12@\n" +
-	"\bresource\x18\x01 \x01(\v2\x1f.clouditor.evidence.v1.ResourceB\x03\xe0A\x02R\bresource\"\x80\x01\n" +
+	"\x1fapi/evidence/experimental.proto\x12\"confirmate.evidence.v1experimental\x1a\x1bapi/evidence/evidence.proto\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\"Z\n" +
+	"\x15UpdateResourceRequest\x12A\n" +
+	"\bresource\x18\x01 \x01(\v2 .confirmate.evidence.v1.ResourceB\x03\xe0A\x02R\bresource\"\x80\x01\n" +
 	"\x15ListGraphEdgesRequest\x12\x1b\n" +
 	"\tpage_size\x18\n" +
 	" \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
 	"page_token\x18\v \x01(\tR\tpageToken\x12\x19\n" +
 	"\border_by\x18\f \x01(\tR\aorderBy\x12\x10\n" +
-	"\x03asc\x18\r \x01(\bR\x03asc\"\x89\x01\n" +
-	"\x16ListGraphEdgesResponse\x12G\n" +
-	"\x05edges\x18\x01 \x03(\v2,.clouditor.evidence.v1experimental.GraphEdgeB\x03\xe0A\x02R\x05edges\x12&\n" +
+	"\x03asc\x18\r \x01(\bR\x03asc\"\x8a\x01\n" +
+	"\x16ListGraphEdgesResponse\x12H\n" +
+	"\x05edges\x18\x01 \x03(\v2-.confirmate.evidence.v1experimental.GraphEdgeB\x03\xe0A\x02R\x05edges\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\x88\x01\n" +
 	"\tGraphEdge\x12\x1a\n" +
 	"\x02id\x18\x01 \x01(\tB\n" +
@@ -304,10 +304,10 @@ const file_api_evidence_experimental_proto_rawDesc = "" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x06source\x12\"\n" +
 	"\x06target\x18\x03 \x01(\tB\n" +
 	"\xe0A\x02\xbaH\x04r\x02\x10\x01R\x06target\x12\x17\n" +
-	"\x04type\x18\x04 \x01(\tB\x03\xe0A\x02R\x04type2\xfe\x02\n" +
-	"\x15ExperimentalResources\x12\xae\x01\n" +
-	"\x0eUpdateResource\x128.clouditor.evidence.v1experimental.UpdateResourceRequest\x1a\x1f.clouditor.evidence.v1.Resource\"A\x82\xd3\xe4\x93\x02;:\x01*\"6/v1experimental/evidence_store/resources/{resource.id}\x12\xb3\x01\n" +
-	"\x0eListGraphEdges\x128.clouditor.evidence.v1experimental.ListGraphEdgesRequest\x1a9.clouditor.evidence.v1experimental.ListGraphEdgesResponse\",\x82\xd3\xe4\x93\x02&\x12$/v1experimental/evidence/graph/edgesB(Z&clouditor.io/clouditor/v2/api/evidenceb\x06proto3"
+	"\x04type\x18\x04 \x01(\tB\x03\xe0A\x02R\x04type2\x82\x03\n" +
+	"\x15ExperimentalResources\x12\xb0\x01\n" +
+	"\x0eUpdateResource\x129.confirmate.evidence.v1experimental.UpdateResourceRequest\x1a .confirmate.evidence.v1.Resource\"A\x82\xd3\xe4\x93\x02;:\x01*\"6/v1experimental/evidence_store/resources/{resource.id}\x12\xb5\x01\n" +
+	"\x0eListGraphEdges\x129.confirmate.evidence.v1experimental.ListGraphEdgesRequest\x1a:.confirmate.evidence.v1experimental.ListGraphEdgesResponse\",\x82\xd3\xe4\x93\x02&\x12$/v1experimental/evidence/graph/edgesB(Z&clouditor.io/clouditor/v2/api/evidenceb\x06proto3"
 
 var (
 	file_api_evidence_experimental_proto_rawDescOnce sync.Once
@@ -323,19 +323,19 @@ func file_api_evidence_experimental_proto_rawDescGZIP() []byte {
 
 var file_api_evidence_experimental_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_api_evidence_experimental_proto_goTypes = []any{
-	(*UpdateResourceRequest)(nil),  // 0: clouditor.evidence.v1experimental.UpdateResourceRequest
-	(*ListGraphEdgesRequest)(nil),  // 1: clouditor.evidence.v1experimental.ListGraphEdgesRequest
-	(*ListGraphEdgesResponse)(nil), // 2: clouditor.evidence.v1experimental.ListGraphEdgesResponse
-	(*GraphEdge)(nil),              // 3: clouditor.evidence.v1experimental.GraphEdge
-	(*Resource)(nil),               // 4: clouditor.evidence.v1.Resource
+	(*UpdateResourceRequest)(nil),  // 0: confirmate.evidence.v1experimental.UpdateResourceRequest
+	(*ListGraphEdgesRequest)(nil),  // 1: confirmate.evidence.v1experimental.ListGraphEdgesRequest
+	(*ListGraphEdgesResponse)(nil), // 2: confirmate.evidence.v1experimental.ListGraphEdgesResponse
+	(*GraphEdge)(nil),              // 3: confirmate.evidence.v1experimental.GraphEdge
+	(*Resource)(nil),               // 4: confirmate.evidence.v1.Resource
 }
 var file_api_evidence_experimental_proto_depIdxs = []int32{
-	4, // 0: clouditor.evidence.v1experimental.UpdateResourceRequest.resource:type_name -> clouditor.evidence.v1.Resource
-	3, // 1: clouditor.evidence.v1experimental.ListGraphEdgesResponse.edges:type_name -> clouditor.evidence.v1experimental.GraphEdge
-	0, // 2: clouditor.evidence.v1experimental.ExperimentalResources.UpdateResource:input_type -> clouditor.evidence.v1experimental.UpdateResourceRequest
-	1, // 3: clouditor.evidence.v1experimental.ExperimentalResources.ListGraphEdges:input_type -> clouditor.evidence.v1experimental.ListGraphEdgesRequest
-	4, // 4: clouditor.evidence.v1experimental.ExperimentalResources.UpdateResource:output_type -> clouditor.evidence.v1.Resource
-	2, // 5: clouditor.evidence.v1experimental.ExperimentalResources.ListGraphEdges:output_type -> clouditor.evidence.v1experimental.ListGraphEdgesResponse
+	4, // 0: confirmate.evidence.v1experimental.UpdateResourceRequest.resource:type_name -> confirmate.evidence.v1.Resource
+	3, // 1: confirmate.evidence.v1experimental.ListGraphEdgesResponse.edges:type_name -> confirmate.evidence.v1experimental.GraphEdge
+	0, // 2: confirmate.evidence.v1experimental.ExperimentalResources.UpdateResource:input_type -> confirmate.evidence.v1experimental.UpdateResourceRequest
+	1, // 3: confirmate.evidence.v1experimental.ExperimentalResources.ListGraphEdges:input_type -> confirmate.evidence.v1experimental.ListGraphEdgesRequest
+	4, // 4: confirmate.evidence.v1experimental.ExperimentalResources.UpdateResource:output_type -> confirmate.evidence.v1.Resource
+	2, // 5: confirmate.evidence.v1experimental.ExperimentalResources.ListGraphEdges:output_type -> confirmate.evidence.v1experimental.ListGraphEdgesResponse
 	4, // [4:6] is the sub-list for method output_type
 	2, // [2:4] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

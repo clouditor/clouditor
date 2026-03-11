@@ -150,7 +150,7 @@ var File_api_discovery_discovery_proto protoreflect.FileDescriptor
 
 const file_api_discovery_discovery_proto_rawDesc = "" +
 	"\n" +
-	"\x1dapi/discovery/discovery.proto\x12\x16clouditor.discovery.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x19google/protobuf/any.proto\x1a\x13tagger/tagger.proto\"\x8c\x01\n" +
+	"\x1dapi/discovery/discovery.proto\x12\x17confirmate.discovery.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x19google/protobuf/any.proto\x1a\x13tagger/tagger.proto\"\x8c\x01\n" +
 	"\x15StartDiscoveryRequest\x12*\n" +
 	"\x0eresource_group\x18\x01 \x01(\tH\x00R\rresourceGroup\x88\x01\x01\x12$\n" +
 	"\vcsaf_domain\x18\x02 \x01(\tH\x01R\n" +
@@ -160,9 +160,9 @@ const file_api_discovery_discovery_proto_rawDesc = "" +
 	"\x16StartDiscoveryResponse\x12\x1e\n" +
 	"\n" +
 	"successful\x18\x01 \x01(\bR\n" +
-	"successful2\x97\x01\n" +
-	"\tDiscovery\x12\x89\x01\n" +
-	"\x05Start\x12-.clouditor.discovery.v1.StartDiscoveryRequest\x1a..clouditor.discovery.v1.StartDiscoveryResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*b\x01*\"\x13/v1/discovery/startB)Z'clouditor.io/clouditor/v2/api/discoveryb\x06proto3"
+	"successful2\x99\x01\n" +
+	"\tDiscovery\x12\x8b\x01\n" +
+	"\x05Start\x12..confirmate.discovery.v1.StartDiscoveryRequest\x1a/.confirmate.discovery.v1.StartDiscoveryResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*b\x01*\"\x13/v1/discovery/startB)Z'clouditor.io/clouditor/v2/api/discoveryb\x06proto3"
 
 var (
 	file_api_discovery_discovery_proto_rawDescOnce sync.Once
@@ -178,12 +178,12 @@ func file_api_discovery_discovery_proto_rawDescGZIP() []byte {
 
 var file_api_discovery_discovery_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_api_discovery_discovery_proto_goTypes = []any{
-	(*StartDiscoveryRequest)(nil),  // 0: clouditor.discovery.v1.StartDiscoveryRequest
-	(*StartDiscoveryResponse)(nil), // 1: clouditor.discovery.v1.StartDiscoveryResponse
+	(*StartDiscoveryRequest)(nil),  // 0: confirmate.discovery.v1.StartDiscoveryRequest
+	(*StartDiscoveryResponse)(nil), // 1: confirmate.discovery.v1.StartDiscoveryResponse
 }
 var file_api_discovery_discovery_proto_depIdxs = []int32{
-	0, // 0: clouditor.discovery.v1.Discovery.Start:input_type -> clouditor.discovery.v1.StartDiscoveryRequest
-	1, // 1: clouditor.discovery.v1.Discovery.Start:output_type -> clouditor.discovery.v1.StartDiscoveryResponse
+	0, // 0: confirmate.discovery.v1.Discovery.Start:input_type -> confirmate.discovery.v1.StartDiscoveryRequest
+	1, // 1: confirmate.discovery.v1.Discovery.Start:output_type -> confirmate.discovery.v1.StartDiscoveryResponse
 	1, // [1:2] is the sub-list for method output_type
 	0, // [0:1] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
