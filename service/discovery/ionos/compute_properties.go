@@ -23,39 +23,27 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package openstack
+package ionos
 
 import (
-	"clouditor.io/clouditor/v2/api/ontology"
-
-	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
-	"github.com/gophercloud/gophercloud/v2/openstack/objectstorage/v1/containers"
+	"clouditor.io/clouditor/v2/internal/util"
+	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 )
 
-// discoverBlockStorage discovers block storages
-func (d *openstackDiscovery) discoverBlockStorage() (list []ontology.IsResource, err error) {
-	var opts volumes.ListOptsBuilder = &volumes.ListOpts{}
-	list, err = genericList(d, d.storageClient, volumes.List, d.handleBlockStorage, volumes.ExtractVolumes, opts)
-
-	return
-}
-
-// discoverObjectStorage discovers object storages
-func (d *openstackDiscovery) discoverObjectStorage() (list []ontology.IsResource, err error) {
-	var opts containers.ListOptsBuilder = &containers.ListOpts{}
-	list, err = genericList(d, d.storageClient, containers.List, d.handleObjectStorage, containers.ExtractInfo, opts)
-
-	return
-}
-
-func (d *openstackDiscovery) discoverObjectStorageService() (list []ontology.IsResource, err error) {
-
-	resource, err := d.handleObjectStorageService()
-	if err != nil {
-		return
+// getBlockStorageIds lists the block storage IDs attached to the given server
+func getBlockStorageIds(server ionoscloud.Server) (blockStorageIds []string) {
+	for _, volume := range util.Deref(server.Entities.Volumes.Items) {
+		blockStorageIds = append(blockStorageIds, util.Deref(volume.GetId()))
 	}
 
-	list = append(list, resource)
+	return blockStorageIds
+}
 
-	return
+// getNetworkInterfaceIds lists the network interface IDs attached to the given server
+func getNetworkInterfaceIds(server ionoscloud.Server) (NetworkInterfaceIds []string) {
+	for _, nic := range util.Deref(server.Entities.Nics.Items) {
+		NetworkInterfaceIds = append(NetworkInterfaceIds, util.Deref(nic.GetId()))
+	}
+
+	return NetworkInterfaceIds
 }

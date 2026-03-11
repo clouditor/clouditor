@@ -118,6 +118,7 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 					MalwareProtection:   &ontology.MalwareProtection{},
 					AutomaticUpdates:    &ontology.AutomaticUpdates{},
 					BootLogging:         &ontology.BootLogging{Enabled: true},
+					ActivityLogging:     &ontology.ActivityLogging{Enabled: true},
 				}
 
 				want2 := &ontology.VirtualMachine{
@@ -134,6 +135,7 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 					MalwareProtection:   &ontology.MalwareProtection{},
 					AutomaticUpdates:    &ontology.AutomaticUpdates{},
 					BootLogging:         &ontology.BootLogging{Enabled: false},
+					ActivityLogging:     &ontology.ActivityLogging{Enabled: true},
 				}
 
 				got0, ok := got[0].(*ontology.VirtualMachine)

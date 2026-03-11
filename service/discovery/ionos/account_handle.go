@@ -1,4 +1,4 @@
-// Copyright 2024 Fraunhofer AISEC
+// Copyright 2025 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,39 +23,40 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package openstack
+package ionos
 
 import (
-	"clouditor.io/clouditor/v2/api/ontology"
+	"context"
 
-	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
-	"github.com/gophercloud/gophercloud/v2/openstack/objectstorage/v1/containers"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/util"
+
+	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// discoverBlockStorage discovers block storages
-func (d *openstackDiscovery) discoverBlockStorage() (list []ontology.IsResource, err error) {
-	var opts volumes.ListOptsBuilder = &volumes.ListOpts{}
-	list, err = genericList(d, d.storageClient, volumes.List, d.handleBlockStorage, volumes.ExtractVolumes, opts)
-
-	return
-}
-
-// discoverObjectStorage discovers object storages
-func (d *openstackDiscovery) discoverObjectStorage() (list []ontology.IsResource, err error) {
-	var opts containers.ListOptsBuilder = &containers.ListOpts{}
-	list, err = genericList(d, d.storageClient, containers.List, d.handleObjectStorage, containers.ExtractInfo, opts)
-
-	return
-}
-
-func (d *openstackDiscovery) discoverObjectStorageService() (list []ontology.IsResource, err error) {
-
-	resource, err := d.handleObjectStorageService()
+// handleDatacenter creates a datacenter resource based on the Clouditor Ontology
+func (d *ionosDiscovery) handleDatacenter(dc ionoscloud.Datacenter) (ontology.IsResource, error) {
+	// Getting labels
+	l, _, err := d.client.LabelsApi.
+		DatacentersLabelsGet(context.Background(), util.Deref(dc.GetId())).
+		Execute()
 	if err != nil {
-		return
+		log.Errorf("error getting labels for datacenter %s: %s", util.Deref(dc.Id), err)
 	}
 
-	list = append(list, resource)
+	r := &ontology.Account{
+		Id:           util.Deref(dc.Id),
+		Name:         util.Deref(dc.Properties.Name),
+		CreationTime: timestamppb.New(util.Deref(dc.Metadata.GetCreatedDate())),
+		GeoLocation: &ontology.GeoLocation{
+			Region: util.Deref(dc.Properties.Location),
+		},
+		Labels:      labels(l),
+		Raw:         discovery.Raw(dc),
+		Description: util.Deref(dc.Properties.Description),
+	}
 
-	return
+	return r, nil
 }

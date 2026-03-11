@@ -1,4 +1,4 @@
-// Copyright 2024 Fraunhofer AISEC
+// Copyright 2025 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,39 +23,38 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package openstack
+package ionos
 
 import (
-	"clouditor.io/clouditor/v2/api/ontology"
+	"context"
+	"fmt"
 
-	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
-	"github.com/gophercloud/gophercloud/v2/openstack/objectstorage/v1/containers"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/util"
+	ionoscloud "github.com/ionos-cloud/sdk-go/v6"
 )
 
-// discoverBlockStorage discovers block storages
-func (d *openstackDiscovery) discoverBlockStorage() (list []ontology.IsResource, err error) {
-	var opts volumes.ListOptsBuilder = &volumes.ListOpts{}
-	list, err = genericList(d, d.storageClient, volumes.List, d.handleBlockStorage, volumes.ExtractVolumes, opts)
-
-	return
-}
-
-// discoverObjectStorage discovers object storages
-func (d *openstackDiscovery) discoverObjectStorage() (list []ontology.IsResource, err error) {
-	var opts containers.ListOptsBuilder = &containers.ListOpts{}
-	list, err = genericList(d, d.storageClient, containers.List, d.handleObjectStorage, containers.ExtractInfo, opts)
-
-	return
-}
-
-func (d *openstackDiscovery) discoverObjectStorageService() (list []ontology.IsResource, err error) {
-
-	resource, err := d.handleObjectStorageService()
+// discoverDatacenters lists all datacenters in the IONOS cloud and returns them as a list of ontology resources
+func (d *ionosDiscovery) discoverDatacenters() (*ionoscloud.Datacenters, []ontology.IsResource, error) {
+	var (
+		list []ontology.IsResource
+	)
+	// List all datacenters
+	dc, _, err := d.client.DataCentersApi.DatacentersGet(context.Background()).Depth(1).Execute()
 	if err != nil {
-		return
+		return nil, nil, fmt.Errorf("could not list datacenters: %w", err)
 	}
 
-	list = append(list, resource)
+	for _, datacenter := range util.Deref(dc.Items) {
+		r, err := d.handleDatacenter(datacenter)
+		if err != nil {
+			return nil, nil, fmt.Errorf("could not handle datacenter %s: %w", util.Deref(datacenter.Id), err)
+		}
 
-	return
+		log.Infof("Adding datacenter '%s'", r.GetId())
+
+		list = append(list, r)
+	}
+
+	return util.Ref(dc), list, err
 }
