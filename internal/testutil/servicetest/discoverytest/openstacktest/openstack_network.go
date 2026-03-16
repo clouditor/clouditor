@@ -44,6 +44,7 @@ import (
 // Changes:
 // - 2024-12-10: Add function HandleNetworkListSuccessfully() and add second path for "/networks" based on the HandleFunc in https://github.com/gophercloud/gophercloud/blob/5770765aa037e1572cbaa9474113010a1397e822/openstack/networking/v2/networks/testing/requests_test.go (anatheka)
 // - 2025-01-28: Add ProjectID property to all network objects (anatheka)
+// - 2025-01-07: Add error check to fmt.Fprint() (@anatheka)
 
 const ListResponse = `
 {
@@ -280,7 +281,9 @@ func HandleNetworkListSuccessfully(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		fmt.Fprint(w, ListResponse)
+		if _, err := fmt.Fprint(w, ListResponse); err != nil {
+			t.Errorf("failed to write response: %v", err)
+		}
 	})
 
 	th.Mux.HandleFunc("/v2.0/networks", func(w http.ResponseWriter, r *http.Request) {
@@ -290,6 +293,8 @@ func HandleNetworkListSuccessfully(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		fmt.Fprint(w, ListResponse)
+		if _, err := fmt.Fprint(w, ListResponse); err != nil {
+			t.Errorf("failed to write response: %v", err)
+		}
 	})
 }

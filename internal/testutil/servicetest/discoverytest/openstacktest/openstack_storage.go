@@ -41,6 +41,7 @@ import (
 //
 // Changes:
 // - 2025-03-12: Rename function name from MockListResponse() to MockStorageListResponse()(@anatheka)
+// - 2025-01-07: Add error check to fmt.Fprint() (@anatheka)
 
 func MockStorageListResponse(t *testing.T) {
 	th.Mux.HandleFunc("/volumes/detail", func(w http.ResponseWriter, r *http.Request) {
@@ -56,79 +57,85 @@ func MockStorageListResponse(t *testing.T) {
 		marker := r.Form.Get("marker")
 		switch marker {
 		case "":
-			fmt.Fprintf(w, `
+			response := fmt.Sprintf(`
   {
   "volumes": [
-    {
-      "volume_type": "lvmdriver-1",
-      "created_at": "2015-09-17T03:35:03.000000",
-      "bootable": "false",
-      "name": "vol-001",
-      "os-vol-mig-status-attr:name_id": null,
-      "consistencygroup_id": null,
-      "source_volid": null,
-      "os-volume-replication:driver_data": null,
-      "multiattach": false,
-      "snapshot_id": null,
-      "replication_status": "disabled",
-      "os-volume-replication:extended_status": null,
-      "encrypted": false,
-      "os-vol-host-attr:host": "host-001",
-      "availability_zone": "nova",
-      "attachments": [{
-        "server_id": "83ec2e3b-4321-422b-8706-a84185f52a0a",
-        "attachment_id": "05551600-a936-4d4a-ba42-79a037c1-c91a",
-        "attached_at": "2016-08-06T14:48:20.000000",
-        "host_name": "foobar",
-        "volume_id": "d6cacb1a-8b59-4c88-ad90-d70ebb82bb75",
-        "device": "/dev/vdc",
-        "id": "d6cacb1a-8b59-4c88-ad90-d70ebb82bb75"
-      }],
-      "id": "289da7f8-6440-407c-9fb4-7db01ec49164",
-      "size": 75,
-      "user_id": "ff1ce52c03ab433aaba9108c2e3ef541",
-      "os-vol-tenant-attr:tenant_id": "304dc00909ac4d0da6c62d816bcb3459",
-      "os-vol-mig-status-attr:migstat": null,
-      "metadata": {"foo": "bar"},
-      "status": "available",
-      "description": null
-    },
-    {
-      "volume_type": "lvmdriver-1",
-      "created_at": "2015-09-17T03:32:29.000000",
-      "bootable": "false",
-      "name": "vol-002",
-      "os-vol-mig-status-attr:name_id": null,
-      "consistencygroup_id": null,
-      "source_volid": null,
-      "os-volume-replication:driver_data": null,
-      "multiattach": false,
-      "snapshot_id": null,
-      "replication_status": "disabled",
-      "os-volume-replication:extended_status": null,
-      "encrypted": false,
-      "os-vol-host-attr:host": null,
-      "availability_zone": "nova",
-      "attachments": [],
-      "id": "96c3bda7-c82a-4f50-be73-ca7621794835",
-      "size": 75,
-      "user_id": "ff1ce52c03ab433aaba9108c2e3ef541",
-      "os-vol-tenant-attr:tenant_id": "304dc00909ac4d0da6c62d816bcb3459",
-      "os-vol-mig-status-attr:migstat": null,
-      "metadata": {},
-      "status": "available",
-      "description": null
-    }
+  {
+  "volume_type": "lvmdriver-1",
+  "created_at": "2015-09-17T03:35:03.000000",
+  "bootable": "false",
+  "name": "vol-001",
+  "os-vol-mig-status-attr:name_id": null,
+  "consistencygroup_id": null,
+  "source_volid": null,
+  "os-volume-replication:driver_data": null,
+  "multiattach": false,
+  "snapshot_id": null,
+  "replication_status": "disabled",
+  "os-volume-replication:extended_status": null,
+  "encrypted": false,
+  "os-vol-host-attr:host": "host-001",
+  "availability_zone": "nova",
+  "attachments": [{
+  "server_id": "83ec2e3b-4321-422b-8706-a84185f52a0a",
+  "attachment_id": "05551600-a936-4d4a-ba42-79a037c1-c91a",
+  "attached_at": "2016-08-06T14:48:20.000000",
+  "host_name": "foobar",
+  "volume_id": "d6cacb1a-8b59-4c88-ad90-d70ebb82bb75",
+  "device": "/dev/vdc",
+  "id": "d6cacb1a-8b59-4c88-ad90-d70ebb82bb75"
+  }],
+  "id": "289da7f8-6440-407c-9fb4-7db01ec49164",
+  "size": 75,
+  "user_id": "ff1ce52c03ab433aaba9108c2e3ef541",
+  "os-vol-tenant-attr:tenant_id": "304dc00909ac4d0da6c62d816bcb3459",
+  "os-vol-mig-status-attr:migstat": null,
+  "metadata": {"foo": "bar"},
+  "status": "available",
+  "description": null
+  },
+  {
+  "volume_type": "lvmdriver-1",
+  "created_at": "2015-09-17T03:32:29.000000",
+  "bootable": "false",
+  "name": "vol-002",
+  "os-vol-mig-status-attr:name_id": null,
+  "consistencygroup_id": null,
+  "source_volid": null,
+  "os-volume-replication:driver_data": null,
+  "multiattach": false,
+  "snapshot_id": null,
+  "replication_status": "disabled",
+  "os-volume-replication:extended_status": null,
+  "encrypted": false,
+  "os-vol-host-attr:host": null,
+  "availability_zone": "nova",
+  "attachments": [],
+  "id": "96c3bda7-c82a-4f50-be73-ca7621794835",
+  "size": 75,
+  "user_id": "ff1ce52c03ab433aaba9108c2e3ef541",
+  "os-vol-tenant-attr:tenant_id": "304dc00909ac4d0da6c62d816bcb3459",
+  "os-vol-mig-status-attr:migstat": null,
+  "metadata": {},
+  "status": "available",
+  "description": null
+  }
   ],
-	"volumes_links": [
-	{
-		"href": "%s/volumes/detail?marker=1",
-		"rel": "next"
-	}]
+  "volumes_links": [
+  {
+  "href": "%s/volumes/detail?marker=1",
+  "rel": "next"
+  }]
 }
   `, th.Server.URL)
+
+			if _, err := fmt.Fprint(w, response); err != nil {
+				t.Errorf("Failed to write response: %v", err)
+			}
 		case "1":
-			fmt.Fprint(w, `{"volumes": []}`)
+			if _, err := fmt.Fprint(w, `{"volumes": []}`); err != nil {
+				t.Errorf("Failed to write response: %v", err)
+			}
 		default:
 			t.Fatalf("Unexpected marker: [%s]", marker)
 		}
@@ -142,47 +149,50 @@ func MockGetResponse(t *testing.T) {
 
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, `
+		response := `
 {
   "volume": {
-    "volume_type": "lvmdriver-1",
-    "created_at": "2015-09-17T03:32:29.000000",
-    "bootable": "false",
-    "name": "vol-001",
-    "os-vol-mig-status-attr:name_id": null,
-    "consistencygroup_id": null,
-    "source_volid": null,
-    "os-volume-replication:driver_data": null,
-    "multiattach": false,
-    "snapshot_id": null,
-    "replication_status": "disabled",
-    "os-volume-replication:extended_status": null,
-    "encrypted": false,
-    "availability_zone": "nova",
-    "attachments": [{
-      "server_id": "83ec2e3b-4321-422b-8706-a84185f52a0a",
-      "attachment_id": "05551600-a936-4d4a-ba42-79a037c1-c91a",
-      "attached_at": "2016-08-06T14:48:20.000000",
-      "host_name": "foobar",
-      "volume_id": "d6cacb1a-8b59-4c88-ad90-d70ebb82bb75",
-      "device": "/dev/vdc",
-      "id": "d6cacb1a-8b59-4c88-ad90-d70ebb82bb75"
-    }],
-    "id": "d32019d3-bc6e-4319-9c1d-6722fc136a22",
-    "size": 75,
-    "user_id": "ff1ce52c03ab433aaba9108c2e3ef541",
-    "os-vol-tenant-attr:tenant_id": "304dc00909ac4d0da6c62d816bcb3459",
-    "os-vol-mig-status-attr:migstat": null,
-    "metadata": {},
-    "status": "available",
-    "volume_image_metadata": {
-      "container_format": "bare",
-      "image_name": "centos"
-    },
-    "description": null
+  "volume_type": "lvmdriver-1",
+  "created_at": "2015-09-17T03:32:29.000000",
+  "bootable": "false",
+  "name": "vol-001",
+  "os-vol-mig-status-attr:name_id": null,
+  "consistencygroup_id": null,
+  "source_volid": null,
+  "os-volume-replication:driver_data": null,
+  "multiattach": false,
+  "snapshot_id": null,
+  "replication_status": "disabled",
+  "os-volume-replication:extended_status": null,
+  "encrypted": false,
+  "availability_zone": "nova",
+  "attachments": [{
+    "server_id": "83ec2e3b-4321-422b-8706-a84185f52a0a",
+    "attachment_id": "05551600-a936-4d4a-ba42-79a037c1-c91a",
+    "attached_at": "2016-08-06T14:48:20.000000",
+    "host_name": "foobar",
+    "volume_id": "d6cacb1a-8b59-4c88-ad90-d70ebb82bb75",
+    "device": "/dev/vdc",
+    "id": "d6cacb1a-8b59-4c88-ad90-d70ebb82bb75"
+  }],
+  "id": "d32019d3-bc6e-4319-9c1d-6722fc136a22",
+  "size": 75,
+  "user_id": "ff1ce52c03ab433aaba9108c2e3ef541",
+  "os-vol-tenant-attr:tenant_id": "304dc00909ac4d0da6c62d816bcb3459",
+  "os-vol-mig-status-attr:migstat": null,
+  "metadata": {},
+  "status": "available",
+  "volume_image_metadata": {
+    "container_format": "bare",
+    "image_name": "centos"
+  },
+  "description": null
   }
 }
-      `)
+    `
+		if _, err := fmt.Fprint(w, response); err != nil {
+			t.Errorf("Failed to write response: %v", err)
+		}
 	})
 }
 
@@ -204,30 +214,32 @@ func MockCreateResponse(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusAccepted)
 
-		fmt.Fprint(w, `
+		if _, err := fmt.Fprint(w, `
 {
   "volume": {
-    "size": 75,
-    "id": "d32019d3-bc6e-4319-9c1d-6722fc136a22",
-    "metadata": {},
-    "created_at": "2015-09-17T03:32:29.044216",
-    "encrypted": false,
-    "bootable": "false",
-    "availability_zone": "nova",
-    "attachments": [],
-    "user_id": "ff1ce52c03ab433aaba9108c2e3ef541",
-    "status": "creating",
-    "description": null,
-    "volume_type": "lvmdriver-1",
-    "name": "vol-001",
-    "replication_status": "disabled",
-    "consistencygroup_id": null,
-    "source_volid": null,
-    "snapshot_id": null,
-    "multiattach": false
+  "size": 75,
+  "id": "d32019d3-bc6e-4319-9c1d-6722fc136a22",
+  "metadata": {},
+  "created_at": "2015-09-17T03:32:29.044216",
+  "encrypted": false,
+  "bootable": "false",
+  "availability_zone": "nova",
+  "attachments": [],
+  "user_id": "ff1ce52c03ab433aaba9108c2e3ef541",
+  "status": "creating",
+  "description": null,
+  "volume_type": "lvmdriver-1",
+  "name": "vol-001",
+  "replication_status": "disabled",
+  "consistencygroup_id": null,
+  "source_volid": null,
+  "snapshot_id": null,
+  "multiattach": false
   }
 }
-    `)
+  `); err != nil {
+			t.Errorf("Failed to write response: %v", err)
+		}
 	})
 }
 
@@ -244,13 +256,15 @@ func MockUpdateResponse(t *testing.T) {
 		th.TestMethod(t, r, "PUT")
 		th.TestHeader(t, r, "X-Auth-Token", fake.TokenID)
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, `
+		if _, err := fmt.Fprint(w, `
 {
   "volume": {
-    "name": "vol-002"
+  "name": "vol-002"
   }
 }
-        `)
+    `); err != nil {
+			t.Errorf("Failed to write response: %v", err)
+		}
 	})
 }
 
@@ -272,30 +286,32 @@ func MockCreateVolumeFromBackupResponse(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusAccepted)
 
-		fmt.Fprint(w, `
+		if _, err := fmt.Fprint(w, `
 {
   "volume": {
-    "size": 30,
-    "id": "d32019d3-bc6e-4319-9c1d-6722fc136a22",
-    "metadata": {},
-    "created_at": "2015-09-17T03:32:29.044216",
-    "encrypted": false,
-    "bootable": "false",
-    "availability_zone": "nova",
-    "attachments": [],
-    "user_id": "ff1ce52c03ab433aaba9108c2e3ef541",
-    "status": "creating",
-    "description": null,
-    "volume_type": "lvmdriver-1",
-    "name": "vol-001",
-    "replication_status": "disabled",
-    "consistencygroup_id": null,
-    "source_volid": null,
-    "snapshot_id": null,
-    "backup_id": "20c792f0-bb03-434f-b653-06ef238e337e",
-    "multiattach": false
+  "size": 30,
+  "id": "d32019d3-bc6e-4319-9c1d-6722fc136a22",
+  "metadata": {},
+  "created_at": "2015-09-17T03:32:29.044216",
+  "encrypted": false,
+  "bootable": "false",
+  "availability_zone": "nova",
+  "attachments": [],
+  "user_id": "ff1ce52c03ab433aaba9108c2e3ef541",
+  "status": "creating",
+  "description": null,
+  "volume_type": "lvmdriver-1",
+  "name": "vol-001",
+  "replication_status": "disabled",
+  "consistencygroup_id": null,
+  "source_volid": null,
+  "snapshot_id": null,
+  "backup_id": "20c792f0-bb03-434f-b653-06ef238e337e",
+  "multiattach": false
   }
-}`)
+}`); err != nil {
+			t.Errorf("Failed to write response: %v", err)
+		}
 	})
 }
 
@@ -320,7 +336,9 @@ func MockAttachResponse(t *testing.T) {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusAccepted)
 
-			fmt.Fprint(w, `{}`)
+			if _, err := fmt.Fprint(w, `{}`); err != nil {
+				t.Errorf("Failed to write response: %v", err)
+			}
 		})
 }
 
@@ -340,7 +358,9 @@ func MockBeginDetachingResponse(t *testing.T) {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusAccepted)
 
-			fmt.Fprint(w, `{}`)
+			if _, err := fmt.Fprint(w, `{}`); err != nil {
+				t.Errorf("Failed to write response: %v", err)
+			}
 		})
 }
 
@@ -360,7 +380,9 @@ func MockDetachResponse(t *testing.T) {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusAccepted)
 
-			fmt.Fprint(w, `{}`)
+			if _, err := fmt.Fprint(w, `{}`); err != nil {
+				t.Errorf("Failed to write response: %v", err)
+			}
 		})
 }
 
@@ -385,34 +407,36 @@ func MockUploadImageResponse(t *testing.T) {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusAccepted)
 
-			fmt.Fprint(w, `
+			if _, err := fmt.Fprint(w, `
 {
-    "os-volume_upload_image": {
-        "container_format": "bare",
-        "display_description": null,
-        "id": "cd281d77-8217-4830-be95-9528227c105c",
-        "image_id": "ecb92d98-de08-45db-8235-bbafe317269c",
-        "image_name": "test",
-        "disk_format": "raw",
-        "size": 5,
-        "status": "uploading",
-        "updated_at": "2017-07-17T09:29:22.000000",
-        "volume_type": {
-            "created_at": "2016-05-04T08:54:14.000000",
-            "deleted": false,
-            "deleted_at": null,
-            "description": null,
-            "extra_specs": {
-                "volume_backend_name": "basic.ru-2a"
-            },
-            "id": "b7133444-62f6-4433-8da3-70ac332229b7",
-            "is_public": true,
-            "name": "basic.ru-2a",
-            "updated_at": "2016-05-04T09:15:33.000000"
-        }
+  "os-volume_upload_image": {
+    "container_format": "bare",
+    "display_description": null,
+    "id": "cd281d77-8217-4830-be95-9528227c105c",
+    "image_id": "ecb92d98-de08-45db-8235-bbafe317269c",
+    "image_name": "test",
+    "disk_format": "raw",
+    "size": 5,
+    "status": "uploading",
+    "updated_at": "2017-07-17T09:29:22.000000",
+    "volume_type": {
+      "created_at": "2016-05-04T08:54:14.000000",
+      "deleted": false,
+      "deleted_at": null,
+      "description": null,
+      "extra_specs": {
+        "volume_backend_name": "basic.ru-2a"
+      },
+      "id": "b7133444-62f6-4433-8da3-70ac332229b7",
+      "is_public": true,
+      "name": "basic.ru-2a",
+      "updated_at": "2016-05-04T09:15:33.000000"
     }
+  }
 }
-          `)
+      `); err != nil {
+				t.Errorf("Failed to write response: %v", err)
+			}
 		})
 }
 
@@ -432,7 +456,9 @@ func MockReserveResponse(t *testing.T) {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusAccepted)
 
-			fmt.Fprint(w, `{}`)
+			if _, err := fmt.Fprint(w, `{}`); err != nil {
+				t.Errorf("Failed to write response: %v", err)
+			}
 		})
 }
 
@@ -452,7 +478,9 @@ func MockUnreserveResponse(t *testing.T) {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusAccepted)
 
-			fmt.Fprint(w, `{}`)
+			if _, err := fmt.Fprint(w, `{}`); err != nil {
+				t.Errorf("Failed to write response: %v", err)
+			}
 		})
 }
 
@@ -483,33 +511,35 @@ func MockInitializeConnectionResponse(t *testing.T) {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusAccepted)
 
-			fmt.Fprint(w, `{
+			if _, err := fmt.Fprint(w, `{
 "connection_info": {
-    "data": {
-      "target_portals": [
-        "172.31.17.48:3260"
-      ],
-      "auth_method": "CHAP",
-      "auth_username": "5MLtcsTEmNN5jFVcT6ui",
-      "access_mode": "rw",
-      "target_lun": 0,
-      "volume_id": "cd281d77-8217-4830-be95-9528227c105c",
-      "target_luns": [
-        0
-      ],
-      "target_iqns": [
-        "iqn.2010-10.org.openstack:volume-cd281d77-8217-4830-be95-9528227c105c"
-      ],
-      "auth_password": "x854ZY5Re3aCkdNL",
-      "target_discovered": false,
-      "encrypted": false,
-      "qos_specs": null,
-      "target_iqn": "iqn.2010-10.org.openstack:volume-cd281d77-8217-4830-be95-9528227c105c",
-      "target_portal": "172.31.17.48:3260"
-    },
-    "driver_volume_type": "iscsi"
+  "data": {
+    "target_portals": [
+    "172.31.17.48:3260"
+    ],
+    "auth_method": "CHAP",
+    "auth_username": "5MLtcsTEmNN5jFVcT6ui",
+    "access_mode": "rw",
+    "target_lun": 0,
+    "volume_id": "cd281d77-8217-4830-be95-9528227c105c",
+    "target_luns": [
+    0
+    ],
+    "target_iqns": [
+    "iqn.2010-10.org.openstack:volume-cd281d77-8217-4830-be95-9528227c105c"
+    ],
+    "auth_password": "x854ZY5Re3aCkdNL",
+    "target_discovered": false,
+    "encrypted": false,
+    "qos_specs": null,
+    "target_iqn": "iqn.2010-10.org.openstack:volume-cd281d77-8217-4830-be95-9528227c105c",
+    "target_portal": "172.31.17.48:3260"
+  },
+  "driver_volume_type": "iscsi"
   }
-            }`)
+      }`); err != nil {
+				t.Errorf("Failed to write response: %v", err)
+			}
 		})
 }
 
@@ -540,7 +570,9 @@ func MockTerminateConnectionResponse(t *testing.T) {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusAccepted)
 
-			fmt.Fprint(w, `{}`)
+			if _, err := fmt.Fprint(w, `{}`); err != nil {
+				t.Errorf("Failed to write response: %v", err)
+			}
 		})
 }
 
@@ -563,7 +595,9 @@ func MockExtendSizeResponse(t *testing.T) {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusAccepted)
 
-			fmt.Fprint(w, `{}`)
+			if _, err := fmt.Fprint(w, `{}`); err != nil {
+				t.Errorf("Failed to write response: %v", err)
+			}
 		})
 }
 
@@ -594,7 +628,9 @@ func MockSetImageMetadataResponse(t *testing.T) {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		fmt.Fprint(w, `{}`)
+		if _, err := fmt.Fprint(w, `{}`); err != nil {
+			t.Errorf("Failed to write response: %v", err)
+		}
 	})
 }
 
@@ -657,7 +693,9 @@ func MockChangeTypeResponse(t *testing.T) {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusAccepted)
 
-			fmt.Fprint(w, `{}`)
+			if _, err := fmt.Fprint(w, `{}`); err != nil {
+				t.Errorf("Failed to write response: %v", err)
+			}
 		})
 }
 

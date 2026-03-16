@@ -114,7 +114,11 @@ func NewLoginCommand() *cobra.Command {
 					return
 				}
 			}()
-			defer srv.Close()
+			defer func() {
+				if err := srv.Close(); err != nil {
+					fmt.Printf("Error closing the server: %v\n", err)
+				}
+			}()
 
 			// waiting for our code
 			code = <-srv.code

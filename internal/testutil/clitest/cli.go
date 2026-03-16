@@ -3,6 +3,7 @@ package clitest
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"os"
 	"testing"
@@ -192,11 +193,16 @@ func RunCLITestFunc[T any](f func() T, opts ...server.StartGRPCServerOption) (re
 
 	ret := f()
 
-	sock.Close()
+	if err := sock.Close(); err != nil {
+		log.Printf("Error closing socket: %v", err)
+	}
+
 	srv.Stop()
 
 	// Remove temporary session directory
-	os.RemoveAll(tmpDir)
+	if err := os.RemoveAll(tmpDir); err != nil {
+		log.Printf("Error removing temporary session directory: %v", err)
+	}
 
 	return &ret, nil
 }

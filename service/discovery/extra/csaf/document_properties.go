@@ -10,6 +10,7 @@ import (
 	"errors"
 	"hash"
 	"io"
+	"log/slog"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -193,7 +194,12 @@ func (d *csafDiscovery) documentPGPSignature(signURL string, body []byte, keyrin
 	}
 
 	// Fetch the signature (in res.Body) and use it to verify the body
-	defer res.Body.Close()
+	defer func() {
+		if err := res.Body.Close(); err != nil {
+			slog.Error("failed to close response body", "error", err)
+		}
+	}()
+
 	_, err = openpgp.CheckArmoredDetachedSignature(keyring, bytes.NewReader(body), res.Body, nil)
 	if err != nil {
 		return &ontology.DocumentSignature{

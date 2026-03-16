@@ -63,7 +63,11 @@ func (d *csafDiscovery) fetchKey(keyinfo csaf.PGPKey) (key *openpgp.Entity, err 
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer func() {
+		if cerr := res.Body.Close(); cerr != nil {
+			log.Errorf("Error closing response body: %v", cerr)
+		}
+	}()
 
 	keys, err = openpgp.ReadArmoredKeyRing(res.Body)
 	if err != nil {
