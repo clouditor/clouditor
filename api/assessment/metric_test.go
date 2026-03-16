@@ -60,7 +60,7 @@ func TestMetricConfiguration_Validate(t *testing.T) {
 			name: "MetricConfiguration TargetValue is empty",
 			fields: fields{
 				MetricConfiguration: &MetricConfiguration{
-					Operator: "==",
+					Operator: string(OperatorEqual),
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -72,7 +72,7 @@ func TestMetricConfiguration_Validate(t *testing.T) {
 			fields: fields{
 				MetricConfiguration: &MetricConfiguration{
 					TargetValue:          testdata.MockMetricConfigurationTargetValueString,
-					Operator:             "==",
+					Operator:             string(OperatorEqual),
 					MetricId:             testdata.MockMetricID1,
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 				},
@@ -107,7 +107,7 @@ func TestMetricConfiguration_Hash(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				Operator:    "<",
+				Operator:    string(OperatorLessThan),
 				TargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 5}},
 			},
 			want: "PC1udW1iZXJfdmFsdWU6NQ",
