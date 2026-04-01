@@ -641,7 +641,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
 		wg              sync.WaitGroup
-		hookCounts      = 20
+		hookCounts      = 22
 	)
 
 	wg.Add(hookCounts)
@@ -913,7 +913,7 @@ func TestService_handleEvidence(t *testing.T) {
 						Name:        "docname",
 						Description: "Doc",
 						CryptographicHashs: []*ontology.CryptographicHash{
-							&ontology.CryptographicHash{
+							{
 								Algorithm: "md5",
 							},
 						},
@@ -924,7 +924,7 @@ func TestService_handleEvidence(t *testing.T) {
 					Name:        "docname",
 					Description: "Doc",
 					CryptographicHashs: []*ontology.CryptographicHash{
-						&ontology.CryptographicHash{
+						{
 							Algorithm: "md5",
 						},
 					},
@@ -935,7 +935,7 @@ func TestService_handleEvidence(t *testing.T) {
 					err := api.Validate(result)
 					assert.NoError(t, err)
 				}
-				return assert.Equal(t, 4, len(got))
+				return assert.Equal(t, 5, len(got))
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -974,7 +974,7 @@ func TestService_handleEvidence(t *testing.T) {
 					err := api.Validate(result)
 					assert.NoError(t, err)
 				}
-				return assert.Equal(t, 9, len(got))
+				return assert.Equal(t, 10, len(got))
 			},
 			wantErr: assert.Nil[error],
 		},
