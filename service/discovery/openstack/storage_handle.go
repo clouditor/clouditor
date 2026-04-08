@@ -154,10 +154,12 @@ func (d *openstackDiscovery) handleObjectStorage(container *containers.Container
 	r := &ontology.ObjectStorage{
 		Id:           container.Name,
 		Name:         container.Name,
-		Description:  "",                                         // Not available
+		Description:  "",                                         // not available
 		ParentId:     util.Ref(d.clients.storageClient.Endpoint), // parent is the object storage service stored in the endpoint
 		PublicAccess: isPublic,
 	}
+
+	log.Infof("Adding object storage '%s'", r.Name)
 
 	return r, nil
 }

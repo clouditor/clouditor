@@ -47,6 +47,14 @@ func (d *openstackDiscovery) computeClient() (client *gophercloud.ServiceClient,
 	return d.clients.computeClient, nil
 }
 
+// blockStorageClient returns the block storage client if initialized
+func (d *openstackDiscovery) blockStorageClient() (client *gophercloud.ServiceClient, err error) {
+	if d.clients.blockStorageClient == nil {
+		return nil, fmt.Errorf("block storage client not initialized")
+	}
+	return d.clients.blockStorageClient, nil
+}
+
 // networkClient returns the network client if initialized
 func (d *openstackDiscovery) networkClient() (client *gophercloud.ServiceClient, err error) {
 	if d.clients.networkClient == nil {

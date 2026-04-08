@@ -196,11 +196,11 @@ func (d *openstackDiscovery) authorize() (err error) {
 
 	// Storage client
 	if d.clients.storageClient == nil {
-		d.clients.storageClient, err = openstack.NewBlockStorageV3(d.clients.provider, gophercloud.EndpointOpts{
+		d.clients.storageClient, err = openstack.NewObjectStorageV1(d.clients.provider, gophercloud.EndpointOpts{
 			Region: d.region,
 		})
 		if err != nil {
-			return fmt.Errorf("could not create block storage client: %w", err)
+			return fmt.Errorf("could not create object storage client: %w", err)
 		}
 	}
 
