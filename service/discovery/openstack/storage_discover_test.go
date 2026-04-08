@@ -105,6 +105,13 @@ func Test_openstackDiscovery_discoverBlockStorage(t *testing.T) {
 					},
 					ParentId: util.Ref("83ec2e3b-4321-422b-8706-a84185f52a0a"),
 					Labels:   map[string]string{},
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
+							CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
+								Enabled: true,
+							},
+						},
+					},
 				}
 
 				got0, ok := got[0].(*ontology.BlockStorage)

@@ -56,6 +56,7 @@ func (d *openstackDiscovery) handleDomain(domain *domains.Domain) (ontology.IsRe
 
 // handleProject returns a [ontology.ResourceGroup] out of an existing [projects.Project].
 func (d *openstackDiscovery) handleProject(project *projects.Project) (ontology.IsResource, error) {
+	// Handle project information
 	r := &ontology.ResourceGroup{
 		Id:          project.ID,
 		Name:        project.Name,

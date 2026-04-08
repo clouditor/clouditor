@@ -1524,6 +1524,9 @@ components:
             properties:
                 enabled:
                     type: boolean
+                logLevel:
+                    type: string
+                    description: enum:logLevel=FATAL,CRITICAL,ERROR,WARN,INFO,DEBUG,TRACE,UNKNOWN
                 monitoringLogDataEnabled:
                     type: boolean
                 retentionPeriod:
@@ -1554,6 +1557,9 @@ components:
             properties:
                 enabled:
                     type: boolean
+                logLevel:
+                    type: string
+                    description: enum:logLevel=FATAL,CRITICAL,ERROR,WARN,INFO,DEBUG,TRACE,UNKNOWN
                 monitoringLogDataEnabled:
                     type: boolean
                 retentionPeriod:
@@ -1826,6 +1832,9 @@ components:
             properties:
                 enabled:
                     type: boolean
+                logLevel:
+                    type: string
+                    description: enum:logLevel=FATAL,CRITICAL,ERROR,WARN,INFO,DEBUG,TRACE,UNKNOWN
                 monitoringLogDataEnabled:
                     type: boolean
                 retentionPeriod:
@@ -2013,6 +2022,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                codeSignoff:
+                    $ref: '#/components/schemas/CodeSignoff'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
@@ -2028,6 +2039,14 @@ components:
                 usageStatistics:
                     $ref: '#/components/schemas/UsageStatistics'
             description: CodeRepository is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        CodeSignoff:
+            type: object
+            properties:
+                enforced:
+                    type: boolean
+            description: |-
+                CodeSignoff is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Signoffs enable users to affirm that a commit complies with the rules and licensing governing a repository
         ComparisonResult:
             required:
                 - property
@@ -2313,6 +2332,9 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                ttl:
+                    type: number
+                    format: double
                 activityLogging:
                     $ref: '#/components/schemas/ActivityLogging'
                 atRestEncryption:
@@ -2801,6 +2823,9 @@ components:
             properties:
                 handler:
                     type: string
+                inputSize:
+                    type: integer
+                    format: int32
                 method:
                     type: string
                 path:
@@ -2813,6 +2838,8 @@ components:
                     $ref: '#/components/schemas/Authorization'
                 httpRequestContext:
                     $ref: '#/components/schemas/HttpRequestContext'
+                rateLimiting:
+                    $ref: '#/components/schemas/RateLimiting'
                 transportEncryption:
                     $ref: '#/components/schemas/TransportEncryption'
             description: |-
@@ -3430,7 +3457,9 @@ components:
                     $ref: '#/components/schemas/OSLogging'
                 resourceLogging:
                     $ref: '#/components/schemas/ResourceLogging'
-            description: Logging is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+            description: |-
+                Logging is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+                 enum:logLevel=DEBUG,INFO,WARN,ERROR
         LoggingService:
             type: object
             properties:
@@ -3901,6 +3930,9 @@ components:
             properties:
                 enabled:
                     type: boolean
+                logLevel:
+                    type: string
+                    description: enum:logLevel=FATAL,CRITICAL,ERROR,WARN,INFO,DEBUG,TRACE,UNKNOWN
                 monitoringLogDataEnabled:
                     type: boolean
                 retentionPeriod:
@@ -4333,6 +4365,9 @@ components:
             properties:
                 enabled:
                     type: boolean
+                logLevel:
+                    type: string
+                    description: enum:logLevel=FATAL,CRITICAL,ERROR,WARN,INFO,DEBUG,TRACE,UNKNOWN
                 monitoringLogDataEnabled:
                     type: boolean
                 retentionPeriod:

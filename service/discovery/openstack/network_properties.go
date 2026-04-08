@@ -24,3 +24,61 @@
 // This file is part of Clouditor Community Edition.
 
 package openstack
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/security/groups"
+	"github.com/gophercloud/gophercloud/v2/pagination"
+)
+
+func (d *openstackDiscovery) getRestrictedPorts(portSecurityGroup []string) []string {
+	var (
+		restrictedPortsList []string
+	)
+
+	for _, sgID := range portSecurityGroup {
+		// Get security group details
+		pager := groups.List(d.clients.networkClient, groups.ListOpts{
+			ID: sgID,
+		})
+
+		err := pager.EachPage(context.Background(), func(ctx context.Context, page pagination.Page) (bool, error) {
+			sgList, err := groups.ExtractGroups(page)
+			if err != nil {
+				return false, err
+			}
+
+			for _, sg := range sgList {
+				for _, rule := range sg.Rules {
+					if rule.Direction == "ingress" {
+						if rule.Protocol == "tcp" || rule.Protocol == "udp" {
+							// Check if the port range is specified
+							if rule.PortRangeMin == 0 && rule.PortRangeMax == 0 {
+								// If no port range is specified, it means all ports are allowed
+								restrictedPortsList = append(restrictedPortsList, "all")
+							} else if rule.PortRangeMin == rule.PortRangeMax {
+								// If the port range is a single port, add that port to the list
+								restrictedPortsList = append(restrictedPortsList, fmt.Sprint(rule.PortRangeMin))
+							} else if rule.PortRangeMin != 0 && rule.PortRangeMax != 0 {
+								// If the port range is specified, add each port in the range to the list
+								for port := rule.PortRangeMin; port <= rule.PortRangeMax; port++ {
+									restrictedPortsList = append(restrictedPortsList, fmt.Sprint(port))
+								}
+
+							}
+						}
+					}
+				}
+			}
+
+			return true, nil
+		})
+		if err != nil {
+			continue
+		}
+	}
+
+	return restrictedPortsList
+}

@@ -1,4 +1,4 @@
-// Copyright 2024 Fraunhofer AISEC
+// Copyright 2026 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,35 +27,13 @@ package openstack
 
 import (
 	"clouditor.io/clouditor/v2/api/ontology"
-
-	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
-	"github.com/gophercloud/gophercloud/v2/openstack/objectstorage/v1/containers"
+	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/users"
 )
 
-// discoverBlockStorage discovers block storages
-func (d *openstackDiscovery) discoverBlockStorage() (list []ontology.IsResource, err error) {
-	var opts volumes.ListOptsBuilder = &volumes.ListOpts{}
-	list, err = genericList(d, d.blockStorageClient, volumes.List, d.handleBlockStorage, volumes.ExtractVolumes, opts)
-
-	return
-}
-
-// discoverObjectStorage discovers object storages
-func (d *openstackDiscovery) discoverObjectStorage() (list []ontology.IsResource, err error) {
-	var opts containers.ListOptsBuilder = &containers.ListOpts{}
-	list, err = genericList(d, d.storageClient, containers.List, d.handleObjectStorage, containers.ExtractInfo, opts)
-
-	return
-}
-
-func (d *openstackDiscovery) discoverObjectStorageService() (list []ontology.IsResource, err error) {
-
-	resource, err := d.handleObjectStorageService()
-	if err != nil {
-		return
-	}
-
-	list = append(list, resource)
+// discoverIdentity discovers identity resources
+func (d *openstackDiscovery) discoverIdentity() (list []ontology.IsResource, err error) {
+	var opts users.ListOptsBuilder = &users.ListOpts{}
+	list, err = genericList(d, d.identityClient, users.List, d.handleIdentity, users.ExtractUsers, opts)
 
 	return
 }

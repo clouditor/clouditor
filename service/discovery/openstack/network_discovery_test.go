@@ -44,6 +44,7 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 	testhelper.SetupHTTP()
 	defer testhelper.TeardownHTTP()
 	openstacktest.HandleNetworkListSuccessfully(t)
+	openstacktest.HandlePortsListSuccessfully(t)
 
 	type fields struct {
 		ctID     string
@@ -104,6 +105,11 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 					},
 					Labels:   map[string]string{},
 					ParentId: util.Ref("4fd44f30292945e481c7b8a0c8908869"),
+					AccessRestriction: &ontology.AccessRestriction{
+						Type: &ontology.AccessRestriction_L3Firewall{
+							L3Firewall: &ontology.L3Firewall{},
+						},
+					},
 				}
 
 				got0, ok := got[0].(*ontology.NetworkInterface)

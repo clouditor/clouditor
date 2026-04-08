@@ -41,6 +41,7 @@ import (
 //
 // Changes:
 // - 2025-03-12: Rename function name from MockListResponse() to MockStorageListResponse()(@anatheka)
+// - 2026-03-05: Set volume encrypted to true (@anatheka)
 
 func MockStorageListResponse(t *testing.T) {
 	th.Mux.HandleFunc("/volumes/detail", func(w http.ResponseWriter, r *http.Request) {
@@ -72,7 +73,7 @@ func MockStorageListResponse(t *testing.T) {
       "snapshot_id": null,
       "replication_status": "disabled",
       "os-volume-replication:extended_status": null,
-      "encrypted": false,
+      "encrypted": true,
       "os-vol-host-attr:host": "host-001",
       "availability_zone": "nova",
       "attachments": [{

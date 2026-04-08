@@ -166,6 +166,7 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 					MalwareProtection:   &ontology.MalwareProtection{},
 					AutomaticUpdates:    &ontology.AutomaticUpdates{},
 					BootLogging:         &ontology.BootLogging{Enabled: true},
+					ActivityLogging:     &ontology.ActivityLogging{Enabled: true},
 				}
 
 				gotNew, ok := got.(*ontology.VirtualMachine)
