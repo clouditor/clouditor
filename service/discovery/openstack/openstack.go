@@ -329,6 +329,7 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 type ClientFunc func() (*gophercloud.ServiceClient, error)
 type ListFunc[O any] func(client *gophercloud.ServiceClient, opts O) pagination.Pager
 type HandlerFunc[T any, R ontology.IsResource] func(in *T) (r R, err error)
+type HandlerManyFunc[T any] func(in *T) (r []ontology.IsResource, err error)
 type ExtractorFunc[T any] func(r pagination.Page) ([]T, error)
 
 // genericList is a function leveraging type parameters that takes care of listing OpenStack
@@ -372,6 +373,58 @@ func genericList[T any, O any, R ontology.IsResource](d *openstackDiscovery,
 			}
 
 			list = append(list, r)
+		}
+
+		return true, nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("could not list resources: %w", err)
+	}
+
+	return
+}
+
+// genericListMany is like genericList, but allows the handler to return 0..n resources per input item.
+func genericListMany[T any, O any](
+	d *openstackDiscovery,
+	clientGetter ClientFunc,
+	l ListFunc[O],
+	handler HandlerManyFunc[T],
+	extractor ExtractorFunc[T],
+	opts O,
+) (list []ontology.IsResource, err error) {
+	client, err := clientGetter()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get client: %w", err)
+	}
+
+	err = l(client, opts).EachPage(context.Background(), func(_ context.Context, p pagination.Page) (bool, error) {
+		x, err := extractor(p)
+		if err != nil {
+			return false, fmt.Errorf("could not extract items from paginated result: %w", err)
+		}
+
+		// Check if project/tenant ID is already stored
+		if d.configuredProject.projectID == "" {
+			if err := d.setProjectInfo(x); err != nil {
+				return false, fmt.Errorf("could not set project info: %w", err)
+			}
+		}
+
+		for _, s := range x {
+			rs, err := handler(&s)
+			if err != nil {
+				return false, fmt.Errorf("could not convert into Clouditor ontology: %w", err)
+			}
+
+			// flatten; tolerate nil/empty slices
+			for _, r := range rs {
+				if r == nil {
+					continue
+				}
+				list = append(list, r)
+			}
 		}
 
 		return true, nil
