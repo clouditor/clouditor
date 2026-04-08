@@ -47,11 +47,10 @@ import (
 )
 
 // handleBlockStorage creates a block storage resource based on the Clouditor Ontology
-func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) ([]ontology.IsResource, error) {
+func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontology.IsResource, error) {
 	var (
 		are    *ontology.AtRestEncryption
 		backup []*ontology.Backup
-		list   []ontology.IsResource
 	)
 
 	// Get Name, if exits, otherwise take the ID
@@ -83,7 +82,7 @@ func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) ([]ontol
 
 	// Get backup information
 	// Unfortunately, OpenStack does not provide a direct way to check if backup is enabled for a volume. However, we can check if the volume has any associated backups. This is a heuristic approach and may not be 100% accurate.
-	err = backups.List(d.clients.computeClient, backups.ListOpts{
+	err = backups.List(d.clients.blockStorageClient, backups.ListOpts{
 		VolumeID: volume.ID,
 	}).EachPage(context.Background(), func(_ context.Context, p pagination.Page) (bool, error) {
 		backupList, err := backups.ExtractBackups(p)
@@ -98,12 +97,13 @@ func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) ([]ontol
 				RetentionPeriod: durationpb.New(0 * time.Second), // retention period is unlimited
 				Enabled:         true,
 			})
+			log.Infof("Adding block storage backup '%s'", b.Name)
 		}
 
 		return true, nil
 	})
 	if err != nil {
-		log.Errorf("Error listing backups for volume '%s': %s", volume.Name, err)
+		log.Errorf("Error listing backups for block storage '%s': %s", volume.Name, err)
 	}
 
 	r := &ontology.BlockStorage{
@@ -120,8 +120,6 @@ func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) ([]ontol
 		AtRestEncryption: are,
 		Backups:          backup,
 	}
-	list = append(list, r)
-	log.Infof("Adding block storage '%s'", volume.Name)
 
 	// Create project resource for the parentId if not available
 	err = d.addProjectIfMissing(volume.TenantID, volume.TenantID, d.domain.domainID)
@@ -130,7 +128,7 @@ func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) ([]ontol
 	}
 
 	log.Infof("Adding block storage '%s'", r.Name)
-	return list, nil
+	return r, nil
 }
 
 // handleObjectStorage creates an object storage resource based on the Clouditor Ontology

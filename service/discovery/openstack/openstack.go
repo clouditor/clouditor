@@ -80,12 +80,13 @@ type project struct {
 }
 
 type clients struct {
-	provider       *gophercloud.ProviderClient
-	identityClient *gophercloud.ServiceClient
-	computeClient  *gophercloud.ServiceClient
-	networkClient  *gophercloud.ServiceClient
-	storageClient  *gophercloud.ServiceClient
-	clusterClient  *gophercloud.ServiceClient
+	provider           *gophercloud.ProviderClient
+	identityClient     *gophercloud.ServiceClient
+	computeClient      *gophercloud.ServiceClient
+	blockStorageClient *gophercloud.ServiceClient
+	networkClient      *gophercloud.ServiceClient
+	storageClient      *gophercloud.ServiceClient
+	clusterClient      *gophercloud.ServiceClient
 }
 
 func (*openstackDiscovery) Name() string {
@@ -170,6 +171,16 @@ func (d *openstackDiscovery) authorize() (err error) {
 		})
 		if err != nil {
 			return fmt.Errorf("could not create compute client: %w", err)
+		}
+	}
+
+	// Block Storage client
+	if d.clients.blockStorageClient == nil {
+		d.clients.blockStorageClient, err = openstack.NewBlockStorageV3(d.clients.provider, gophercloud.EndpointOpts{
+			Region: d.region,
+		})
+		if err != nil {
+			return fmt.Errorf("could not create block storage client: %w", err)
 		}
 	}
 
