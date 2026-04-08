@@ -35,7 +35,7 @@ import (
 // discoverBlockStorage discovers block storages
 func (d *openstackDiscovery) discoverBlockStorage() (list []ontology.IsResource, err error) {
 	var opts volumes.ListOptsBuilder = &volumes.ListOpts{}
-	list, err = genericList(d, d.storageClient, volumes.List, d.handleBlockStorage, volumes.ExtractVolumes, opts)
+	list, err = genericListMany(d, d.storageClient, volumes.List, d.handleBlockStorage, volumes.ExtractVolumes, opts)
 
 	return
 }

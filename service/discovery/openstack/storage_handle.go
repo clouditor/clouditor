@@ -30,21 +30,29 @@ import (
 
 	"context"
 	"strings"
+	"time"
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/constants"
 	"clouditor.io/clouditor/v2/internal/util"
 
+	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v2/backups"
 	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
 	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumetypes"
 	"github.com/gophercloud/gophercloud/v2/openstack/objectstorage/v1/containers"
+	"github.com/gophercloud/gophercloud/v2/pagination"
+	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // handleBlockStorage creates a block storage resource based on the Clouditor Ontology
-func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontology.IsResource, error) {
-	var are *ontology.AtRestEncryption
+func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) ([]ontology.IsResource, error) {
+	var (
+		are    *ontology.AtRestEncryption
+		backup []*ontology.Backup
+		list   []ontology.IsResource
+	)
 
 	// Get Name, if exits, otherwise take the ID
 	name := volume.Name
@@ -71,7 +79,31 @@ func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontolog
 				},
 			}
 		}
+	}
 
+	// Get backup information
+	// Unfortunately, OpenStack does not provide a direct way to check if backup is enabled for a volume. However, we can check if the volume has any associated backups. This is a heuristic approach and may not be 100% accurate.
+	err = backups.List(d.clients.computeClient, backups.ListOpts{
+		VolumeID: volume.ID,
+	}).EachPage(context.Background(), func(_ context.Context, p pagination.Page) (bool, error) {
+		backupList, err := backups.ExtractBackups(p)
+		if err != nil {
+			return false, fmt.Errorf("could not extract backup information from page: %w", err)
+		}
+
+		for _, b := range backupList {
+			backup = append(backup, &ontology.Backup{
+				StorageId: util.Ref(b.ID),
+				// Interval: , // backup interval is not available
+				RetentionPeriod: durationpb.New(0 * time.Second), // retention period is unlimited
+				Enabled:         true,
+			})
+		}
+
+		return true, nil
+	})
+	if err != nil {
+		log.Errorf("Error listing backups for volume '%s': %s", volume.Name, err)
 	}
 
 	r := &ontology.BlockStorage{
@@ -86,7 +118,9 @@ func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontolog
 		Labels:           map[string]string{}, // Not available
 		Raw:              discovery.Raw(volume),
 		AtRestEncryption: are,
+		Backups:          backup,
 	}
+	list = append(list, r)
 	log.Infof("Adding block storage '%s'", volume.Name)
 
 	// Create project resource for the parentId if not available
@@ -95,8 +129,8 @@ func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontolog
 		return nil, fmt.Errorf("could not handle project for block storage %s: %w", volume.ID, err)
 	}
 
-	log.Infof("Adding block storage '%s", r.Name)
-	return r, nil
+	log.Infof("Adding block storage '%s'", r.Name)
+	return list, nil
 }
 
 // handleObjectStorage creates an object storage resource based on the Clouditor Ontology
