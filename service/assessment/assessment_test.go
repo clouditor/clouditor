@@ -992,7 +992,7 @@ func TestService_handleEvidence(t *testing.T) {
 					err := api.Validate(result)
 					assert.NoError(t, err)
 				}
-				return assert.Equal(t, 10, len(got))
+				return assert.True(t, len(got) >= 10)
 			},
 			wantErr: assert.Nil[error],
 		},

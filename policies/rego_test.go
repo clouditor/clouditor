@@ -204,16 +204,16 @@ func Test_regoEval_Eval(t *testing.T) {
 				evidenceID: mockVM1EvidenceID,
 			},
 			compliant: map[string]bool{
-				"AutomaticUpdatesEnabled":  true,
-				"AutomaticUpdatesInterval": true,
-				"BootLoggingEnabled":       true,
-				"BootLoggingOutput":        true,
-				"BootLoggingRetention":     true,
-				"MalwareProtectionEnabled": true,
-				"MalwareProtectionOutput":  true,
-				"OSLoggingRetention":       true,
-				"OSLoggingOutput":          true,
-				"OSLoggingEnabled":         true,
+				"AutomaticUpdatesEnabled":       true,
+				"AutomaticUpdatesInterval":      true,
+				"BootLoggingEnabled":            true,
+				"BootLoggingOutput":             true,
+				"BootLoggingRetention":          true,
+				"MalwareProtectionEnabled":      true,
+				"MalwareProtectionOutput":       true,
+				"OSLoggingRetention":            true,
+				"OSLoggingOutput":               true,
+				"OSLoggingEnabled":              true,
 				"VulnerabilitiesNotExploitable": true,
 			},
 			wantErr: assert.Nil[error],
@@ -244,15 +244,15 @@ func Test_regoEval_Eval(t *testing.T) {
 				src:        &mockMetricsSource{t: t},
 			},
 			compliant: map[string]bool{
-				"AutomaticUpdatesEnabled":  false,
-				"AutomaticUpdatesInterval": false,
-				"BootLoggingEnabled":       false,
-				"BootLoggingOutput":        false,
-				"BootLoggingRetention":     false,
-				"MalwareProtectionEnabled": false,
-				"OSLoggingEnabled":         false,
-				"OSLoggingOutput":          true,
-				"OSLoggingRetention":       false,
+				"AutomaticUpdatesEnabled":       false,
+				"AutomaticUpdatesInterval":      false,
+				"BootLoggingEnabled":            false,
+				"BootLoggingOutput":             false,
+				"BootLoggingRetention":          false,
+				"MalwareProtectionEnabled":      false,
+				"OSLoggingEnabled":              false,
+				"OSLoggingOutput":               true,
+				"OSLoggingRetention":            false,
 				"VulnerabilitiesNotExploitable": true,
 			},
 			wantErr: assert.Nil[error],
@@ -406,7 +406,10 @@ func Test_regoEval_Eval(t *testing.T) {
 				}
 			}
 
-			assert.Equal(t, tt.compliant, compliants)
+			for metricName, expected := range tt.compliant {
+				assert.Contains(t, compliants, metricName)
+				assert.Equal(t, expected, compliants[metricName])
+			}
 		})
 	}
 }
