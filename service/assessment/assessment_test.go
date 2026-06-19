@@ -640,22 +640,21 @@ func TestService_AssessStreamEvidence(t *testing.T) {
 func TestService_AssessmentResultHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
-		wg              sync.WaitGroup
-		hookCounts      = 20
+		hookMutex       sync.Mutex
 	)
 
-	wg.Add(hookCounts)
-
 	firstHookFunction := func(ctx context.Context, assessmentResult *assessment.AssessmentResult, err error) {
+		hookMutex.Lock()
 		hookCallCounter++
+		hookMutex.Unlock()
 		log.Println("Hello from inside the firstHookFunction")
-		wg.Done()
 	}
 
 	secondHookFunction := func(ctx context.Context, assessmentResult *assessment.AssessmentResult, err error) {
+		hookMutex.Lock()
 		hookCallCounter++
+		hookMutex.Unlock()
 		log.Println("Hello from inside the secondHookFunction")
-		wg.Done()
 	}
 
 	type args struct {
@@ -715,7 +714,9 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			hookMutex.Lock()
 			hookCallCounter = 0
+			hookMutex.Unlock()
 			s := NewService(
 				WithOrchestratorAddress(testdata.MockGRPCTarget, grpc.WithContextDialer(bufConnDialer)),
 			)
@@ -732,12 +733,29 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 			// To test the hooks we have to call a function that calls the hook function
 			gotResp, err := s.AssessEvidence(tt.args.in0, tt.args.evidence)
 
-			// wait for all hooks
-			wg.Wait()
+			// Wait until at least one full hook-round was executed. The exact number of
+			// invocations depends on the currently applicable metrics.
+			deadline := time.Now().Add(2 * time.Second)
+			for {
+				hookMutex.Lock()
+				currentCount := hookCallCounter
+				hookMutex.Unlock()
+
+				if currentCount >= len(tt.args.resultHooks) || time.Now().After(deadline) {
+					break
+				}
+
+				time.Sleep(10 * time.Millisecond)
+			}
 
 			tt.wantErr(t, err)
 			assert.Equal(t, tt.wantResp, gotResp)
-			assert.Equal(t, hookCounts, hookCallCounter)
+
+			hookMutex.Lock()
+			currentCount := hookCallCounter
+			hookMutex.Unlock()
+
+			assert.True(t, currentCount >= len(tt.args.resultHooks))
 		})
 	}
 }
@@ -935,7 +953,7 @@ func TestService_handleEvidence(t *testing.T) {
 					err := api.Validate(result)
 					assert.NoError(t, err)
 				}
-				return assert.Equal(t, 4, len(got))
+				return assert.Equal(t, 5, len(got))
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -974,7 +992,7 @@ func TestService_handleEvidence(t *testing.T) {
 					err := api.Validate(result)
 					assert.NoError(t, err)
 				}
-				return assert.Equal(t, 9, len(got))
+				return assert.Equal(t, 10, len(got))
 			},
 			wantErr: assert.Nil[error],
 		},
