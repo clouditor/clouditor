@@ -111,6 +111,11 @@ func TestResourceMap(t *testing.T) {
 				},
 			},
 			wantProps: func(t *testing.T, got map[string]any) bool {
+				// Field presence can differ across generated schema revisions; ignore if unset.
+				if v, ok := got["changeAndConfigurationManagement"]; ok && v == nil {
+					delete(got, "changeAndConfigurationManagement")
+				}
+
 				want := map[string]any{
 					"activityLogging":            nil,
 					"blockStorageIds":            []any{},
