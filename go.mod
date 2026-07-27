@@ -193,7 +193,7 @@ require (
 	github.com/Intevation/gval v1.3.0 // indirect
 	github.com/Intevation/jsonpath v0.2.1 // indirect
 	github.com/ProtonMail/go-crypto v1.3.0
-	github.com/cloudflare/circl v1.6.1 // indirect
+	github.com/cloudflare/circl v1.6.3 // indirect
 	github.com/gocsaf/csaf/v3 v3.3.0
 	github.com/shopspring/decimal v1.4.0 // indirect
 	go.etcd.io/bbolt v1.4.1 // indirect
