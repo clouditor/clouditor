@@ -47,6 +47,7 @@ import (
 // - 2024-12-10: Changed variable from CreateRequest to ListDomainOutput (@anatheka)
 // - 2024-12-10: Changed variable from UpdateRequest to UpdateDomainRequest (@anatheka)
 // - 2024-12-10: Changed variable from UpdateOutput to UpdateDomainOutput (@anatheka)
+// - 2025-01-07: Add error check to fmt.Fprint() (@anatheka)
 
 // ListDomainOutput provides a single page of Domain results.
 const ListDomainOutput = `
@@ -170,7 +171,9 @@ func HandleListDomainsSuccessfully(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, ListDomainOutput)
+		if _, err := fmt.Fprint(w, ListDomainOutput); err != nil {
+			t.Fatalf("Failed to write response: %v", err)
+		}
 	})
 }
 
@@ -184,7 +187,9 @@ func HandleGetDomainSuccessfully(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, GetDomainOutput)
+		if _, err := fmt.Fprint(w, GetDomainOutput); err != nil {
+			t.Fatalf("Failed to write response: %v", err)
+		}
 	})
 }
 
@@ -197,7 +202,9 @@ func HandleCreateDomainSuccessfully(t *testing.T) {
 		th.TestJSONRequest(t, r, CreateDomainRequest)
 
 		w.WriteHeader(http.StatusCreated)
-		fmt.Fprint(w, GetDomainOutput)
+		if _, err := fmt.Fprint(w, GetDomainOutput); err != nil {
+			t.Fatalf("Failed to write response: %v", err)
+		}
 	})
 }
 
@@ -209,6 +216,9 @@ func HandleDeleteDomainSuccessfully(t *testing.T) {
 		th.TestHeader(t, r, "X-Auth-Token", client.TokenID)
 
 		w.WriteHeader(http.StatusNoContent)
+		if _, err := w.Write([]byte{}); err != nil {
+			t.Fatalf("Failed to write response: %v", err)
+		}
 	})
 }
 
@@ -221,6 +231,8 @@ func HandleUpdateDomainSuccessfully(t *testing.T) {
 		th.TestJSONRequest(t, r, UpdateDomainRequest)
 
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, UpdateDomainOutput)
+		if _, err := fmt.Fprint(w, UpdateDomainOutput); err != nil {
+			t.Fatalf("Failed to write response: %v", err)
+		}
 	})
 }

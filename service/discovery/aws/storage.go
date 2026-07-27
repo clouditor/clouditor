@@ -313,7 +313,7 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (*ontology.Transp
 	// one statement has set https only -> default encryption is set
 	for _, statement := range policy.Statement {
 		if a, ok := statement.Action.(string); ok {
-			if statement.Effect == "Deny" && !statement.Condition.AwsSecureTransport && a == "s3:*" {
+			if statement.Effect == "Deny" && !statement.AwsSecureTransport && a == "s3:*" {
 				return &ontology.TransportEncryption{
 					Enforced:        true,
 					Enabled:         true,
@@ -324,7 +324,7 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (*ontology.Transp
 		}
 		if actions, ok := statement.Action.([]string); ok {
 			for _, a := range actions {
-				if statement.Effect == "Deny" && !statement.Condition.AwsSecureTransport && a == "s3:*" {
+				if statement.Effect == "Deny" && !statement.AwsSecureTransport && a == "s3:*" {
 					return &ontology.TransportEncryption{
 						Enforced:        true,
 						Enabled:         true,
