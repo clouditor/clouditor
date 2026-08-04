@@ -1,6 +1,6 @@
 module clouditor.io/clouditor/v2
 
-go 1.24.0
+go 1.25.0
 
 // runtime dependencies (assessment)
 require (
