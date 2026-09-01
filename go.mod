@@ -155,7 +155,7 @@ require (
 )
 
 // runtime dependencies (OpenStack)
-require github.com/gophercloud/gophercloud/v2 v2.7.0
+require github.com/gophercloud/gophercloud/v2 v2.8.0
 
 // runtime dependencies (k8s)
 require (
