@@ -28,7 +28,6 @@ package openstack
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
@@ -91,7 +90,7 @@ func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) 
 			Type: &ontology.AccessRestriction_L3Firewall{
 				L3Firewall: &ontology.L3Firewall{
 					Enabled:         l3FirewallEnabled,
-					RestrictedPorts: strings.Join(restrictedPortsList, ", "),
+					RestrictedPorts: restrictedPortsList,
 				},
 			},
 		},

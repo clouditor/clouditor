@@ -40,7 +40,7 @@ type Discoverer interface {
 	TargetOfEvaluationID() string
 }
 
-func Raw(raws ...any) string {
+func Raw(raws ...any) *string {
 	var rawMap = make(map[string][]any)
 
 	for _, raw := range raws {
@@ -50,5 +50,6 @@ func Raw(raws ...any) string {
 	}
 
 	b, _ := json.Marshal(rawMap)
-	return string(b)
+	s := string(b)
+	return &s
 }

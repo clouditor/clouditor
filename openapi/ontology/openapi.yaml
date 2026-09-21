@@ -34,6 +34,14 @@ components:
             type: object
             properties: {}
             description: ABAC is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        AccessControlTypePolicy:
+            type: object
+            properties:
+                authorizationTypes:
+                    type: array
+                    items:
+                        type: string
+            description: AccessControlTypePolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         AccessRestriction:
             type: object
             properties:
@@ -65,12 +73,18 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                assetInventory:
+                    $ref: '#/components/schemas/AssetInventory'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -133,6 +147,10 @@ components:
                         $ref: '#/components/schemas/Functionality'
                 parentId:
                     type: string
+                softwareAttestations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SoftwareAttestation'
             description: |-
                 Agnostic is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  Represents an agnostic architecture, which is not tied to a specific operating system.
@@ -230,6 +248,10 @@ components:
                         type: string
                 parentId:
                     type: string
+                softwareAttestations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SoftwareAttestation'
             description: |-
                 Application is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  This encapsulates the whole (source) code of an application.
@@ -253,6 +275,52 @@ components:
                     items:
                         type: string
             description: ApplicationLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        AssetInventory:
+            type: object
+            properties:
+                allRequiredInformationRecorded:
+                    type: boolean
+                    description: Indicates whether all required information for an asset inventory entry has been recorded.
+                auditInterval:
+                    type: integer
+                    description: The time needed for an audit.
+                    format: int32
+                completedReviewPercentage:
+                    type: number
+                    description: Percentage of completed reviews and updates of asset inventory entries.
+                    format: float
+                reviewFrequency:
+                    type: integer
+                    format: int32
+                service:
+                    type: string
+                    description: Service contains the name of the service (e.g., Asset Management).
+                status:
+                    type: array
+                    items:
+                        type: string
+                storageFacility:
+                    type: array
+                    items:
+                        type: string
+                type:
+                    type: string
+                updateDuration:
+                    type: integer
+                    description: The time needed for an update.
+                    format: int32
+                updateInterval:
+                    type: integer
+                    format: int32
+            description: |-
+                AssetInventory is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 AuditInterval contains the frequency of asset inventory audits in month.
+                 Class representing the inventory of assets.
+                 Service contains the name of the service (e.g., Asset Management).
+                 Status contains the status of the asset (e.g., active, inactive).
+                 StorageFacility contains the storage facility type of the asset (e.g., central, decentralized).
+                 Type: contains the type of the asset, e.g., digital
+                 UpdateInterval contains the frequency of asset inventory updates in month.
         AsymmetricCipher:
             type: object
             properties:
@@ -280,6 +348,14 @@ components:
                 managedKeyEncryption:
                     $ref: '#/components/schemas/ManagedKeyEncryption'
             description: AtRestEncryption is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+        AuditLogMonitoringPolicy:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+            description: |-
+                AuditLogMonitoringPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents a policy section within a [PolicyDocument] defining requirements for the periodic monitoring and review of audit logs, including the identification of anomalies, security events, and unusual activity.
         Authenticate:
             type: object
             properties:
@@ -353,36 +429,27 @@ components:
             properties:
                 annualUpdateCompleted:
                     type: boolean
-                creationTime:
-                    type: string
-                    format: date-time
-                description:
-                    type: string
-                id:
-                    type: string
-                labels:
-                    type: object
-                    additionalProperties:
-                        type: string
-                name:
-                    type: string
-                raw:
-                    type: string
-                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 successfullyCompletedPercentage:
                     type: boolean
-                parentId:
-                    type: string
             description: AwarenessTraining is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Backup:
             type: object
             properties:
                 enabled:
                     type: boolean
+                frequency:
+                    type: integer
+                    format: int32
                 interval:
                     pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
                     type: string
                     description: The interval refers to the update interval in days.
+                recoveryFrequency:
+                    type: integer
+                    format: int32
+                redundant:
+                    type: boolean
+                    description: Indicates whether the resource is stored redundantly.
                 retentionPeriod:
                     pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
                     type: string
@@ -422,6 +489,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Backup'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 immutability:
@@ -430,6 +499,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -506,6 +577,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 usedByMultiple:
@@ -514,6 +587,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -530,11 +605,20 @@ components:
                     type: boolean
                 enabled:
                     type: boolean
+                failedAuthenticationAttempts:
+                    type: integer
+                    format: int32
                 rotationInterval:
                     type: integer
                     description: Maximum password rotation interval in months
                     format: int32
             description: CertificateBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        ChangeAndConfigurationManagement:
+            type: object
+            properties:
+                requestForChange:
+                    $ref: '#/components/schemas/RequestForChange'
+            description: ChangeAndConfigurationManagement is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         CheckAccess:
             type: object
             properties:
@@ -600,6 +684,8 @@ components:
         CodeRepository:
             type: object
             properties:
+                approvedCommitAuthorEnforced:
+                    type: boolean
                 creationTime:
                     type: string
                     format: date-time
@@ -615,9 +701,20 @@ components:
                         type: string
                 name:
                     type: string
+                numberOfRequiredReviewers:
+                    type: integer
+                    format: int32
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                reviewPercentage:
+                    type: number
+                    format: float
+                reviewPercentageLastMonth:
+                    type: number
+                    format: float
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 codeSignoff:
                     $ref: '#/components/schemas/CodeSignoff'
                 geoLocation:
@@ -626,23 +723,57 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
                         $ref: '#/components/schemas/Redundancy'
                 parentId:
                     type: string
+                signedCommits:
+                    $ref: '#/components/schemas/SignedCommits'
                 usageStatistics:
                     $ref: '#/components/schemas/UsageStatistics'
-            description: CodeRepository is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                verifiedCommits:
+                    $ref: '#/components/schemas/VerifiedCommits'
+            description: |-
+                CodeRepository is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 ApprovedCommitAuthorEnforced verifies that code modifications are made by authorized developers whose changes have been validated, enhancing accountability and traceability.
+                 ReviewPercentage is the percentage of merged pull requests with code reviews.
+                 ReviewPercentageLastMonth is the percentage of merged pull requests with code reviews in the last 30 days.
         CodeSignoff:
             type: object
             properties:
                 enforced:
                     type: boolean
-            description: |-
-                CodeSignoff is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
-                 Signoffs enable users to affirm that a commit complies with the rules and licensing governing a repository
+                percentage:
+                    type: number
+                    format: float
+                percentageLastMonth:
+                    type: number
+                    format: float
+            description: "CodeSignoff is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.\n Percentage: Percentage of commits with \"Signed-off-by\" lines. \n PercentageLastMonth: Percentage of commits with \"Signed-off-by\" lines in the last 30 days. \n Signoffs enable users to affirm that a commit complies with the rules and licensing governing a repository"
+        ComplianceAuditIntervalPolicy:
+            type: object
+            properties:
+                auditInterval:
+                    type: integer
+                    description: The time needed for an audit.
+                    format: int32
+                daysSinceLastAudit:
+                    type: integer
+                    description: The number of days elapsed since the last completed external/supervisory audit.
+                    format: int32
+            description: ComplianceAuditIntervalPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        ComplianceMethodologyPolicy:
+            type: object
+            properties:
+                methodology:
+                    type: array
+                    items:
+                        type: string
+            description: ComplianceMethodologyPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Configuration:
             type: object
             properties:
@@ -862,29 +993,11 @@ components:
         ContactPerson:
             type: object
             properties:
-                creationTime:
-                    type: string
-                    format: date-time
-                description:
-                    type: string
                 emailAddress:
-                    type: string
-                id:
                     type: string
                 jobTitle:
                     type: string
-                labels:
-                    type: object
-                    additionalProperties:
-                        type: string
-                name:
-                    type: string
                 phoneNumber:
-                    type: string
-                raw:
-                    type: string
-                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
-                parentId:
                     type: string
             description: ContactPerson is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Container:
@@ -908,6 +1021,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 encryptionInUse:
                     $ref: '#/components/schemas/EncryptionInUse'
                 geoLocation:
@@ -918,6 +1033,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 networkInterfaceIds:
                     type: array
                     items:
@@ -958,12 +1075,16 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 applicationId:
                     type: string
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -996,6 +1117,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 containerIds:
                     type: array
                     items:
@@ -1006,6 +1129,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -1038,12 +1163,16 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -1234,9 +1363,27 @@ components:
                         $ref: '#/components/schemas/Functionality'
                 parentId:
                     type: string
+                softwareAttestations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SoftwareAttestation'
             description: |-
                 Darwin is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  Represents a Darwin architecture, commonly found on macOS systems. macOS is a certified. [UNIX](https://www.opengroup.org/openbrand/register/apple.htm) and is (mostly) POSIX compatible.
+        DataConfidentialitySDNPolicy:
+            type: object
+            properties:
+                isDefined:
+                    type: boolean
+                restrictsDownloadAndExtraction:
+                    type: boolean
+                    description: Indicates whether the policy restricts downloading or extracting information from the organization's systems.
+                thirdPartyExchangeRulesDefined:
+                    type: boolean
+                    description: Indicates whether the policy specifically defines rules for information exchange with third parties.
+            description: |-
+                DataConfidentialitySDNPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents a policy section within a [PolicyDocument] describing data confidentiality requirements for Software Defined Networking (SDN). isDefined: whether this policy section is present and defined.
         DataLocation:
             type: object
             properties:
@@ -1313,6 +1460,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Backup'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 immutability:
@@ -1321,6 +1470,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -1377,12 +1528,16 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -1484,8 +1639,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/AnomalyDetection'
-                authenticity:
-                    $ref: '#/components/schemas/Authenticity'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 computeIds:
                     type: array
                     items:
@@ -1740,6 +1895,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Backup'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 immutability:
@@ -1748,6 +1905,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -1791,8 +1950,8 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 activityLogging:
                     $ref: '#/components/schemas/ActivityLogging'
-                authenticity:
-                    $ref: '#/components/schemas/Authenticity'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 computeIds:
                     type: array
                     items:
@@ -1805,6 +1964,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -1849,6 +2010,8 @@ components:
                     type: string
                 runtimeVersion:
                     type: string
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 encryptionInUse:
                     $ref: '#/components/schemas/EncryptionInUse'
                 geoLocation:
@@ -1857,6 +2020,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 networkInterfaceIds:
                     type: array
                     items:
@@ -1904,8 +2069,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
-                authenticity:
-                    $ref: '#/components/schemas/Authenticity'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 computeIds:
                     type: array
                     items:
@@ -1920,6 +2085,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -1938,6 +2105,8 @@ components:
             properties:
                 boundary:
                     $ref: '#/components/schemas/Boundary'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 asymmetricCipher:
                     $ref: '#/components/schemas/AsymmetricCipher'
                 hybridCipher:
@@ -1962,6 +2131,16 @@ components:
                     $ref: '#/components/schemas/HttpEndpoint'
                 error:
                     $ref: '#/components/schemas/Error'
+                contactPerson:
+                    $ref: '#/components/schemas/ContactPerson'
+                monitoringProcedure:
+                    $ref: '#/components/schemas/MonitoringProcedure'
+                securityPolicyReview:
+                    $ref: '#/components/schemas/SecurityPolicyReview'
+                awarenessTraining:
+                    $ref: '#/components/schemas/AwarenessTraining'
+                securityTraining:
+                    $ref: '#/components/schemas/SecurityTraining'
                 httpClient:
                     $ref: '#/components/schemas/HttpClient'
                 httpRequestContext:
@@ -2060,14 +2239,38 @@ components:
                     $ref: '#/components/schemas/Output'
                 padding:
                     $ref: '#/components/schemas/Padding'
+                accessControlTypePolicy:
+                    $ref: '#/components/schemas/AccessControlTypePolicy'
+                auditLogMonitoringPolicy:
+                    $ref: '#/components/schemas/AuditLogMonitoringPolicy'
+                complianceAuditIntervalPolicy:
+                    $ref: '#/components/schemas/ComplianceAuditIntervalPolicy'
+                complianceMethodologyPolicy:
+                    $ref: '#/components/schemas/ComplianceMethodologyPolicy'
+                dataConfidentialitySdnPolicy:
+                    $ref: '#/components/schemas/DataConfidentialitySDNPolicy'
+                leastPrivilegePolicy:
+                    $ref: '#/components/schemas/LeastPrivilegePolicy'
+                needToKnowPolicy:
+                    $ref: '#/components/schemas/NeedToKnowPolicy'
+                networkThreatMitigationPolicy:
+                    $ref: '#/components/schemas/NetworkThreatMitigationPolicy'
+                sdnFunctionValidationPolicy:
+                    $ref: '#/components/schemas/SDNFunctionValidationPolicy'
+                separationOfDutiesPolicy:
+                    $ref: '#/components/schemas/SeparationOfDutiesPolicy'
                 principal:
                     $ref: '#/components/schemas/Principal'
                 protectedAsset:
                     $ref: '#/components/schemas/ProtectedAsset'
+                requestForChange:
+                    $ref: '#/components/schemas/RequestForChange'
                 schemaValidation:
                     $ref: '#/components/schemas/SchemaValidation'
                 securityAdvisoryFeed:
                     $ref: '#/components/schemas/SecurityAdvisoryFeed'
+                securityIncident:
+                    $ref: '#/components/schemas/SecurityIncident'
                 time:
                     $ref: '#/components/schemas/Time'
                 vulnerability:
@@ -2103,8 +2306,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
-                authenticity:
-                    $ref: '#/components/schemas/Authenticity'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 computeIds:
                     type: array
                     items:
@@ -2115,6 +2318,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -2170,6 +2375,20 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        Governance:
+            type: object
+            properties:
+                contactPerson:
+                    $ref: '#/components/schemas/ContactPerson'
+                monitoringProcedure:
+                    $ref: '#/components/schemas/MonitoringProcedure'
+                securityPolicyReview:
+                    $ref: '#/components/schemas/SecurityPolicyReview'
+                awarenessTraining:
+                    $ref: '#/components/schemas/AwarenessTraining'
+                securityTraining:
+                    $ref: '#/components/schemas/SecurityTraining'
+            description: Governance is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
         HashOperation:
             type: object
             properties:
@@ -2687,16 +2906,18 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
-                authenticity:
-                    $ref: '#/components/schemas/Authenticity'
                 authorization:
                     $ref: '#/components/schemas/Authorization'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -2861,12 +3082,16 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -2885,6 +3110,9 @@ components:
                     type: boolean
                 enforced:
                     type: boolean
+                failedAuthenticationAttempts:
+                    type: integer
+                    format: int32
                 rotationInterval:
                     type: integer
                     description: Maximum password rotation interval in months
@@ -2931,6 +3159,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 usedByMultiple:
@@ -2939,6 +3169,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -2995,8 +3227,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/AnomalyDetection'
-                authenticity:
-                    $ref: '#/components/schemas/Authenticity'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 computeIds:
                     type: array
                     items:
@@ -3049,6 +3281,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 credentialIds:
                     type: array
                     items:
@@ -3059,6 +3293,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -3071,13 +3307,27 @@ components:
         L3Firewall:
             type: object
             properties:
+                allowedSources:
+                    type: array
+                    items:
+                        type: string
                 enabled:
                     type: boolean
                 inbound:
                     type: boolean
                 restrictedPorts:
-                    type: string
+                    type: array
+                    items:
+                        type: string
             description: L3Firewall is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        LeastPrivilegePolicy:
+            type: object
+            properties:
+                isDefined:
+                    type: boolean
+            description: |-
+                LeastPrivilegePolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents a policy section within a [PolicyDocument] describing least privilege requirements. isDefined: whether this policy section is present and defined.
         Library:
             type: object
             properties:
@@ -3113,6 +3363,10 @@ components:
                         type: string
                 parentId:
                     type: string
+                softwareAttestations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SoftwareAttestation'
                 vulnerabilities:
                     type: array
                     items:
@@ -3160,8 +3414,8 @@ components:
                     type: string
                 accessRestriction:
                     $ref: '#/components/schemas/AccessRestriction'
-                authenticity:
-                    $ref: '#/components/schemas/Authenticity'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 computeIds:
                     type: array
                     items:
@@ -3176,6 +3430,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 networkServiceIds:
                     type: array
                     items:
@@ -3380,8 +3636,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
-                authenticity:
-                    $ref: '#/components/schemas/Authenticity'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 computeIds:
                     type: array
                     items:
@@ -3392,6 +3648,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -3521,8 +3779,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
-                authenticity:
-                    $ref: '#/components/schemas/Authenticity'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 computeIds:
                     type: array
                     items:
@@ -3537,6 +3795,8 @@ components:
                     type: array
                     items:
                         type: string
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -3649,12 +3909,16 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -3667,28 +3931,10 @@ components:
         MonitoringProcedure:
             type: object
             properties:
-                creationTime:
-                    type: string
-                    format: date-time
-                description:
-                    type: string
-                id:
-                    type: string
                 intervalMonths:
                     type: integer
                     description: The interval refers to the interval in months.
                     format: int32
-                labels:
-                    type: object
-                    additionalProperties:
-                        type: string
-                name:
-                    type: string
-                raw:
-                    type: string
-                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
-                parentId:
-                    type: string
             description: |-
                 MonitoringProcedure is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  intervalMonths: Review frequency (in months) for reviewing monitoring procedures
@@ -3697,6 +3943,9 @@ components:
             properties:
                 contextIsChecked:
                     type: boolean
+                failedAuthenticationAttempts:
+                    type: integer
+                    format: int32
                 rotationInterval:
                     type: integer
                     description: Maximum password rotation interval in months
@@ -3742,8 +3991,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/AnomalyDetection'
-                authenticity:
-                    $ref: '#/components/schemas/Authenticity'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 computeIds:
                     type: array
                     items:
@@ -3777,6 +4026,14 @@ components:
             description: |-
                 MultiModalDatabaseService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  This class represents a database service that identifies itself as "multi-model", e.g., offers document storage as well as relational features.
+        NeedToKnowPolicy:
+            type: object
+            properties:
+                isDefined:
+                    type: boolean
+            description: |-
+                NeedToKnowPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents a policy section within a [PolicyDocument] describing need-to-know access control requirements. isDefined: whether this policy section is present and defined.
         NetworkInterface:
             type: object
             properties:
@@ -3800,12 +4057,16 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 accessRestriction:
                     $ref: '#/components/schemas/AccessRestriction'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 networkServiceId:
                     type: string
                 redundancies:
@@ -3838,12 +4099,16 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -3853,11 +4118,30 @@ components:
                 usageStatistics:
                     $ref: '#/components/schemas/UsageStatistics'
             description: NetworkSecurityGroup is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        NetworkThreatMitigationPolicy:
+            type: object
+            properties:
+                antispoofingRequired:
+                    type: boolean
+                    description: Indicates whether the policy explicitly requires antispoofing mechanisms on internet-facing routers.
+                coveredAttackTypes:
+                    type: array
+                    items:
+                        type: string
+                filteringRequired:
+                    type: boolean
+                    description: Indicates whether the policy explicitly requires network filtering mechanisms on internet-facing routers.
+            description: |-
+                NetworkThreatMitigationPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents a policy section within a [PolicyDocument] describing network threat mitigation mechanisms and attack coverage. coveredAttackTypes: the types of network-level attacks mitigated by implemented controls (e.g., DoS, DDoS).
         NoAuthentication:
             type: object
             properties:
                 contextIsChecked:
                     type: boolean
+                failedAuthenticationAttempts:
+                    type: integer
+                    format: int32
                 rotationInterval:
                     type: integer
                     description: Maximum password rotation interval in months
@@ -3890,6 +4174,9 @@ components:
                     type: boolean
                 contextIsChecked:
                     type: boolean
+                failedAuthenticationAttempts:
+                    type: integer
+                    format: int32
                 rotationInterval:
                     type: integer
                     description: Maximum password rotation interval in months
@@ -3926,6 +4213,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Backup'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 immutability:
@@ -3934,6 +4223,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -3991,8 +4282,8 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 activityLogging:
                     $ref: '#/components/schemas/ActivityLogging'
-                authenticity:
-                    $ref: '#/components/schemas/Authenticity'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 computeIds:
                     type: array
                     items:
@@ -4005,6 +4296,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -4073,6 +4366,10 @@ components:
                         $ref: '#/components/schemas/Functionality'
                 parentId:
                     type: string
+                softwareAttestations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SoftwareAttestation'
             description: |-
                 POSIX is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  Represents a POSIX architecture, commonly found on Linux systems.
@@ -4107,6 +4404,10 @@ components:
                         $ref: '#/components/schemas/Functionality'
                 parentId:
                     type: string
+                softwareAttestations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SoftwareAttestation'
             description: |-
                 Package is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  Represents a grouping of (source) code into logical unit, for example a package for a namespace.
@@ -4126,6 +4427,9 @@ components:
                     type: boolean
                 contextIsChecked:
                     type: boolean
+                failedAuthenticationAttempts:
+                    type: integer
+                    format: int32
                 rotationInterval:
                     type: integer
                     description: Maximum password rotation interval in months
@@ -4152,12 +4456,16 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -4188,26 +4496,56 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                accessControlTypePolicy:
+                    $ref: '#/components/schemas/AccessControlTypePolicy'
+                assetInventory:
+                    $ref: '#/components/schemas/AssetInventory'
+                auditLogMonitoringPolicy:
+                    $ref: '#/components/schemas/AuditLogMonitoringPolicy'
+                backup:
+                    $ref: '#/components/schemas/Backup'
+                complianceAuditIntervalPolicy:
+                    $ref: '#/components/schemas/ComplianceAuditIntervalPolicy'
                 cryptographicHashs:
                     type: array
                     items:
                         $ref: '#/components/schemas/CryptographicHash'
+                dataConfidentialitySdnPolicy:
+                    $ref: '#/components/schemas/DataConfidentialitySDNPolicy'
                 dataLocation:
                     $ref: '#/components/schemas/DataLocation'
                 documentSignatures:
                     type: array
                     items:
                         $ref: '#/components/schemas/DocumentSignature'
-                governanceId:
-                    type: string
+                governances:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Governance'
+                leastPrivilegePolicy:
+                    $ref: '#/components/schemas/LeastPrivilegePolicy'
+                monitoringProcedure:
+                    $ref: '#/components/schemas/MonitoringProcedure'
+                needToKnowPolicy:
+                    $ref: '#/components/schemas/NeedToKnowPolicy'
+                networkThreatMitigationPolicy:
+                    $ref: '#/components/schemas/NetworkThreatMitigationPolicy'
                 parentId:
                     type: string
+                sdnFunctionValidationPolicy:
+                    $ref: '#/components/schemas/SDNFunctionValidationPolicy'
                 validatedBy:
                     $ref: '#/components/schemas/SchemaValidation'
                 securityFeatures:
                     type: array
                     items:
                         $ref: '#/components/schemas/SecurityFeature'
+                securityIncident:
+                    $ref: '#/components/schemas/SecurityIncident'
+                securityPolicyReview:
+                    $ref: '#/components/schemas/SecurityPolicyReview'
+                separationOfDutiesPolicy:
+                    $ref: '#/components/schemas/SeparationOfDutiesPolicy'
             description: PolicyDocument is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Principal:
             type: object
@@ -4250,16 +4588,16 @@ components:
                     type: array
                     items:
                         type: string
-                contactPersonId:
-                    type: string
+                contactPerson:
+                    $ref: '#/components/schemas/ContactPerson'
                 dataIds:
                     type: array
                     items:
                         type: string
-                governanceIds:
+                governances:
                     type: array
                     items:
-                        type: string
+                        $ref: '#/components/schemas/Governance'
                 hardwareIds:
                     type: array
                     items:
@@ -4404,6 +4742,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 encryptionInUse:
                     $ref: '#/components/schemas/EncryptionInUse'
                 geoLocation:
@@ -4412,6 +4752,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 networkInterfaceIds:
                     type: array
                     items:
@@ -4559,8 +4901,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/AnomalyDetection'
-                authenticity:
-                    $ref: '#/components/schemas/Authenticity'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 computeIds:
                     type: array
                     items:
@@ -4655,6 +4997,12 @@ components:
                     items:
                         $ref: '#/components/schemas/SecurityFeature'
             description: ReportDocument is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        RequestForChange:
+            type: object
+            properties:
+                approvedBeforeDeployment:
+                    type: boolean
+            description: RequestForChange is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Resource:
             type: object
             properties:
@@ -4796,14 +5144,6 @@ components:
                     $ref: '#/components/schemas/Token'
                 value:
                     $ref: '#/components/schemas/Value'
-                contactPerson:
-                    $ref: '#/components/schemas/ContactPerson'
-                monitoringProcedure:
-                    $ref: '#/components/schemas/MonitoringProcedure'
-                awarenessTraining:
-                    $ref: '#/components/schemas/AwarenessTraining'
-                securityTraining:
-                    $ref: '#/components/schemas/SecurityTraining'
                 memory:
                     $ref: '#/components/schemas/Memory'
                 product:
@@ -4846,12 +5186,16 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -4908,16 +5252,18 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
-                authenticity:
-                    $ref: '#/components/schemas/Authenticity'
                 authorization:
                     $ref: '#/components/schemas/Authorization'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -4967,6 +5313,14 @@ components:
                     items:
                         $ref: '#/components/schemas/SecurityFeature'
             description: SBOMDocument is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        SDNFunctionValidationPolicy:
+            type: object
+            properties:
+                isDefined:
+                    type: boolean
+            description: |-
+                SDNFunctionValidationPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents a policy section within a [PolicyDocument] describing validation and testing requirements for SDN functions. isDefined: whether this policy section is present and defined.
         SchemaValidation:
             type: object
             properties:
@@ -5014,6 +5368,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 basedOn:
                     $ref: '#/components/schemas/Cipher'
                 geoLocation:
@@ -5024,6 +5380,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -5115,8 +5473,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
-                authenticity:
-                    $ref: '#/components/schemas/Authenticity'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 computeIds:
                     type: array
                     items:
@@ -5131,6 +5489,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -5155,6 +5515,8 @@ components:
             properties:
                 anomalyDetection:
                     $ref: '#/components/schemas/AnomalyDetection'
+                assetInventory:
+                    $ref: '#/components/schemas/AssetInventory'
                 codeSignoff:
                     $ref: '#/components/schemas/CodeSignoff'
                 activityLogging:
@@ -5221,6 +5583,8 @@ components:
                     $ref: '#/components/schemas/LocalAttestation'
                 remoteAttestation:
                     $ref: '#/components/schemas/RemoteAttestation'
+                softwareAttestation:
+                    $ref: '#/components/schemas/SoftwareAttestation'
                 automaticUpdates:
                     $ref: '#/components/schemas/AutomaticUpdates'
                 cryptographicHash:
@@ -5229,37 +5593,49 @@ components:
                     $ref: '#/components/schemas/Immutability'
                 documentSignature:
                     $ref: '#/components/schemas/DocumentSignature'
+                signedCommits:
+                    $ref: '#/components/schemas/SignedCommits'
+                verifiedCommits:
+                    $ref: '#/components/schemas/VerifiedCommits'
                 explainableResults:
                     $ref: '#/components/schemas/ExplainableResults'
                 robustnessScore:
                     $ref: '#/components/schemas/RobustnessScore'
             description: SecurityFeature is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+        SecurityIncident:
+            type: object
+            properties:
+                team:
+                    type: array
+                    items:
+                        type: string
+            description: SecurityIncident is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        SecurityPolicyReview:
+            type: object
+            properties:
+                intervalMonths:
+                    type: integer
+                    description: The interval refers to the interval in months.
+                    format: int32
+            description: |-
+                SecurityPolicyReview is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents the review cadence of the organization's Information Security Policy. intervalMonths: how often the policy must be reviewed, in months.
         SecurityTraining:
             type: object
             properties:
                 annualUpdateCompleted:
                     type: boolean
-                creationTime:
-                    type: string
-                    format: date-time
-                description:
-                    type: string
-                id:
-                    type: string
-                labels:
-                    type: object
-                    additionalProperties:
-                        type: string
-                name:
-                    type: string
-                raw:
-                    type: string
-                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 successfullyCompletedPercentage:
                     type: boolean
-                parentId:
-                    type: string
             description: SecurityTraining is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        SeparationOfDutiesPolicy:
+            type: object
+            properties:
+                isDefined:
+                    type: boolean
+            description: |-
+                SeparationOfDutiesPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents a policy section within a [PolicyDocument] describing separation of duties requirements. isDefined: whether this policy section is present and defined.
         ServiceMetadataDocument:
             type: object
             properties:
@@ -5300,6 +5676,18 @@ components:
                     items:
                         $ref: '#/components/schemas/SecurityFeature'
             description: ServiceMetadataDocument is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        SignedCommits:
+            type: object
+            properties:
+                enforced:
+                    type: boolean
+                percentage:
+                    type: number
+                    format: float
+                percentageLastMonth:
+                    type: number
+                    format: float
+            description: "SignedCommits is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.\n  SignedCommits cryptographically verify the identity of the commit author.\n Percentage: Percentage of signed commits. \n PercentageLastMonth: Percentage of signed commits in the last 30 days."
         SingleSignOn:
             type: object
             properties:
@@ -5307,11 +5695,28 @@ components:
                     type: boolean
                 enabled:
                     type: boolean
+                failedAuthenticationAttempts:
+                    type: integer
+                    format: int32
                 rotationInterval:
                     type: integer
                     description: Maximum password rotation interval in months
                     format: int32
             description: SingleSignOn is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        SoftwareAttestation:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+                predicate:
+                    type: string
+                    description: 'predicate: Property being affirmed'
+                subject:
+                    type: array
+                    items:
+                        type: string
+                    description: 'subject: Subject of an assertion'
+            description: SoftwareAttestation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         SourceCodeFile:
             type: object
             properties:
@@ -5343,6 +5748,10 @@ components:
                         $ref: '#/components/schemas/Functionality'
                 parentId:
                     type: string
+                softwareAttestations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SoftwareAttestation'
             description: SourceCodeFile is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Status:
             type: object
@@ -5522,12 +5931,16 @@ components:
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
                 applicationId:
                     type: string
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -5573,6 +5986,16 @@ components:
             description: |-
                 Value is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  The node that represents the "value" of this option. For example, in an INI file, this would be the [FieldDeclaration.initializer] node that represents the value.
+        VerifiedCommits:
+            type: object
+            properties:
+                percentage:
+                    type: number
+                    format: float
+                percentageLastMonth:
+                    type: number
+                    format: float
+            description: "VerifiedCommits is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.\n  VerifiedCommits ensure that cryptographic signatures on commits are successfully validated against trusted keys, confirming author authenticity and code integrity.\n Percentage: Percentage of verified commits. \n PercentageLastMonth: Percentage of verified commits in the last 30 days."
         VirtualMachine:
             type: object
             properties:
@@ -5604,6 +6027,8 @@ components:
                         type: string
                 bootLogging:
                     $ref: '#/components/schemas/BootLogging'
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 encryptionInUse:
                     $ref: '#/components/schemas/EncryptionInUse'
                 geoLocation:
@@ -5654,12 +6079,16 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -5690,12 +6119,16 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
@@ -5767,6 +6200,10 @@ components:
                         $ref: '#/components/schemas/Functionality'
                 parentId:
                     type: string
+                softwareAttestations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SoftwareAttestation'
             description: |-
                 Win32 is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  Represents a Win32 architecture, commonly found on Windows systems.
@@ -5791,12 +6228,16 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                changeAndConfigurationManagement:
+                    $ref: '#/components/schemas/ChangeAndConfigurationManagement'
                 geoLocation:
                     $ref: '#/components/schemas/GeoLocation'
                 loggings:
                     type: array
                     items:
                         $ref: '#/components/schemas/Logging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
                 redundancies:
                     type: array
                     items:
