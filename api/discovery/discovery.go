@@ -51,5 +51,5 @@ func Raw(raws ...any) *string {
 
 	b, _ := json.Marshal(rawMap)
 	s := string(b)
-	return &s
+	return new(s)
 }

@@ -1,6 +1,6 @@
 module clouditor.io/clouditor/v2
 
-go 1.24.0
+go 1.26.0
 
 // runtime dependencies (assessment)
 require (
@@ -224,7 +224,6 @@ require (
 )
 
 require (
-	github.com/gophercloud/gophercloud v1.14.1
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2 // indirect
 	github.com/vektah/gqlparser/v2 v2.5.30 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.37.0 // indirect
