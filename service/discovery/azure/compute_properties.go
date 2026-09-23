@@ -105,7 +105,7 @@ func (d *azureDiscovery) keyURL(diskEncryptionSetID string) (string, *armcompute
 		return "", nil, err
 	}
 
-	keyURL := kv.DiskEncryptionSet.Properties.ActiveKey.KeyURL
+	keyURL := kv.Properties.ActiveKey.KeyURL
 
 	if keyURL == nil {
 		return "", nil, fmt.Errorf("could not get keyURL")

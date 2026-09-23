@@ -178,9 +178,10 @@ func (d *azureDiscovery) handleFunction(function *armappservice.Site, config arm
 		return nil
 	}
 
-	if *function.Kind == "functionapp,linux" { // Linux function
+	switch *function.Kind {
+	case "functionapp,linux": // Linux function
 		runtimeLanguage, runtimeVersion = runtimeInfo(util.Deref(function.Properties.SiteConfig.LinuxFxVersion))
-	} else if *function.Kind == "functionapp" { // Windows function, we need to get also the config information
+	case "functionapp": // Windows function, we need to get also the config information
 		// Check all runtime versions to get the used runtime language and runtime version
 		if util.Deref(config.Properties.JavaVersion) != "" {
 			runtimeLanguage = "Java"

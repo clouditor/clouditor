@@ -35,13 +35,14 @@ func transportEncryption(state *tls.ConnectionState) (te *ontology.TransportEncr
 
 	if state != nil {
 		te.Enabled = new(true)
-		if state.Version == tls.VersionTLS10 {
+		switch state.Version {
+		case tls.VersionTLS10:
 			te.ProtocolVersion = new(float32(1.0))
-		} else if state.Version == tls.VersionTLS11 {
+		case tls.VersionTLS11:
 			te.ProtocolVersion = new(float32(1.1))
-		} else if state.Version == tls.VersionTLS12 {
+		case tls.VersionTLS12:
 			te.ProtocolVersion = new(float32(1.2))
-		} else if state.Version == tls.VersionTLS13 {
+		case tls.VersionTLS13:
 			te.ProtocolVersion = new(float32(1.3))
 		}
 
@@ -58,12 +59,13 @@ func transportEncryption(state *tls.ConnectionState) (te *ontology.TransportEncr
 // cipherSuite builds an [ontology.CipherSuite] object out of the cipher suite identifier of the tls package, e.g.
 // [tls.TLS_AES_128_GCM_SHA256].
 func cipherSuite(id uint16) *ontology.CipherSuite {
-	if id == tls.TLS_AES_128_GCM_SHA256 {
+	switch id {
+	case tls.TLS_AES_128_GCM_SHA256:
 		return &ontology.CipherSuite{
 			SessionCipher: new(constants.AES_128_GCM),
 			MacAlgorithm:  new(constants.SHA_256),
 		}
-	} else if id == tls.TLS_AES_256_GCM_SHA384 {
+	case tls.TLS_AES_256_GCM_SHA384:
 		return &ontology.CipherSuite{
 			SessionCipher: new(constants.AES_256_GCM),
 			MacAlgorithm:  new(constants.SHA_384),
@@ -193,7 +195,7 @@ func (d *csafDiscovery) documentPGPSignature(signURL string, body []byte, keyrin
 	}
 
 	// Fetch the signature (in res.Body) and use it to verify the body
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	_, err = openpgp.CheckArmoredDetachedSignature(keyring, bytes.NewReader(body), res.Body, nil)
 	if err != nil {
 		return &ontology.DocumentSignature{

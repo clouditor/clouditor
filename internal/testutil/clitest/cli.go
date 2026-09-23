@@ -191,11 +191,11 @@ func RunCLITestFunc[T any](f func() T, opts ...server.StartGRPCServerOption) (re
 
 	ret := f()
 
-	sock.Close()
+	_ = sock.Close()
 	srv.Stop()
 
 	// Remove temporary session directory
-	os.RemoveAll(tmpDir)
+	_ = os.RemoveAll(tmpDir)
 
 	return &ret, nil
 }

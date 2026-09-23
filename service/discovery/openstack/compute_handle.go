@@ -47,7 +47,7 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 	// we cannot directly retrieve OS logging information
 	// boot logging is logged in the console log
 	consoleOutput := servers.ShowConsoleOutput(context.Background(), d.clients.computeClient, server.ID, servers.ShowConsoleOutputOpts{})
-	if consoleOutput.Result.Err == nil {
+	if consoleOutput.Err == nil {
 		bootLogging = &ontology.BootLogging{
 			Enabled: new(true),
 		}

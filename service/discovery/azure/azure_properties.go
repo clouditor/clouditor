@@ -145,22 +145,25 @@ cipher:
 
 	i++
 	if slices.Contains([]string{"128", "256"}, parts[i]) {
-		*cipher.SessionCipher += "-" + parts[i]	} else {
+		*cipher.SessionCipher += "-" + parts[i]
+	} else {
 		goto invalid
 	}
 
 	i++
 	if slices.Contains([]string{"CBC", "GCM"}, parts[i]) {
-		*cipher.SessionCipher += "-" + parts[i]	} else {
+		*cipher.SessionCipher += "-" + parts[i]
+	} else {
 		goto invalid
 	}
 
 	i++
-	if parts[i] == "SHA256" {
+	switch parts[i] {
+	case "SHA256":
 		cipher.MacAlgorithm = new("SHA-256")
-	} else if parts[i] == "SHA384" {
+	case "SHA384":
 		cipher.MacAlgorithm = new("SHA-384")
-	} else {
+	default:
 		goto invalid
 	}
 

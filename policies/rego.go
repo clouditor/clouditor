@@ -33,10 +33,10 @@ import (
 	"sync"
 
 	"clouditor.io/clouditor/v2/api/assessment"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/open-policy-agent/opa/v1/rego"
 	"github.com/open-policy-agent/opa/v1/storage"
 	"github.com/open-policy-agent/opa/v1/storage/inmem"
@@ -203,9 +203,10 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, rel
 // HandleMetricEvent takes care of handling metric events, such as evicting cache entries for the
 // appropriate metrics.
 func (re *regoEval) HandleMetricEvent(event *orchestrator.MetricChangeEvent) (err error) {
-	if event.Type == orchestrator.MetricChangeEvent_TYPE_IMPLEMENTATION_CHANGED {
+	switch event.Type {
+	case orchestrator.MetricChangeEvent_TYPE_IMPLEMENTATION_CHANGED:
 		log.Infof("Implementation of %s has changed. Clearing cache for this metric", event.MetricId)
-	} else if event.Type == orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED {
+	case orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED:
 		log.Infof("Configuration of %s has changed. Clearing cache for this metric", event.MetricId)
 	}
 

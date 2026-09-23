@@ -49,7 +49,7 @@ func (d *azureDiscovery) nsgFirewallEnabled(ni *armnetwork.Interface) bool {
 		}
 
 		// TODO(all): We have to check more than len(securityRules) > 0. But what is a good check?
-		if len(nsg.SecurityGroup.Properties.SecurityRules) > 0 {
+		if len(nsg.Properties.SecurityRules) > 0 {
 			return true
 		}
 
