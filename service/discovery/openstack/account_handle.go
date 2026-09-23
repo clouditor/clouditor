@@ -49,7 +49,7 @@ func (d *openstackDiscovery) handleDomain(domain *domains.Domain) (ontology.IsRe
 		Raw:          util.Ref(discovery.Raw(domain)),
 	}
 
-	log.Infof("Adding domain '%s", r.Name)
+	log.Infof("Adding domain '%s'", util.Deref(r.Name))
 
 	return r, nil
 }
@@ -70,7 +70,7 @@ func (d *openstackDiscovery) handleProject(project *projects.Project) (ontology.
 		Raw:      util.Ref(discovery.Raw(project)),
 	}
 
-	log.Infof("Adding project '%s", r.Name)
+	log.Infof("Adding project '%s'", util.Deref(r.Name))
 
 	return r, nil
 }

@@ -63,7 +63,7 @@ func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontolog
 		return nil, fmt.Errorf("could not handle project for block storage %s: %w", volume.ID, err)
 	}
 
-	log.Infof("Adding block storage '%s", r.Name)
+	log.Infof("Adding block storage '%s'", util.Deref(r.Name))
 
 	return r, nil
 }

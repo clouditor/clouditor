@@ -63,7 +63,7 @@ func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) 
 		return nil, fmt.Errorf("could not handle project for network interface '%s': %w", network.Name, err)
 	}
 
-	log.Infof("Adding network interface '%s", r.Name)
+	log.Infof("Adding network interface '%s'", util.Deref(r.Name))
 
 	return r, nil
 }

@@ -72,7 +72,7 @@ func (d *azureDiscovery) discoverCosmosDB() ([]ontology.IsResource, error) {
 			if err != nil {
 				return fmt.Errorf("could not cosmos db accounts: %w", err)
 			}
-			log.Infof("Adding Cosmos DB account '%s", *dbAccount.Name)
+			log.Infof("Adding Cosmos DB account '%s", util.Deref(dbAccount.Name))
 			list = append(list, cosmos...)
 
 			return nil
@@ -151,7 +151,7 @@ func (d *azureDiscovery) discoverSqlServers() ([]ontology.IsResource, error) {
 			if err != nil {
 				return fmt.Errorf("could not handle sql database: %w", err)
 			}
-			log.Infof("Adding sql database '%s", *server.Name)
+			log.Infof("Adding sql database '%s", util.Deref(server.Name))
 			list = append(list, db...)
 
 			return nil
@@ -177,7 +177,7 @@ func (d *azureDiscovery) getSqlDBs(server *armsql.Server) ([]ontology.IsResource
 	}
 
 	// Get databases for given server
-	serverlistPager := d.clients.databasesClient.NewListByServerPager(resourceGroupName(util.Deref(server.ID)), *server.Name, &armsql.DatabasesClientListByServerOptions{})
+	serverlistPager := d.clients.databasesClient.NewListByServerPager(resourceGroupName(util.Deref(server.ID)), util.Deref(server.Name), &armsql.DatabasesClientListByServerOptions{})
 	for serverlistPager.More() {
 		pageResponse, err := serverlistPager.NextPage(context.TODO())
 		if err != nil {
@@ -190,7 +190,7 @@ func (d *azureDiscovery) getSqlDBs(server *armsql.Server) ([]ontology.IsResource
 			// Get anomaly detection status
 			anomalyDetectionEnabled, err := d.anomalyDetectionEnabled(server, value)
 			if err != nil {
-				log.Errorf("error getting anomaly detection info for database '%s': %v", *value.Name, err)
+				log.Errorf("error getting anomaly detection info for database '%s': %v", util.Deref(value.Name), err)
 			}
 
 			a := &ontology.AnomalyDetection{
@@ -334,7 +334,7 @@ func (d *azureDiscovery) discoverFileStorages(account *armstorage.Account, activ
 				return nil, fmt.Errorf("could not handle file storage: %w", err)
 			}
 
-			log.Infof("Adding file storage '%s", fileStorages.Name)
+			log.Infof("Adding file storage '%s'", util.Deref(fileStorages.Name))
 
 			list = append(list, fileStorages)
 		}
@@ -360,7 +360,7 @@ func (d *azureDiscovery) discoverObjectStorages(account *armstorage.Account, act
 			if err != nil {
 				return nil, fmt.Errorf("could not handle object storage: %w", err)
 			}
-			log.Infof("Adding object storage '%s'", objectStorages.Name)
+			log.Infof("Adding object storage '%s'", util.Deref(objectStorages.Name))
 
 			list = append(list, objectStorages)
 		}

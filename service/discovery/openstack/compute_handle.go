@@ -91,7 +91,7 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 		return nil, fmt.Errorf("could not handle project for server '%s': %w", server.Name, err)
 	}
 
-	log.Infof("Adding server '%s", r.Name)
+	log.Infof("Adding server '%s'", util.Deref(r.Name))
 
 	return r, nil
 }
