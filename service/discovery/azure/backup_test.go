@@ -380,7 +380,6 @@ func Test_backupsEmptyCheck(t *testing.T) {
 			args: args{},
 			want: []*ontology.Backup{
 				{
-					Enabled:         util.Ref(false),
 
 					RetentionPeriod: nil,
 					Interval:        nil,

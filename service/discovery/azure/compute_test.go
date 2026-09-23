@@ -88,7 +88,6 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 
 					NetworkInterfaceIds: []string{},
 					ResourceLogging: &ontology.ResourceLogging{
-						Enabled: util.Ref(false),
 
 					},
 					/*HttpEndpoint: &ontology.HttpEndpoint{
@@ -126,7 +125,6 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 
 					NetworkInterfaceIds: []string{},
 					ResourceLogging: &ontology.ResourceLogging{
-						Enabled: util.Ref(false),
 
 					},
 					/*HttpEndpoint: &ontology.HttpEndpoint{
@@ -197,7 +195,6 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 
 					NetworkInterfaceIds: []string{"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/virtualnetworks/vnet1/subnets/subnet2"},
 					ResourceLogging: &ontology.ResourceLogging{
-						Enabled: util.Ref(false),
 					},
 					/*HttpEndpoint: &ontology.HttpEndpoint{
 						TransportEncryption: &ontology.TransportEncryption{
@@ -302,7 +299,6 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 
 				NetworkInterfaceIds: []string{},
 				ResourceLogging: &ontology.ResourceLogging{
-					Enabled: util.Ref(false),
 
 				},
 				InternetAccessibleEndpoint: util.Ref(false),
@@ -374,7 +370,6 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 
 				NetworkInterfaceIds: []string{},
 				ResourceLogging: &ontology.ResourceLogging{
-					Enabled: util.Ref(false),
 
 				},
 				InternetAccessibleEndpoint: util.Ref(false),
@@ -461,11 +456,15 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 						//LoggingService: []ontology.ResourceID{"https://logstoragevm1.blob.core.windows.net/"},
 						LoggingServiceIds: []string{},
 						RetentionPeriod:   durationpb.New(0),
+						MonitoringLogDataEnabled: util.Ref(false),
+						SecurityAlertsEnabled:    util.Ref(false),
 					},
 					OsLogging: &ontology.OSLogging{
 						Enabled:           util.Ref(true),
 
 						RetentionPeriod:   durationpb.New(0),
+						MonitoringLogDataEnabled: util.Ref(false),
+						SecurityAlertsEnabled:    util.Ref(false),
 						LoggingServiceIds: []string{},
 					},
 					AutomaticUpdates: &ontology.AutomaticUpdates{
@@ -502,11 +501,15 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 
 						LoggingServiceIds: []string{},
 						RetentionPeriod:   durationpb.New(0),
+						MonitoringLogDataEnabled: util.Ref(false),
+						SecurityAlertsEnabled:    util.Ref(false),
 					},
 					OsLogging: &ontology.OSLogging{
 						Enabled:           util.Ref(true),
 						LoggingServiceIds: []string{},
 						RetentionPeriod:   durationpb.New(0),
+						MonitoringLogDataEnabled: util.Ref(false),
+						SecurityAlertsEnabled:    util.Ref(false),
 					},
 					AutomaticUpdates: &ontology.AutomaticUpdates{
 						Enabled:  util.Ref(true),
@@ -538,19 +541,21 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					NetworkInterfaceIds: []string{},
 					BlockStorageIds:     []string{},
 					BootLogging: &ontology.BootLogging{
-						Enabled:           util.Ref(false),
 
 						LoggingServiceIds: []string{},
 						RetentionPeriod:   durationpb.New(0),
+						MonitoringLogDataEnabled: util.Ref(false),
+						SecurityAlertsEnabled:    util.Ref(false),
 					},
 					OsLogging: &ontology.OSLogging{
 						Enabled:           util.Ref(false),
 
 						LoggingServiceIds: []string{},
 						RetentionPeriod:   durationpb.New(0),
+						MonitoringLogDataEnabled: util.Ref(false),
+						SecurityAlertsEnabled:    util.Ref(false),
 					},
 					AutomaticUpdates: &ontology.AutomaticUpdates{
-						Enabled:  util.Ref(false),
 
 						Interval: nil,
 					},
@@ -685,8 +690,8 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 
 				},
 				OsLogging: &ontology.OSLogging{
-					Enabled:                  util.Ref(false),
 
+					Enabled:                  util.Ref(false),
 					LoggingServiceIds:        []string{},
 					RetentionPeriod:          durationpb.New(0),
 					MonitoringLogDataEnabled: util.Ref(true),
@@ -695,7 +700,6 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 
 				},
 				AutomaticUpdates: &ontology.AutomaticUpdates{
-					Enabled:  util.Ref(false),
 
 					Interval: nil,
 				},
@@ -948,8 +952,8 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 					},
 					Backups: []*ontology.Backup{
 						{
-							Enabled:         util.Ref(false),
 
+							Enabled:         util.Ref(false),
 							RetentionPeriod: nil,
 							Interval:        nil,
 						},
@@ -982,8 +986,8 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 					},
 					Backups: []*ontology.Backup{
 						{
-							Enabled:         util.Ref(false),
 
+							Enabled:         util.Ref(false),
 							RetentionPeriod: nil,
 							Interval:        nil,
 						},
@@ -1015,8 +1019,8 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 					},
 					Backups: []*ontology.Backup{
 						{
-							Enabled:         util.Ref(false),
 
+							Enabled:         util.Ref(false),
 							RetentionPeriod: nil,
 							Interval:        nil,
 						},
@@ -1157,8 +1161,8 @@ func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
 				},
 				Backups: []*ontology.Backup{
 					{
-						Enabled:         util.Ref(false),
 
+							Enabled:         util.Ref(false),
 						RetentionPeriod: nil,
 						Interval:        nil,
 					},
@@ -1653,7 +1657,6 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 
 				NetworkInterfaceIds: []string{"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/virtualnetworks/vnet1/subnets/subnet2"},
 				ResourceLogging: &ontology.ResourceLogging{
-					Enabled: util.Ref(false),
 
 				},
 				/*HttpEndpoint: &ontology.HttpEndpoint{
@@ -1711,7 +1714,6 @@ func Test_getTransportEncryption(t *testing.T) {
 			wantEnc: &ontology.TransportEncryption{
 				Enforced: util.Ref(false),
 
-				Enabled:  util.Ref(false),
 
 			},
 		},
@@ -1873,7 +1875,6 @@ func Test_azureComputeDiscovery_getResourceLoggingWebApp(t *testing.T) {
 				},
 			},
 			wantRl: &ontology.ResourceLogging{
-				Enabled: util.Ref(false),
 
 			},
 		},

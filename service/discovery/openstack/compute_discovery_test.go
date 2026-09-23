@@ -120,7 +120,7 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 					NetworkInterfaceIds: []string{"8a5fe506-7e9f-4091-899b-96336909d93c"},
 					MalwareProtection:   &ontology.MalwareProtection{},
 					AutomaticUpdates:    &ontology.AutomaticUpdates{},
-					BootLogging:         &ontology.BootLogging{Enabled: util.Ref(true)},
+					BootLogging:        &ontology.BootLogging{Enabled: util.Ref(true)},
 
 				}
 
@@ -139,21 +139,21 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 					NetworkInterfaceIds: []string{"8a5fe506-7e9f-4091-899b-96336909d93c"},
 					MalwareProtection:   &ontology.MalwareProtection{},
 					AutomaticUpdates:    &ontology.AutomaticUpdates{},
-					BootLogging:         &ontology.BootLogging{Enabled: util.Ref(false)},
+					BootLogging:        &ontology.BootLogging{Enabled: util.Ref(false)},
 
 				}
 
 				got0, ok := got[0].(*ontology.VirtualMachine)
 				assert.True(t, ok)
 				assert.NotEmpty(t, got0.GetRaw())
-				got0.Raw = util.Ref("")
+				got0.Raw = nil
 
 				assert.Equal(t, want, got0)
 
 				got1, ok := got[1].(*ontology.VirtualMachine)
 				assert.True(t, ok)
 				assert.NotEmpty(t, got1.GetRaw())
-				got1.Raw = util.Ref("")
+				got1.Raw = nil
 
 
 				return assert.Equal(t, want2, got1)

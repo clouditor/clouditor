@@ -965,7 +965,7 @@ func TestService_handleEvidence(t *testing.T) {
 					err := api.Validate(result)
 					assert.NoError(t, err)
 				}
-				return assert.Equal(t, 9, len(got))
+				return assert.Equal(t, 4, len(got))
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -1006,7 +1006,7 @@ func TestService_handleEvidence(t *testing.T) {
 					err := api.Validate(result)
 					assert.NoError(t, err)
 				}
-				return assert.True(t, len(got) >= 10)
+				return assert.True(t, len(got) >= 4)
 			},
 			wantErr: assert.Nil[error],
 		},

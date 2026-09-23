@@ -123,7 +123,7 @@ func Test_openstackDiscovery_handleCluster(t *testing.T) {
 				gotNew := got.(*ontology.ContainerOrchestration)
 
 				assert.NotEmpty(t, gotNew.GetRaw())
-				gotNew.Raw = util.Ref("")
+				gotNew.Raw = nil
 
 				return assert.Equal(t, want, gotNew)
 			},

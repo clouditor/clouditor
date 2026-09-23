@@ -176,7 +176,7 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 				assert.True(t, ok)
 
 				assert.NotEmpty(t, gotNew.GetRaw())
-				gotNew.Raw = util.Ref("")
+				gotNew.Raw = nil
 
 				return assert.Equal(t, want, gotNew)
 			},

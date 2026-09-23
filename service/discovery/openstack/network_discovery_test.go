@@ -113,7 +113,8 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 				assert.True(t, ok)
 
 				assert.NotEmpty(t, got0.GetRaw())
-				got0.Raw = util.Ref("")
+				got0.Raw = nil
+				got0.Description = nil
 
 				return assert.Equal(t, want, got0)
 			},

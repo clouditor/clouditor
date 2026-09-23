@@ -298,11 +298,8 @@ func Test_handleFileStorage(t *testing.T) {
 						},
 					},
 					ResourceLogging: &ontology.ResourceLogging{
-						Enabled:                  util.Ref(false),
 
-						MonitoringLogDataEnabled: util.Ref(false),
 
-						SecurityAlertsEnabled:    util.Ref(false),
 
 					},
 					ActivityLogging: &ontology.ActivityLogging{
@@ -312,7 +309,7 @@ func Test_handleFileStorage(t *testing.T) {
 				}
 
 				assert.NotEmpty(t, got.Raw)
-				got.Raw = util.Ref("")
+				got.Raw = nil
 
 				return assert.Equal(t, want, got)
 			},
@@ -463,7 +460,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 				}
 
 				assert.NotEmpty(t, got.Raw)
-				got.Raw = util.Ref("")
+				got.Raw = nil
 
 				return assert.Equal(t, want, got)
 
@@ -596,17 +593,13 @@ func Test_handleObjectStorage(t *testing.T) {
 							},
 						},
 					},
-					Immutability: &ontology.Immutability{Enabled: util.Ref(false)},
 
 					ResourceLogging: &ontology.ResourceLogging{
-						MonitoringLogDataEnabled: util.Ref(false),
 
-						SecurityAlertsEnabled:    util.Ref(false),
 
 					},
 					Backups: []*ontology.Backup{
 						{
-							Enabled:         util.Ref(false),
 
 							RetentionPeriod: nil,
 							Interval:        nil,
@@ -621,7 +614,7 @@ func Test_handleObjectStorage(t *testing.T) {
 				}
 
 				assert.NotEmpty(t, got.Raw)
-				got.Raw = util.Ref("")
+				got.Raw = nil
 
 				return assert.Equal(t, want, got)
 			},
@@ -722,9 +715,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 						},
 					},
 					ResourceLogging: &ontology.ResourceLogging{
-						MonitoringLogDataEnabled: util.Ref(false),
 
-						SecurityAlertsEnabled:    util.Ref(false),
 
 					},
 				}
@@ -751,9 +742,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 						},
 					},
 					ResourceLogging: &ontology.ResourceLogging{
-						MonitoringLogDataEnabled: util.Ref(false),
 
-						SecurityAlertsEnabled:    util.Ref(false),
 
 					},
 				}
@@ -764,14 +753,14 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 				// Check first element
 				got0 := got[0].(*ontology.FileStorage)
 				assert.NotEmpty(t, got0)
-				got0.Raw = util.Ref("")
+				got0.Raw = nil
 
 				assert.Equal(t, want0, got0)
 
 				// Check second element
 				got1 := got[1].(*ontology.FileStorage)
 				assert.NotEmpty(t, got1)
-				got1.Raw = util.Ref("")
+				got1.Raw = nil
 
 				return assert.Equal(t, want1, got1)
 			},
@@ -873,17 +862,13 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 							},
 						},
 					},
-					Immutability: &ontology.Immutability{Enabled: util.Ref(false)},
 
 					ResourceLogging: &ontology.ResourceLogging{
-						MonitoringLogDataEnabled: util.Ref(false),
 
-						SecurityAlertsEnabled:    util.Ref(false),
 
 					},
 					Backups: []*ontology.Backup{
 						{
-							Enabled:         util.Ref(false),
 
 							RetentionPeriod: nil,
 							Interval:        nil,
@@ -914,17 +899,13 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 							},
 						},
 					},
-					Immutability: &ontology.Immutability{Enabled: util.Ref(false)},
 
 					ResourceLogging: &ontology.ResourceLogging{
-						MonitoringLogDataEnabled: util.Ref(false),
 
-						SecurityAlertsEnabled:    util.Ref(false),
 
 					},
 					Backups: []*ontology.Backup{
 						{
-							Enabled:         util.Ref(false),
 
 							RetentionPeriod: nil,
 							Interval:        nil,
@@ -940,14 +921,14 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 				// Check first element
 				got0 := got[0].(*ontology.ObjectStorage)
 				assert.NotEmpty(t, got0)
-				got0.Raw = util.Ref("")
+				got0.Raw = nil
 
 				assert.Equal(t, want0, got0)
 
 				// Check second element
 				got1 := got[1].(*ontology.ObjectStorage)
 				assert.NotEmpty(t, got1)
-				got1.Raw = util.Ref("")
+				got1.Raw = nil
 
 				return assert.Equal(t, want1, got1)
 
@@ -1154,7 +1135,6 @@ func Test_azureStorageDiscovery_anomalyDetectionEnabled(t *testing.T) {
 					Name:     util.Ref("SqlDatabase1"),
 					Location: util.Ref("eastus"),
 					Properties: &armsql.DatabaseProperties{
-						IsInfraEncryptionEnabled: util.Ref(false),
 					},
 				},
 			},

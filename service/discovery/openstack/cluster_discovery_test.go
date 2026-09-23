@@ -124,13 +124,13 @@ func Test_openstackDiscovery_discoverCluster(t *testing.T) {
 				// Check Raw field and skip it for comparison
 				got0 := got[0].(*ontology.ContainerOrchestration)
 				assert.NotEmpty(t, got0.GetRaw())
-				got0.Raw = util.Ref("")
+				got0.Raw = nil
 
 				assert.Equal(t, want, got0)
 
 				got1 := got[1].(*ontology.ContainerOrchestration)
 				assert.NotEmpty(t, got1.GetRaw())
-				got1.Raw = util.Ref("")
+				got1.Raw = nil
 
 				return assert.Equal(t, want1, got1)
 			},

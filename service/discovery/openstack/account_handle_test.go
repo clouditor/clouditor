@@ -86,7 +86,7 @@ func Test_openstackDiscovery_handleProject(t *testing.T) {
 				gotNew, ok := got.(*ontology.ResourceGroup)
 				assert.True(t, ok)
 				assert.NotEmpty(t, gotNew.GetRaw())
-				gotNew.Raw = util.Ref("")
+				gotNew.Raw = nil
 				return assert.Equal(t, want, gotNew)
 			},
 			wantErr: assert.NoError,
@@ -147,7 +147,7 @@ func Test_openstackDiscovery_handleDomain(t *testing.T) {
 				gotNew, ok := got.(*ontology.Account)
 				assert.True(t, ok)
 				assert.NotEmpty(t, gotNew.GetRaw())
-				gotNew.Raw = util.Ref("")
+				gotNew.Raw = nil
 
 				return assert.Equal(t, want, gotNew)
 			},

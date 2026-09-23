@@ -58,7 +58,6 @@ func Test_csafDiscovery_providerTransportEncryption(t *testing.T) {
 			},
 			want: &ontology.TransportEncryption{
 				Enabled: util.Ref(false),
-
 			},
 		},
 	}

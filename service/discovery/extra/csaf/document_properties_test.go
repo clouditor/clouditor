@@ -76,7 +76,7 @@ func Test_transportEncryption(t *testing.T) {
 				state: nil,
 			},
 			want: func(t *testing.T, got *ontology.TransportEncryption) bool {
-				want := &ontology.TransportEncryption{Enabled: util.Ref(false)}
+				want := &ontology.TransportEncryption{}
 				return assert.Equal(t, want, got)
 			},
 		},

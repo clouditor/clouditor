@@ -120,7 +120,7 @@ func Test_handleMLWorkspace(t *testing.T) {
 				}
 
 				assert.NotEmpty(t, got1.Raw)
-				got1.Raw = util.Ref("")
+				got1.Raw = nil
 
 
 				return assert.Equal(t, want, got1)
@@ -197,7 +197,7 @@ func Test_azureDiscovery_handleMLCompute(t *testing.T) {
 				}
 
 				assert.NotEmpty(t, got1.Raw)
-				got1.Raw = util.Ref("")
+				got1.Raw = nil
 
 
 				return assert.Equal(t, want, got1)
@@ -239,7 +239,7 @@ func Test_azureDiscovery_handleMLCompute(t *testing.T) {
 				}
 
 				assert.NotEmpty(t, got1.Raw)
-				got1.Raw = util.Ref("")
+				got1.Raw = nil
 
 
 				return assert.Equal(t, want, got1)

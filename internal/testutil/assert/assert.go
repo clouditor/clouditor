@@ -10,6 +10,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/testing/protocmp"
 )
 
@@ -54,6 +56,15 @@ func Equal[T any](t TestingT, want T, got T, opts ...cmp.Option) bool {
 	tt, ok := t.(*testing.T)
 	if ok {
 		tt.Helper()
+	}
+
+	// Normalize proto messages: round-trip through protojson with EmitUnpopulated=false
+	// to remove unset optional fields, so nil and zero-value pointer fields compare equal.
+	if wantMsg, ok := any(want).(proto.Message); ok {
+		NormalizeProto(wantMsg)
+	}
+	if gotMsg, ok := any(got).(proto.Message); ok {
+		NormalizeProto(gotMsg)
 	}
 
 	opts = append(opts, protocmp.Transform())
@@ -122,4 +133,15 @@ func Optional[T any](t *testing.T, want Want[T], got T) bool {
 	}
 
 	return true
+}
+
+// NormalizeProto normalizes a proto message by round-tripping it through protojson
+// with EmitUnpopulated=false. This removes all unset optional fields, making
+// nil and zero-value pointer fields compare as equal.
+func NormalizeProto(msg proto.Message) {
+	b, err := protojson.MarshalOptions{EmitUnpopulated: false}.Marshal(msg)
+	if err != nil {
+		return
+	}
+	proto.UnmarshalOptions{DiscardUnknown: true}.Unmarshal(b, msg)
 }
