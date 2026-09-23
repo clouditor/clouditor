@@ -49,10 +49,13 @@ func TestRelated(t *testing.T) {
 			name: "happy path",
 			args: args{
 				r: &ObjectStorage{
-					Id:       "some-id",
-					Name:     "some-name",
+					Id:       util.Ref("some-id"),
+
+					Name:     util.Ref("some-name"),
+
 					ParentId: util.Ref("some-storage-account-id"),
-					Raw:      "{}",
+					Raw:      util.Ref("{}"),
+
 				},
 			},
 			want: []Relationship{
@@ -66,10 +69,13 @@ func TestRelated(t *testing.T) {
 			name: "happy path with plural",
 			args: args{
 				r: &Application{
-					Id:         "some-id",
-					Name:       "some-name",
+					Id:         util.Ref("some-id"),
+
+					Name:       util.Ref("some-name"),
+
 					LibraryIds: []string{"some-library"},
-					Raw:        "{}",
+					Raw:        util.Ref("{}"),
+
 				},
 			},
 			want: []Relationship{
@@ -102,8 +108,10 @@ func TestResourceMap(t *testing.T) {
 			name: "happy path",
 			args: args{
 				r: &VirtualMachine{
-					Id:           "my-id",
-					Name:         "My VM",
+					Id:           util.Ref("my-id"),
+
+					Name:         util.Ref("My VM"),
+
 					CreationTime: timestamppb.New(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
 					AutomaticUpdates: &AutomaticUpdates{
 						Interval: durationpb.New(time.Hour * 24 * 2),
@@ -178,8 +186,8 @@ func TestListResourceIDs(t *testing.T) {
 			name: "Happy path",
 			args: args{
 				[]IsResource{
-					&Account{Id: "test"},
-					&Account{Id: "test2"},
+					&Account{Id: util.Ref("test")},
+					&Account{Id: util.Ref("test2")},
 				},
 			},
 			want: []string{"test", "test2"},
@@ -207,13 +215,15 @@ func TestProtoResource(t *testing.T) {
 			name: "happy path",
 			args: args{
 				resource: &VirtualMachine{
-					Id: "vm-1",
+					Id: util.Ref("vm-1"),
+
 				},
 			},
 			want: &Resource{
 				Type: &Resource_VirtualMachine{
 					VirtualMachine: &VirtualMachine{
-						Id: "vm-1",
+						Id: util.Ref("vm-1"),
+
 					},
 				},
 			},

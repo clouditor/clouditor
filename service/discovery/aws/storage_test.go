@@ -369,7 +369,7 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, util.Deref(customerEncryption.Enabled))
 	assert.Equal(t, "", util.Deref(customerEncryption.Algorithm))
-	assert.Equal(t, "arn:aws:kms:"+mockBucket2Region+":"+mockAccountID+":key/"+mockBucket2KeyId, customerEncryption.KeyUrl)
+	assert.Equal(t, "arn:aws:kms:"+mockBucket2Region+":"+mockAccountID+":key/"+mockBucket2KeyId, util.Deref(customerEncryption.KeyUrl))
 	assert.NotEmpty(t, rawEncryptionAtRest)
 
 	// Third case: No encryption
@@ -408,9 +408,9 @@ func TestAwsS3Discovery_getTransportEncryption(t *testing.T) {
 	// Case 2: Enforced
 	encryptionAtTransit, rawBucketPolicy, err := d.getTransportEncryption(mockBucket1)
 	assert.NoError(t, err)
-	assert.True(t, encryptionAtTransit.Enabled)
-	assert.Equal(t, float32(1.2), encryptionAtTransit.ProtocolVersion)
-	assert.True(t, encryptionAtTransit.Enforced)
+	assert.True(t, util.Deref(encryptionAtTransit.Enabled))
+	assert.Equal(t, float32(1.2), util.Deref(encryptionAtTransit.ProtocolVersion))
+	assert.True(t, util.Deref(encryptionAtTransit.Enforced))
 	assert.NotEmpty(t, rawBucketPolicy)
 
 	// Case 3: JSON failure
@@ -422,17 +422,17 @@ func TestAwsS3Discovery_getTransportEncryption(t *testing.T) {
 	// Case 4: Not enforced
 	encryptionAtTransit, rawBucketPolicy, err = d.getTransportEncryption(mockBucket3)
 	assert.NoError(t, err)
-	assert.True(t, encryptionAtTransit.Enabled)
-	assert.Equal(t, float32(1.2), encryptionAtTransit.ProtocolVersion)
-	assert.False(t, encryptionAtTransit.Enforced)
+	assert.True(t, util.Deref(encryptionAtTransit.Enabled))
+	assert.Equal(t, float32(1.2), util.Deref(encryptionAtTransit.ProtocolVersion))
+	assert.False(t, util.Deref(encryptionAtTransit.Enforced))
 	assert.NotEmpty(t, rawBucketPolicy)
 
 	// Case 5: No bucket policy == not enforced
 	encryptionAtTransit, rawBucketPolicy, err = d.getTransportEncryption("")
 	assert.NoError(t, err)
-	assert.True(t, encryptionAtTransit.Enabled)
-	assert.Equal(t, float32(1.2), encryptionAtTransit.ProtocolVersion)
-	assert.False(t, encryptionAtTransit.Enforced)
+	assert.True(t, util.Deref(encryptionAtTransit.Enabled))
+	assert.Equal(t, float32(1.2), util.Deref(encryptionAtTransit.ProtocolVersion))
+	assert.False(t, util.Deref(encryptionAtTransit.Enforced))
 	assert.Empty(t, rawBucketPolicy)
 }
 

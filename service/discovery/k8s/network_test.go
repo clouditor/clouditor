@@ -139,18 +139,18 @@ func TestListIngresses(t *testing.T) {
 
 	service := assert.Is[*ontology.GenericNetworkService](t, list[0])
 	assert.Equal(t, util.Ref("my-service"), service.Name)
-	assert.Equal(t, "/namespaces/my-namespace/services/my-service", string(service.Id))
+	assert.Equal(t, "/namespaces/my-namespace/services/my-service", string(util.Deref(service.Id)))
 	assert.Equal(t, []uint32{80}, service.Ports)
 	assert.Equal(t, []string{"127.0.0.1"}, service.Ips)
 
 	lb := assert.Is[*ontology.LoadBalancer](t, list[1])
-	assert.Equal(t, "my-ingress", lb.Name)
-	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-ingress", string(lb.Id))
-	assert.Equal(t, "http://myhost/test", lb.HttpEndpoints[0].Url)
+	assert.Equal(t, "my-ingress", util.Deref(lb.Name))
+	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-ingress", string(util.Deref(lb.Id)))
+	assert.Equal(t, "http://myhost/test", util.Deref(lb.HttpEndpoints[0].Url))
 
 	lb = assert.Is[*ontology.LoadBalancer](t, list[2])
-	assert.Equal(t, "my-other-ingress", lb.Name)
-	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-other-ingress", string(lb.Id))
-	assert.Equal(t, "https://myhost/test", lb.HttpEndpoints[0].Url)
+	assert.Equal(t, "my-other-ingress", util.Deref(lb.Name))
+	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-other-ingress", string(util.Deref(lb.Id)))
+	assert.Equal(t, "https://myhost/test", util.Deref(lb.HttpEndpoints[0].Url))
 	assert.NotNil(t, (lb.HttpEndpoints)[0].TransportEncryption)
 }
