@@ -45,16 +45,16 @@ func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) 
 	}
 
 	r := &ontology.NetworkInterface{
-		Id:           util.Ref(network.ID),
-		Name:         util.Ref(network.Name),
-		Description:  util.Ref(network.Description),
+		Id:           new(network.ID),
+		Name:         new(network.Name),
+		Description:  new(network.Description),
 		CreationTime: timestamppb.New(network.CreatedAt),
 		GeoLocation: &ontology.GeoLocation{
-			Region: util.Ref(d.region),
+			Region: new(d.region),
 		},
-		Labels:   labels(util.Ref(network.Tags)),
-		ParentId: util.Ref(projectId),
-		Raw:      util.Ref(discovery.Raw(network)),
+		Labels:   labels(new(network.Tags)),
+		ParentId: new(projectId),
+		Raw:      new(discovery.Raw(network)),
 	}
 
 	// Create project resource for the parentId if not available

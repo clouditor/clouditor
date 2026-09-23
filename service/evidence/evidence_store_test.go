@@ -47,7 +47,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/evidencetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/gorm"
@@ -161,7 +160,7 @@ func TestService_StoreEvidence(t *testing.T) {
 						Resource: &ontology.Resource{
 							Type: &ontology.Resource_VirtualMachine{
 								VirtualMachine: &ontology.VirtualMachine{
-									Id: util.Ref("mock-id"),
+									Id: new("mock-id"),
 								},
 							},
 						},
@@ -290,8 +289,8 @@ func TestService_StoreEvidence(t *testing.T) {
 						Resource: &ontology.Resource{
 							Type: &ontology.Resource_VirtualMachine{
 								VirtualMachine: &ontology.VirtualMachine{
-									Id:   util.Ref("mock-id"),
-									Name: util.Ref("my-vm"),
+									Id:   new("mock-id"),
+									Name: new("my-vm"),
 								},
 							},
 						},
@@ -325,8 +324,8 @@ func TestService_StoreEvidence(t *testing.T) {
 						Resource: &ontology.Resource{
 							Type: &ontology.Resource_VirtualMachine{
 								VirtualMachine: &ontology.VirtualMachine{
-									Id:   util.Ref("mock-id"),
-									Name: util.Ref("mock-name"),
+									Id:   new("mock-id"),
+									Name: new("mock-name"),
 								},
 							},
 						},
@@ -424,8 +423,8 @@ func TestService_StoreEvidences(t *testing.T) {
 							Resource: &ontology.Resource{
 								Type: &ontology.Resource_VirtualMachine{
 									VirtualMachine: &ontology.VirtualMachine{
-										Id:   util.Ref("mock-id-1"),
-										Name: util.Ref("mock-name-1"),
+										Id:   new("mock-id-1"),
+										Name: new("mock-name-1"),
 									},
 								},
 							},
@@ -634,7 +633,7 @@ func TestService_ListEvidences(t *testing.T) {
 				in0: context.TODO(),
 				req: &evidence.ListEvidencesRequest{
 					Filter: &evidence.Filter{
-						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID2),
+						TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID2),
 					},
 				},
 			},
@@ -666,7 +665,7 @@ func TestService_ListEvidences(t *testing.T) {
 					OrderBy:   evidencetest.MockListEvidenceRequest2.OrderBy,
 					Asc:       evidencetest.MockListEvidenceRequest2.Asc,
 					Filter: &evidence.Filter{
-						TargetOfEvaluationId: util.Ref("No UUID Format"),
+						TargetOfEvaluationId: new("No UUID Format"),
 					},
 				},
 			},
@@ -781,8 +780,8 @@ func TestService_EvidenceHook(t *testing.T) {
 					Resource: &ontology.Resource{
 						Type: &ontology.Resource_VirtualMachine{
 							VirtualMachine: &ontology.VirtualMachine{
-								Id:   util.Ref("mock-id-1"),
-								Name: util.Ref("mock-name-1"),
+								Id:   new("mock-id-1"),
+								Name: new("mock-name-1"),
 							},
 						},
 					},
@@ -985,8 +984,8 @@ func createStoreEvidenceRequestMocks(_ *testing.T, count int) []*evidence.StoreE
 				Resource: &ontology.Resource{
 					Type: &ontology.Resource_VirtualMachine{
 						VirtualMachine: &ontology.VirtualMachine{
-							Id:   util.Ref("mock-id-1"),
-							Name: util.Ref("my-vm"),
+							Id:   new("mock-id-1"),
+							Name: new("my-vm"),
 						},
 					},
 				},
@@ -1460,7 +1459,7 @@ func TestService_ListResources(t *testing.T) {
 				ctx: context.TODO(),
 				req: &evidence.ListResourcesRequest{
 					Filter: &evidence.ListResourcesRequest_Filter{
-						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID2), // MockTargetOfEvaluationID2 is not allowed
+						TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID2), // MockTargetOfEvaluationID2 is not allowed
 					},
 				},
 			},
@@ -1485,9 +1484,9 @@ func TestService_ListResources(t *testing.T) {
 				ctx: context.Background(),
 				req: &evidence.ListResourcesRequest{
 					Filter: &evidence.ListResourcesRequest_Filter{
-						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
-						ToolId:               util.Ref(testdata.MockEvidenceToolID2),
-						Type:                 util.Ref("VirtualMachine"),
+						TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID1),
+						ToolId:               new(testdata.MockEvidenceToolID2),
+						Type:                 new("VirtualMachine"),
 					},
 				},
 			},

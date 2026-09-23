@@ -88,7 +88,7 @@ func NewTrustedProvider(
 		fp := hex.EncodeToString(key.PrimaryKey.Fingerprint)
 		p.PMD.PGPKeys = append(p.PMD.PGPKeys, csaf.PGPKey{
 			Fingerprint: csaf.Fingerprint(fp),
-			URL:         util.Ref("https://" + p.Domain() + "/.well-known/csaf/opengpg/" + fp + ".asc"),
+			URL:         new("https://" + p.Domain() + "/.well-known/csaf/opengpg/" + fp + ".asc"),
 		})
 		mux.HandleFunc("/.well-known/csaf/opengpg/"+fp+".asc", p.handleKey)
 	}

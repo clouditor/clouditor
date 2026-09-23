@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"clouditor.io/clouditor/v2/internal/util"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -49,12 +48,12 @@ func TestRelated(t *testing.T) {
 			name: "happy path",
 			args: args{
 				r: &ObjectStorage{
-					Id:       util.Ref("some-id"),
+					Id:       new("some-id"),
 
-					Name:     util.Ref("some-name"),
+					Name:     new("some-name"),
 
-					ParentId: util.Ref("some-storage-account-id"),
-					Raw:      util.Ref("{}"),
+					ParentId: new("some-storage-account-id"),
+					Raw:      new("{}"),
 
 				},
 			},
@@ -69,12 +68,12 @@ func TestRelated(t *testing.T) {
 			name: "happy path with plural",
 			args: args{
 				r: &Application{
-					Id:         util.Ref("some-id"),
+					Id:         new("some-id"),
 
-					Name:       util.Ref("some-name"),
+					Name:       new("some-name"),
 
 					LibraryIds: []string{"some-library"},
-					Raw:        util.Ref("{}"),
+					Raw:        new("{}"),
 
 				},
 			},
@@ -108,9 +107,9 @@ func TestResourceMap(t *testing.T) {
 			name: "happy path",
 			args: args{
 				r: &VirtualMachine{
-					Id:           util.Ref("my-id"),
+					Id:           new("my-id"),
 
-					Name:         util.Ref("My VM"),
+					Name:         new("My VM"),
 
 					CreationTime: timestamppb.New(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
 					AutomaticUpdates: &AutomaticUpdates{
@@ -162,8 +161,8 @@ func TestListResourceIDs(t *testing.T) {
 			name: "Happy path",
 			args: args{
 				[]IsResource{
-					&Account{Id: util.Ref("test")},
-					&Account{Id: util.Ref("test2")},
+					&Account{Id: new("test")},
+					&Account{Id: new("test2")},
 				},
 			},
 			want: []string{"test", "test2"},
@@ -191,14 +190,14 @@ func TestProtoResource(t *testing.T) {
 			name: "happy path",
 			args: args{
 				resource: &VirtualMachine{
-					Id: util.Ref("vm-1"),
+					Id: new("vm-1"),
 
 				},
 			},
 			want: &Resource{
 				Type: &Resource_VirtualMachine{
 					VirtualMachine: &VirtualMachine{
-						Id: util.Ref("vm-1"),
+						Id: new("vm-1"),
 
 					},
 				},

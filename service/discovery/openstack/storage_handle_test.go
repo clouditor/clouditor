@@ -32,7 +32,6 @@ import (
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -97,16 +96,16 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 			},
 			want: func(t *testing.T, got ontology.IsResource) bool {
 				want := &ontology.BlockStorage{
-					Id:           util.Ref(testdata.MockOpenstackVolumeID1),
+					Id:           new(testdata.MockOpenstackVolumeID1),
 
-					Name:         util.Ref(testdata.MockOpenstackVolumeID1),
+					Name:         new(testdata.MockOpenstackVolumeID1),
 
 					CreationTime: timestamppb.New(testTime),
 					GeoLocation: &ontology.GeoLocation{
-						Region: util.Ref("test region"),
+						Region: new("test region"),
 
 					},
-					ParentId: util.Ref(testdata.MockOpenstackVolumeTenantID),
+					ParentId: new(testdata.MockOpenstackVolumeTenantID),
 				}
 
 				gotNew, ok := got.(*ontology.BlockStorage)
@@ -140,16 +139,16 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 			},
 			want: func(t *testing.T, got ontology.IsResource) bool {
 				want := &ontology.BlockStorage{
-					Id:           util.Ref(testdata.MockOpenstackVolumeID1),
+					Id:           new(testdata.MockOpenstackVolumeID1),
 
-					Name:         util.Ref(testdata.MockOpenstackVolumeName1),
+					Name:         new(testdata.MockOpenstackVolumeName1),
 
 					CreationTime: timestamppb.New(testTime),
 					GeoLocation: &ontology.GeoLocation{
-						Region: util.Ref("test region"),
+						Region: new("test region"),
 
 					},
-					ParentId: util.Ref(testdata.MockOpenstackVolumeTenantID),
+					ParentId: new(testdata.MockOpenstackVolumeTenantID),
 				}
 
 				gotNew, ok := got.(*ontology.BlockStorage)

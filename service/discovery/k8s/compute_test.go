@@ -30,7 +30,6 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/discovery"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
@@ -140,8 +139,8 @@ func Test_k8sComputeDiscovery_List(t *testing.T) {
 				}
 				// Create expected ontology.Container
 				expectedContainer := &ontology.Container{
-					Id:     util.Ref(podID),
-					Name:   util.Ref(podName),
+					Id:     new(podID),
+					Name:   new(podName),
 					Labels: podLabel,
 					NetworkInterfaceIds: []string{
 						podNamespace,
@@ -159,8 +158,8 @@ func Test_k8sComputeDiscovery_List(t *testing.T) {
 
 				// Create expected ontology.BlockStorage
 				expectedVolume := &ontology.BlockStorage{
-					Id:               util.Ref(volumeName),
-					Name:             util.Ref(volumeName),
+					Id:               new(volumeName),
+					Name:             new(volumeName),
 					CreationTime:     nil,
 					AtRestEncryption: &ontology.AtRestEncryption{},
 				}
@@ -219,10 +218,10 @@ func Test_k8sComputeDiscovery_handlePodVolume(t *testing.T) {
 			},
 			want: []ontology.IsResource{
 				&ontology.FileStorage{
-					Id:               util.Ref("test"),
-					Name:             util.Ref("test"),
+					Id:               new("test"),
+					Name:             new("test"),
 					AtRestEncryption: &ontology.AtRestEncryption{},
-					Raw:              util.Ref(`{"*v1.Pod":[{"metadata":{"creationTimestamp":null},"spec":{"volumes":[{"name":"test","hostPath":{"path":"/tmp"}}],"containers":null},"status":{}}],"*v1.Volume":[{"name":"test","hostPath":{"path":"/tmp"}}]}`),
+					Raw:              new(`{"*v1.Pod":[{"metadata":{"creationTimestamp":null},"spec":{"volumes":[{"name":"test","hostPath":{"path":"/tmp"}}],"containers":null},"status":{}}],"*v1.Volume":[{"name":"test","hostPath":{"path":"/tmp"}}]}`),
 				},
 			},
 		},

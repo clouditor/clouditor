@@ -39,19 +39,19 @@ func (d *azureDiscovery) handleInstances(vault *armdataprotection.BackupVaultRes
 
 	if *instance.Properties.DataSourceInfo.DatasourceType == "Microsoft.Storage/storageAccounts/blobServices" {
 		resource = &ontology.ObjectStorage{
-			Id:          util.Ref(resourceID(instance.ID)),
-			Name:        util.Ref(util.Deref(instance.Name)),
+			Id:          new(resourceID(instance.ID)),
+			Name:        new(util.Deref(instance.Name)),
 			GeoLocation: location(vault.Location),
 			ParentId:    resourceGroupID(instance.ID),
-			Raw:         util.Ref(discovery.Raw(instance, vault)),
+			Raw:         new(discovery.Raw(instance, vault)),
 		}
 	} else if *instance.Properties.DataSourceInfo.DatasourceType == "Microsoft.Compute/disks" {
 		resource = &ontology.BlockStorage{
-			Id:          util.Ref(resourceID(instance.ID)),
-			Name:        util.Ref(util.Deref(instance.Name)),
+			Id:          new(resourceID(instance.ID)),
+			Name:        new(util.Deref(instance.Name)),
 			GeoLocation: location(vault.Location),
 			ParentId:    resourceGroupID(instance.ID),
-			Raw:         util.Ref(discovery.Raw(instance, vault)),
+			Raw:         new(discovery.Raw(instance, vault)),
 		}
 	}
 

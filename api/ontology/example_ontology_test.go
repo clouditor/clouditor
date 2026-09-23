@@ -4,18 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"clouditor.io/clouditor/v2/internal/util"
 
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func ExampleMarshal() {
 	var vm = &VirtualMachine{
-		Id:   util.Ref("my-id"),
-		Name: util.Ref("My VM"),
+		Id:   new("my-id"),
+		Name: new("My VM"),
 
 		BootLogging: &BootLogging{
-			Enabled: util.Ref(true),
+			Enabled: new(true),
 
 		},
 	}

@@ -237,8 +237,8 @@ func (svc *Service) Init() {
 		go func() {
 			<-rest.GetReadyChannel()
 			_, err = svc.Start(context.Background(), &discovery.StartDiscoveryRequest{
-				ResourceGroup: util.Ref(viper.GetString(config.DiscoveryResourceGroupFlag)),
-				CsafDomain:    util.Ref(viper.GetString(config.DiscoveryCSAFDomainFlag)),
+				ResourceGroup: new(viper.GetString(config.DiscoveryResourceGroupFlag)),
+				CsafDomain:    new(viper.GetString(config.DiscoveryCSAFDomainFlag)),
 			})
 			if err != nil {
 				log.Errorf("Could not automatically start discovery: %v", err)

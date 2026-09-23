@@ -30,7 +30,6 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/v2/api/discovery"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	v1 "k8s.io/api/core/v1"
@@ -102,24 +101,24 @@ func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) ontology.IsResou
 	// storageos - StorageOS volume (deprecated in v1.22)
 	if vs.AWSElasticBlockStore != nil || vs.AzureDisk != nil || vs.Cinder != nil || vs.FlexVolume != nil || vs.CephFS != nil || vs.Glusterfs != nil || vs.GCEPersistentDisk != nil || vs.RBD != nil || vs.StorageOS != nil || vs.FC != nil || vs.PortworxVolume != nil || vs.ISCSI != nil || vs.Flocker != nil {
 		v := &ontology.BlockStorage{
-			Id:               util.Ref(string(pv.UID)),
-			Name:             util.Ref(pv.Name),
+			Id:               new(string(pv.UID)),
+			Name:             new(pv.Name),
 			CreationTime:     timestamppb.New(pv.CreationTimestamp.Time),
 			Labels:           pv.Labels,
 			AtRestEncryption: &ontology.AtRestEncryption{},
-			Raw:              util.Ref(discovery.Raw(pv)),
+			Raw:              new(discovery.Raw(pv)),
 		}
 
 		return v
 	} else if vs.AzureFile != nil || vs.NFS != nil || vs.HostPath != nil {
 		// TODO(oxisto): Does this even make sense? The volume is always a block storage, but the underlying storage might be a file storage?
 		v := &ontology.FileStorage{
-			Id:               util.Ref(string(pv.UID)),
-			Name:             util.Ref(pv.Name),
+			Id:               new(string(pv.UID)),
+			Name:             new(pv.Name),
 			CreationTime:     timestamppb.New(pv.CreationTimestamp.Time),
 			Labels:           pv.Labels,
 			AtRestEncryption: &ontology.AtRestEncryption{},
-			Raw:              util.Ref(discovery.Raw(pv)),
+			Raw:              new(discovery.Raw(pv)),
 		}
 
 		return v

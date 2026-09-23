@@ -108,13 +108,13 @@ func (d *azureDiscovery) discoverMongoDBDatabases(account *armcosmos.DatabaseAcc
 		for _, value := range pageResponse.Value {
 			// Create Cosmos DB database storage voc object
 			mongoDB := &ontology.DatabaseStorage{
-				Id:               util.Ref(resourceID(value.ID)),
-				Name:             util.Ref(util.Deref(value.Name)),
+				Id:               new(resourceID(value.ID)),
+				Name:             new(util.Deref(value.Name)),
 				CreationTime:     nil, // creation time of database not available
 				GeoLocation:      location(value.Location),
 				Labels:           labels(value.Tags),
 				ParentId:         resourceIDPointer(account.ID),
-				Raw:              util.Ref(discovery.Raw(account, value)),
+				Raw:              new(discovery.Raw(account, value)),
 				AtRestEncryption: atRestEnc,
 			}
 			list = append(list, mongoDB)
@@ -194,26 +194,26 @@ func (d *azureDiscovery) getSqlDBs(server *armsql.Server) ([]ontology.IsResource
 			}
 
 			a := &ontology.AnomalyDetection{
-				Scope:   util.Ref(util.Deref(value.ID)),
-				Enabled: util.Ref(anomalyDetectionEnabled),
+				Scope:   new(util.Deref(value.ID)),
+				Enabled: new(anomalyDetectionEnabled),
 			}
 
 			anomalyDetectionList = append(anomalyDetectionList, a)
 
 			// Create database storage voc object
 			sqlDB := &ontology.DatabaseStorage{
-				Id:           util.Ref(resourceID(value.ID)),
-				Name:         util.Ref(util.Deref(value.Name)),
+				Id:           new(resourceID(value.ID)),
+				Name:         new(util.Deref(value.Name)),
 				CreationTime: creationTime(value.Properties.CreationDate),
 				GeoLocation:  location(value.Location),
 				Labels:       labels(value.Tags),
 				ParentId:     resourceIDPointer(server.ID),
-				Raw:          util.Ref(discovery.Raw(value)),
+				Raw:          new(discovery.Raw(value)),
 				AtRestEncryption: &ontology.AtRestEncryption{
 					Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 						ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-							Enabled:   util.Ref(*value.Properties.IsInfraEncryptionEnabled),
-							Algorithm: util.Ref(constants.AES256),
+							Enabled:   new(*value.Properties.IsInfraEncryptionEnabled),
+							Algorithm: new(constants.AES256),
 						},
 					},
 				},

@@ -41,7 +41,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/service"
 	"github.com/go-co-op/gocron"
@@ -554,7 +553,7 @@ func TestService_Start(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				req: &discovery.StartDiscoveryRequest{
-					ResourceGroup: util.Ref("testResourceGroup"),
+					ResourceGroup: new("testResourceGroup"),
 				},
 			},
 			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
@@ -573,7 +572,7 @@ func TestService_Start(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				req: &discovery.StartDiscoveryRequest{
-					CsafDomain: util.Ref("clouditor.io"),
+					CsafDomain: new("clouditor.io"),
 				},
 			},
 			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {

@@ -29,7 +29,6 @@ import (
 	"strings"
 
 	"clouditor.io/clouditor/v2/api/ontology"
-	"clouditor.io/clouditor/v2/internal/util"
 )
 
 // backupsEmptyCheck checks if the backups list is empty and returns voc.Backup with enabled = false.
@@ -37,7 +36,7 @@ func backupsEmptyCheck(backups []*ontology.Backup) []*ontology.Backup {
 	if len(backups) == 0 {
 		return []*ontology.Backup{
 			{
-				Enabled: util.Ref(false),
+				Enabled: new(false),
 			},
 		}
 	}

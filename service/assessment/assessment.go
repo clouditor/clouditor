@@ -40,7 +40,6 @@ import (
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/logging"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/policies"
 	"clouditor.io/clouditor/v2/server"
@@ -435,7 +434,7 @@ func (svc *Service) handleEvidence(
 			ResourceTypes:        types,
 			ComplianceComment:    data.Message,
 			ComplianceDetails:    data.ComparisonResult,
-			ToolId:               util.Ref(assessment.AssessmentToolId),
+			ToolId:               new(assessment.AssessmentToolId),
 			HistoryUpdatedAt:     timestamppb.Now(),
 			History: []*assessment.Record{{ // TODO(all): Update history in another PR, see Issue #1724
 				EvidenceId:         ev.GetId(),

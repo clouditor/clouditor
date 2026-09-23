@@ -49,26 +49,26 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 	consoleOutput := servers.ShowConsoleOutput(context.Background(), d.clients.computeClient, server.ID, servers.ShowConsoleOutputOpts{})
 	if consoleOutput.Result.Err == nil {
 		bootLogging = &ontology.BootLogging{
-			Enabled: util.Ref(true),
+			Enabled: new(true),
 		}
 	} else {
 		log.Errorf("Error getting boot logging: %s", consoleOutput.Err)
 		// When an error occurs, we assume that boot logging is disabled.
 		bootLogging = &ontology.BootLogging{
-			Enabled: util.Ref(false),
+			Enabled: new(false),
 		}
 	}
 
 	r := &ontology.VirtualMachine{
-		Id:           util.Ref(server.ID),
-		Name:         util.Ref(server.Name),
+		Id:           new(server.ID),
+		Name:         new(server.Name),
 		CreationTime: timestamppb.New(server.Created),
 		GeoLocation: &ontology.GeoLocation{
-			Region: util.Ref(d.region),
+			Region: new(d.region),
 		},
 		Labels:            labels(server.Tags),
-		ParentId:          util.Ref(server.TenantID),
-		Raw:               util.Ref(discovery.Raw(server)),
+		ParentId:          new(server.TenantID),
+		Raw:               new(discovery.Raw(server)),
 		MalwareProtection: &ontology.MalwareProtection{},
 		BootLogging:       bootLogging,
 		AutomaticUpdates:  &ontology.AutomaticUpdates{},

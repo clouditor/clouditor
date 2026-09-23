@@ -33,7 +33,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest/openstacktest"
-	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/testhelper"
 	"github.com/gophercloud/gophercloud/v2/testhelper/client"
@@ -96,18 +95,18 @@ func Test_openstackDiscovery_discoverBlockStorage(t *testing.T) {
 				assert.NoError(t, err)
 
 				want := &ontology.BlockStorage{
-					Id:           util.Ref("289da7f8-6440-407c-9fb4-7db01ec49164"),
+					Id:           new("289da7f8-6440-407c-9fb4-7db01ec49164"),
 
-					Name:         util.Ref("vol-001"),
+					Name:         new("vol-001"),
 
-					Description:  util.Ref(""),
+					Description:  new(""),
 
 					CreationTime: timestamppb.New(t1),
 					GeoLocation: &ontology.GeoLocation{
-						Region: util.Ref("test region"),
+						Region: new("test region"),
 
 					},
-					ParentId: util.Ref("83ec2e3b-4321-422b-8706-a84185f52a0a"),
+					ParentId: new("83ec2e3b-4321-422b-8706-a84185f52a0a"),
 					Labels:   map[string]string{},
 				}
 

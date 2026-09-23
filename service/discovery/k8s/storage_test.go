@@ -31,7 +31,6 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/v2/api/discovery"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
@@ -129,9 +128,9 @@ func Test_k8sStorageDiscovery_List(t *testing.T) {
 
 	// Create expected ontology.BlockStorage
 	expectedVolume := &ontology.BlockStorage{
-		Id:               util.Ref(volumeUID),
+		Id:               new(volumeUID),
 
-		Name:             util.Ref(volumeName),
+		Name:             new(volumeName),
 
 		CreationTime:     volume.CreationTime,
 		Labels:           volumeLabel,
@@ -175,13 +174,13 @@ func Test_k8sStorageDiscovery_handlePV(t *testing.T) {
 				},
 			},
 			want: &ontology.FileStorage{
-				Id:               util.Ref("my-id"),
+				Id:               new("my-id"),
 
-				Name:             util.Ref("test"),
+				Name:             new("test"),
 
 				AtRestEncryption: &ontology.AtRestEncryption{},
 				CreationTime:     timestamppb.New(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
-				Raw:              util.Ref(`{"*v1.PersistentVolume":[{"metadata":{"name":"test","uid":"my-id","creationTimestamp":"2024-01-01T00:00:00Z"},"spec":{"hostPath":{"path":"/tmp"}},"status":{}}]}`),
+				Raw:              new(`{"*v1.PersistentVolume":[{"metadata":{"name":"test","uid":"my-id","creationTimestamp":"2024-01-01T00:00:00Z"},"spec":{"hostPath":{"path":"/tmp"}},"status":{}}]}`),
 
 			},
 		},

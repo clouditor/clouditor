@@ -64,7 +64,7 @@ func resourceID(id *string) string {
 
 // resourceIDPointer makes sure that the Azure ID we get is lowercase, because Azure sometimes has weird notions that things are uppercase. Their documentation says that comparison of IDs is case-insensitive, so we lowercase everything.
 func resourceIDPointer(id *string) *string {
-	return util.Ref(resourceID(id))
+	return new(resourceID(id))
 }
 
 // accountName return the ID's account name
@@ -117,7 +117,7 @@ func tlsCipherSuites(cs string) []*ontology.CipherSuite {
 	// Next is either a key exchange or directly the session cipher
 	i++
 	if parts[i] == "ECDHE" {
-		cipher.KeyExchangeAlgorithm = util.Ref(parts[i])
+		cipher.KeyExchangeAlgorithm = new(parts[i])
 	} else {
 		i--
 		goto cipher
@@ -125,7 +125,7 @@ func tlsCipherSuites(cs string) []*ontology.CipherSuite {
 
 	i++
 	if slices.Contains([]string{"RSA", "ECDSA"}, parts[i]) {
-		cipher.AuthenticationMechanism = util.Ref(parts[i])
+		cipher.AuthenticationMechanism = new(parts[i])
 	} else {
 		goto invalid
 	}
@@ -138,7 +138,7 @@ func tlsCipherSuites(cs string) []*ontology.CipherSuite {
 cipher:
 	i++
 	if parts[i] == "AES" {
-		cipher.SessionCipher = util.Ref(parts[i])
+		cipher.SessionCipher = new(parts[i])
 	} else {
 		goto invalid
 	}
@@ -157,9 +157,9 @@ cipher:
 
 	i++
 	if parts[i] == "SHA256" {
-		cipher.MacAlgorithm = util.Ref("SHA-256")
+		cipher.MacAlgorithm = new("SHA-256")
 	} else if parts[i] == "SHA384" {
-		cipher.MacAlgorithm = util.Ref("SHA-384")
+		cipher.MacAlgorithm = new("SHA-384")
 	} else {
 		goto invalid
 	}
@@ -255,7 +255,7 @@ func location(region *string) *ontology.GeoLocation {
 	}
 
 	return &ontology.GeoLocation{
-		Region: util.Ref(util.Deref(region)),
+		Region: new(util.Deref(region)),
 	}
 }
 
@@ -311,7 +311,7 @@ func (d *azureDiscovery) discoverDiagnosticSettings(resourceURI string) (*ontolo
 
 	if len(workspaceIDs) > 0 {
 		al = &ontology.ActivityLogging{
-			Enabled:           util.Ref(true),
+			Enabled:           new(true),
 			LoggingServiceIds: workspaceIDs, // TODO(all): Each diagnostic setting has also a retention period, maybe we should add that information as well
 		}
 	}

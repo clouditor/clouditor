@@ -32,7 +32,6 @@ import (
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -95,16 +94,16 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 			},
 			want: func(t *testing.T, got ontology.IsResource) bool {
 				want := &ontology.NetworkInterface{
-					Id:           util.Ref(testdata.MockOpenstackNetworkID1),
+					Id:           new(testdata.MockOpenstackNetworkID1),
 
-					Name:         util.Ref(testdata.MockOpenstackNetworkName1),
+					Name:         new(testdata.MockOpenstackNetworkName1),
 
 					CreationTime: timestamppb.New(testTime),
 					GeoLocation: &ontology.GeoLocation{
-						Region: util.Ref("test region"),
+						Region: new("test region"),
 
 					},
-					ParentId: util.Ref(testdata.MockOpenstackServerTenantID),
+					ParentId: new(testdata.MockOpenstackServerTenantID),
 				}
 
 				gotNew, ok := got.(*ontology.NetworkInterface)
@@ -138,16 +137,16 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 			},
 			want: func(t *testing.T, got ontology.IsResource) bool {
 				want := &ontology.NetworkInterface{
-					Id:           util.Ref(testdata.MockOpenstackNetworkID1),
+					Id:           new(testdata.MockOpenstackNetworkID1),
 
-					Name:         util.Ref(testdata.MockOpenstackNetworkName1),
+					Name:         new(testdata.MockOpenstackNetworkName1),
 
 					CreationTime: timestamppb.New(testTime),
 					GeoLocation: &ontology.GeoLocation{
-						Region: util.Ref("test region"),
+						Region: new("test region"),
 
 					},
-					ParentId: util.Ref(testdata.MockOpenstackServerTenantID),
+					ParentId: new(testdata.MockOpenstackServerTenantID),
 				}
 
 				gotNew, ok := got.(*ontology.NetworkInterface)

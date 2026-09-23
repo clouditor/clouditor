@@ -30,7 +30,6 @@ import (
 
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 )
 
@@ -50,8 +49,8 @@ func Test_tlsCipherSuites(t *testing.T) {
 			},
 			want: []*ontology.CipherSuite{
 				{
-					SessionCipher: util.Ref("AES-128-GCM"),
-					MacAlgorithm:  util.Ref("SHA-256"),
+					SessionCipher: new("AES-128-GCM"),
+					MacAlgorithm:  new("SHA-256"),
 				},
 			},
 		},
@@ -62,10 +61,10 @@ func Test_tlsCipherSuites(t *testing.T) {
 			},
 			want: []*ontology.CipherSuite{
 				{
-					AuthenticationMechanism: util.Ref("RSA"),
-					KeyExchangeAlgorithm:    util.Ref("ECDHE"),
-					SessionCipher:           util.Ref("AES-256-GCM"),
-					MacAlgorithm:            util.Ref("SHA-384"),
+					AuthenticationMechanism: new("RSA"),
+					KeyExchangeAlgorithm:    new("ECDHE"),
+					SessionCipher:           new("AES-256-GCM"),
+					MacAlgorithm:            new("SHA-384"),
 				},
 			},
 		},
@@ -139,7 +138,7 @@ func Test_tlsVersion(t *testing.T) {
 		{
 			name: "1_3",
 			args: args{
-				version: util.Ref("1_3"),
+				version: new("1_3"),
 			},
 			want: 1.3,
 		},
@@ -200,7 +199,7 @@ func Test_azureStorageDiscovery_discoverDiagnosticSettings(t *testing.T) {
 				resourceURI: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
 			},
 			want: &ontology.ActivityLogging{
-				Enabled:           util.Ref(true),
+				Enabled:           new(true),
 				LoggingServiceIds: []string{"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/insights-integration/providers/Microsoft.OperationalInsights/workspaces/workspace1"},
 			},
 			wantErr: assert.NoError,

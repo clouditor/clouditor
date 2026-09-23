@@ -31,7 +31,6 @@ import (
 
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/machinelearning/armmachinelearning"
 )
@@ -104,7 +103,7 @@ func Test_azureDiscovery_discoverMLCompute(t *testing.T) {
 			args: args{
 				rg: "rg",
 				workspace: &armmachinelearning.Workspace{
-					Name: util.Ref("mlWorkspace"),
+					Name: new("mlWorkspace"),
 				},
 			},
 			want: assert.Nil[[]ontology.IsResource],
@@ -120,7 +119,7 @@ func Test_azureDiscovery_discoverMLCompute(t *testing.T) {
 			args: args{
 				rg: "rg1",
 				workspace: &armmachinelearning.Workspace{
-					Name: util.Ref("mlWorkspace"),
+					Name: new("mlWorkspace"),
 				},
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {

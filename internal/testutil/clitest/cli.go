@@ -15,7 +15,6 @@ import (
 	"clouditor.io/clouditor/v2/cli"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/server"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/spf13/viper"
@@ -41,7 +40,7 @@ var MockAssessmentResult1 = &assessment.AssessmentResult{
 		MetricId:             testdata.MockMetricID1,
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 	},
-	ToolId:           util.Ref(assessment.AssessmentToolId),
+	ToolId:           new(assessment.AssessmentToolId),
 	HistoryUpdatedAt: timestamppb.New(time.Unix(1, 0)),
 	History: []*assessment.Record{
 		{
@@ -60,12 +59,12 @@ var (
 		Resource: &ontology.Resource{
 			Type: &ontology.Resource_VirtualMachine{
 				VirtualMachine: &ontology.VirtualMachine{
-					Id:           util.Ref(testdata.MockVirtualMachineID1),
-					Name:         util.Ref(testdata.MockVirtualMachineName1),
-					Description:  util.Ref("Mock evidence for Virtual Machine"),
+					Id:           new(testdata.MockVirtualMachineID1),
+					Name:         new(testdata.MockVirtualMachineName1),
+					Description:  new("Mock evidence for Virtual Machine"),
 					CreationTime: timestamppb.New(time.Unix(1, 0)),
 					AutomaticUpdates: &ontology.AutomaticUpdates{
-						Enabled: util.Ref(true),
+						Enabled: new(true),
 					},
 					BlockStorageIds: []string{testdata.MockVirtualMachineID2},
 				},
@@ -81,9 +80,9 @@ var (
 		Resource: &ontology.Resource{
 			Type: &ontology.Resource_BlockStorage{
 				BlockStorage: &ontology.BlockStorage{
-					Id:           util.Ref(testdata.MockBlockStorageID1),
-					Name:         util.Ref(testdata.MockBlockStorageName1),
-					Description:  util.Ref("Mock evidence for Block Storage"),
+					Id:           new(testdata.MockBlockStorageID1),
+					Name:         new(testdata.MockBlockStorageName1),
+					Description:  new("Mock evidence for Block Storage"),
 					CreationTime: timestamppb.New(time.Unix(1, 0)),
 				},
 			},

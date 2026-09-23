@@ -32,7 +32,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest/openstacktest"
-	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/testhelper"
@@ -110,17 +109,17 @@ func Test_openstackDiscovery_discoverProjects(t *testing.T) {
 				assert.Equal(t, 2, len(got))
 
 				want := &ontology.ResourceGroup{
-					Id:          util.Ref("1234"),
-					Name:        util.Ref("Red Team"),
-					Description: util.Ref("The team that is red"),
+					Id:          new("1234"),
+					Name:        new("Red Team"),
+					Description: new("The team that is red"),
 					GeoLocation: &ontology.GeoLocation{
-						Region: util.Ref("test region"),
+						Region: new("test region"),
 					},
 					Labels: map[string]string{
 						"Red":  "",
 						"Team": "",
 					},
-					ParentId: util.Ref(""),
+					ParentId: new(""),
 				}
 
 				got0, ok := got[0].(*ontology.ResourceGroup)
@@ -194,9 +193,9 @@ func Test_openstackDiscovery_discoverDomain(t *testing.T) {
 				assert.Equal(t, 2, len(got))
 
 				want := &ontology.Account{
-					Id:          util.Ref("2844b2a08be147a08ef58317d6471f1f"),
-					Name:        util.Ref("domain one"),
-					Description: util.Ref("some description"),
+					Id:          new("2844b2a08be147a08ef58317d6471f1f"),
+					Name:        new("domain one"),
+					Description: new("some description"),
 				}
 
 				got0, ok := got[0].(*ontology.Account)

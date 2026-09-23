@@ -38,12 +38,12 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evaluation"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/config"
-	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	oauth2 "github.com/oxisto/oauth2go"

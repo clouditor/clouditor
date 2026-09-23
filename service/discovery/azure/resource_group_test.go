@@ -31,7 +31,6 @@ import (
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
@@ -57,17 +56,17 @@ func Test_azureResourceGroupDiscovery_handleSubscription(t *testing.T) {
 			},
 			args: args{
 				s: &armsubscription.Subscription{
-					SubscriptionID: util.Ref(testdata.MockSubscriptionID),
-					DisplayName:    util.Ref("Wonderful Subscription"),
-					ID:             util.Ref(testdata.MockSubscriptionResourceID),
+					SubscriptionID: new(testdata.MockSubscriptionID),
+					DisplayName:    new("Wonderful Subscription"),
+					ID:             new(testdata.MockSubscriptionResourceID),
 				},
 			},
 			want: &ontology.Account{
-				Id:   util.Ref(testdata.MockSubscriptionResourceID),
+				Id:   new(testdata.MockSubscriptionResourceID),
 
-				Name: util.Ref("Wonderful Subscription"),
+				Name: new("Wonderful Subscription"),
 
-				Raw:  util.Ref(string(`{"*armsubscription.Subscription":[{"displayName":"Wonderful Subscription","id":"/subscriptions/00000000-0000-0000-0000-000000000000","subscriptionId":"00000000-0000-0000-0000-000000000000"}]}`)),
+				Raw:  new(string(`{"*armsubscription.Subscription":[{"displayName":"Wonderful Subscription","id":"/subscriptions/00000000-0000-0000-0000-000000000000","subscriptionId":"00000000-0000-0000-0000-000000000000"}]}`)),
 
 			},
 		},
@@ -102,30 +101,30 @@ func Test_azureResourceGroupDiscovery_handleResourceGroup(t *testing.T) {
 			},
 			args: args{
 				rg: &armresources.ResourceGroup{
-					ID:       util.Ref(testdata.MockResourceGroupID),
-					Name:     util.Ref("res1"),
-					Location: util.Ref("westus"),
+					ID:       new(testdata.MockResourceGroupID),
+					Name:     new("res1"),
+					Location: new("westus"),
 					Tags: map[string]*string{
-						"tag1Key": util.Ref("tag1"),
-						"tag2Key": util.Ref("tag2"),
+						"tag1Key": new("tag1"),
+						"tag2Key": new("tag2"),
 					},
 				},
 			},
 			want: &ontology.ResourceGroup{
-				Id:   util.Ref(testdata.MockResourceGroupID),
+				Id:   new(testdata.MockResourceGroupID),
 
-				Name: util.Ref("res1"),
+				Name: new("res1"),
 
 				GeoLocation: &ontology.GeoLocation{
-					Region: util.Ref("westus"),
+					Region: new("westus"),
 
 				},
 				Labels: map[string]string{
 					"tag2Key": "tag2",
 					"tag1Key": "tag1",
 				},
-				ParentId: util.Ref(testdata.MockSubscriptionResourceID),
-				Raw:      util.Ref(string(`{"*armresources.ResourceGroup":[{"id":"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1","location":"westus","name":"res1","tags":{"tag1Key":"tag1","tag2Key":"tag2"}}]}`)),
+				ParentId: new(testdata.MockSubscriptionResourceID),
+				Raw:      new(string(`{"*armresources.ResourceGroup":[{"id":"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1","location":"westus","name":"res1","tags":{"tag1Key":"tag1","tag2Key":"tag2"}}]}`)),
 
 			},
 		},
@@ -166,52 +165,52 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender(),
 					WithSubscription(&armsubscription.Subscription{
-						DisplayName:    util.Ref("displayName"),
-						ID:             util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
-						SubscriptionID: util.Ref("00000000-0000-0000-0000-000000000000"),
+						DisplayName:    new("displayName"),
+						ID:             new("/subscriptions/00000000-0000-0000-0000-000000000000"),
+						SubscriptionID: new("00000000-0000-0000-0000-000000000000"),
 					})),
 			},
 			wantList: []ontology.IsResource{
 				&ontology.Account{
-					Id:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
+					Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000"),
 
-					Name: util.Ref("displayName"),
+					Name: new("displayName"),
 
-					Raw:  util.Ref(string(`{"*armsubscription.Subscription":[{"displayName":"displayName","id":"/subscriptions/00000000-0000-0000-0000-000000000000","subscriptionId":"00000000-0000-0000-0000-000000000000"}]}`)),
+					Raw:  new(string(`{"*armsubscription.Subscription":[{"displayName":"displayName","id":"/subscriptions/00000000-0000-0000-0000-000000000000","subscriptionId":"00000000-0000-0000-0000-000000000000"}]}`)),
 
 				},
 				&ontology.ResourceGroup{
-					Id:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 
-					Name: util.Ref("res1"),
+					Name: new("res1"),
 
 					GeoLocation: &ontology.GeoLocation{
-						Region: util.Ref("westus"),
+						Region: new("westus"),
 
 					},
 					Labels: map[string]string{
 						"testKey1": "testTag1",
 						"testKey2": "testTag2",
 					},
-					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
-					Raw:      util.Ref(string(`{"*armresources.ResourceGroup":[{"id":"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1","location":"westus","name":"res1","tags":{"testKey1":"testTag1","testKey2":"testTag2"}}]}`)),
+					ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000"),
+					Raw:      new(string(`{"*armresources.ResourceGroup":[{"id":"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1","location":"westus","name":"res1","tags":{"testKey1":"testTag1","testKey2":"testTag2"}}]}`)),
 
 				},
 				&ontology.ResourceGroup{
-					Id:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res2"),
+					Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res2"),
 
-					Name: util.Ref("res2"),
+					Name: new("res2"),
 
 					GeoLocation: &ontology.GeoLocation{
-						Region: util.Ref("eastus"),
+						Region: new("eastus"),
 
 					},
 					Labels: map[string]string{
 						"testKey1": "testTag1",
 						"testKey2": "testTag2",
 					},
-					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
-					Raw:      util.Ref(string(`{"*armresources.ResourceGroup":[{"id":"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2","location":"eastus","name":"res2","tags":{"testKey1":"testTag1","testKey2":"testTag2"}}]}`)),
+					ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000"),
+					Raw:      new(string(`{"*armresources.ResourceGroup":[{"id":"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2","location":"eastus","name":"res2","tags":{"testKey1":"testTag1","testKey2":"testTag2"}}]}`)),
 
 				},
 			},
@@ -223,35 +222,35 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 				azureDiscovery: NewMockAzureDiscovery(newMockSender(),
 					WithResourceGroup("res1"),
 					WithSubscription(&armsubscription.Subscription{
-						DisplayName:    util.Ref("displayName"),
-						ID:             util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
-						SubscriptionID: util.Ref("00000000-0000-0000-0000-000000000000"),
+						DisplayName:    new("displayName"),
+						ID:             new("/subscriptions/00000000-0000-0000-0000-000000000000"),
+						SubscriptionID: new("00000000-0000-0000-0000-000000000000"),
 					})),
 			},
 			wantList: []ontology.IsResource{
 				&ontology.Account{
-					Id:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
+					Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000"),
 
-					Name: util.Ref("displayName"),
+					Name: new("displayName"),
 
-					Raw:  util.Ref(string(`{"*armsubscription.Subscription":[{"displayName":"displayName","id":"/subscriptions/00000000-0000-0000-0000-000000000000","subscriptionId":"00000000-0000-0000-0000-000000000000"}]}`)),
+					Raw:  new(string(`{"*armsubscription.Subscription":[{"displayName":"displayName","id":"/subscriptions/00000000-0000-0000-0000-000000000000","subscriptionId":"00000000-0000-0000-0000-000000000000"}]}`)),
 
 				},
 				&ontology.ResourceGroup{
-					Id:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 
-					Name: util.Ref("res1"),
+					Name: new("res1"),
 
 					GeoLocation: &ontology.GeoLocation{
-						Region: util.Ref("westus"),
+						Region: new("westus"),
 
 					},
 					Labels: map[string]string{
 						"testKey1": "testTag1",
 						"testKey2": "testTag2",
 					},
-					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
-					Raw:      util.Ref(string(`{"*armresources.ResourceGroup":[{"id":"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1","location":"westus","name":"res1","tags":{"testKey1":"testTag1","testKey2":"testTag2"}}]}`)),
+					ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000"),
+					Raw:      new(string(`{"*armresources.ResourceGroup":[{"id":"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1","location":"westus","name":"res1","tags":{"testKey1":"testTag1","testKey2":"testTag2"}}]}`)),
 
 				},
 			},

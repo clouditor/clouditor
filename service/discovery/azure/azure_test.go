@@ -41,7 +41,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
@@ -1243,7 +1242,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 				opts: []DiscoveryOption{WithResourceGroup(testdata.MockResourceGroup)},
 			},
 			want: &azureDiscovery{
-				rg:                 util.Ref(testdata.MockResourceGroup),
+				rg:                 new(testdata.MockResourceGroup),
 				ctID:               config.DefaultTargetOfEvaluationID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
@@ -1464,16 +1463,16 @@ func Test_resourceGroupID(t *testing.T) {
 		{
 			name: "invalid",
 			args: args{
-				ID: util.Ref("this is not a resource ID but it should not crash the Clouditor"),
+				ID: new("this is not a resource ID but it should not crash the Clouditor"),
 			},
 			want: nil,
 		},
 		{
 			name: "happy path",
 			args: args{
-				ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+				ID: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
 			},
-			want: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+			want: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 		},
 	}
 	for _, tt := range tests {
@@ -1846,8 +1845,8 @@ func WithSubscription(sub *armsubscription.Subscription) DiscoveryOption {
 
 func NewMockAzureDiscovery(transport policy.Transporter, opts ...DiscoveryOption) *azureDiscovery {
 	sub := &armsubscription.Subscription{
-		SubscriptionID: util.Ref(testdata.MockSubscriptionID),
-		ID:             util.Ref(testdata.MockSubscriptionResourceID),
+		SubscriptionID: new(testdata.MockSubscriptionID),
+		ID:             new(testdata.MockSubscriptionResourceID),
 	}
 
 	d := &azureDiscovery{

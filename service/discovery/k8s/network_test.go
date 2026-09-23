@@ -138,7 +138,7 @@ func TestListIngresses(t *testing.T) {
 	assert.NotNil(t, list)
 
 	service := assert.Is[*ontology.GenericNetworkService](t, list[0])
-	assert.Equal(t, util.Ref("my-service"), service.Name)
+	assert.Equal(t, new("my-service"), service.Name)
 	assert.Equal(t, "/namespaces/my-namespace/services/my-service", string(util.Deref(service.Id)))
 	assert.Equal(t, []uint32{80}, service.Ports)
 	assert.Equal(t, []string{"127.0.0.1"}, service.Ips)

@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/assessment"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/api/orchestrator"
@@ -76,9 +75,9 @@ func createEvidences(n int, m int, b *testing.B) int {
 			// Create evidences for n resources (1 per resource)
 			for i := 0; i < n; i++ {
 				vm := ontology.ProtoResource(&ontology.VirtualMachine{
-					Id:   util.Ref(fmt.Sprintf("%d", i)),
+					Id:   new(fmt.Sprintf("%d", i)),
 
-					Name: util.Ref(fmt.Sprintf("my-vm-%d", i)),
+					Name: new(fmt.Sprintf("my-vm-%d", i)),
 
 				})
 

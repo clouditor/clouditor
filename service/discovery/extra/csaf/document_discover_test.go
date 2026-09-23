@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/ontology"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/crypto/openpgp"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
@@ -49,7 +48,7 @@ func Test_csafDiscovery_handleAdvisory(t *testing.T) {
 			wantDoc: func(t *testing.T, got *ontology.SecurityAdvisoryDocument) bool {
 				// Some debugging output, that can easily be used in Rego
 				fmt.Println(ontology.ToPrettyJSON(got))
-				return assert.Equal(t, util.Ref("some-id"), got.Id)
+				return assert.Equal(t, new("some-id"), got.Id)
 			},
 		},
 	}

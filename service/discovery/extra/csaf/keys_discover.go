@@ -44,11 +44,11 @@ func (d *csafDiscovery) handleKey(pgpkey csaf.PGPKey, parentId string) (key *ont
 
 	// 2nd: Create the key in the ontology format
 	key = &ontology.Key{
-		Algorithm:                  util.Ref("PGP"),
-		Id:                         util.Ref(util.Deref(pgpkey.URL)),
-		Raw:                        util.Ref(discovery.Raw(pgpkey)),
+		Algorithm:                  new("PGP"),
+		Id:                         new(util.Deref(pgpkey.URL)),
+		Raw:                        new(discovery.Raw(pgpkey)),
 		ParentId:                   &parentId,
-		InternetAccessibleEndpoint: util.Ref(isAccessible),
+		InternetAccessibleEndpoint: new(isAccessible),
 	}
 	return
 }

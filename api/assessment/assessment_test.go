@@ -31,7 +31,6 @@ import (
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"clouditor.io/clouditor/v2/internal/util"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -263,7 +262,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					ResourceId:           "myResource",
 					ResourceTypes:        []string{"Resource"},
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
-					ToolId:               util.Ref(AssessmentToolId),
+					ToolId:               new(AssessmentToolId),
 					HistoryUpdatedAt:     timestamp,
 					History: []*Record{
 						{

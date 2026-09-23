@@ -32,7 +32,6 @@ import (
 
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/machinelearning/armmachinelearning"
 )
@@ -52,9 +51,9 @@ func Test_getAtRestEncryption(t *testing.T) {
 			wantAtRestEnc: &ontology.AtRestEncryption{
 				Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 					ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-						Enabled:   util.Ref(true),
+						Enabled:   new(true),
 
-						Algorithm: util.Ref(AES256),
+						Algorithm: new(AES256),
 
 					},
 				},
@@ -64,18 +63,18 @@ func Test_getAtRestEncryption(t *testing.T) {
 			name: "Happy path: CustomerKeyEncryption",
 			args: args{
 				enc: &armmachinelearning.EncryptionProperty{
-					Status: util.Ref(armmachinelearning.EncryptionStatusEnabled),
+					Status: new(armmachinelearning.EncryptionStatusEnabled),
 					KeyVaultProperties: &armmachinelearning.KeyVaultProperties{
-						KeyVaultArmID: util.Ref("some KeyVault ID"),
+						KeyVaultArmID: new("some KeyVault ID"),
 					},
 				},
 			},
 			wantAtRestEnc: &ontology.AtRestEncryption{
 				Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 					CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
-						Enabled: util.Ref(true),
+						Enabled: new(true),
 
-						KeyUrl:  util.Ref("some keyvault id"),
+						KeyUrl:  new("some keyvault id"),
 
 					},
 				},
@@ -85,18 +84,18 @@ func Test_getAtRestEncryption(t *testing.T) {
 			name: "Happy path: ManagedKeyEncryption",
 			args: args{
 				enc: &armmachinelearning.EncryptionProperty{
-					Status: util.Ref(armmachinelearning.EncryptionStatusEnabled),
+					Status: new(armmachinelearning.EncryptionStatusEnabled),
 					KeyVaultProperties: &armmachinelearning.KeyVaultProperties{
-						KeyVaultArmID: util.Ref(""),
+						KeyVaultArmID: new(""),
 					},
 				},
 			},
 			wantAtRestEnc: &ontology.AtRestEncryption{
 				Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 					ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-						Enabled:   util.Ref(true),
+						Enabled:   new(true),
 
-						Algorithm: util.Ref(AES256),
+						Algorithm: new(AES256),
 
 					},
 				},
@@ -124,14 +123,14 @@ func Test_getEncryptionStatus(t *testing.T) {
 		{
 			name: "Happy path: encryption disabled",
 			args: args{
-				enc: util.Ref(armmachinelearning.EncryptionStatusDisabled),
+				enc: new(armmachinelearning.EncryptionStatusDisabled),
 			},
 			want: false,
 		},
 		{
 			name: "Happy path: encryption enabled",
 			args: args{
-				enc: util.Ref(armmachinelearning.EncryptionStatusEnabled),
+				enc: new(armmachinelearning.EncryptionStatusEnabled),
 			},
 			want: true,
 		},
@@ -163,14 +162,14 @@ func Test_getInternetAccessibleEndpoint(t *testing.T) {
 		{
 			name: "Happy path: Enabled",
 			args: args{
-				status: util.Ref(armmachinelearning.PublicNetworkAccessEnabled),
+				status: new(armmachinelearning.PublicNetworkAccessEnabled),
 			},
 			want: true,
 		},
 		{
 			name: "Happy path: Disabled",
 			args: args{
-				status: util.Ref(armmachinelearning.PublicNetworkAccessDisabled),
+				status: new(armmachinelearning.PublicNetworkAccessDisabled),
 			},
 			want: false,
 		},
@@ -196,21 +195,21 @@ func Test_getResourceLogging(t *testing.T) {
 		{
 			name: "Happy path: application insights disabled",
 			args: args{
-				log: util.Ref(""),
+				log: new(""),
 			},
 			want: &ontology.ResourceLogging{
-				Enabled: util.Ref(false),
+				Enabled: new(false),
 			},
 		},
 		{
 			name: "Happy path: application insights enabled",
 			args: args{
-				log: util.Ref("Some application insights string"),
+				log: new("Some application insights string"),
 			},
 			want: &ontology.ResourceLogging{
-				Enabled:           util.Ref(true),
+				Enabled:           new(true),
 
-				LoggingServiceIds: []string{resourceID(util.Ref("Some application insights string"))},
+				LoggingServiceIds: []string{resourceID(new("Some application insights string"))},
 			},
 		},
 	}
@@ -244,11 +243,11 @@ func Test_getComputeStringList(t *testing.T) {
 			args: args{
 				values: []ontology.IsResource{
 					&ontology.VirtualMachine{
-						Id: util.Ref("1"),
+						Id: new("1"),
 
 					},
 					&ontology.ObjectStorage{
-						Id: util.Ref("2"),
+						Id: new("2"),
 
 					},
 				},

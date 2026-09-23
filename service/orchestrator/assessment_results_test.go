@@ -43,7 +43,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
 
@@ -280,7 +279,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID2),
+						TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID2),
 					},
 				},
 			},
@@ -302,7 +301,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
+						TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID1),
 					},
 				},
 			},
@@ -325,8 +324,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
-						Compliant:            util.Ref(true),
+						TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID1),
+						Compliant:            new(true),
 					},
 				},
 			},
@@ -349,8 +348,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
-						Compliant:            util.Ref(false),
+						TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID1),
+						Compliant:            new(false),
 					},
 				},
 			},
@@ -373,7 +372,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-						Compliant: util.Ref(true),
+						Compliant: new(true),
 					},
 				},
 			},
@@ -397,7 +396,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-						ToolId: util.Ref(testdata.MockAssessmentResultToolID),
+						ToolId: new(testdata.MockAssessmentResultToolID),
 					},
 				},
 			},
@@ -421,7 +420,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-						Compliant: util.Ref(false),
+						Compliant: new(false),
 					},
 				},
 			},
@@ -445,7 +444,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
+						TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID1),
 						MetricIds:            []string{testdata.MockMetricID1, testdata.MockMetricID2},
 					},
 				},
@@ -470,7 +469,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
+						TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID1),
 						MetricIds:            []string{testdata.MockMetricID1, testdata.MockMetricID2},
 					},
 				},
@@ -519,7 +518,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-						TargetOfEvaluationId: util.Ref("No Valid UUID"),
+						TargetOfEvaluationId: new("No Valid UUID"),
 					},
 				},
 			},
@@ -538,7 +537,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.ListAssessmentResultsRequest{
-					LatestByResourceId: util.Ref(true),
+					LatestByResourceId: new(true),
 				},
 			},
 			wantRes: &orchestrator.ListAssessmentResultsResponse{
@@ -560,9 +559,9 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.ListAssessmentResultsRequest{
-					LatestByResourceId: util.Ref(true),
+					LatestByResourceId: new(true),
 					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
+						TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID1),
 					},
 				},
 			},
@@ -721,7 +720,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 						Compliant:         true,
 						ResourceId:        testdata.MockVirtualMachineID1,
 						ResourceTypes:     testdata.MockVirtualMachineTypes,
-						ToolId:            util.Ref(assessment.AssessmentToolId),
+						ToolId:            new(assessment.AssessmentToolId),
 						HistoryUpdatedAt:  timestamp,
 						History: []*assessment.Record{
 							{
@@ -925,7 +924,7 @@ func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAss
 				Compliant:         true,
 				ResourceId:        testdata.MockVirtualMachineID1,
 				ResourceTypes:     testdata.MockVirtualMachineTypes,
-				ToolId:            util.Ref(assessment.AssessmentToolId),
+				ToolId:            new(assessment.AssessmentToolId),
 				HistoryUpdatedAt:  timestamp,
 				History: []*assessment.Record{
 					{

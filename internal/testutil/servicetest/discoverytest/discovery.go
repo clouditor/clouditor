@@ -7,7 +7,6 @@ import (
 
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
-	"clouditor.io/clouditor/v2/internal/util"
 )
 
 // TestDiscoverer implements Discoverer and mocks the API to cloud resources
@@ -29,21 +28,21 @@ func (m *TestDiscoverer) List() ([]ontology.IsResource, error) {
 	case 2:
 		return []ontology.IsResource{
 			&ontology.ObjectStorage{
-				Id:       util.Ref("some-id-" + rand),
-				Name:     util.Ref("some-name"),
-				ParentId: util.Ref("some-storage-account-id"),
-				Raw:      util.Ref("{}"),
+				Id:       new("some-id-" + rand),
+				Name:     new("some-name"),
+				ParentId: new("some-storage-account-id"),
+				Raw:      new("{}"),
 			},
 			&ontology.ObjectStorageService{
-				Id:         util.Ref("some-storage-account-id-" + rand),
-				Name:       util.Ref("some-storage-account-name"),
+				Id:         new("some-storage-account-id-" + rand),
+				Name:       new("some-storage-account-name"),
 				StorageIds: []string{"some-id"},
-				Raw:        util.Ref("{}"),
+				Raw:        new("{}"),
 				HttpEndpoint: &ontology.HttpEndpoint{
 					TransportEncryption: &ontology.TransportEncryption{
-						Enforced:        util.Ref(false),
-						Enabled:         util.Ref(true),
-						ProtocolVersion: util.Ref(float32(1.2)),
+						Enforced:        new(false),
+						Enabled:         new(true),
+						ProtocolVersion: new(float32(1.2)),
 					},
 				},
 			},

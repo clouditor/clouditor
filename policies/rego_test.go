@@ -30,7 +30,6 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/v2/api/assessment"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
@@ -79,18 +78,18 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args: args{
 				resource: &ontology.ObjectStorage{
-					Id:           util.Ref(mockObjStorage1ResourceID),
+					Id:           new(mockObjStorage1ResourceID),
 					CreationTime: timestamppb.New(time.Unix(1621086669, 0)),
 					AtRestEncryption: &ontology.AtRestEncryption{
 						Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 							CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
-								Algorithm: util.Ref("AES256"),
-								Enabled:   util.Ref(true),
-								KeyUrl:    util.Ref("SomeUrl"),
+								Algorithm: new("AES256"),
+								Enabled:   new(true),
+								KeyUrl:    new("SomeUrl"),
 							},
 						},
 					},
-					PublicAccess: util.Ref(false),
+					PublicAccess: new(false),
 				},
 				evidenceID: mockObjStorage1EvidenceID,
 				src:        &mockMetricsSource{t: t},
@@ -107,17 +106,17 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args: args{
 				resource: &ontology.ObjectStorage{
-					Id:           util.Ref(mockObjStorage1ResourceID),
+					Id:           new(mockObjStorage1ResourceID),
 					CreationTime: timestamppb.New(time.Unix(1621086669, 0)),
 					AtRestEncryption: &ontology.AtRestEncryption{
 						Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 							CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
-								Algorithm: util.Ref("NoGoodAlg"),
-								Enabled:   util.Ref(false),
+								Algorithm: new("NoGoodAlg"),
+								Enabled:   new(false),
 							},
 						},
 					},
-					PublicAccess: util.Ref(true),
+					PublicAccess: new(true),
 				},
 				evidenceID: mockObjStorage2EvidenceID,
 				src:        &mockMetricsSource{t: t},
@@ -140,18 +139,18 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args: args{
 				resource: &ontology.ObjectStorage{
-					Id:           util.Ref(mockObjStorage1ResourceID),
+					Id:           new(mockObjStorage1ResourceID),
 					CreationTime: timestamppb.New(time.Unix(1621086669, 0)),
 					AtRestEncryption: &ontology.AtRestEncryption{
 						Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 							CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
 								// Normally given but for test case purpose only check that no key URL is given
-								Algorithm: util.Ref(""),
-								Enabled:   util.Ref(false),
+								Algorithm: new(""),
+								Enabled:   new(false),
 							},
 						},
 					},
-					PublicAccess: util.Ref(true),
+					PublicAccess: new(true),
 				},
 				evidenceID: mockObjStorage2EvidenceID,
 				src:        &mockMetricsSource{t: t},
@@ -175,28 +174,28 @@ func Test_regoEval_Eval(t *testing.T) {
 			args: args{
 				src: &mockMetricsSource{t: t},
 				resource: &ontology.VirtualMachine{
-					Id: util.Ref(mockVM1ResourceID),
+					Id: new(mockVM1ResourceID),
 					AutomaticUpdates: &ontology.AutomaticUpdates{
-						Enabled:      util.Ref(true),
+						Enabled:      new(true),
 						Interval:     durationpb.New(time.Hour * 24 * 30),
-						SecurityOnly: util.Ref(true),
+						SecurityOnly: new(true),
 					},
 					BootLogging: &ontology.BootLogging{
 						LoggingServiceIds: []string{"SomeResourceId1", "SomeResourceId2"},
-						Enabled:           util.Ref(true),
+						Enabled:           new(true),
 						RetentionPeriod:   durationpb.New(36 * time.Hour * 24),
 					},
 					OsLogging: &ontology.OSLogging{
 						LoggingServiceIds: []string{"SomeResourceId2"},
-						Enabled:           util.Ref(true),
+						Enabled:           new(true),
 						RetentionPeriod:   durationpb.New(36 * time.Hour * 24),
 					},
 					MalwareProtection: &ontology.MalwareProtection{
-						Enabled:              util.Ref(true),
+						Enabled:              new(true),
 						DurationSinceActive:  durationpb.New(time.Hour * 24 * 5),
-						NumberOfThreatsFound: util.Ref(int32(5)),
+						NumberOfThreatsFound: new(int32(5)),
 						ApplicationLogging: &ontology.ApplicationLogging{
-							Enabled:           util.Ref(true),
+							Enabled:           new(true),
 							RetentionPeriod:   durationpb.New(time.Hour * 24 * 36),
 							LoggingServiceIds: []string{"SomeAnalyticsService?"},
 						},
@@ -229,15 +228,15 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args: args{
 				resource: &ontology.VirtualMachine{
-					Id: util.Ref(mockVM2ResourceID),
+					Id: new(mockVM2ResourceID),
 					BootLogging: &ontology.BootLogging{
 						LoggingServiceIds: nil,
-						Enabled:           util.Ref(false),
+						Enabled:           new(false),
 						RetentionPeriod:   durationpb.New(1 * time.Hour * 24),
 					},
 					OsLogging: &ontology.OSLogging{
 						LoggingServiceIds: []string{"SomeResourceId3"},
-						Enabled:           util.Ref(false),
+						Enabled:           new(false),
 
 						RetentionPeriod:   durationpb.New(1 * time.Hour * 24),
 					},
@@ -266,7 +265,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args: args{
 				resource: &ontology.VirtualMachine{
-					Id:              util.Ref(mockVM2ResourceID),
+					Id:              new(mockVM2ResourceID),
 
 					BlockStorageIds: []string{mockBlockStorage1ID},
 				},
@@ -274,13 +273,13 @@ func Test_regoEval_Eval(t *testing.T) {
 				src:        &mockMetricsSource{t: t},
 				related: map[string]ontology.IsResource{
 					mockBlockStorage1ID: &ontology.BlockStorage{
-						Id: util.Ref(mockBlockStorage1ID),
+						Id: new(mockBlockStorage1ID),
 
 						AtRestEncryption: &ontology.AtRestEncryption{
 							Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 								CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
-									Enabled:   util.Ref(false),
-									Algorithm: util.Ref("AES256"),
+									Enabled:   new(false),
+									Algorithm: new("AES256"),
 
 								},
 							},
@@ -304,7 +303,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args: args{
 				resource: &ontology.VirtualMachine{
-					Id:              util.Ref(mockVM2ResourceID),
+					Id:              new(mockVM2ResourceID),
 
 					BlockStorageIds: []string{mockBlockStorage1ID},
 				},
@@ -312,14 +311,14 @@ func Test_regoEval_Eval(t *testing.T) {
 				src:        &mockMetricsSource{t: t},
 				related: map[string]ontology.IsResource{
 					mockBlockStorage1ID: &ontology.BlockStorage{
-						Id: util.Ref(mockBlockStorage1ID),
+						Id: new(mockBlockStorage1ID),
 
 						AtRestEncryption: &ontology.AtRestEncryption{
 							Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 								CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
-									Enabled:   util.Ref(true),
+									Enabled:   new(true),
 
-									Algorithm: util.Ref("AES256"),
+									Algorithm: new("AES256"),
 
 								},
 							},
@@ -343,20 +342,20 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args: args{
 				resource: &ontology.LoggingService{
-					Id:                         util.Ref("loggingservice"),
+					Id:                         new("loggingservice"),
 
-					Description:                util.Ref("loggingservice"),
+					Description:                new("loggingservice"),
 
-					InternetAccessibleEndpoint: util.Ref(true),
+					InternetAccessibleEndpoint: new(true),
 
 					TransportEncryption: &ontology.TransportEncryption{
-						Enforced:        util.Ref(false),
+						Enforced:        new(false),
 
-						Enabled:         util.Ref(true),
+						Enabled:         new(true),
 
-						Protocol:        util.Ref("TLS"),
+						Protocol:        new("TLS"),
 
-						ProtocolVersion: util.Ref(float32(1.3)),
+						ProtocolVersion: new(float32(1.3)),
 
 					},
 				},

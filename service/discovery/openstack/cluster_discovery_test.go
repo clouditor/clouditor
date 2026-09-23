@@ -33,7 +33,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest/openstacktest"
-	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/testhelper"
 	"github.com/gophercloud/gophercloud/v2/testhelper/client"
@@ -96,29 +95,29 @@ func Test_openstackDiscovery_discoverCluster(t *testing.T) {
 				assert.NoError(t, err)
 
 				want := &ontology.ContainerOrchestration{
-					Id:           util.Ref("746e779a-751a-456b-a3e9-c883d734946f"),
+					Id:           new("746e779a-751a-456b-a3e9-c883d734946f"),
 
 					CreationTime: timestamppb.New(t1),
-					Name:         util.Ref("k8s"),
+					Name:         new("k8s"),
 
 					GeoLocation: &ontology.GeoLocation{
-						Region: util.Ref("test region"),
+						Region: new("test region"),
 
 					},
-					ParentId: util.Ref(""),
+					ParentId: new(""),
 				}
 
 				want1 := &ontology.ContainerOrchestration{
-					Id:           util.Ref("846e779a-751a-456b-a3e9-c883d734946f"),
+					Id:           new("846e779a-751a-456b-a3e9-c883d734946f"),
 
 					CreationTime: timestamppb.New(t2),
-					Name:         util.Ref("k8s"),
+					Name:         new("k8s"),
 
 					GeoLocation: &ontology.GeoLocation{
-						Region: util.Ref("test region"),
+						Region: new("test region"),
 
 					},
-					ParentId: util.Ref(""),
+					ParentId: new(""),
 				}
 
 				// Check Raw field and skip it for comparison

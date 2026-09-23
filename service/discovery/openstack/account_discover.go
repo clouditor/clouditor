@@ -29,7 +29,6 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/v2/api/discovery"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/domains"
 	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/projects"
@@ -50,9 +49,9 @@ func (d *openstackDiscovery) discoverDomains() (list []ontology.IsResource, err 
 		}
 
 		r := &ontology.Account{
-			Id:   util.Ref(d.domain.domainID),
-			Name: util.Ref(d.domain.domainName),
-			Raw:  util.Ref(discovery.Raw("Domain information manually added.")),
+			Id:   new(d.domain.domainID),
+			Name: new(d.domain.domainName),
+			Raw:  new(discovery.Raw("Domain information manually added.")),
 		}
 
 		list = append(list, r)

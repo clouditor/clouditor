@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/ontology"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/internal/constants"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 
@@ -34,17 +33,17 @@ func Test_csafDiscovery_providerTransportEncryption(t *testing.T) {
 				client: goodProvider.Client(),
 			},
 			want: &ontology.TransportEncryption{
-				Enabled:         util.Ref(true),
+				Enabled:         new(true),
 
-				Protocol:        util.Ref(constants.TLS),
+				Protocol:        new(constants.TLS),
 
-				ProtocolVersion: util.Ref(float32(1.3)),
+				ProtocolVersion: new(float32(1.3)),
 
 				CipherSuites: []*ontology.CipherSuite{
 					{
-						MacAlgorithm:  util.Ref(constants.SHA_256),
+						MacAlgorithm:  new(constants.SHA_256),
 
-						SessionCipher: util.Ref(constants.AES_128_GCM),
+						SessionCipher: new(constants.AES_128_GCM),
 
 					},
 				},
@@ -57,7 +56,7 @@ func Test_csafDiscovery_providerTransportEncryption(t *testing.T) {
 				client: http.DefaultClient,
 			},
 			want: &ontology.TransportEncryption{
-				Enabled: util.Ref(false),
+				Enabled: new(false),
 			},
 		},
 	}
@@ -98,11 +97,11 @@ func Test_providerValidationErrors(t *testing.T) {
 			want: func(t *testing.T, got []*ontology.Error) bool {
 				want := []*ontology.Error{
 					{
-						Message: util.Ref("message1"),
+						Message: new("message1"),
 
 					},
 					{
-						Message: util.Ref("message2"),
+						Message: new("message2"),
 
 					},
 				}

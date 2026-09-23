@@ -306,8 +306,8 @@ func TestComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 	machines, err := d.discoverVirtualMachines()
 	assert.NoError(t, err)
 	testMachine := machines[0]
-	assert.Equal(t, util.Ref(mockVM1), testMachine.Name)
-	assert.Equal(t, util.Ref("arn:aws:ec2:eu-central-1:MockAccountID1234:instance/mockVM1ID"), testMachine.Id)
+	assert.Equal(t, new(mockVM1), testMachine.Name)
+	assert.Equal(t, new("arn:aws:ec2:eu-central-1:MockAccountID1234:instance/mockVM1ID"), testMachine.Id)
 	assert.False(t, util.Deref(testMachine.BootLogging.Enabled))
 	assert.False(t, util.Deref(testMachine.OsLogging.Enabled))
 	assert.Nil(t, testMachine.CreationTime)
@@ -409,12 +409,12 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 			//args: args{client: mockClient},
 			[]*ontology.Function{
 				{
-					Id:   util.Ref(mockFunction1ID),
-					Name: util.Ref(mockFunction1),
+					Id:   new(mockFunction1ID),
+					Name: new(mockFunction1),
 					GeoLocation: &ontology.GeoLocation{
-						Region: util.Ref(mockFunction1Region),
+						Region: new(mockFunction1Region),
 					},
-					Raw: util.Ref("{\"*types.FunctionConfiguration\":[{\"Architectures\":null,\"CodeSha256\":null,\"CodeSize\":0,\"DeadLetterConfig\":null,\"Description\":null,\"Environment\":null,\"EphemeralStorage\":null,\"FileSystemConfigs\":null,\"FunctionArn\":\"arn:aws:lambda:eu-central-1:123456789:function:mock-function:1\",\"FunctionName\":\"MockFunction1\",\"Handler\":null,\"ImageConfigResponse\":null,\"KMSKeyArn\":null,\"LastModified\":\"2012-11-01T22:08:41.0+00:00\",\"LastUpdateStatus\":\"\",\"LastUpdateStatusReason\":null,\"LastUpdateStatusReasonCode\":\"\",\"Layers\":null,\"LoggingConfig\":null,\"MasterArn\":null,\"MemorySize\":null,\"PackageType\":\"\",\"RevisionId\":null,\"Role\":null,\"Runtime\":\"\",\"RuntimeVersionConfig\":null,\"SigningJobArn\":null,\"SigningProfileVersionArn\":null,\"SnapStart\":null,\"State\":\"\",\"StateReason\":null,\"StateReasonCode\":\"\",\"Timeout\":null,\"TracingConfig\":null,\"Version\":null,\"VpcConfig\":null}]}"),
+					Raw: new("{\"*types.FunctionConfiguration\":[{\"Architectures\":null,\"CodeSha256\":null,\"CodeSize\":0,\"DeadLetterConfig\":null,\"Description\":null,\"Environment\":null,\"EphemeralStorage\":null,\"FileSystemConfigs\":null,\"FunctionArn\":\"arn:aws:lambda:eu-central-1:123456789:function:mock-function:1\",\"FunctionName\":\"MockFunction1\",\"Handler\":null,\"ImageConfigResponse\":null,\"KMSKeyArn\":null,\"LastModified\":\"2012-11-01T22:08:41.0+00:00\",\"LastUpdateStatus\":\"\",\"LastUpdateStatusReason\":null,\"LastUpdateStatusReasonCode\":\"\",\"Layers\":null,\"LoggingConfig\":null,\"MasterArn\":null,\"MemorySize\":null,\"PackageType\":\"\",\"RevisionId\":null,\"Role\":null,\"Runtime\":\"\",\"RuntimeVersionConfig\":null,\"SigningJobArn\":null,\"SigningProfileVersionArn\":null,\"SnapStart\":null,\"State\":\"\",\"StateReason\":null,\"StateReasonCode\":\"\",\"Timeout\":null,\"TracingConfig\":null,\"Version\":null,\"VpcConfig\":null}]}"),
 				},
 			},
 			assert.Nil[error],

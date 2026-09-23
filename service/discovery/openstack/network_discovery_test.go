@@ -33,7 +33,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest/openstacktest"
-	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/testhelper"
 	"github.com/gophercloud/gophercloud/v2/testhelper/client"
@@ -96,17 +95,17 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 				assert.NoError(t, err)
 
 				want := &ontology.NetworkInterface{
-					Id:           util.Ref("d32019d3-bc6e-4319-9c1d-6722fc136a22"),
+					Id:           new("d32019d3-bc6e-4319-9c1d-6722fc136a22"),
 
-					Name:         util.Ref("public"),
+					Name:         new("public"),
 
 					CreationTime: timestamppb.New(t1),
 					GeoLocation: &ontology.GeoLocation{
-						Region: util.Ref("test region"),
+						Region: new("test region"),
 
 					},
 					Labels:   map[string]string{},
-					ParentId: util.Ref("4fd44f30292945e481c7b8a0c8908869"),
+					ParentId: new("4fd44f30292945e481c7b8a0c8908869"),
 				}
 
 				got0, ok := got[0].(*ontology.NetworkInterface)
