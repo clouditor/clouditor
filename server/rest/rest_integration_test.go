@@ -84,7 +84,7 @@ func TestMain(m *testing.M) {
 
 	exit := m.Run()
 
-	sock.Close()
+	_ = sock.Close()
 	srv.Stop()
 
 	os.Exit(exit)

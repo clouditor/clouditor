@@ -66,7 +66,7 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 	// We need to start a REST server for JWKS (using our auth server)
 	authSrv, port, err = testutil.StartAuthenticationServer()
 	assert.NoError(t, err)
-	defer authSrv.Close()
+	defer func() { _ = authSrv.Close() }()
 
 	// Some pre-work to retrieve a valid token
 	token, err := authSrv.GenerateToken(testdata.MockAuthClientID, 0, 0)
