@@ -10,8 +10,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/testing/protocmp"
 )
 
@@ -47,6 +45,56 @@ func CompareAllUnexported() cmp.Option {
 	return cmp.Exporter(func(reflect.Type) bool { return true })
 }
 
+// stripZeroValues is a cmp.Transformer that, after protocmp.Transform(),
+// removes entries with zero values from protocmp.Message maps. This makes
+// nil optional fields (absent key) compare equal to optional fields set
+// to their zero value (e.g. *bool→false vs nil *bool).
+var stripZeroValues = cmp.Transformer("stripZero", func(m protocmp.Message) protocmp.Message {
+	result := protocmp.Message{}
+	for k, v := range m {
+		if !isZeroValue(v) {
+			result[k] = v
+		}
+	}
+	return result
+})
+
+func isZeroValue(v interface{}) bool {
+	switch x := v.(type) {
+	case bool:
+		return !x
+	case string:
+		return x == ""
+	case int:
+		return x == 0
+	case int32:
+		return x == 0
+	case int64:
+		return x == 0
+	case float32:
+		return x == 0
+	case float64:
+		return x == 0
+	case protocmp.Message:
+		// Skip the "@type" field which is always present in protocmp.Message
+		for k, sv := range x {
+			if k == "@type" {
+				continue
+			}
+			if !isZeroValue(sv) {
+				return false
+			}
+		}
+		return true
+	case []interface{}:
+		return len(x) == 0
+	case nil:
+		return true
+	default:
+		return false
+	}
+}
+
 // Equal asserts that [got] and [want] are Equal. Under the hood, this uses the go-cmp package in combination with
 // protocmp and also supplies a diff, in case the messages to do not match.
 //
@@ -58,16 +106,7 @@ func Equal[T any](t TestingT, want T, got T, opts ...cmp.Option) bool {
 		tt.Helper()
 	}
 
-	// Normalize proto messages: round-trip through protojson with EmitUnpopulated=false
-	// to remove unset optional fields, so nil and zero-value pointer fields compare equal.
-	if wantMsg, ok := any(want).(proto.Message); ok {
-		NormalizeProto(wantMsg)
-	}
-	if gotMsg, ok := any(got).(proto.Message); ok {
-		NormalizeProto(gotMsg)
-	}
-
-	opts = append(opts, protocmp.Transform())
+	opts = append(opts, protocmp.Transform(), stripZeroValues)
 
 	if cmp.Equal(got, want, opts...) {
 		return true
@@ -83,7 +122,7 @@ func NotEqual[T any](t TestingT, want T, got T, opts ...cmp.Option) bool {
 		tt.Helper()
 	}
 
-	opts = append(opts, protocmp.Transform())
+	opts = append(opts, protocmp.Transform(), stripZeroValues)
 
 	if !cmp.Equal(got, want, opts...) {
 		return true
@@ -133,15 +172,4 @@ func Optional[T any](t *testing.T, want Want[T], got T) bool {
 	}
 
 	return true
-}
-
-// NormalizeProto normalizes a proto message by round-tripping it through protojson
-// with EmitUnpopulated=false. This removes all unset optional fields, making
-// nil and zero-value pointer fields compare as equal.
-func NormalizeProto(msg proto.Message) {
-	b, err := protojson.MarshalOptions{EmitUnpopulated: false}.Marshal(msg)
-	if err != nil {
-		return
-	}
-	proto.UnmarshalOptions{DiscardUnknown: true}.Unmarshal(b, msg)
 }

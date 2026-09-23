@@ -199,7 +199,7 @@ func Test_getResourceLogging(t *testing.T) {
 				log: util.Ref(""),
 			},
 			want: &ontology.ResourceLogging{
-
+				Enabled: util.Ref(false),
 			},
 		},
 		{
