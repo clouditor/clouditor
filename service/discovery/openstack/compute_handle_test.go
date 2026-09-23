@@ -153,11 +153,14 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 				assert.NotEmpty(t, got)
 
 				want := &ontology.VirtualMachine{
-					Id:           "ef079b0c-e610-4dfb-b1aa-b49f07ac48e5",
-					Name:         "herp",
+					Id:           util.Ref("ef079b0c-e610-4dfb-b1aa-b49f07ac48e5"),
+
+					Name:         util.Ref("herp"),
+
 					CreationTime: timestamppb.New(t1),
 					GeoLocation: &ontology.GeoLocation{
-						Region: "test region",
+						Region: util.Ref("test region"),
+
 					},
 					Labels:              map[string]string{},
 					ParentId:            util.Ref("fcad67a6189847c4aecfa3c81a05783b"),
@@ -165,14 +168,16 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 					NetworkInterfaceIds: []string{"8a5fe506-7e9f-4091-899b-96336909d93c"},
 					MalwareProtection:   &ontology.MalwareProtection{},
 					AutomaticUpdates:    &ontology.AutomaticUpdates{},
-					BootLogging:         &ontology.BootLogging{Enabled: true},
+					BootLogging:         &ontology.BootLogging{Enabled: util.Ref(true)},
+
 				}
 
 				gotNew, ok := got.(*ontology.VirtualMachine)
 				assert.True(t, ok)
 
 				assert.NotEmpty(t, gotNew.GetRaw())
-				gotNew.Raw = ""
+				gotNew.Raw = util.Ref("")
+
 				return assert.Equal(t, want, gotNew)
 			},
 			wantErr: assert.NoError,

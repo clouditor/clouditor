@@ -60,12 +60,12 @@ var (
 		Resource: &ontology.Resource{
 			Type: &ontology.Resource_VirtualMachine{
 				VirtualMachine: &ontology.VirtualMachine{
-					Id:           testdata.MockVirtualMachineID1,
-					Name:         testdata.MockVirtualMachineName1,
-					Description:  "Mock evidence for Virtual Machine",
+					Id:           util.Ref(testdata.MockVirtualMachineID1),
+					Name:         util.Ref(testdata.MockVirtualMachineName1),
+					Description:  util.Ref("Mock evidence for Virtual Machine"),
 					CreationTime: timestamppb.New(time.Unix(1, 0)),
 					AutomaticUpdates: &ontology.AutomaticUpdates{
-						Enabled: true,
+						Enabled: util.Ref(true),
 					},
 					BlockStorageIds: []string{testdata.MockVirtualMachineID2},
 				},
@@ -81,9 +81,9 @@ var (
 		Resource: &ontology.Resource{
 			Type: &ontology.Resource_BlockStorage{
 				BlockStorage: &ontology.BlockStorage{
-					Id:           testdata.MockBlockStorageID1,
-					Name:         testdata.MockBlockStorageName1,
-					Description:  "Mock evidence for Block Storage",
+					Id:           util.Ref(testdata.MockBlockStorageID1),
+					Name:         util.Ref(testdata.MockBlockStorageName1),
+					Description:  util.Ref("Mock evidence for Block Storage"),
 					CreationTime: timestamppb.New(time.Unix(1, 0)),
 				},
 			},

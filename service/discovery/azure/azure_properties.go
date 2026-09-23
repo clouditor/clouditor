@@ -117,7 +117,7 @@ func tlsCipherSuites(cs string) []*ontology.CipherSuite {
 	// Next is either a key exchange or directly the session cipher
 	i++
 	if parts[i] == "ECDHE" {
-		cipher.KeyExchangeAlgorithm = parts[i]
+		cipher.KeyExchangeAlgorithm = util.Ref(parts[i])
 	} else {
 		i--
 		goto cipher
@@ -125,7 +125,7 @@ func tlsCipherSuites(cs string) []*ontology.CipherSuite {
 
 	i++
 	if slices.Contains([]string{"RSA", "ECDSA"}, parts[i]) {
-		cipher.AuthenticationMechanism = parts[i]
+		cipher.AuthenticationMechanism = util.Ref(parts[i])
 	} else {
 		goto invalid
 	}
@@ -138,30 +138,28 @@ func tlsCipherSuites(cs string) []*ontology.CipherSuite {
 cipher:
 	i++
 	if parts[i] == "AES" {
-		cipher.SessionCipher = parts[i]
+		cipher.SessionCipher = util.Ref(parts[i])
 	} else {
 		goto invalid
 	}
 
 	i++
 	if slices.Contains([]string{"128", "256"}, parts[i]) {
-		cipher.SessionCipher += "-" + parts[i]
-	} else {
+		*cipher.SessionCipher += "-" + parts[i]	} else {
 		goto invalid
 	}
 
 	i++
 	if slices.Contains([]string{"CBC", "GCM"}, parts[i]) {
-		cipher.SessionCipher += "-" + parts[i]
-	} else {
+		*cipher.SessionCipher += "-" + parts[i]	} else {
 		goto invalid
 	}
 
 	i++
 	if parts[i] == "SHA256" {
-		cipher.MacAlgorithm = "SHA-256"
+		cipher.MacAlgorithm = util.Ref("SHA-256")
 	} else if parts[i] == "SHA384" {
-		cipher.MacAlgorithm = "SHA-384"
+		cipher.MacAlgorithm = util.Ref("SHA-384")
 	} else {
 		goto invalid
 	}
@@ -257,7 +255,7 @@ func location(region *string) *ontology.GeoLocation {
 	}
 
 	return &ontology.GeoLocation{
-		Region: util.Deref(region),
+		Region: util.Ref(util.Deref(region)),
 	}
 }
 
@@ -313,7 +311,7 @@ func (d *azureDiscovery) discoverDiagnosticSettings(resourceURI string) (*ontolo
 
 	if len(workspaceIDs) > 0 {
 		al = &ontology.ActivityLogging{
-			Enabled:           true,
+			Enabled:           util.Ref(true),
 			LoggingServiceIds: workspaceIDs, // TODO(all): Each diagnostic setting has also a retention period, maybe we should add that information as well
 		}
 	}

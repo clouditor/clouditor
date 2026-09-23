@@ -87,17 +87,17 @@ func (d *csafDiscovery) handleAdvisory(label csaf.TLPLabel, file csaf.AdvisoryFi
 
 	// Create an evidence for the document
 	doc = &ontology.SecurityAdvisoryDocument{
-		Filetype: "JSON",
-		Id:       string(util.Deref(advisory.Document.Tracking.ID)),
+		Filetype: util.Ref("JSON"),
+		Id:       util.Ref(string(util.Deref(advisory.Document.Tracking.ID))),
 		Labels: map[string]string{
 			"tlp": string(label),
 		},
-		Name: util.Deref(advisory.Document.Title),
+		Name: util.Ref(util.Deref(advisory.Document.Title)),
 
 		DataLocation: &ontology.DataLocation{
 			Type: &ontology.DataLocation_RemoteDataLocation{
 				RemoteDataLocation: &ontology.RemoteDataLocation{
-					Path:                file.URL(),
+					Path:                util.Ref(file.URL()),
 					TransportEncryption: transportEncryption(res.TLS),
 					Authenticity:        clientAuthenticity(res),
 				},
@@ -105,15 +105,15 @@ func (d *csafDiscovery) handleAdvisory(label csaf.TLPLabel, file csaf.AdvisoryFi
 		},
 		CreationTime: timestamppb.New(t),
 		ValidatedBy: &ontology.SchemaValidation{
-			SchemaUrl: "https://docs.oasis-open.org/csaf/csaf/v2.0/csaf_json_schema.json",
-			Format:    "Common Security Advisory Framework",
+			SchemaUrl: util.Ref("https://docs.oasis-open.org/csaf/csaf/v2.0/csaf_json_schema.json"),
+			Format:    util.Ref("Common Security Advisory Framework"),
 			Errors:    documentValidationErrors(msg),
 		},
 		CryptographicHashs: d.documentChecksums(file, body),
 		DocumentSignatures: []*ontology.DocumentSignature{
 			d.documentPGPSignature(file.SignURL(), body, keyring),
 		},
-		Raw:      discovery.Raw(doc),
+		Raw:      util.Ref(discovery.Raw(doc)),
 		ParentId: &parentId,
 	}
 

@@ -161,7 +161,7 @@ func TestService_StoreEvidence(t *testing.T) {
 						Resource: &ontology.Resource{
 							Type: &ontology.Resource_VirtualMachine{
 								VirtualMachine: &ontology.VirtualMachine{
-									Id: "mock-id",
+									Id: util.Ref("mock-id"),
 								},
 							},
 						},
@@ -290,8 +290,8 @@ func TestService_StoreEvidence(t *testing.T) {
 						Resource: &ontology.Resource{
 							Type: &ontology.Resource_VirtualMachine{
 								VirtualMachine: &ontology.VirtualMachine{
-									Id:   "mock-id",
-									Name: "my-vm",
+									Id:   util.Ref("mock-id"),
+									Name: util.Ref("my-vm"),
 								},
 							},
 						},
@@ -325,8 +325,8 @@ func TestService_StoreEvidence(t *testing.T) {
 						Resource: &ontology.Resource{
 							Type: &ontology.Resource_VirtualMachine{
 								VirtualMachine: &ontology.VirtualMachine{
-									Id:   "mock-id",
-									Name: "mock-name",
+									Id:   util.Ref("mock-id"),
+									Name: util.Ref("mock-name"),
 								},
 							},
 						},
@@ -424,8 +424,8 @@ func TestService_StoreEvidences(t *testing.T) {
 							Resource: &ontology.Resource{
 								Type: &ontology.Resource_VirtualMachine{
 									VirtualMachine: &ontology.VirtualMachine{
-										Id:   "mock-id-1",
-										Name: "mock-name-1",
+										Id:   util.Ref("mock-id-1"),
+										Name: util.Ref("mock-name-1"),
 									},
 								},
 							},
@@ -781,8 +781,8 @@ func TestService_EvidenceHook(t *testing.T) {
 					Resource: &ontology.Resource{
 						Type: &ontology.Resource_VirtualMachine{
 							VirtualMachine: &ontology.VirtualMachine{
-								Id:   "mock-id-1",
-								Name: "mock-name-1",
+								Id:   util.Ref("mock-id-1"),
+								Name: util.Ref("mock-name-1"),
 							},
 						},
 					},
@@ -985,8 +985,8 @@ func createStoreEvidenceRequestMocks(_ *testing.T, count int) []*evidence.StoreE
 				Resource: &ontology.Resource{
 					Type: &ontology.Resource_VirtualMachine{
 						VirtualMachine: &ontology.VirtualMachine{
-							Id:   "mock-id-1",
-							Name: "my-vm",
+							Id:   util.Ref("mock-id-1"),
+							Name: util.Ref("my-vm"),
 						},
 					},
 				},

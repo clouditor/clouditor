@@ -170,8 +170,10 @@ func Test_storageAtRestEncryption(t *testing.T) {
 			want: &ontology.AtRestEncryption{
 				Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 					ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-						Algorithm: "AES256",
-						Enabled:   true,
+						Algorithm: util.Ref("AES256"),
+
+						Enabled:   util.Ref(true),
+
 					},
 				},
 			},
@@ -268,39 +270,50 @@ func Test_handleFileStorage(t *testing.T) {
 					Name: &fileShareName,
 				},
 				activityLogging: &ontology.ActivityLogging{
-					Enabled: true,
+					Enabled: util.Ref(true),
+
 				},
 			},
 			want: func(t *testing.T, got *ontology.FileStorage) bool {
 				want := &ontology.FileStorage{
-					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/fileservices/default/shares/fileshare1",
-					Name:         fileShareName,
+					Id:           util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/fileservices/default/shares/fileshare1"),
+
+					Name:         util.Ref(fileShareName),
+
 					CreationTime: timestamppb.New(creationTime),
 					GeoLocation: &ontology.GeoLocation{
-						Region: accountRegion,
+						Region: util.Ref(accountRegion),
+
 					},
 					Labels:   map[string]string{},
 					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
 					AtRestEncryption: &ontology.AtRestEncryption{
 						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-								Algorithm: "AES256",
-								Enabled:   true,
+								Algorithm: util.Ref("AES256"),
+
+								Enabled:   util.Ref(true),
+
 							},
 						},
 					},
 					ResourceLogging: &ontology.ResourceLogging{
-						Enabled:                  false,
-						MonitoringLogDataEnabled: false,
-						SecurityAlertsEnabled:    false,
+						Enabled:                  util.Ref(false),
+
+						MonitoringLogDataEnabled: util.Ref(false),
+
+						SecurityAlertsEnabled:    util.Ref(false),
+
 					},
 					ActivityLogging: &ontology.ActivityLogging{
-						Enabled: true,
+						Enabled: util.Ref(true),
+
 					},
 				}
 
 				assert.NotEmpty(t, got.Raw)
-				got.Raw = ""
+				got.Raw = util.Ref("")
+
 				return assert.Equal(t, want, got)
 			},
 			wantErr: assert.NoError,
@@ -403,41 +416,55 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 					Location: &accountRegion,
 				},
 				activityLogging: &ontology.ActivityLogging{
-					Enabled: true,
+					Enabled: util.Ref(true),
+
 				},
 			},
 			want: func(t *testing.T, got *ontology.ObjectStorageService) bool {
 				want := &ontology.ObjectStorageService{
-					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1",
-					Name:         accountName,
+					Id:           util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
+
+					Name:         util.Ref(accountName),
 					CreationTime: timestamppb.New(creationTime),
 					GeoLocation: &ontology.GeoLocation{
-						Region: accountRegion,
+						Region: util.Ref(accountRegion),
+
 					},
 					Labels:   map[string]string{},
 					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 					TransportEncryption: &ontology.TransportEncryption{
-						Enforced:        true,
-						Enabled:         true,
-						Protocol:        constants.TLS,
-						ProtocolVersion: 1.2,
+						Enforced:        util.Ref(true),
+
+						Enabled:         util.Ref(true),
+
+						Protocol:        util.Ref(constants.TLS),
+
+						ProtocolVersion: util.Ref(float32(1.2)),
+
 					},
 					HttpEndpoint: &ontology.HttpEndpoint{
-						Url: "https://account1.[file,blob].core.windows.net",
+						Url: util.Ref("https://account1.[file,blob].core.windows.net"),
+
 						TransportEncryption: &ontology.TransportEncryption{
-							Enforced:        true,
-							Enabled:         true,
-							Protocol:        constants.TLS,
-							ProtocolVersion: 1.2,
+							Enforced:        util.Ref(true),
+
+							Enabled:         util.Ref(true),
+
+							Protocol:        util.Ref(constants.TLS),
+
+							ProtocolVersion: util.Ref(float32(1.2)),
+
 						},
 					},
 					ActivityLogging: &ontology.ActivityLogging{
-						Enabled: true,
+						Enabled: util.Ref(true),
+
 					},
 				}
 
 				assert.NotEmpty(t, got.Raw)
-				got.Raw = ""
+				got.Raw = util.Ref("")
+
 				return assert.Equal(t, want, got)
 
 			},
@@ -542,47 +569,60 @@ func Test_handleObjectStorage(t *testing.T) {
 					},
 				},
 				activityLogging: &ontology.ActivityLogging{
-					Enabled: true,
+					Enabled: util.Ref(true),
+
 				},
 			},
 			want: func(t *testing.T, got *ontology.ObjectStorage) bool {
 				want := &ontology.ObjectStorage{
-					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container1",
-					Name:         containerName,
+					Id:           util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container1"),
+
+					Name:         util.Ref(containerName),
+
 					CreationTime: timestamppb.New(creationTime),
 					GeoLocation: &ontology.GeoLocation{
-						Region: accountRegion,
+						Region: util.Ref(accountRegion),
+
 					},
 					Labels:   map[string]string{},
 					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
 					AtRestEncryption: &ontology.AtRestEncryption{
 						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-								Algorithm: "AES256",
-								Enabled:   true,
+								Algorithm: util.Ref("AES256"),
+
+								Enabled:   util.Ref(true),
+
 							},
 						},
 					},
-					Immutability: &ontology.Immutability{Enabled: false},
+					Immutability: &ontology.Immutability{Enabled: util.Ref(false)},
+
 					ResourceLogging: &ontology.ResourceLogging{
-						MonitoringLogDataEnabled: false,
-						SecurityAlertsEnabled:    false,
+						MonitoringLogDataEnabled: util.Ref(false),
+
+						SecurityAlertsEnabled:    util.Ref(false),
+
 					},
 					Backups: []*ontology.Backup{
 						{
-							Enabled:         false,
+							Enabled:         util.Ref(false),
+
 							RetentionPeriod: nil,
 							Interval:        nil,
 						},
 					},
 					ActivityLogging: &ontology.ActivityLogging{
-						Enabled: true,
+						Enabled: util.Ref(true),
+
 					},
-					PublicAccess: false,
+					PublicAccess: util.Ref(false),
+
 				}
 
 				assert.NotEmpty(t, got.Raw)
-				got.Raw = ""
+				got.Raw = util.Ref("")
+
 				return assert.Equal(t, want, got)
 			},
 			wantErr: assert.NoError,
@@ -660,47 +700,61 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {
 				want0 := &ontology.FileStorage{
-					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/fileservices/default/shares/fileshare1",
-					Name:         "fileshare1",
+					Id:           util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/fileservices/default/shares/fileshare1"),
+
+					Name:         util.Ref("fileshare1"),
+
 					CreationTime: timestamppb.New(creationTime),
 					Labels:       map[string]string{},
 					GeoLocation: &ontology.GeoLocation{
-						Region: "eastus",
+						Region: util.Ref("eastus"),
+
 					},
 					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
 					AtRestEncryption: &ontology.AtRestEncryption{
 						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-								Algorithm: "AES256",
-								Enabled:   true,
+								Algorithm: util.Ref("AES256"),
+
+								Enabled:   util.Ref(true),
+
 							},
 						},
 					},
 					ResourceLogging: &ontology.ResourceLogging{
-						MonitoringLogDataEnabled: false,
-						SecurityAlertsEnabled:    false,
+						MonitoringLogDataEnabled: util.Ref(false),
+
+						SecurityAlertsEnabled:    util.Ref(false),
+
 					},
 				}
 				want1 := &ontology.FileStorage{
-					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/fileservices/default/shares/fileshare2",
-					Name:         "fileshare2",
+					Id:           util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/fileservices/default/shares/fileshare2"),
+
+					Name:         util.Ref("fileshare2"),
+
 					CreationTime: timestamppb.New(creationTime),
 					Labels:       map[string]string{},
 					GeoLocation: &ontology.GeoLocation{
-						Region: "eastus",
+						Region: util.Ref("eastus"),
+
 					},
 					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
 					AtRestEncryption: &ontology.AtRestEncryption{
 						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-								Algorithm: "AES256",
-								Enabled:   true,
+								Algorithm: util.Ref("AES256"),
+
+								Enabled:   util.Ref(true),
+
 							},
 						},
 					},
 					ResourceLogging: &ontology.ResourceLogging{
-						MonitoringLogDataEnabled: false,
-						SecurityAlertsEnabled:    false,
+						MonitoringLogDataEnabled: util.Ref(false),
+
+						SecurityAlertsEnabled:    util.Ref(false),
+
 					},
 				}
 
@@ -710,13 +764,15 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 				// Check first element
 				got0 := got[0].(*ontology.FileStorage)
 				assert.NotEmpty(t, got0)
-				got0.Raw = ""
+				got0.Raw = util.Ref("")
+
 				assert.Equal(t, want0, got0)
 
 				// Check second element
 				got1 := got[1].(*ontology.FileStorage)
 				assert.NotEmpty(t, got1)
-				got1.Raw = ""
+				got1.Raw = util.Ref("")
+
 				return assert.Equal(t, want1, got1)
 			},
 			wantErr: assert.NoError,
@@ -796,54 +852,70 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {
 				want0 := &ontology.ObjectStorage{
-					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container1",
-					Name:         "container1",
+					Id:           util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container1"),
+
+					Name:         util.Ref("container1"),
+
 					CreationTime: timestamppb.New(creationTime),
 					Labels:       map[string]string{},
 					GeoLocation: &ontology.GeoLocation{
-						Region: "eastus",
+						Region: util.Ref("eastus"),
+
 					},
 					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
 					AtRestEncryption: &ontology.AtRestEncryption{
 						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-								Algorithm: "AES256",
-								Enabled:   true,
+								Algorithm: util.Ref("AES256"),
+
+								Enabled:   util.Ref(true),
+
 							},
 						},
 					},
-					Immutability: &ontology.Immutability{Enabled: false},
+					Immutability: &ontology.Immutability{Enabled: util.Ref(false)},
+
 					ResourceLogging: &ontology.ResourceLogging{
-						MonitoringLogDataEnabled: false,
-						SecurityAlertsEnabled:    false,
+						MonitoringLogDataEnabled: util.Ref(false),
+
+						SecurityAlertsEnabled:    util.Ref(false),
+
 					},
 					Backups: []*ontology.Backup{
 						{
-							Enabled:         false,
+							Enabled:         util.Ref(false),
+
 							RetentionPeriod: nil,
 							Interval:        nil,
 						},
 					},
-					PublicAccess: true,
+					PublicAccess: util.Ref(true),
+
 				}
 				want1 := &ontology.ObjectStorage{
-					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container2",
-					Name:         "container2",
+					Id:           util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container2"),
+
+					Name:         util.Ref("container2"),
+
 					CreationTime: timestamppb.New(creationTime),
 					Labels:       map[string]string{},
 					GeoLocation: &ontology.GeoLocation{
-						Region: "eastus",
+						Region: util.Ref("eastus"),
+
 					},
 					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
 					AtRestEncryption: &ontology.AtRestEncryption{
 						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-								Algorithm: "AES256",
-								Enabled:   true,
+								Algorithm: util.Ref("AES256"),
+
+								Enabled:   util.Ref(true),
+
 							},
 						},
 					},
-					Immutability: &ontology.Immutability{Enabled: false},
+					Immutability: &ontology.Immutability{Enabled: util.Ref(false)}),
+
 					ResourceLogging: &ontology.ResourceLogging{
 						MonitoringLogDataEnabled: false,
 						SecurityAlertsEnabled:    false,

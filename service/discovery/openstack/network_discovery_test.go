@@ -96,11 +96,14 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 				assert.NoError(t, err)
 
 				want := &ontology.NetworkInterface{
-					Id:           "d32019d3-bc6e-4319-9c1d-6722fc136a22",
-					Name:         "public",
+					Id:           util.Ref("d32019d3-bc6e-4319-9c1d-6722fc136a22"),
+
+					Name:         util.Ref("public"),
+
 					CreationTime: timestamppb.New(t1),
 					GeoLocation: &ontology.GeoLocation{
-						Region: "test region",
+						Region: util.Ref("test region"),
+
 					},
 					Labels:   map[string]string{},
 					ParentId: util.Ref("4fd44f30292945e481c7b8a0c8908869"),
@@ -110,7 +113,8 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 				assert.True(t, ok)
 
 				assert.NotEmpty(t, got0.GetRaw())
-				got0.Raw = ""
+				got0.Raw = util.Ref("")
+
 				return assert.Equal(t, want, got0)
 			},
 			wantErr: assert.NoError,

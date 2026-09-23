@@ -45,16 +45,16 @@ func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontolog
 	}
 
 	r := &ontology.BlockStorage{
-		Id:           volume.ID,
-		Name:         name,
-		Description:  volume.Description,
+		Id:           util.Ref(volume.ID),
+		Name:         util.Ref(name),
+		Description:  util.Ref(volume.Description),
 		CreationTime: timestamppb.New(volume.CreatedAt),
 		GeoLocation: &ontology.GeoLocation{
-			Region: d.region,
+			Region: util.Ref(d.region),
 		},
 		ParentId: util.Ref(getParentID(volume)),
 		Labels:   map[string]string{}, // Not available
-		Raw:      discovery.Raw(volume),
+		Raw:      util.Ref(discovery.Raw(volume)),
 	}
 
 	// Create project resource for the parentId if not available

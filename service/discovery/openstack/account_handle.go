@@ -39,14 +39,14 @@ import (
 // handleDomain returns a [ontology.Account] out of an existing [domains.Domain].
 func (d *openstackDiscovery) handleDomain(domain *domains.Domain) (ontology.IsResource, error) {
 	r := &ontology.Account{
-		Id:           domain.ID,
-		Name:         domain.Name,
-		Description:  domain.Description,
+		Id:           util.Ref(domain.ID),
+		Name:         util.Ref(domain.Name),
+		Description:  util.Ref(domain.Description),
 		CreationTime: nil, // domain does not have a creation date
 		GeoLocation:  nil, // domain is global
 		Labels:       nil, // domain does not have labels,
 		ParentId:     nil, // domain is the top-most item and have no parent,
-		Raw:          discovery.Raw(domain),
+		Raw:          util.Ref(discovery.Raw(domain)),
 	}
 
 	log.Infof("Adding domain '%s", r.Name)
@@ -57,17 +57,17 @@ func (d *openstackDiscovery) handleDomain(domain *domains.Domain) (ontology.IsRe
 // handleProject returns a [ontology.ResourceGroup] out of an existing [projects.Project].
 func (d *openstackDiscovery) handleProject(project *projects.Project) (ontology.IsResource, error) {
 	r := &ontology.ResourceGroup{
-		Id:          project.ID,
-		Name:        project.Name,
-		Description: project.Description,
+		Id:          util.Ref(project.ID),
+		Name:        util.Ref(project.Name),
+		Description: util.Ref(project.Description),
 
 		CreationTime: nil, // project does not have a creation date
 		GeoLocation: &ontology.GeoLocation{
-			Region: d.region,
+			Region: util.Ref(d.region),
 		},
 		Labels:   labels(util.Ref(project.Tags)),
 		ParentId: util.Ref(project.ParentID),
-		Raw:      discovery.Raw(project),
+		Raw:      util.Ref(discovery.Raw(project)),
 	}
 
 	log.Infof("Adding project '%s", r.Name)
@@ -88,10 +88,10 @@ func (d *openstackDiscovery) addProjectIfMissing(projectID, projectName, domainI
 	}
 
 	r := &ontology.ResourceGroup{
-		Id:       projectID,
-		Name:     projectName,
+		Id:       util.Ref(projectID),
+		Name:     util.Ref(projectName),
 		ParentId: util.Ref(domainID),
-		Raw:      discovery.Raw("Project/Tenant information manually added."),
+		Raw:      util.Ref(discovery.Raw("Project/Tenant information manually added.")),
 	}
 
 	// Add project to the list of projects

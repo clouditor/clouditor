@@ -52,8 +52,10 @@ func Test_getAtRestEncryption(t *testing.T) {
 			wantAtRestEnc: &ontology.AtRestEncryption{
 				Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 					ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-						Enabled:   true,
-						Algorithm: AES256,
+						Enabled:   util.Ref(true),
+
+						Algorithm: util.Ref(AES256),
+
 					},
 				},
 			},
@@ -71,8 +73,10 @@ func Test_getAtRestEncryption(t *testing.T) {
 			wantAtRestEnc: &ontology.AtRestEncryption{
 				Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 					CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
-						Enabled: true,
-						KeyUrl:  "some keyvault id",
+						Enabled: util.Ref(true),
+
+						KeyUrl:  util.Ref("some keyvault id"),
+
 					},
 				},
 			},
@@ -90,8 +94,10 @@ func Test_getAtRestEncryption(t *testing.T) {
 			wantAtRestEnc: &ontology.AtRestEncryption{
 				Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 					ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-						Enabled:   true,
-						Algorithm: AES256,
+						Enabled:   util.Ref(true),
+
+						Algorithm: util.Ref(AES256),
+
 					},
 				},
 			},
@@ -193,7 +199,8 @@ func Test_getResourceLogging(t *testing.T) {
 				log: util.Ref(""),
 			},
 			want: &ontology.ResourceLogging{
-				Enabled: false,
+				Enabled: util.Ref(false),
+
 			},
 		},
 		{
@@ -202,7 +209,8 @@ func Test_getResourceLogging(t *testing.T) {
 				log: util.Ref("Some application insights string"),
 			},
 			want: &ontology.ResourceLogging{
-				Enabled:           true,
+				Enabled:           util.Ref(true),
+
 				LoggingServiceIds: []string{resourceID(util.Ref("Some application insights string"))},
 			},
 		},
@@ -237,10 +245,12 @@ func Test_getComputeStringList(t *testing.T) {
 			args: args{
 				values: []ontology.IsResource{
 					&ontology.VirtualMachine{
-						Id: "1",
+						Id: util.Ref("1"),
+
 					},
 					&ontology.ObjectStorage{
-						Id: "2",
+						Id: util.Ref("2"),
+
 					},
 				},
 			},

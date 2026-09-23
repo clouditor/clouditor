@@ -152,20 +152,19 @@ func (d *computeDiscovery) discoverVolumes() ([]*ontology.BlockStorage, error) {
 		volume := &res.Volumes[i]
 
 		atRest := &ontology.ManagedKeyEncryption{
-			Enabled: util.Deref(volume.Encrypted),
+			Enabled: util.Ref(util.Deref(volume.Encrypted)),
 		}
 
 		// AWS uses a fixed algorithm, if enabled
-		if atRest.Enabled {
-			atRest.Algorithm = "AES-256"
+		if util.Deref(atRest.Enabled) {			atRest.Algorithm = util.Ref("AES-256")
 		}
 
 		blocks = append(blocks, &ontology.BlockStorage{
-			Id:           d.arnify("volume", volume.VolumeId),
-			Name:         d.nameOrID(volume.Tags, volume.VolumeId),
+			Id:           util.Ref(d.arnify("volume", volume.VolumeId)),
+			Name:         util.Ref(d.nameOrID(volume.Tags, volume.VolumeId)),
 			CreationTime: timestamppb.New(util.Deref(volume.CreateTime)),
 			GeoLocation: &ontology.GeoLocation{
-				Region: d.awsConfig.cfg.Region,
+				Region: util.Ref(d.awsConfig.cfg.Region),
 			},
 			Labels: d.labels(volume.Tags),
 			AtRestEncryption: &ontology.AtRestEncryption{
@@ -173,7 +172,7 @@ func (d *computeDiscovery) discoverVolumes() ([]*ontology.BlockStorage, error) {
 					ManagedKeyEncryption: atRest,
 				},
 			},
-			Raw: discovery.Raw(&res.Volumes[i]),
+			Raw: util.Ref(discovery.Raw(&res.Volumes[i])),
 		})
 	}
 
@@ -192,13 +191,13 @@ func (d *computeDiscovery) discoverNetworkInterfaces() ([]*ontology.NetworkInter
 		ifc := &res.NetworkInterfaces[i]
 
 		ifcs = append(ifcs, &ontology.NetworkInterface{
-			Id:   d.arnify("network-interface", ifc.NetworkInterfaceId),
-			Name: d.nameOrID(ifc.TagSet, ifc.NetworkInterfaceId),
+			Id:   util.Ref(d.arnify("network-interface", ifc.NetworkInterfaceId)),
+			Name: util.Ref(d.nameOrID(ifc.TagSet, ifc.NetworkInterfaceId)),
 			GeoLocation: &ontology.GeoLocation{
-				Region: d.awsConfig.cfg.Region,
+				Region: util.Ref(d.awsConfig.cfg.Region),
 			},
 			Labels: d.labels(ifc.TagSet),
-			Raw:    discovery.Raw(&res.NetworkInterfaces[i]),
+			Raw:    util.Ref(discovery.Raw(&res.NetworkInterfaces[i])),
 		})
 	}
 
@@ -217,17 +216,17 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]*ontology.VirtualMachine
 			vm := &reservation.Instances[i]
 
 			resources = append(resources, &ontology.VirtualMachine{
-				Id:   d.arnify("instance", vm.InstanceId),
-				Name: d.getNameOfVM(vm),
+				Id:   util.Ref(d.arnify("instance", vm.InstanceId)),
+				Name: util.Ref(d.getNameOfVM(vm)),
 				GeoLocation: &ontology.GeoLocation{
-					Region: d.awsConfig.cfg.Region,
+					Region: util.Ref(d.awsConfig.cfg.Region),
 				},
 				Labels:              d.labels(vm.Tags),
 				NetworkInterfaceIds: d.getNetworkInterfacesOfVM(vm),
 				BlockStorageIds:     d.mapBlockStorageIDsOfVM(vm),
 				BootLogging:         d.getBootLog(vm),
 				OsLogging:           d.getOSLog(vm),
-				Raw:                 discovery.Raw(&reservation),
+				Raw:                 util.Ref(discovery.Raw(&reservation)),
 			})
 		}
 	}
@@ -264,12 +263,12 @@ func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.Function
 		function := &functions[i]
 
 		resources = append(resources, &ontology.Function{
-			Id:   aws.ToString(function.FunctionArn),
-			Name: aws.ToString(function.FunctionName),
+			Id:   util.Ref(aws.ToString(function.FunctionArn)),
+			Name: util.Ref(aws.ToString(function.FunctionName)),
 			GeoLocation: &ontology.GeoLocation{
-				Region: d.awsConfig.cfg.Region,
+				Region: util.Ref(d.awsConfig.cfg.Region),
 			},
-			Raw: discovery.Raw(&functions[i]),
+			Raw: util.Ref(discovery.Raw(&functions[i])),
 		})
 	}
 	return
@@ -279,7 +278,7 @@ func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.Function
 // Currently there is no option to find out if any logs are enabled -> Assign default zero values
 func (*computeDiscovery) getBootLog(_ *typesEC2.Instance) (l *ontology.BootLogging) {
 	l = &ontology.BootLogging{
-		Enabled: false,
+		Enabled: util.Ref(false),
 	}
 	return
 }
@@ -288,7 +287,7 @@ func (*computeDiscovery) getBootLog(_ *typesEC2.Instance) (l *ontology.BootLoggi
 // Currently there is no option to find out if any logs are enabled -> Assign default zero values
 func (*computeDiscovery) getOSLog(_ *typesEC2.Instance) (l *ontology.OSLogging) {
 	l = &ontology.OSLogging{
-		Enabled: false,
+		Enabled: util.Ref(false),
 	}
 	return
 }

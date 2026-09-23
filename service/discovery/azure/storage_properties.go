@@ -50,8 +50,8 @@ func storageAtRestEncryption(account *armstorage.Account) (enc *ontology.AtRestE
 		enc = &ontology.AtRestEncryption{
 			Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 				ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-					Algorithm: constants.AES256,
-					Enabled:   true,
+					Algorithm: util.Ref(constants.AES256),
+					Enabled:   util.Ref(true),
 				},
 			},
 		}
@@ -59,10 +59,10 @@ func storageAtRestEncryption(account *armstorage.Account) (enc *ontology.AtRestE
 		enc = &ontology.AtRestEncryption{
 			Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 				CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
-					Algorithm: "", // TODO(all): TBD
-					Enabled:   true,
+					Algorithm: util.Ref(""), // TODO(all): TBD
+					Enabled:   util.Ref(true),
 					// TODO(oxisto): This should also include the key!
-					KeyUrl: util.Deref(account.Properties.Encryption.KeyVaultProperties.KeyVaultURI),
+					KeyUrl: util.Ref(util.Deref(account.Properties.Encryption.KeyVaultProperties.KeyVaultURI)),
 				},
 			},
 		}

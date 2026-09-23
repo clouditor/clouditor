@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/util"
 )
 
 func Test_getIDsOf(t *testing.T) {
@@ -26,7 +27,8 @@ func Test_getIDsOf(t *testing.T) {
 			args: args{
 				documents: []ontology.IsResource{
 					&ontology.SecurityAdvisoryDocument{
-						Id: "https://xx.yy.zz/XXX",
+						Id: util.Ref("https://xx.yy.zz/XXX"),
+
 					},
 				},
 			},

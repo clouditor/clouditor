@@ -36,14 +36,14 @@ import (
 
 func (d *azureDiscovery) handleMLWorkspace(value *armmachinelearning.Workspace, computeList []string) (ontology.IsResource, error) {
 	ml := &ontology.MachineLearningService{
-		Id:                         resourceID(value.ID),
-		Name:                       util.Deref(value.Name),
+		Id:                         util.Ref(resourceID(value.ID)),
+		Name:                       util.Ref(util.Deref(value.Name)),
 		CreationTime:               creationTime(value.SystemData.CreatedAt),
 		GeoLocation:                location(value.Location),
 		Labels:                     labels(value.Tags),
 		ParentId:                   resourceGroupID(resourceIDPointer(value.ID)),
-		Raw:                        discovery.Raw(value),
-		InternetAccessibleEndpoint: getInternetAccessibleEndpoint(value.Properties.PublicNetworkAccess),
+		Raw:                        util.Ref(discovery.Raw(value)),
+		InternetAccessibleEndpoint: util.Ref(getInternetAccessibleEndpoint(value.Properties.PublicNetworkAccess)),
 		StorageIds:                 []string{util.Deref(value.Properties.StorageAccount)},
 		ComputeIds:                 computeList,
 		Loggings: []*ontology.Logging{
@@ -75,26 +75,26 @@ func (d *azureDiscovery) handleMLCompute(value *armmachinelearning.ComputeResour
 	switch c := value.Properties.(type) {
 	case *armmachinelearning.ComputeInstance:
 		container = &ontology.Container{
-			Id:                  resourceID(value.ID),
-			Name:                util.Deref(value.Name),
+			Id:                  util.Ref(resourceID(value.ID)),
+			Name:                util.Ref(util.Deref(value.Name)),
 			CreationTime:        time,
 			GeoLocation:         location(value.Location),
 			Labels:              labels(value.Tags),
 			ParentId:            resourceIDPointer(workspaceID),
-			Raw:                 discovery.Raw(value, c.ComputeLocation),
+			Raw:                 util.Ref(discovery.Raw(value, c.ComputeLocation)),
 			NetworkInterfaceIds: []string{},
 		}
 		return container, nil
 	case *armmachinelearning.VirtualMachine:
 
 		compute = &ontology.VirtualMachine{
-			Id:                  resourceID(value.ID),
-			Name:                util.Deref(value.Name),
+			Id:                  util.Ref(resourceID(value.ID)),
+			Name:                util.Ref(util.Deref(value.Name)),
 			CreationTime:        time,
 			GeoLocation:         location(value.Location),
 			Labels:              labels(value.Tags),
 			ParentId:            resourceIDPointer(workspaceID),
-			Raw:                 discovery.Raw(value, c.ComputeLocation),
+			Raw:                 util.Ref(discovery.Raw(value, c.ComputeLocation)),
 			NetworkInterfaceIds: []string{},
 			BlockStorageIds:     []string{},
 			MalwareProtection:   &ontology.MalwareProtection{},

@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/internal/constants"
 	"clouditor.io/clouditor/v2/internal/crypto/openpgp"
 
@@ -23,7 +24,7 @@ import (
 
 func documentValidationErrors(messages []string) (errs []*ontology.Error) {
 	for _, m := range messages {
-		errs = append(errs, &ontology.Error{Message: m})
+		errs = append(errs, &ontology.Error{Message: util.Ref(m)})
 	}
 	return
 }
@@ -34,18 +35,18 @@ func transportEncryption(state *tls.ConnectionState) (te *ontology.TransportEncr
 	te = &ontology.TransportEncryption{}
 
 	if state != nil {
-		te.Enabled = true
+		te.Enabled = util.Ref(true)
 		if state.Version == tls.VersionTLS10 {
-			te.ProtocolVersion = 1.0
+			te.ProtocolVersion = util.Ref(float32(1.0))
 		} else if state.Version == tls.VersionTLS11 {
-			te.ProtocolVersion = 1.1
+			te.ProtocolVersion = util.Ref(float32(1.1))
 		} else if state.Version == tls.VersionTLS12 {
-			te.ProtocolVersion = 1.2
+			te.ProtocolVersion = util.Ref(float32(1.2))
 		} else if state.Version == tls.VersionTLS13 {
-			te.ProtocolVersion = 1.3
+			te.ProtocolVersion = util.Ref(float32(1.3))
 		}
 
-		te.Protocol = constants.TLS
+		te.Protocol = util.Ref(constants.TLS)
 		cs := cipherSuite(state.CipherSuite)
 		if cs != nil {
 			te.CipherSuites = append(te.CipherSuites, cs)
@@ -60,13 +61,13 @@ func transportEncryption(state *tls.ConnectionState) (te *ontology.TransportEncr
 func cipherSuite(id uint16) *ontology.CipherSuite {
 	if id == tls.TLS_AES_128_GCM_SHA256 {
 		return &ontology.CipherSuite{
-			SessionCipher: constants.AES_128_GCM,
-			MacAlgorithm:  constants.SHA_256,
+			SessionCipher: util.Ref(constants.AES_128_GCM),
+			MacAlgorithm:  util.Ref(constants.SHA_256),
 		}
 	} else if id == tls.TLS_AES_256_GCM_SHA384 {
 		return &ontology.CipherSuite{
-			SessionCipher: constants.AES_256_GCM,
-			MacAlgorithm:  constants.SHA_384,
+			SessionCipher: util.Ref(constants.AES_256_GCM),
+			MacAlgorithm:  util.Ref(constants.SHA_384),
 		}
 	}
 	return nil
@@ -135,7 +136,7 @@ func (d *csafDiscovery) documentChecksum(checksumURL, filename string, body []by
 	if err != nil {
 		return &ontology.CryptographicHash{
 			Errors:    fromError(err),
-			Algorithm: algorithm,
+			Algorithm: util.Ref(algorithm),
 		}
 	}
 
@@ -144,7 +145,7 @@ func (d *csafDiscovery) documentChecksum(checksumURL, filename string, body []by
 	if !found || filename == "" {
 		return &ontology.CryptographicHash{
 			Errors:    fromError(errors.New("checksum file does not contain correct filename")),
-			Algorithm: algorithm,
+			Algorithm: util.Ref(algorithm),
 		}
 	}
 
@@ -157,14 +158,14 @@ func (d *csafDiscovery) documentChecksum(checksumURL, filename string, body []by
 	if subtle.ConstantTimeCompare([]byte(hash), []byte(want)) == 0 {
 		return &ontology.CryptographicHash{
 			Errors:    fromError(errors.New("checksum mismatch")),
-			Algorithm: algorithm,
+			Algorithm: util.Ref(algorithm),
 		}
 	}
 
 	// If we arrived here, everything is good
 	return &ontology.CryptographicHash{
 		Errors:    nil,
-		Algorithm: algorithm,
+		Algorithm: util.Ref(algorithm),
 	}
 }
 
@@ -198,13 +199,13 @@ func (d *csafDiscovery) documentPGPSignature(signURL string, body []byte, keyrin
 	if err != nil {
 		return &ontology.DocumentSignature{
 			Errors:    fromError(err),
-			Algorithm: "PGP",
+			Algorithm: util.Ref("PGP"),
 		}
 	}
 
 	return &ontology.DocumentSignature{
 		Errors:    nil,
-		Algorithm: "PGP",
+		Algorithm: util.Ref("PGP"),
 	}
 }
 
@@ -219,10 +220,10 @@ func fromError(err error) (errors []*ontology.Error) {
 	if me, ok := err.(MultiWrapError); ok {
 		errs := me.Unwrap()
 		for _, err := range errs {
-			errors = append(errors, &ontology.Error{Message: err.Error()})
+			errors = append(errors, &ontology.Error{Message: util.Ref(err.Error())})
 		}
 	} else {
-		errors = append(errors, &ontology.Error{Message: err.Error()})
+		errors = append(errors, &ontology.Error{Message: util.Ref(err.Error())})
 	}
 
 	return

@@ -32,6 +32,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/cli"
 	"clouditor.io/clouditor/v2/internal/testdata"
@@ -57,7 +58,7 @@ func TestMain(m *testing.M) {
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 		ToolId:               testdata.MockEvidenceToolID1,
 		Timestamp:            timestamppb.Now(),
-		Resource:             ontology.ProtoResource(&ontology.VirtualMachine{Id: testdata.MockVirtualMachineID1, Name: testdata.MockVirtualMachineName1}),
+		Resource:             ontology.ProtoResource(&ontology.VirtualMachine{Id: util.Ref(testdata.MockVirtualMachineID1), Name: util.Ref(testdata.MockVirtualMachineName1)}),
 	}})
 	if err != nil {
 		panic(err)

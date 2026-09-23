@@ -62,8 +62,8 @@ func (d *azureDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (en
 		enc = &ontology.AtRestEncryption{
 			Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 				ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-					Algorithm: "AES256",
-					Enabled:   true,
+					Algorithm: util.Ref("AES256"),
+					Enabled:   util.Ref(true),
 				},
 			},
 		}
@@ -78,9 +78,9 @@ func (d *azureDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (en
 		enc = &ontology.AtRestEncryption{
 			Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 				CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
-					Algorithm: "", // TODO(all): TBD
-					Enabled:   true,
-					KeyUrl:    keyUrl,
+					Algorithm: util.Ref(""), // TODO(all): TBD
+					Enabled:   util.Ref(true),
+					KeyUrl:    util.Ref(keyUrl),
 				},
 			},
 		}
@@ -156,7 +156,7 @@ func (d *azureDiscovery) getResourceLoggingWebApps(site *armappservice.Site) (rl
 		return
 	}
 	if appSettings.Properties["APPLICATIONINSIGHTS_CONNECTION_STRING"] != nil {
-		rl.Enabled = true
+		rl.Enabled = util.Ref(true)
 		// TODO: Get id of logging service and add it (currently not possible via app settings): rl.LoggingService
 
 	}
@@ -191,16 +191,16 @@ func getTransportEncryption(siteProperties *armappservice.SiteProperties, config
 	// Create transportEncryption voc object
 	if tlsVersion != 0 {
 		enc = &ontology.TransportEncryption{
-			Enforced:        util.Deref(siteProperties.HTTPSOnly),
-			Protocol:        constants.TLS,
-			ProtocolVersion: tlsVersion,
+			Enforced:        util.Ref(util.Deref(siteProperties.HTTPSOnly)),
+			Protocol:        util.Ref(constants.TLS),
+			ProtocolVersion: util.Ref(tlsVersion),
 			CipherSuites:    tlsCipherSuites(string(util.Deref(config.Properties.MinTLSCipherSuite))), // MinTLSCipherSuite is a new property and currently not filled from Azure side
-			Enabled:         true,
+			Enabled:         util.Ref(true),
 		}
 	} else {
 		enc = &ontology.TransportEncryption{
-			Enforced: util.Deref(siteProperties.HTTPSOnly),
-			Enabled:  false,
+			Enforced: util.Ref(util.Deref(siteProperties.HTTPSOnly)),
+			Enabled:  util.Ref(false),
 		}
 	}
 
@@ -231,7 +231,7 @@ func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *ontology
 	if vm.Properties.OSProfile.LinuxConfiguration != nil &&
 		vm.Properties.OSProfile.LinuxConfiguration.PatchSettings != nil {
 		if util.Deref(vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform {
-			automaticUpdates.Enabled = true
+			automaticUpdates.Enabled = util.Ref(true)
 			automaticUpdates.Interval = durationpb.New(Duration30Days)
 			return
 		}
@@ -242,7 +242,7 @@ func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *ontology
 		vm.Properties.OSProfile.WindowsConfiguration.PatchSettings != nil {
 		if util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates ||
 			util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates {
-			automaticUpdates.Enabled = true
+			automaticUpdates.Enabled = util.Ref(true)
 			automaticUpdates.Interval = durationpb.New(Duration30Days)
 			return
 

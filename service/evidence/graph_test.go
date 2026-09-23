@@ -80,20 +80,20 @@ func TestService_ListGraphEdges(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(
 						panicToDiscoveryResource(t, &ontology.ObjectStorage{
-							Id:       "some-id",
-							Name:     "some-name",
+							Id:       util.Ref("some-id"),
+							Name:     util.Ref("some-name"),
 							ParentId: util.Ref("some-storage-account-id"),
 						}, testdata.MockTargetOfEvaluationID2, testdata.MockEvidenceToolID1)))
 					assert.NoError(t, s.Create(
 						panicToDiscoveryResource(t, &ontology.ObjectStorageService{
 							StorageIds: []string{"some-id"},
-							Id:         "some-storage-account-id",
-							Name:       "some-storage-account-name",
+							Id:         util.Ref("some-storage-account-id"),
+							Name:       util.Ref("some-storage-account-name"),
 							HttpEndpoint: &ontology.HttpEndpoint{
 								TransportEncryption: &ontology.TransportEncryption{
-									Enforced:        false,
-									Enabled:         true,
-									ProtocolVersion: 1.2,
+									Enforced:        util.Ref(false),
+									Enabled:         util.Ref(true),
+									ProtocolVersion: util.Ref(float32(1.2)),
 								},
 							},
 						}, testdata.MockTargetOfEvaluationID1, testdata.MockEvidenceToolID1)))
@@ -121,20 +121,21 @@ func TestService_ListGraphEdges(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(
 						panicToDiscoveryResource(t, &ontology.ObjectStorage{
-							Id:       "some-id",
-							Name:     "some-name",
+							Id:       util.Ref("some-id"),
+							Name:     util.Ref("some-name"),
 							ParentId: util.Ref("some-storage-account-id"),
 						}, testdata.MockTargetOfEvaluationID2, testdata.MockEvidenceToolID1)))
 					assert.NoError(t, s.Create(
 						panicToDiscoveryResource(t, &ontology.ObjectStorageService{
 							StorageIds: []string{"some-id"},
-							Id:         "some-storage-account-id",
-							Name:       "some-storage-account-name",
+							Id:         util.Ref("some-storage-account-id"),
+							Name:       util.Ref("some-storage-account-name"),
 							HttpEndpoint: &ontology.HttpEndpoint{
 								TransportEncryption: &ontology.TransportEncryption{
-									Enforced:        false,
-									Enabled:         true,
-									ProtocolVersion: 1.2,
+									Enforced:        util.Ref(false),
+									Enabled:         util.Ref(true),
+									ProtocolVersion: util.Ref(float32(1.2)),
+
 								},
 							},
 						}, testdata.MockTargetOfEvaluationID2, testdata.MockEvidenceToolID1)))
@@ -214,7 +215,8 @@ func TestService_UpdateResource(t *testing.T) {
 			args: args{
 				req: &evidence.UpdateResourceRequest{
 					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
-						Name: "some-name",
+						Name: util.Ref("some-name"),
+
 					}, testdata.MockTargetOfEvaluationID1, testdata.MockEvidenceToolID1),
 				},
 			},
@@ -230,8 +232,10 @@ func TestService_UpdateResource(t *testing.T) {
 			args: args{
 				req: &evidence.UpdateResourceRequest{
 					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
-						Id:   "my-id",
-						Name: "some-name",
+						Id:   util.Ref("my-id"),
+
+						Name: util.Ref("some-name"),
+
 					}, testdata.MockTargetOfEvaluationID1, testdata.MockEvidenceToolID1),
 				},
 			},
@@ -248,14 +252,18 @@ func TestService_UpdateResource(t *testing.T) {
 			args: args{
 				req: &evidence.UpdateResourceRequest{
 					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
-						Id:   "my-id",
-						Name: "some-name",
+						Id:   util.Ref("my-id"),
+
+						Name: util.Ref("some-name"),
+
 					}, testdata.MockTargetOfEvaluationID1, testdata.MockEvidenceToolID1),
 				},
 			},
 			wantRes: panicToDiscoveryResource(t, &ontology.VirtualMachine{
-				Id:   "my-id",
-				Name: "some-name",
+				Id:   util.Ref("my-id"),
+
+				Name: util.Ref("some-name"),
+
 			}, testdata.MockTargetOfEvaluationID1, testdata.MockEvidenceToolID1),
 			wantErr: assert.NoError,
 		},

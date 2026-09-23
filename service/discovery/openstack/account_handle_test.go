@@ -73,12 +73,12 @@ func Test_openstackDiscovery_handleProject(t *testing.T) {
 			},
 			want: func(t *testing.T, got ontology.IsResource) bool {
 				want := &ontology.ResourceGroup{
-					Id:   testdata.MockOpenstackProjectID1,
-					Name: testdata.MockOpenstackProjectName1,
+					Id:   util.Ref(testdata.MockOpenstackProjectID1),
+					Name: util.Ref(testdata.MockOpenstackProjectName1),
 					GeoLocation: &ontology.GeoLocation{
-						Region: "test region",
+						Region: util.Ref("test region"),
 					},
-					Description: testdata.MockOpenstackProjectDescription1,
+					Description: util.Ref(testdata.MockOpenstackProjectDescription1),
 					Labels:      labels(util.Ref([]string{})),
 					ParentId:    util.Ref(testdata.MockOpenstackProjectParentID1),
 				}
@@ -86,7 +86,7 @@ func Test_openstackDiscovery_handleProject(t *testing.T) {
 				gotNew, ok := got.(*ontology.ResourceGroup)
 				assert.True(t, ok)
 				assert.NotEmpty(t, gotNew.GetRaw())
-				gotNew.Raw = ""
+				gotNew.Raw = util.Ref("")
 				return assert.Equal(t, want, gotNew)
 			},
 			wantErr: assert.NoError,
@@ -138,15 +138,17 @@ func Test_openstackDiscovery_handleDomain(t *testing.T) {
 			},
 			want: func(t *testing.T, got ontology.IsResource) bool {
 				want := &ontology.Account{
-					Id:          testdata.MockOpenstackDomainID1,
-					Name:        testdata.MockOpenstackDomainName1,
-					Description: testdata.MockOpenstackDomainDescription1,
+					Id:          util.Ref(testdata.MockOpenstackDomainID1),
+					Name:        util.Ref(testdata.MockOpenstackDomainName1),
+					Description: util.Ref(testdata.MockOpenstackDomainDescription1),
+
 				}
 
 				gotNew, ok := got.(*ontology.Account)
 				assert.True(t, ok)
 				assert.NotEmpty(t, gotNew.GetRaw())
-				gotNew.Raw = ""
+				gotNew.Raw = util.Ref("")
+
 				return assert.Equal(t, want, gotNew)
 			},
 			wantErr: assert.NoError,
@@ -209,10 +211,13 @@ func Test_openstackDiscovery_checkAndHandleManualCreatedProject(t *testing.T) {
 			fields: fields{
 				projects: map[string]ontology.IsResource{
 					testdata.MockOpenstackProjectID1: &ontology.ResourceGroup{
-						Id:       testdata.MockOpenstackProjectID1,
-						Name:     testdata.MockOpenstackProjectName1,
+						Id:       util.Ref(testdata.MockOpenstackProjectID1),
+
+						Name:     util.Ref(testdata.MockOpenstackProjectName1),
+
 						ParentId: util.Ref(testdata.MockOpenstackDomainID1),
-						Raw:      discovery.Raw("Project/Tenant information manually added."),
+						Raw:      util.Ref(discovery.Raw("Project/Tenant information manually added.")),
+
 					},
 				},
 			},
@@ -223,10 +228,13 @@ func Test_openstackDiscovery_checkAndHandleManualCreatedProject(t *testing.T) {
 			},
 			want: func(t *testing.T, d *openstackDiscovery) bool {
 				want := &ontology.ResourceGroup{
-					Id:       testdata.MockOpenstackProjectID1,
-					Name:     testdata.MockOpenstackProjectName1,
+					Id:       util.Ref(testdata.MockOpenstackProjectID1),
+
+					Name:     util.Ref(testdata.MockOpenstackProjectName1),
+
 					ParentId: util.Ref(testdata.MockOpenstackDomainID1),
-					Raw:      discovery.Raw("Project/Tenant information manually added."),
+					Raw:      util.Ref(discovery.Raw("Project/Tenant information manually added.")),
+
 				}
 				got, ok := d.discoveredProjects[testdata.MockOpenstackProjectID1].(*ontology.ResourceGroup)
 				assert.True(t, ok)
@@ -247,10 +255,13 @@ func Test_openstackDiscovery_checkAndHandleManualCreatedProject(t *testing.T) {
 			},
 			want: func(t *testing.T, d *openstackDiscovery) bool {
 				want := &ontology.ResourceGroup{
-					Id:       testdata.MockOpenstackProjectID1,
-					Name:     testdata.MockOpenstackProjectName1,
+					Id:       util.Ref(testdata.MockOpenstackProjectID1),
+
+					Name:     util.Ref(testdata.MockOpenstackProjectName1),
+
 					ParentId: util.Ref(testdata.MockOpenstackDomainID1),
-					Raw:      discovery.Raw("Project/Tenant information manually added."),
+					Raw:      util.Ref(discovery.Raw("Project/Tenant information manually added.")),
+
 				}
 				got, ok := d.discoveredProjects[testdata.MockOpenstackProjectID1].(*ontology.ResourceGroup)
 				assert.True(t, ok)

@@ -96,21 +96,27 @@ func Test_openstackDiscovery_discoverCluster(t *testing.T) {
 				assert.NoError(t, err)
 
 				want := &ontology.ContainerOrchestration{
-					Id:           "746e779a-751a-456b-a3e9-c883d734946f",
+					Id:           util.Ref("746e779a-751a-456b-a3e9-c883d734946f"),
+
 					CreationTime: timestamppb.New(t1),
-					Name:         "k8s",
+					Name:         util.Ref("k8s"),
+
 					GeoLocation: &ontology.GeoLocation{
-						Region: "test region",
+						Region: util.Ref("test region"),
+
 					},
 					ParentId: util.Ref(""),
 				}
 
 				want1 := &ontology.ContainerOrchestration{
-					Id:           "846e779a-751a-456b-a3e9-c883d734946f",
+					Id:           util.Ref("846e779a-751a-456b-a3e9-c883d734946f"),
+
 					CreationTime: timestamppb.New(t2),
-					Name:         "k8s",
+					Name:         util.Ref("k8s"),
+
 					GeoLocation: &ontology.GeoLocation{
-						Region: "test region",
+						Region: util.Ref("test region"),
+
 					},
 					ParentId: util.Ref(""),
 				}
@@ -118,12 +124,14 @@ func Test_openstackDiscovery_discoverCluster(t *testing.T) {
 				// Check Raw field and skip it for comparison
 				got0 := got[0].(*ontology.ContainerOrchestration)
 				assert.NotEmpty(t, got0.GetRaw())
-				got0.Raw = ""
+				got0.Raw = util.Ref("")
+
 				assert.Equal(t, want, got0)
 
 				got1 := got[1].(*ontology.ContainerOrchestration)
 				assert.NotEmpty(t, got1.GetRaw())
-				got1.Raw = ""
+				got1.Raw = util.Ref("")
+
 				return assert.Equal(t, want1, got1)
 			},
 			wantErr: assert.NoError,

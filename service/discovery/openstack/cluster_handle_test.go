@@ -104,11 +104,14 @@ func Test_openstackDiscovery_handleCluster(t *testing.T) {
 				assert.NotEmpty(t, got)
 
 				want := &ontology.ContainerOrchestration{
-					Id:           "ef079b0c-e610-4dfb-b1aa-b49f07ac48e5",
-					Name:         "test-cluster",
+					Id:           util.Ref("ef079b0c-e610-4dfb-b1aa-b49f07ac48e5"),
+
+					Name:         util.Ref("test-cluster"),
+
 					CreationTime: timestamppb.New(t1),
 					GeoLocation: &ontology.GeoLocation{
-						Region: "test region",
+						Region: util.Ref("test region"),
+
 					},
 					Labels: map[string]string{
 						"label1": "value1",
@@ -120,7 +123,8 @@ func Test_openstackDiscovery_handleCluster(t *testing.T) {
 				gotNew := got.(*ontology.ContainerOrchestration)
 
 				assert.NotEmpty(t, gotNew.GetRaw())
-				gotNew.Raw = ""
+				gotNew.Raw = util.Ref("")
+
 				return assert.Equal(t, want, gotNew)
 			},
 			wantErr: assert.NoError,

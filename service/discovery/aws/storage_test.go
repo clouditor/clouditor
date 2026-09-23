@@ -359,16 +359,16 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	encryptionAtRest, rawEncryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: mockBucket1})
 	assert.NoError(t, err)
 	managedEncryption = encryptionAtRest.GetManagedKeyEncryption()
-	assert.True(t, managedEncryption.Enabled)
-	assert.Equal(t, "AES256", managedEncryption.Algorithm)
+	assert.True(t, util.Deref(managedEncryption.Enabled))
+	assert.Equal(t, "AES256", util.Deref(managedEncryption.Algorithm))
 	assert.NotEmpty(t, rawEncryptionAtRest)
 
 	// Second case: SSE-KMS encryption
 	encryptionAtRest, rawEncryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: mockBucket2, region: mockBucket2Region})
 	customerEncryption = encryptionAtRest.GetCustomerKeyEncryption()
 	assert.NoError(t, err)
-	assert.True(t, customerEncryption.Enabled)
-	assert.Equal(t, "", customerEncryption.Algorithm)
+	assert.True(t, util.Deref(customerEncryption.Enabled))
+	assert.Equal(t, "", util.Deref(customerEncryption.Algorithm))
 	assert.Equal(t, "arn:aws:kms:"+mockBucket2Region+":"+mockAccountID+":key/"+mockBucket2KeyId, customerEncryption.KeyUrl)
 	assert.NotEmpty(t, rawEncryptionAtRest)
 

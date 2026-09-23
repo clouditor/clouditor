@@ -257,6 +257,12 @@ components:
             type: object
             properties: {}
             description: ABAC is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        AccessControlTypePolicy:
+            type: object
+            properties:
+                authorizationTypes:
+                    type: string
+            description: AccessControlTypePolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         AccessRestriction:
             type: object
             properties:
@@ -362,6 +368,10 @@ components:
                         $ref: '#/components/schemas/Functionality'
                 parentId:
                     type: string
+                softwareAttestations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SoftwareAttestation'
             description: |-
                 Agnostic is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  Represents an agnostic architecture, which is not tied to a specific operating system.
@@ -459,6 +469,10 @@ components:
                         type: string
                 parentId:
                     type: string
+                softwareAttestations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SoftwareAttestation'
             description: |-
                 Application is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  This encapsulates the whole (source) code of an application.
@@ -496,10 +510,20 @@ components:
                     type: number
                     description: Percentage of completed reviews and updates of asset inventory entries.
                     format: float
+                reviewFrequency:
+                    type: integer
+                    format: int32
+                service:
+                    type: string
+                    description: Service contains the name of the service (e.g., Asset Management).
                 status:
-                    type: string
+                    type: array
+                    items:
+                        type: string
                 storageFacility:
-                    type: string
+                    type: array
+                    items:
+                        type: string
                 type:
                     type: string
                 updateDuration:
@@ -513,6 +537,7 @@ components:
                 AssetInventory is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  AuditInterval contains the frequency of asset inventory audits in month.
                  Class representing the inventory of assets.
+                 Service contains the name of the service (e.g., Asset Management).
                  Status contains the status of the asset (e.g., active, inactive).
                  StorageFacility contains the storage facility type of the asset (e.g., central, decentralized).
                  Type: contains the type of the asset, e.g., digital
@@ -544,6 +569,14 @@ components:
                 managedKeyEncryption:
                     $ref: '#/components/schemas/ManagedKeyEncryption'
             description: AtRestEncryption is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+        AuditLogMonitoringPolicy:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+            description: |-
+                AuditLogMonitoringPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents a policy section within a [PolicyDocument] defining requirements for the periodic monitoring and review of audit logs, including the identification of anomalies, security events, and unusual activity.
         Authenticate:
             type: object
             properties:
@@ -625,10 +658,19 @@ components:
             properties:
                 enabled:
                     type: boolean
+                frequency:
+                    type: integer
+                    format: int32
                 interval:
                     pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
                     type: string
                     description: The interval refers to the update interval in days.
+                recoveryFrequency:
+                    type: integer
+                    format: int32
+                redundant:
+                    type: boolean
+                    description: Indicates whether the resource is stored redundantly.
                 retentionPeriod:
                     pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
                     type: string
@@ -840,10 +882,6 @@ components:
                     items:
                         $ref: '#/components/schemas/Cipher'
             description: CipherSuite is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
-        CloudFeature:
-            type: object
-            properties: {}
-            description: CloudFeature is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         CodeRegion:
             type: object
             properties:
@@ -937,6 +975,24 @@ components:
                     type: number
                     format: float
             description: "CodeSignoff is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.\n Percentage: Percentage of commits with \"Signed-off-by\" lines. \n PercentageLastMonth: Percentage of commits with \"Signed-off-by\" lines in the last 30 days. \n Signoffs enable users to affirm that a commit complies with the rules and licensing governing a repository"
+        ComplianceAuditIntervalPolicy:
+            type: object
+            properties:
+                auditInterval:
+                    type: integer
+                    description: The time needed for an audit.
+                    format: int32
+                daysSinceLastAudit:
+                    type: integer
+                    description: The number of days elapsed since the last completed external/supervisory audit.
+                    format: int32
+            description: ComplianceAuditIntervalPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        ComplianceMethodologyPolicy:
+            type: object
+            properties:
+                methodology:
+                    type: string
+            description: ComplianceMethodologyPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Configuration:
             type: object
             properties:
@@ -1526,6 +1582,10 @@ components:
                         $ref: '#/components/schemas/Functionality'
                 parentId:
                     type: string
+                softwareAttestations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SoftwareAttestation'
             description: |-
                 Darwin is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  Represents a Darwin architecture, commonly found on macOS systems. macOS is a certified. [UNIX](https://www.opengroup.org/openbrand/register/apple.htm) and is (mostly) POSIX compatible.
@@ -1534,6 +1594,12 @@ components:
             properties:
                 isDefined:
                     type: boolean
+                restrictsDownloadAndExtraction:
+                    type: boolean
+                    description: Indicates whether the policy restricts downloading or extracting information from the organization's systems.
+                thirdPartyExchangeRulesDefined:
+                    type: boolean
+                    description: Indicates whether the policy specifically defines rules for information exchange with third parties.
             description: |-
                 DataConfidentialitySDNPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  Represents a policy section within a [PolicyDocument] describing data confidentiality requirements for Software Defined Networking (SDN). isDefined: whether this policy section is present and defined.
@@ -2321,6 +2387,8 @@ components:
                     $ref: '#/components/schemas/ContactPerson'
                 monitoringProcedure:
                     $ref: '#/components/schemas/MonitoringProcedure'
+                securityPolicyReview:
+                    $ref: '#/components/schemas/SecurityPolicyReview'
                 awarenessTraining:
                     $ref: '#/components/schemas/AwarenessTraining'
                 securityTraining:
@@ -2423,12 +2491,22 @@ components:
                     $ref: '#/components/schemas/Output'
                 padding:
                     $ref: '#/components/schemas/Padding'
+                accessControlTypePolicy:
+                    $ref: '#/components/schemas/AccessControlTypePolicy'
+                auditLogMonitoringPolicy:
+                    $ref: '#/components/schemas/AuditLogMonitoringPolicy'
+                complianceAuditIntervalPolicy:
+                    $ref: '#/components/schemas/ComplianceAuditIntervalPolicy'
+                complianceMethodologyPolicy:
+                    $ref: '#/components/schemas/ComplianceMethodologyPolicy'
                 dataConfidentialitySdnPolicy:
                     $ref: '#/components/schemas/DataConfidentialitySDNPolicy'
                 leastPrivilegePolicy:
                     $ref: '#/components/schemas/LeastPrivilegePolicy'
                 needToKnowPolicy:
                     $ref: '#/components/schemas/NeedToKnowPolicy'
+                networkThreatMitigationPolicy:
+                    $ref: '#/components/schemas/NetworkThreatMitigationPolicy'
                 sdnFunctionValidationPolicy:
                     $ref: '#/components/schemas/SDNFunctionValidationPolicy'
                 separationOfDutiesPolicy:
@@ -2443,6 +2521,8 @@ components:
                     $ref: '#/components/schemas/SchemaValidation'
                 securityAdvisoryFeed:
                     $ref: '#/components/schemas/SecurityAdvisoryFeed'
+                securityIncident:
+                    $ref: '#/components/schemas/SecurityIncident'
                 time:
                     $ref: '#/components/schemas/Time'
                 vulnerability:
@@ -2554,6 +2634,8 @@ components:
                     $ref: '#/components/schemas/ContactPerson'
                 monitoringProcedure:
                     $ref: '#/components/schemas/MonitoringProcedure'
+                securityPolicyReview:
+                    $ref: '#/components/schemas/SecurityPolicyReview'
                 awarenessTraining:
                     $ref: '#/components/schemas/AwarenessTraining'
                 securityTraining:
@@ -3493,12 +3575,18 @@ components:
         L3Firewall:
             type: object
             properties:
+                allowedSources:
+                    type: array
+                    items:
+                        type: string
                 enabled:
                     type: boolean
                 inbound:
                     type: boolean
                 restrictedPorts:
-                    type: string
+                    type: array
+                    items:
+                        type: string
             description: L3Firewall is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         LeastPrivilegePolicy:
             type: object
@@ -3543,6 +3631,10 @@ components:
                         type: string
                 parentId:
                     type: string
+                softwareAttestations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SoftwareAttestation'
                 vulnerabilities:
                     type: array
                     items:
@@ -4332,6 +4424,22 @@ components:
                 usageStatistics:
                     $ref: '#/components/schemas/UsageStatistics'
             description: NetworkSecurityGroup is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        NetworkThreatMitigationPolicy:
+            type: object
+            properties:
+                antispoofingRequired:
+                    type: boolean
+                    description: Indicates whether the policy explicitly requires antispoofing mechanisms on internet-facing routers.
+                coveredAttackTypes:
+                    type: array
+                    items:
+                        type: string
+                filteringRequired:
+                    type: boolean
+                    description: Indicates whether the policy explicitly requires network filtering mechanisms on internet-facing routers.
+            description: |-
+                NetworkThreatMitigationPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents a policy section within a [PolicyDocument] describing network threat mitigation mechanisms and attack coverage. coveredAttackTypes: the types of network-level attacks mitigated by implemented controls (e.g., DoS, DDoS).
         NoAuthentication:
             type: object
             properties:
@@ -4564,6 +4672,10 @@ components:
                         $ref: '#/components/schemas/Functionality'
                 parentId:
                     type: string
+                softwareAttestations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SoftwareAttestation'
             description: |-
                 POSIX is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  Represents a POSIX architecture, commonly found on Linux systems.
@@ -4598,6 +4710,10 @@ components:
                         $ref: '#/components/schemas/Functionality'
                 parentId:
                     type: string
+                softwareAttestations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SoftwareAttestation'
             description: |-
                 Package is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  Represents a grouping of (source) code into logical unit, for example a package for a namespace.
@@ -4686,12 +4802,16 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                accessControlTypePolicy:
+                    $ref: '#/components/schemas/AccessControlTypePolicy'
                 assetInventory:
                     $ref: '#/components/schemas/AssetInventory'
+                auditLogMonitoringPolicy:
+                    $ref: '#/components/schemas/AuditLogMonitoringPolicy'
                 backup:
                     $ref: '#/components/schemas/Backup'
-                cloudFeature:
-                    $ref: '#/components/schemas/CloudFeature'
+                complianceAuditIntervalPolicy:
+                    $ref: '#/components/schemas/ComplianceAuditIntervalPolicy'
                 cryptographicHashs:
                     type: array
                     items:
@@ -4710,8 +4830,12 @@ components:
                         $ref: '#/components/schemas/Governance'
                 leastPrivilegePolicy:
                     $ref: '#/components/schemas/LeastPrivilegePolicy'
+                monitoringProcedure:
+                    $ref: '#/components/schemas/MonitoringProcedure'
                 needToKnowPolicy:
                     $ref: '#/components/schemas/NeedToKnowPolicy'
+                networkThreatMitigationPolicy:
+                    $ref: '#/components/schemas/NetworkThreatMitigationPolicy'
                 parentId:
                     type: string
                 sdnFunctionValidationPolicy:
@@ -4724,6 +4848,8 @@ components:
                         $ref: '#/components/schemas/SecurityFeature'
                 securityIncident:
                     $ref: '#/components/schemas/SecurityIncident'
+                securityPolicyReview:
+                    $ref: '#/components/schemas/SecurityPolicyReview'
                 separationOfDutiesPolicy:
                     $ref: '#/components/schemas/SeparationOfDutiesPolicy'
             description: PolicyDocument is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -4882,7 +5008,7 @@ components:
         QPU:
             type: object
             properties:
-                oneQubitErrorRate:
+                oneQubitGateErrorRate:
                     type: number
                     format: float
                 spamErrorRate:
@@ -4896,7 +5022,7 @@ components:
                     type: number
                     description: Coherence times are a standard measure for the reliability of executing quantum circuits. T1 is the qubits's energy dephasing time (in seconds).
                     format: float
-                twoQubitErrorRate:
+                twoQubitGateErrorRate:
                     type: number
                     format: float
                 universalGateSetEnabled:
@@ -5763,6 +5889,8 @@ components:
                     $ref: '#/components/schemas/LocalAttestation'
                 remoteAttestation:
                     $ref: '#/components/schemas/RemoteAttestation'
+                softwareAttestation:
+                    $ref: '#/components/schemas/SoftwareAttestation'
                 automaticUpdates:
                     $ref: '#/components/schemas/AutomaticUpdates'
                 cryptographicHash:
@@ -5782,8 +5910,22 @@ components:
             description: SecurityFeature is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
         SecurityIncident:
             type: object
-            properties: {}
+            properties:
+                team:
+                    type: array
+                    items:
+                        type: string
             description: SecurityIncident is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        SecurityPolicyReview:
+            type: object
+            properties:
+                intervalMonths:
+                    type: integer
+                    description: The interval refers to the interval in months.
+                    format: int32
+            description: |-
+                SecurityPolicyReview is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents the review cadence of the organization's Information Security Policy. intervalMonths: how often the policy must be reviewed, in months.
         SecurityTraining:
             type: object
             properties:
@@ -5867,6 +6009,20 @@ components:
                     description: Maximum password rotation interval in months
                     format: int32
             description: SingleSignOn is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        SoftwareAttestation:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+                predicate:
+                    type: string
+                    description: 'predicate: Property being affirmed'
+                subject:
+                    type: array
+                    items:
+                        type: string
+                    description: 'subject: Subject of an assertion'
+            description: SoftwareAttestation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         SourceCodeFile:
             type: object
             properties:
@@ -5898,6 +6054,10 @@ components:
                         $ref: '#/components/schemas/Functionality'
                 parentId:
                     type: string
+                softwareAttestations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SoftwareAttestation'
             description: SourceCodeFile is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Status:
             type: object
@@ -6357,6 +6517,10 @@ components:
                         $ref: '#/components/schemas/Functionality'
                 parentId:
                     type: string
+                softwareAttestations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SoftwareAttestation'
             description: |-
                 Win32 is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  Represents a Win32 architecture, commonly found on Windows systems.

@@ -58,12 +58,12 @@ func getResourceLogging(log *string) *ontology.ResourceLogging {
 	// Check if logging service storage is available
 	if util.Deref(log) == "" {
 		return &ontology.ResourceLogging{
-			Enabled: false,
+			Enabled: util.Ref(false),
 		}
 	}
 
 	return &ontology.ResourceLogging{
-		Enabled:           true,
+		Enabled:           util.Ref(true),
 		LoggingServiceIds: []string{resourceID(log)},
 	}
 }
@@ -75,8 +75,8 @@ func getAtRestEncryption(enc *armmachinelearning.EncryptionProperty) (atRestEnc 
 		return &ontology.AtRestEncryption{
 			Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 				ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-					Enabled:   true,
-					Algorithm: AES256,
+					Enabled:   util.Ref(true),
+					Algorithm: util.Ref(AES256),
 				},
 			},
 		}
@@ -86,8 +86,8 @@ func getAtRestEncryption(enc *armmachinelearning.EncryptionProperty) (atRestEnc 
 		atRestEnc = &ontology.AtRestEncryption{
 			Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 				ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-					Enabled:   getEncryptionStatus(enc.Status),
-					Algorithm: AES256,
+					Enabled:   util.Ref(getEncryptionStatus(enc.Status)),
+					Algorithm: util.Ref(AES256),
 				},
 			},
 		}
@@ -95,8 +95,8 @@ func getAtRestEncryption(enc *armmachinelearning.EncryptionProperty) (atRestEnc 
 		atRestEnc = &ontology.AtRestEncryption{
 			Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 				CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
-					Enabled: getEncryptionStatus(enc.Status),
-					KeyUrl:  resourceID(enc.KeyVaultProperties.KeyVaultArmID),
+					Enabled: util.Ref(getEncryptionStatus(enc.Status)),
+					KeyUrl:  util.Ref(resourceID(enc.KeyVaultProperties.KeyVaultArmID)),
 				},
 			},
 		}

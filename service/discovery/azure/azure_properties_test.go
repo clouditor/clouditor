@@ -50,8 +50,8 @@ func Test_tlsCipherSuites(t *testing.T) {
 			},
 			want: []*ontology.CipherSuite{
 				{
-					SessionCipher: "AES-128-GCM",
-					MacAlgorithm:  "SHA-256",
+					SessionCipher: util.Ref("AES-128-GCM"),
+					MacAlgorithm:  util.Ref("SHA-256"),
 				},
 			},
 		},
@@ -62,10 +62,10 @@ func Test_tlsCipherSuites(t *testing.T) {
 			},
 			want: []*ontology.CipherSuite{
 				{
-					AuthenticationMechanism: "RSA",
-					KeyExchangeAlgorithm:    "ECDHE",
-					SessionCipher:           "AES-256-GCM",
-					MacAlgorithm:            "SHA-384",
+					AuthenticationMechanism: util.Ref("RSA"),
+					KeyExchangeAlgorithm:    util.Ref("ECDHE"),
+					SessionCipher:           util.Ref("AES-256-GCM"),
+					MacAlgorithm:            util.Ref("SHA-384"),
 				},
 			},
 		},
@@ -200,7 +200,7 @@ func Test_azureStorageDiscovery_discoverDiagnosticSettings(t *testing.T) {
 				resourceURI: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
 			},
 			want: &ontology.ActivityLogging{
-				Enabled:           true,
+				Enabled:           util.Ref(true),
 				LoggingServiceIds: []string{"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/insights-integration/providers/Microsoft.OperationalInsights/workspaces/workspace1"},
 			},
 			wantErr: assert.NoError,

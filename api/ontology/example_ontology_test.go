@@ -9,7 +9,7 @@ import (
 
 func ExampleMarshal() {
 	var vm = &VirtualMachine{
-		Id:   "my-id",
+		Id:   util.Ref("my-id"),
 		Name: "My VM",
 		BootLogging: &BootLogging{
 			Enabled: true,

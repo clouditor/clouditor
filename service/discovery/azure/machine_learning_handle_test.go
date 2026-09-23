@@ -94,20 +94,24 @@ func Test_handleMLWorkspace(t *testing.T) {
 				got1 := got.(*ontology.MachineLearningService)
 
 				want := &ontology.MachineLearningService{
-					Id:                         resourceID(util.Ref(id)),
-					Name:                       "mlWorkspace",
+					Id:                         util.Ref(resourceID(util.Ref(id))),
+
+					Name:                       util.Ref("mlWorkspace"),
 					CreationTime:               timestamppb.New(creationTime),
-					GeoLocation:                &ontology.GeoLocation{Region: "westeurope"},
+					GeoLocation:                &ontology.GeoLocation{Region: util.Ref("westeurope")},
+
 					Labels:                     map[string]string{"tag1": "tag1", "tag2": "tag2"},
 					ParentId:                   util.Ref(parent),
-					InternetAccessibleEndpoint: true,
+					InternetAccessibleEndpoint: util.Ref(true),
+
 					StorageIds:                 []string{storage},
 					ComputeIds:                 []string{},
 					Loggings: []*ontology.Logging{
 						{
 							Type: &ontology.Logging_ResourceLogging{
 								ResourceLogging: &ontology.ResourceLogging{
-									Enabled:           true,
+									Enabled:           util.Ref(true),
+
 									LoggingServiceIds: []string{resourceID(util.Ref(applicationInsights))},
 								},
 							},
@@ -116,7 +120,8 @@ func Test_handleMLWorkspace(t *testing.T) {
 				}
 
 				assert.NotEmpty(t, got1.Raw)
-				got1.Raw = ""
+				got1.Raw = util.Ref("")
+
 
 				return assert.Equal(t, want, got1)
 			},
@@ -179,17 +184,21 @@ func Test_azureDiscovery_handleMLCompute(t *testing.T) {
 				got1 := got.(*ontology.Container)
 
 				want := &ontology.Container{
-					Id:                  resourceID(util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace/computes/compute1")),
-					Name:                "compute1",
+					Id:                  util.Ref(resourceID(util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace/computes/compute1"))),
+
+					Name:                util.Ref("compute1"),
+
 					CreationTime:        timestamppb.New(time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)),
-					GeoLocation:         &ontology.GeoLocation{Region: "westeurope"},
+					GeoLocation:         &ontology.GeoLocation{Region: util.Ref("westeurope")},
+
 					Labels:              map[string]string{"tag1": "tag1", "tag2": "tag2"},
 					ParentId:            resourceIDPointer(util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace")),
 					NetworkInterfaceIds: []string{},
 				}
 
 				assert.NotEmpty(t, got1.Raw)
-				got1.Raw = ""
+				got1.Raw = util.Ref("")
+
 
 				return assert.Equal(t, want, got1)
 			},
@@ -216,10 +225,13 @@ func Test_azureDiscovery_handleMLCompute(t *testing.T) {
 				got1 := got.(*ontology.VirtualMachine)
 
 				want := &ontology.VirtualMachine{
-					Id:                  resourceID(util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace/computes/compute1")),
-					Name:                "compute1",
+					Id:                  util.Ref(resourceID(util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace/computes/compute1"))),
+
+					Name:                util.Ref("compute1"),
+
 					CreationTime:        timestamppb.New(time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)),
-					GeoLocation:         &ontology.GeoLocation{Region: "westeurope"},
+					GeoLocation:         &ontology.GeoLocation{Region: util.Ref("westeurope")},
+
 					Labels:              map[string]string{"tag1": "tag1", "tag2": "tag2"},
 					ParentId:            resourceIDPointer(util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace")),
 					NetworkInterfaceIds: []string{},
@@ -227,7 +239,8 @@ func Test_azureDiscovery_handleMLCompute(t *testing.T) {
 				}
 
 				assert.NotEmpty(t, got1.Raw)
-				got1.Raw = ""
+				got1.Raw = util.Ref("")
+
 
 				return assert.Equal(t, want, got1)
 			},

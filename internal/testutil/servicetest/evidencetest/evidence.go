@@ -51,8 +51,8 @@ var (
 		Resource: &ontology.Resource{
 			Type: &ontology.Resource_VirtualMachine{
 				VirtualMachine: &ontology.VirtualMachine{
-					Id:   testdata.MockVirtualMachineID1,
-					Name: testdata.MockVirtualMachineName1,
+					Id:   util.Ref(testdata.MockVirtualMachineID1),
+					Name: util.Ref(testdata.MockVirtualMachineName1),
 				},
 			},
 		},

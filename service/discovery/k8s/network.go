@@ -30,6 +30,7 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	corev1 "k8s.io/api/core/v1"
@@ -95,11 +96,11 @@ func (d *k8sNetworkDiscovery) handleService(service *corev1.Service) ontology.Is
 	}
 
 	return &ontology.GenericNetworkService{
-		Id:           getNetworkServiceResourceID(service),
-		Name:         service.Name,
+		Id:           util.Ref(getNetworkServiceResourceID(service)),
+		Name:         util.Ref(service.Name),
 		CreationTime: timestamppb.New(service.CreationTimestamp.Time),
 		Labels:       service.Labels,
-		Raw:          discovery.Raw(service),
+		Raw:          util.Ref(discovery.Raw(service)),
 		Ips:          service.Spec.ClusterIPs,
 		Ports:        ports,
 	}
@@ -111,11 +112,11 @@ func getNetworkServiceResourceID(service *corev1.Service) string {
 
 func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) ontology.IsResource {
 	lb := &ontology.LoadBalancer{
-		Id:           getLoadBalancerResourceID(ingress),
-		Name:         ingress.Name,
+		Id:           util.Ref(getLoadBalancerResourceID(ingress)),
+		Name:         util.Ref(ingress.Name),
 		CreationTime: timestamppb.New(ingress.CreationTimestamp.Time),
 		Labels:       ingress.Labels,
-		Raw:          discovery.Raw(ingress),
+		Raw:          util.Ref(discovery.Raw(ingress)),
 		Ports:        []uint32{80, 443},
 	}
 
@@ -132,13 +133,13 @@ func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) ontology.IsReso
 				url = fmt.Sprintf("https://%s", url)
 
 				te = &ontology.TransportEncryption{
-					Enforced: true,
-					Enabled:  true,
+					Enforced: util.Ref(true),
+					Enabled:  util.Ref(true),
 				}
 			}
 
 			http := &ontology.HttpEndpoint{
-				Url:                 url,
+				Url:                 util.Ref(url),
 				TransportEncryption: te,
 			}
 

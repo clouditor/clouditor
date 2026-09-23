@@ -37,15 +37,15 @@ import (
 // handleCluster creates a container resource based on the Clouditor Ontology
 func (d *openstackDiscovery) handleCluster(cluster *clusters.Cluster) (ontology.IsResource, error) {
 	r := &ontology.ContainerOrchestration{
-		Id:           cluster.UUID,
-		Name:         cluster.Name,
+		Id:           util.Ref(cluster.UUID),
+		Name:         util.Ref(cluster.Name),
 		CreationTime: timestamppb.New(cluster.CreatedAt),
 		GeoLocation: &ontology.GeoLocation{
-			Region: d.region,
+			Region: util.Ref(d.region),
 		},
 		Labels:   cluster.Labels,
 		ParentId: util.Ref(cluster.ProjectID),
-		Raw:      discovery.Raw(cluster),
+		Raw:      util.Ref(discovery.Raw(cluster)),
 	}
 
 	log.Infof("Adding cluster '%s", cluster.Name)

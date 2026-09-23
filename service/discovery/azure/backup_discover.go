@@ -109,14 +109,14 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 				// Store voc.Backup in backupMap
 				d.backupMap[dataSourceType].backup[util.Deref(instance.Properties.DataSourceInfo.ResourceID)] = []*ontology.Backup{
 					{
-						Enabled:         true,
+						Enabled:         util.Ref(true),
 						RetentionPeriod: retentionDuration(util.Deref(retention)),
 						StorageId:       instance.ID,
 						TransportEncryption: &ontology.TransportEncryption{
-							Enabled:         true,
-							Enforced:        true,
-							Protocol:        constants.TLS,
-							ProtocolVersion: 1.2, // https://learn.microsoft.com/en-us/azure/backup/transport-layer-security#why-enable-tls-12 (Last access: 04/27/2023)
+							Enabled:         util.Ref(true),
+							Enforced:        util.Ref(true),
+							Protocol:        util.Ref(constants.TLS),
+							ProtocolVersion: util.Ref(float32(1.2)), // https://learn.microsoft.com/en-us/azure/backup/transport-layer-security#why-enable-tls-12 (Last access: 04/27/2023))
 						},
 					},
 				}

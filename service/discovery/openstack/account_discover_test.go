@@ -110,11 +110,11 @@ func Test_openstackDiscovery_discoverProjects(t *testing.T) {
 				assert.Equal(t, 2, len(got))
 
 				want := &ontology.ResourceGroup{
-					Id:          "1234",
-					Name:        "Red Team",
-					Description: "The team that is red",
+					Id:          util.Ref("1234"),
+					Name:        util.Ref("Red Team"),
+					Description: util.Ref("The team that is red"),
 					GeoLocation: &ontology.GeoLocation{
-						Region: "test region",
+						Region: util.Ref("test region"),
 					},
 					Labels: map[string]string{
 						"Red":  "",
@@ -126,7 +126,7 @@ func Test_openstackDiscovery_discoverProjects(t *testing.T) {
 				got0, ok := got[0].(*ontology.ResourceGroup)
 				assert.True(t, ok)
 				assert.NotEmpty(t, got0.GetRaw())
-				got0.Raw = ""
+				got0.Raw = util.Ref("")
 				return assert.Equal(t, want, got0)
 			},
 			wantErr: assert.NoError,
@@ -194,16 +194,16 @@ func Test_openstackDiscovery_discoverDomain(t *testing.T) {
 				assert.Equal(t, 2, len(got))
 
 				want := &ontology.Account{
-					Id:          "2844b2a08be147a08ef58317d6471f1f",
-					Name:        "domain one",
-					Description: "some description",
+					Id:          util.Ref("2844b2a08be147a08ef58317d6471f1f"),
+					Name:        util.Ref("domain one"),
+					Description: util.Ref("some description"),
 				}
 
 				got0, ok := got[0].(*ontology.Account)
 				assert.True(t, ok)
 
 				assert.NotEmpty(t, got0.GetRaw())
-				got0.Raw = ""
+				got0.Raw = util.Ref("")
 				return assert.Equal(t, want, got0)
 			},
 			wantErr: assert.NoError,

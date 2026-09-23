@@ -30,6 +30,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
@@ -51,8 +52,10 @@ func TestService_AssessEvidenceWaitFor(t *testing.T) {
 		Evidence: &evidence.Evidence{
 			Id: "11111111-1111-1111-1111-111111111111",
 			Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
-				Id:              "my-resource",
-				Name:            "my resource",
+				Id:              util.Ref("my-resource"),
+
+				Name:            util.Ref("my resource"),
+
 				BlockStorageIds: []string{"my-third-resource"},
 			}),
 			TargetOfEvaluationId:           testdata.MockTargetOfEvaluationID1,
@@ -70,8 +73,10 @@ func TestService_AssessEvidenceWaitFor(t *testing.T) {
 		Evidence: &evidence.Evidence{
 			Id: "22222222-2222-2222-2222-222222222222",
 			Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
-				Id:              "my-other-resource",
-				Name:            "my other resource",
+				Id:              util.Ref("my-other-resource"),
+
+				Name:            util.Ref("my other resource"),
+
 				BlockStorageIds: []string{"my-third-resource"},
 			}),
 			TargetOfEvaluationId:           testdata.MockTargetOfEvaluationID1,
@@ -90,8 +95,10 @@ func TestService_AssessEvidenceWaitFor(t *testing.T) {
 		Evidence: &evidence.Evidence{
 			Id: "33333333-3333-3333-3333-333333333333",
 			Resource: prototest.NewProtobufResource(t, &ontology.BlockStorage{
-				Id:   "my-third-resource",
-				Name: "my third resource",
+				Id:   util.Ref("my-third-resource"),
+
+				Name: util.Ref("my third resource"),
+
 			}),
 			TargetOfEvaluationId:           testdata.MockTargetOfEvaluationID1,
 			ToolId:                         "my-tool",

@@ -29,21 +29,21 @@ func (m *TestDiscoverer) List() ([]ontology.IsResource, error) {
 	case 2:
 		return []ontology.IsResource{
 			&ontology.ObjectStorage{
-				Id:       "some-id-" + rand,
-				Name:     "some-name",
+				Id:       util.Ref("some-id-" + rand),
+				Name:     util.Ref("some-name"),
 				ParentId: util.Ref("some-storage-account-id"),
-				Raw:      "{}",
+				Raw:      util.Ref("{}"),
 			},
 			&ontology.ObjectStorageService{
-				Id:         "some-storage-account-id-" + rand,
-				Name:       "some-storage-account-name",
+				Id:         util.Ref("some-storage-account-id-" + rand),
+				Name:       util.Ref("some-storage-account-name"),
 				StorageIds: []string{"some-id"},
-				Raw:        "{}",
+				Raw:        util.Ref("{}"),
 				HttpEndpoint: &ontology.HttpEndpoint{
 					TransportEncryption: &ontology.TransportEncryption{
-						Enforced:        false,
-						Enabled:         true,
-						ProtocolVersion: 1.2,
+						Enforced:        util.Ref(false),
+						Enabled:         util.Ref(true),
+						ProtocolVersion: util.Ref(float32(1.2)),
 					},
 				},
 			},

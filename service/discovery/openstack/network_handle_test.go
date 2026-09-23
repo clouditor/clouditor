@@ -95,11 +95,14 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 			},
 			want: func(t *testing.T, got ontology.IsResource) bool {
 				want := &ontology.NetworkInterface{
-					Id:           testdata.MockOpenstackNetworkID1,
-					Name:         testdata.MockOpenstackNetworkName1,
+					Id:           util.Ref(testdata.MockOpenstackNetworkID1),
+
+					Name:         util.Ref(testdata.MockOpenstackNetworkName1),
+
 					CreationTime: timestamppb.New(testTime),
 					GeoLocation: &ontology.GeoLocation{
-						Region: "test region",
+						Region: util.Ref("test region"),
+
 					},
 					ParentId: util.Ref(testdata.MockOpenstackServerTenantID),
 				}
@@ -108,7 +111,8 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 				assert.True(t, ok)
 
 				assert.NotEmpty(t, gotNew.GetRaw())
-				gotNew.Raw = ""
+				gotNew.Raw = util.Ref("")
+
 				return assert.Equal(t, want, gotNew)
 			},
 			wantErr: assert.NoError,
@@ -133,11 +137,14 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 			},
 			want: func(t *testing.T, got ontology.IsResource) bool {
 				want := &ontology.NetworkInterface{
-					Id:           testdata.MockOpenstackNetworkID1,
-					Name:         testdata.MockOpenstackNetworkName1,
+					Id:           util.Ref(testdata.MockOpenstackNetworkID1),
+
+					Name:         util.Ref(testdata.MockOpenstackNetworkName1),
+
 					CreationTime: timestamppb.New(testTime),
 					GeoLocation: &ontology.GeoLocation{
-						Region: "test region",
+						Region: util.Ref("test region"),
+
 					},
 					ParentId: util.Ref(testdata.MockOpenstackServerTenantID),
 				}
@@ -146,7 +153,8 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 				assert.True(t, ok)
 
 				assert.NotEmpty(t, gotNew.GetRaw())
-				gotNew.Raw = ""
+				gotNew.Raw = util.Ref("")
+
 				return assert.Equal(t, want, gotNew)
 			},
 			wantErr: assert.NoError,
