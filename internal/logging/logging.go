@@ -115,9 +115,9 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 	// Check, if our payload has an ID field
 	idreq, ok := payload.(interface{ GetId() string })
 	if ok && idreq.GetId() != "" {
-		buffer.WriteString(fmt.Sprintf("%s with ID '%s' %s", name, idreq.GetId(), reqType.String()))
+		fmt.Fprintf(&buffer, "%s with ID '%s' %s", name, idreq.GetId(), reqType.String())
 	} else {
-		buffer.WriteString(fmt.Sprintf("%s %s", name, reqType.String()))
+		fmt.Fprintf(&buffer, "%s %s", name, reqType.String())
 	}
 
 	// Check, if it is a target of evaluation request. In this case we can append the
@@ -125,12 +125,12 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 	// that, if the payload type is not a target of evaluation itself.
 	ctreq, ok := req.(api.TargetOfEvaluationRequest)
 	if name != "TargetOfEvaluation" && ok {
-		buffer.WriteString(fmt.Sprintf(" for Target of Evaluation '%s'", ctreq.GetTargetOfEvaluationId()))
+		fmt.Fprintf(&buffer, " for Target of Evaluation '%s'", ctreq.GetTargetOfEvaluationId())
 	}
 
 	toolreq, ok := payload.(interface{ GetToolId() string })
 	if ok && toolreq.GetToolId() != "" {
-		buffer.WriteString(fmt.Sprintf(" and Tool ID '%s'", toolreq.GetToolId()))
+		fmt.Fprintf(&buffer, " and Tool ID '%s'", toolreq.GetToolId())
 	}
 
 	// If params is not empty, the elements are joined and added to the message

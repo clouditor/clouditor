@@ -49,23 +49,23 @@ func (d *csafDiscovery) handleProvider(lpmd *csaf.LoadedProviderMetadata) (resou
 	}
 
 	serviceMetadata := &ontology.ServiceMetadataDocument{
-		Filetype: "JSON",
-		Id:       lpmd.URL,
-		Name:     filepath.Base(lpmd.URL),
+		Filetype: new("JSON"),
+		Id:       new(lpmd.URL),
+		Name:     new(filepath.Base(lpmd.URL)),
 		DataLocation: &ontology.DataLocation{
 			Type: &ontology.DataLocation_RemoteDataLocation{
 				RemoteDataLocation: &ontology.RemoteDataLocation{
-					Path:                lpmd.URL,
+					Path:                new(lpmd.URL),
 					TransportEncryption: d.providerTransportEncryption(lpmd.URL),
 				},
 			},
 		},
 		ValidatedBy: &ontology.SchemaValidation{
-			Format:    "CSAF provider metadata",
-			SchemaUrl: "https://docs.oasis-open.org/csaf/csaf/v2.0/provider_json_schema.json",
+			Format:    new("CSAF provider metadata"),
+			SchemaUrl: new("https://docs.oasis-open.org/csaf/csaf/v2.0/provider_json_schema.json"),
 			Errors:    providerValidationErrors(lpmd.Messages),
 		},
-		Raw: discovery.Raw(pmd),
+		Raw: new(discovery.Raw(pmd)),
 	}
 
 	// TODO(oxisto): find a sensible ID instead of this one
@@ -81,19 +81,19 @@ func (d *csafDiscovery) handleProvider(lpmd *csaf.LoadedProviderMetadata) (resou
 	}
 
 	var provider = &ontology.SecurityAdvisoryService{
-		Id:                         serviceId,
-		InternetAccessibleEndpoint: true,
-		Name:                       util.Deref(pmd.Publisher.Name),
+		Id:                         new(serviceId),
+		InternetAccessibleEndpoint: new(true),
+		Name:                       new(util.Deref(pmd.Publisher.Name)),
 		// TODO: actually put document in correct feed
 		SecurityAdvisoryFeeds: []*ontology.SecurityAdvisoryFeed{
 			{
 				SecurityAdvisoryDocumentIds: getIDsOf(securityAdvisoryDocuments),
 			},
 		},
-		ServiceMetadataDocumentId: util.Ref(serviceMetadata.Id),
+		ServiceMetadataDocumentId: serviceMetadata.Id,
 		TransportEncryption:       serviceMetadata.DataLocation.GetRemoteDataLocation().GetTransportEncryption(),
 		KeyIds:                    getIDsOf(keys),
-		Raw:                       discovery.Raw(lpmd),
+		Raw:                       new(discovery.Raw(lpmd)),
 	}
 
 	resources = append(resources, serviceMetadata, provider)

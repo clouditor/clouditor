@@ -39,17 +39,17 @@ import (
 // handleDomain returns a [ontology.Account] out of an existing [domains.Domain].
 func (d *openstackDiscovery) handleDomain(domain *domains.Domain) (ontology.IsResource, error) {
 	r := &ontology.Account{
-		Id:           domain.ID,
-		Name:         domain.Name,
-		Description:  domain.Description,
+		Id:           new(domain.ID),
+		Name:         new(domain.Name),
+		Description:  new(domain.Description),
 		CreationTime: nil, // domain does not have a creation date
 		GeoLocation:  nil, // domain is global
 		Labels:       nil, // domain does not have labels,
 		ParentId:     nil, // domain is the top-most item and have no parent,
-		Raw:          discovery.Raw(domain),
+		Raw:          new(discovery.Raw(domain)),
 	}
 
-	log.Infof("Adding domain '%s", r.Name)
+	log.Infof("Adding domain '%s'", util.Deref(r.Name))
 
 	return r, nil
 }
@@ -57,20 +57,20 @@ func (d *openstackDiscovery) handleDomain(domain *domains.Domain) (ontology.IsRe
 // handleProject returns a [ontology.ResourceGroup] out of an existing [projects.Project].
 func (d *openstackDiscovery) handleProject(project *projects.Project) (ontology.IsResource, error) {
 	r := &ontology.ResourceGroup{
-		Id:          project.ID,
-		Name:        project.Name,
-		Description: project.Description,
+		Id:          new(project.ID),
+		Name:        new(project.Name),
+		Description: new(project.Description),
 
 		CreationTime: nil, // project does not have a creation date
 		GeoLocation: &ontology.GeoLocation{
-			Region: d.region,
+			Region: new(d.region),
 		},
-		Labels:   labels(util.Ref(project.Tags)),
-		ParentId: util.Ref(project.ParentID),
-		Raw:      discovery.Raw(project),
+		Labels:   labels(new(project.Tags)),
+		ParentId: new(project.ParentID),
+		Raw:      new(discovery.Raw(project)),
 	}
 
-	log.Infof("Adding project '%s", r.Name)
+	log.Infof("Adding project '%s'", util.Deref(r.Name))
 
 	return r, nil
 }
@@ -88,10 +88,10 @@ func (d *openstackDiscovery) addProjectIfMissing(projectID, projectName, domainI
 	}
 
 	r := &ontology.ResourceGroup{
-		Id:       projectID,
-		Name:     projectName,
-		ParentId: util.Ref(domainID),
-		Raw:      discovery.Raw("Project/Tenant information manually added."),
+		Id:       new(projectID),
+		Name:     new(projectName),
+		ParentId: new(domainID),
+		Raw:      new(discovery.Raw("Project/Tenant information manually added.")),
 	}
 
 	// Add project to the list of projects

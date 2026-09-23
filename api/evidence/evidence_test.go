@@ -32,7 +32,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/prototest"
-	"clouditor.io/clouditor/v2/internal/util"
 	anypb "google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -58,13 +57,13 @@ func TestEvidence_GetOntologyResource(t *testing.T) {
 				Resource: &ontology.Resource{
 					Type: &ontology.Resource_VirtualMachine{
 						VirtualMachine: &ontology.VirtualMachine{
-							Id: "vm-1",
+							Id: new("vm-1"),
 						},
 					},
 				},
 			},
 			want: &ontology.VirtualMachine{
-				Id: "vm-1",
+				Id: new("vm-1"),
 			},
 		},
 		{
@@ -119,12 +118,12 @@ func TestResource_ToOntologyResource(t *testing.T) {
 				TargetOfEvaluationId: "target1",
 				ResourceType:         "VirtualMachine",
 				Properties: prototest.NewAny(t, &ontology.VirtualMachine{
-					Id:              "vm1",
+					Id:              new("vm1"),
 					BlockStorageIds: []string{"bs1"},
 				}),
 			},
 			want: &ontology.VirtualMachine{
-				Id:              "vm1",
+				Id:              new("vm1"),
 				BlockStorageIds: []string{"bs1"},
 			},
 			wantErr: assert.Nil[error],
@@ -176,12 +175,12 @@ func TestToEvidenceResource(t *testing.T) {
 			name: "happy path",
 			args: args{
 				resource: &ontology.BlockStorage{
-					Id:   "my-block-storage",
-					Name: "My Block Storage",
+					Id:   new("my-block-storage"),
+					Name: new("My Block Storage"),
 					Backups: []*ontology.Backup{
 						{
-							Enabled:   true,
-							StorageId: util.Ref("my-offsite-backup-id"),
+							Enabled:   new(true),
+							StorageId: new("my-offsite-backup-id"),
 						},
 					},
 				},
@@ -194,12 +193,12 @@ func TestToEvidenceResource(t *testing.T) {
 				ToolId:               testdata.MockEvidenceToolID1,
 				ResourceType:         "BlockStorage,Storage,Infrastructure,Resource",
 				Properties: prototest.NewAny(t, &ontology.BlockStorage{
-					Id:   "my-block-storage",
-					Name: "My Block Storage",
+					Id:   new("my-block-storage"),
+					Name: new("My Block Storage"),
 					Backups: []*ontology.Backup{
 						{
-							Enabled:   true,
-							StorageId: util.Ref("my-offsite-backup-id"),
+							Enabled:   new(true),
+							StorageId: new("my-offsite-backup-id"),
 						},
 					},
 				}),

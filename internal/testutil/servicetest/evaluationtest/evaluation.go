@@ -5,7 +5,6 @@ import (
 
 	"clouditor.io/clouditor/v2/api/evaluation"
 	"clouditor.io/clouditor/v2/internal/testdata"
-	"clouditor.io/clouditor/v2/internal/util"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -30,7 +29,7 @@ var (
 		ControlCatalogId:     testdata.MockCatalogID1,
 		Status:               evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
 		ControlId:            testdata.MockSubControlID11,
-		ParentControlId:      util.Ref(testdata.MockControlID1),
+		ParentControlId:      new(testdata.MockControlID1),
 		AssessmentResultIds:  []string{},
 	}
 	MockEvaluationResult22 = &evaluation.EvaluationResult{
@@ -42,7 +41,7 @@ var (
 		ControlCatalogId:     testdata.MockCatalogID1,
 		Status:               evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
 		ControlId:            testdata.MockSubControlID11,
-		ParentControlId:      util.Ref(testdata.MockControlID1),
+		ParentControlId:      new(testdata.MockControlID1),
 		AssessmentResultIds:  []string{},
 	}
 	MockEvaluationResult3 = &evaluation.EvaluationResult{
@@ -54,7 +53,7 @@ var (
 		ControlCatalogId:     testdata.MockCatalogID1,
 		Status:               evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT,
 		ControlId:            testdata.MockSubControlID12,
-		ParentControlId:      util.Ref(testdata.MockControlID1),
+		ParentControlId:      new(testdata.MockControlID1),
 		AssessmentResultIds:  []string{},
 	}
 	MockEvaluationResult4 = &evaluation.EvaluationResult{
@@ -77,7 +76,7 @@ var (
 		ControlCatalogId:     testdata.MockCatalogID1,
 		Status:               evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
 		ControlId:            testdata.MockSubControlID21,
-		ParentControlId:      util.Ref(testdata.MockControlID2),
+		ParentControlId:      new(testdata.MockControlID2),
 		AssessmentResultIds:  []string{},
 	}
 	MockEvaluationResult6 = &evaluation.EvaluationResult{
@@ -89,7 +88,7 @@ var (
 		ControlCatalogId:     testdata.MockCatalogID1,
 		Status:               evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
 		ControlId:            testdata.MockSubControlID22,
-		ParentControlId:      util.Ref(testdata.MockControlID2),
+		ParentControlId:      new(testdata.MockControlID2),
 		AssessmentResultIds:  []string{},
 	}
 

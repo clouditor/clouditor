@@ -49,9 +49,9 @@ func (d *openstackDiscovery) discoverDomains() (list []ontology.IsResource, err 
 		}
 
 		r := &ontology.Account{
-			Id:   d.domain.domainID,
-			Name: d.domain.domainName,
-			Raw:  discovery.Raw("Domain information manually added."),
+			Id:   new(d.domain.domainID),
+			Name: new(d.domain.domainName),
+			Raw:  new(discovery.Raw("Domain information manually added.")),
 		}
 
 		list = append(list, r)

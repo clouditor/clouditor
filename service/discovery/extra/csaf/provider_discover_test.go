@@ -26,7 +26,8 @@ func Test_getIDsOf(t *testing.T) {
 			args: args{
 				documents: []ontology.IsResource{
 					&ontology.SecurityAdvisoryDocument{
-						Id: "https://xx.yy.zz/XXX",
+						Id: new("https://xx.yy.zz/XXX"),
+
 					},
 				},
 			},

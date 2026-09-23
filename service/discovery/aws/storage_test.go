@@ -94,7 +94,6 @@ func (mockS3APINew) GetBucketEncryption(_ context.Context,
 						ApplyServerSideEncryptionByDefault: &types.ServerSideEncryptionByDefault{
 							SSEAlgorithm: "AES256",
 						},
-						BucketKeyEnabled: util.Ref(false),
 					},
 				},
 			},
@@ -109,7 +108,6 @@ func (mockS3APINew) GetBucketEncryption(_ context.Context,
 							SSEAlgorithm:   "aws:kms",
 							KMSMasterKeyID: aws.String(mockBucket2KeyId),
 						},
-						BucketKeyEnabled: util.Ref(false),
 					},
 				},
 			},
@@ -359,17 +357,17 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	encryptionAtRest, rawEncryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: mockBucket1})
 	assert.NoError(t, err)
 	managedEncryption = encryptionAtRest.GetManagedKeyEncryption()
-	assert.True(t, managedEncryption.Enabled)
-	assert.Equal(t, "AES256", managedEncryption.Algorithm)
+	assert.True(t, util.Deref(managedEncryption.Enabled))
+	assert.Equal(t, "AES256", util.Deref(managedEncryption.Algorithm))
 	assert.NotEmpty(t, rawEncryptionAtRest)
 
 	// Second case: SSE-KMS encryption
 	encryptionAtRest, rawEncryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: mockBucket2, region: mockBucket2Region})
 	customerEncryption = encryptionAtRest.GetCustomerKeyEncryption()
 	assert.NoError(t, err)
-	assert.True(t, customerEncryption.Enabled)
-	assert.Equal(t, "", customerEncryption.Algorithm)
-	assert.Equal(t, "arn:aws:kms:"+mockBucket2Region+":"+mockAccountID+":key/"+mockBucket2KeyId, customerEncryption.KeyUrl)
+	assert.True(t, util.Deref(customerEncryption.Enabled))
+	assert.Equal(t, "", util.Deref(customerEncryption.Algorithm))
+	assert.Equal(t, "arn:aws:kms:"+mockBucket2Region+":"+mockAccountID+":key/"+mockBucket2KeyId, util.Deref(customerEncryption.KeyUrl))
 	assert.NotEmpty(t, rawEncryptionAtRest)
 
 	// Third case: No encryption
@@ -408,9 +406,9 @@ func TestAwsS3Discovery_getTransportEncryption(t *testing.T) {
 	// Case 2: Enforced
 	encryptionAtTransit, rawBucketPolicy, err := d.getTransportEncryption(mockBucket1)
 	assert.NoError(t, err)
-	assert.True(t, encryptionAtTransit.Enabled)
-	assert.Equal(t, float32(1.2), encryptionAtTransit.ProtocolVersion)
-	assert.True(t, encryptionAtTransit.Enforced)
+	assert.True(t, util.Deref(encryptionAtTransit.Enabled))
+	assert.Equal(t, float32(1.2), util.Deref(encryptionAtTransit.ProtocolVersion))
+	assert.True(t, util.Deref(encryptionAtTransit.Enforced))
 	assert.NotEmpty(t, rawBucketPolicy)
 
 	// Case 3: JSON failure
@@ -422,17 +420,17 @@ func TestAwsS3Discovery_getTransportEncryption(t *testing.T) {
 	// Case 4: Not enforced
 	encryptionAtTransit, rawBucketPolicy, err = d.getTransportEncryption(mockBucket3)
 	assert.NoError(t, err)
-	assert.True(t, encryptionAtTransit.Enabled)
-	assert.Equal(t, float32(1.2), encryptionAtTransit.ProtocolVersion)
-	assert.False(t, encryptionAtTransit.Enforced)
+	assert.True(t, util.Deref(encryptionAtTransit.Enabled))
+	assert.Equal(t, float32(1.2), util.Deref(encryptionAtTransit.ProtocolVersion))
+	assert.False(t, util.Deref(encryptionAtTransit.Enforced))
 	assert.NotEmpty(t, rawBucketPolicy)
 
 	// Case 5: No bucket policy == not enforced
 	encryptionAtTransit, rawBucketPolicy, err = d.getTransportEncryption("")
 	assert.NoError(t, err)
-	assert.True(t, encryptionAtTransit.Enabled)
-	assert.Equal(t, float32(1.2), encryptionAtTransit.ProtocolVersion)
-	assert.False(t, encryptionAtTransit.Enforced)
+	assert.True(t, util.Deref(encryptionAtTransit.Enabled))
+	assert.Equal(t, float32(1.2), util.Deref(encryptionAtTransit.ProtocolVersion))
+	assert.False(t, util.Deref(encryptionAtTransit.Enforced))
 	assert.Empty(t, rawBucketPolicy)
 }
 
@@ -501,7 +499,7 @@ func TestAwsS3Discovery_List(t *testing.T) {
 	assert.Equal(t, expectedResourceNames[0], resources[0].GetName())
 	log.Println("Testing type of resource", 1)
 	assert.True(t, ontology.HasType(resources[0], "ObjectStorage"))
-	expectedRaw := "{\"**s3.GetBucketEncryptionOutput\":[{\"ServerSideEncryptionConfiguration\":{\"Rules\":[{\"ApplyServerSideEncryptionByDefault\":{\"SSEAlgorithm\":\"AES256\",\"KMSMasterKeyID\":null},\"BucketKeyEnabled\":false}]},\"ResultMetadata\":{}}],\"**s3.GetBucketPolicyOutput\":[{\"Policy\":\"{\\\"id\\\":\\\"Mock BucketPolicy ID 1234\\\",\\\"Version\\\":\\\"2012-10-17\\\",\\\"Statement\\\":[{\\\"Action\\\":\\\"s3:*\\\",\\\"Effect\\\":\\\"Deny\\\",\\\"Resource\\\":\\\"*\\\",\\\"Condition\\\":{\\\"aws:SecureTransport\\\":false}}]}\",\"ResultMetadata\":{}}],\"*[]interface {}\":[[{\"BucketArn\":null,\"BucketRegion\":null,\"CreationDate\":\"2012-11-01T22:08:41Z\",\"Name\":\"mockbucket1\"},{\"LocationConstraint\":\"eu-central-1\",\"ResultMetadata\":{}}]],\"*aws.bucket\":[{}]}"
+	expectedRaw := "{\"**s3.GetBucketEncryptionOutput\":[{\"ServerSideEncryptionConfiguration\":{\"Rules\":[{\"ApplyServerSideEncryptionByDefault\":{\"SSEAlgorithm\":\"AES256\",\"KMSMasterKeyID\":null},\"BucketKeyEnabled\":null}]},\"ResultMetadata\":{}}],\"**s3.GetBucketPolicyOutput\":[{\"Policy\":\"{\\\"id\\\":\\\"Mock BucketPolicy ID 1234\\\",\\\"Version\\\":\\\"2012-10-17\\\",\\\"Statement\\\":[{\\\"Action\\\":\\\"s3:*\\\",\\\"Effect\\\":\\\"Deny\\\",\\\"Resource\\\":\\\"*\\\",\\\"Condition\\\":{\\\"aws:SecureTransport\\\":false}}]}\",\"ResultMetadata\":{}}],\"*[]interface {}\":[[{\"BucketArn\":null,\"BucketRegion\":null,\"CreationDate\":\"2012-11-01T22:08:41Z\",\"Name\":\"mockbucket1\"},{\"LocationConstraint\":\"eu-central-1\",\"ResultMetadata\":{}}]],\"*aws.bucket\":[{}]}"
 	assert.Equal(t, expectedRaw, resources[0].GetRaw())
 
 	// Check second element: voc.ObjectStorageService

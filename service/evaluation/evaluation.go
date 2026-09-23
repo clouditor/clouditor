@@ -515,9 +515,9 @@ func (svc *Service) evaluateCatalog(ctx context.Context, auditScope *orchestrato
 		Filter: &evaluation.ListEvaluationResultsRequest_Filter{
 			TargetOfEvaluationId: &auditScope.TargetOfEvaluationId,
 			CatalogId:            &auditScope.CatalogId,
-			ValidManualOnly:      util.Ref(true),
+			ValidManualOnly:      new(true),
 		},
-		LatestByControlId: util.Ref(true),
+		LatestByControlId: new(true),
 	},
 		func(ctx context.Context, req *evaluation.ListEvaluationResultsRequest, opts ...grpc.CallOption) (*evaluation.ListEvaluationResultsResponse, error) {
 			return svc.ListEvaluationResults(ctx, req)
@@ -731,7 +731,7 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, auditScope *orchestrat
 				TargetOfEvaluationId: &auditScope.TargetOfEvaluationId,
 				MetricIds:            getMetricIds(metrics),
 			},
-			LatestByResourceId: util.Ref(true),
+			LatestByResourceId: new(true),
 		}, svc.orchestrator.Client.ListAssessmentResults, func(res *orchestrator.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
 			return res.Results
 		})

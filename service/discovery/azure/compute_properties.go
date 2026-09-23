@@ -62,8 +62,8 @@ func (d *azureDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (en
 		enc = &ontology.AtRestEncryption{
 			Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 				ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-					Algorithm: "AES256",
-					Enabled:   true,
+					Algorithm: new("AES256"),
+					Enabled:   new(true),
 				},
 			},
 		}
@@ -78,9 +78,9 @@ func (d *azureDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (en
 		enc = &ontology.AtRestEncryption{
 			Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 				CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
-					Algorithm: "", // TODO(all): TBD
-					Enabled:   true,
-					KeyUrl:    keyUrl,
+					Algorithm: new(""), // TODO(all): TBD
+					Enabled:   new(true),
+					KeyUrl:    new(keyUrl),
 				},
 			},
 		}
@@ -105,7 +105,7 @@ func (d *azureDiscovery) keyURL(diskEncryptionSetID string) (string, *armcompute
 		return "", nil, err
 	}
 
-	keyURL := kv.DiskEncryptionSet.Properties.ActiveKey.KeyURL
+	keyURL := kv.Properties.ActiveKey.KeyURL
 
 	if keyURL == nil {
 		return "", nil, fmt.Errorf("could not get keyURL")
@@ -156,7 +156,7 @@ func (d *azureDiscovery) getResourceLoggingWebApps(site *armappservice.Site) (rl
 		return
 	}
 	if appSettings.Properties["APPLICATIONINSIGHTS_CONNECTION_STRING"] != nil {
-		rl.Enabled = true
+		rl.Enabled = new(true)
 		// TODO: Get id of logging service and add it (currently not possible via app settings): rl.LoggingService
 
 	}
@@ -191,16 +191,16 @@ func getTransportEncryption(siteProperties *armappservice.SiteProperties, config
 	// Create transportEncryption voc object
 	if tlsVersion != 0 {
 		enc = &ontology.TransportEncryption{
-			Enforced:        util.Deref(siteProperties.HTTPSOnly),
-			Protocol:        constants.TLS,
-			ProtocolVersion: tlsVersion,
+			Enforced:        new(util.Deref(siteProperties.HTTPSOnly)),
+			Protocol:        new(constants.TLS),
+			ProtocolVersion: new(tlsVersion),
 			CipherSuites:    tlsCipherSuites(string(util.Deref(config.Properties.MinTLSCipherSuite))), // MinTLSCipherSuite is a new property and currently not filled from Azure side
-			Enabled:         true,
+			Enabled:         new(true),
 		}
 	} else {
 		enc = &ontology.TransportEncryption{
-			Enforced: util.Deref(siteProperties.HTTPSOnly),
-			Enabled:  false,
+			Enforced: new(util.Deref(siteProperties.HTTPSOnly)),
+			Enabled:  new(false),
 		}
 	}
 
@@ -231,7 +231,7 @@ func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *ontology
 	if vm.Properties.OSProfile.LinuxConfiguration != nil &&
 		vm.Properties.OSProfile.LinuxConfiguration.PatchSettings != nil {
 		if util.Deref(vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform {
-			automaticUpdates.Enabled = true
+			automaticUpdates.Enabled = new(true)
 			automaticUpdates.Interval = durationpb.New(Duration30Days)
 			return
 		}
@@ -242,7 +242,7 @@ func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *ontology
 		vm.Properties.OSProfile.WindowsConfiguration.PatchSettings != nil {
 		if util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates ||
 			util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates {
-			automaticUpdates.Enabled = true
+			automaticUpdates.Enabled = new(true)
 			automaticUpdates.Interval = durationpb.New(Duration30Days)
 			return
 

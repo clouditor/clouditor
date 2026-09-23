@@ -64,7 +64,7 @@ func NewTrustedProvider(
 		feeds: feeds,
 	}
 	p.Server = httptest.NewTLSServer(mux)
-	p.Server.EnableHTTP2 = true
+	p.EnableHTTP2 = true
 
 	// Create a new OpenPGP key pair
 	key, _ := openpgp.NewEntity("test", "test", "test", nil)
@@ -88,7 +88,7 @@ func NewTrustedProvider(
 		fp := hex.EncodeToString(key.PrimaryKey.Fingerprint)
 		p.PMD.PGPKeys = append(p.PMD.PGPKeys, csaf.PGPKey{
 			Fingerprint: csaf.Fingerprint(fp),
-			URL:         util.Ref("https://" + p.Domain() + "/.well-known/csaf/opengpg/" + fp + ".asc"),
+			URL:         new("https://" + p.Domain() + "/.well-known/csaf/opengpg/" + fp + ".asc"),
 		})
 		mux.HandleFunc("/.well-known/csaf/opengpg/"+fp+".asc", p.handleKey)
 	}
@@ -146,25 +146,27 @@ func (p *TrustedProvider) handleFeed(w http.ResponseWriter, r *http.Request) {
 
 	file := filepath.Base(r.URL.Path)
 
-	if file == "index.txt" {
+	switch file {
+	case "index.txt":
 		p.idxw.handleIndexTxt(w, r, advisories, p)
-	} else if file == "changes.csv" {
+	case "changes.csv":
 		p.idxw.handleChangesCsv(w, r, advisories, p)
-	} else {
+	default:
 		ext := filepath.Ext(file)
 		var id string
 		var handler func(http.ResponseWriter, *http.Request, *csaf.Advisory, *TrustedProvider)
 
-		if ext == ".sha256" {
+		switch ext {
+		case ".sha256":
 			id = strings.TrimSuffix(file, ".json"+filepath.Ext(file))
 			handler = p.idxw.handleSHA256
-		} else if ext == ".sha512" {
+		case ".sha512":
 			id = strings.TrimSuffix(file, ".json"+filepath.Ext(file))
 			handler = p.idxw.handleSHA512
-		} else if ext == ".asc" {
+		case ".asc":
 			id = strings.TrimSuffix(file, ".json"+filepath.Ext(file))
 			handler = p.idxw.handleSignature
-		} else {
+		default:
 			id = strings.TrimSuffix(file, filepath.Ext(file))
 			handler = p.idxw.handleAdvisory
 		}

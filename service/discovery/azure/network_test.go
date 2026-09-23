@@ -30,7 +30,6 @@ import (
 
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 )
@@ -64,18 +63,23 @@ func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
 			},
 			want: []ontology.IsResource{
 				&ontology.NetworkInterface{
-					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/networkinterfaces/iface1",
-					Name: "iface1",
+					Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/networkinterfaces/iface1"),
+
+					Name: new("iface1"),
+
 					GeoLocation: &ontology.GeoLocation{
-						Region: "eastus",
+						Region: new("eastus"),
+
 					},
 					Labels:   map[string]string{},
-					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-					Raw:      "{\"*armnetwork.Interface\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1\",\"location\":\"eastus\",\"name\":\"iface1\",\"properties\":{\"networkSecurityGroup\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\"}}}]}",
+					ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:      new("{\"*armnetwork.Interface\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1\",\"location\":\"eastus\",\"name\":\"iface1\",\"properties\":{\"networkSecurityGroup\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\"}}}]}"),
+
 					AccessRestriction: &ontology.AccessRestriction{
 						Type: &ontology.AccessRestriction_L3Firewall{
 							L3Firewall: &ontology.L3Firewall{
-								Enabled: true,
+								Enabled: new(true),
+
 							},
 						},
 					},
@@ -90,18 +94,23 @@ func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
 			},
 			want: []ontology.IsResource{
 				&ontology.NetworkInterface{
-					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/networkinterfaces/iface1",
-					Name: "iface1",
+					Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/networkinterfaces/iface1"),
+
+					Name: new("iface1"),
+
 					GeoLocation: &ontology.GeoLocation{
-						Region: "eastus",
+						Region: new("eastus"),
+
 					},
 					Labels:   map[string]string{},
-					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-					Raw:      "{\"*armnetwork.Interface\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1\",\"location\":\"eastus\",\"name\":\"iface1\",\"properties\":{\"networkSecurityGroup\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\"}}}]}",
+					ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:      new("{\"*armnetwork.Interface\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1\",\"location\":\"eastus\",\"name\":\"iface1\",\"properties\":{\"networkSecurityGroup\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\"}}}]}"),
+
 					AccessRestriction: &ontology.AccessRestriction{
 						Type: &ontology.AccessRestriction_L3Firewall{
 							L3Firewall: &ontology.L3Firewall{
-								Enabled: true,
+								Enabled: new(true),
+
 							},
 						},
 					},
@@ -152,40 +161,51 @@ func Test_azureNetworkDiscovery_discoverLoadBalancer(t *testing.T) {
 			},
 			want: []ontology.IsResource{
 				&ontology.LoadBalancer{
-					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/loadbalancers/lb1",
-					Name: "lb1",
+					Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/loadbalancers/lb1"),
+
+					Name: new("lb1"),
+
 					GeoLocation: &ontology.GeoLocation{
-						Region: "eastus",
+						Region: new("eastus"),
+
 					},
 					Labels:        map[string]string{},
-					Raw:           "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1\",\"location\":\"eastus\",\"name\":\"lb1\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"publicIPAddress\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"ipAddress\":\"111.222.333.444\"}}}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}",
-					ParentId:      util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:           new("{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1\",\"location\":\"eastus\",\"name\":\"lb1\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"publicIPAddress\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"ipAddress\":\"111.222.333.444\"}}}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}"),
+
+					ParentId:      new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 					Ips:           []string{"111.222.333.444"},
 					Ports:         []uint32{1234, 5678},
 					HttpEndpoints: []*ontology.HttpEndpoint{},
 				},
 				&ontology.LoadBalancer{
-					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/loadbalancers/lb2",
-					Name: "lb2",
+					Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/loadbalancers/lb2"),
+
+					Name: new("lb2"),
+
 					GeoLocation: &ontology.GeoLocation{
-						Region: "eastus",
+						Region: new("eastus"),
+
 					},
 					Labels:        map[string]string{},
-					Raw:           "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2\",\"location\":\"eastus\",\"name\":\"lb2\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}",
-					ParentId:      util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:           new("{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2\",\"location\":\"eastus\",\"name\":\"lb2\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}"),
+
+					ParentId:      new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 					Ips:           []string{},
 					Ports:         []uint32{1234, 5678},
 					HttpEndpoints: []*ontology.HttpEndpoint{},
 				},
 				&ontology.LoadBalancer{
-					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/loadbalancers/lb3",
-					Name: "lb3",
+					Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/loadbalancers/lb3"),
+
+					Name: new("lb3"),
 					GeoLocation: &ontology.GeoLocation{
-						Region: "eastus",
+						Region: new("eastus"),
+
 					},
 					Labels:        map[string]string{},
-					Raw:           "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3\",\"location\":\"eastus\",\"name\":\"lb3\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"publicIPAddress\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d\"}}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}",
-					ParentId:      util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:           new("{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3\",\"location\":\"eastus\",\"name\":\"lb3\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"publicIPAddress\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d\"}}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}"),
+
+					ParentId:      new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 					Ips:           []string{},
 					Ports:         []uint32{1234, 5678},
 					HttpEndpoints: []*ontology.HttpEndpoint{},
@@ -234,7 +254,7 @@ func Test_publicIPAddressFromLoadBalancer(t *testing.T) {
 				lb: &armnetwork.LoadBalancer{
 					ID:       &id,
 					Name:     &name,
-					Location: util.Ref("eastus"),
+					Location: new("eastus"),
 					Properties: &armnetwork.LoadBalancerPropertiesFormat{
 						FrontendIPConfigurations: nil,
 					},
@@ -248,7 +268,7 @@ func Test_publicIPAddressFromLoadBalancer(t *testing.T) {
 				lb: &armnetwork.LoadBalancer{
 					ID:       &id,
 					Name:     &name,
-					Location: util.Ref("eastus"),
+					Location: new("eastus"),
 					Properties: &armnetwork.LoadBalancerPropertiesFormat{
 						FrontendIPConfigurations: []*armnetwork.FrontendIPConfiguration{
 							{
@@ -268,7 +288,7 @@ func Test_publicIPAddressFromLoadBalancer(t *testing.T) {
 				lb: &armnetwork.LoadBalancer{
 					ID:       &id,
 					Name:     &name,
-					Location: util.Ref("eastus"),
+					Location: new("eastus"),
 					Properties: &armnetwork.LoadBalancerPropertiesFormat{
 						FrontendIPConfigurations: []*armnetwork.FrontendIPConfiguration{
 							{
@@ -292,14 +312,14 @@ func Test_publicIPAddressFromLoadBalancer(t *testing.T) {
 				lb: &armnetwork.LoadBalancer{
 					ID:       &id,
 					Name:     &name,
-					Location: util.Ref("eastus"),
+					Location: new("eastus"),
 					Properties: &armnetwork.LoadBalancerPropertiesFormat{
 						FrontendIPConfigurations: []*armnetwork.FrontendIPConfiguration{
 							{
 								Properties: &armnetwork.FrontendIPConfigurationPropertiesFormat{
 									PublicIPAddress: &armnetwork.PublicIPAddress{
 										Properties: &armnetwork.PublicIPAddressPropertiesFormat{
-											IPAddress: util.Ref(""),
+											IPAddress: new(""),
 										},
 									},
 								},
@@ -316,16 +336,16 @@ func Test_publicIPAddressFromLoadBalancer(t *testing.T) {
 				lb: &armnetwork.LoadBalancer{
 					ID:       &id,
 					Name:     &name,
-					Location: util.Ref("eastus"),
+					Location: new("eastus"),
 					Properties: &armnetwork.LoadBalancerPropertiesFormat{
 						FrontendIPConfigurations: []*armnetwork.FrontendIPConfiguration{
 							{
 								Properties: &armnetwork.FrontendIPConfigurationPropertiesFormat{
 									PublicIPAddress: &armnetwork.PublicIPAddress{
-										ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c"),
-										Name: util.Ref("publicName"),
+										ID:   new("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c"),
+										Name: new("publicName"),
 										Properties: &armnetwork.PublicIPAddressPropertiesFormat{
-											IPAddress: util.Ref("111.222.333.444"),
+											IPAddress: new("111.222.333.444"),
 										},
 									},
 								},
@@ -373,18 +393,23 @@ func Test_azureNetworkDiscovery_discoverApplicationGateway(t *testing.T) {
 			},
 			want: []ontology.IsResource{
 				&ontology.LoadBalancer{
-					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/applicationgateways/appgw1",
-					Name: "appgw1",
+					Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/applicationgateways/appgw1"),
+
+					Name: new("appgw1"),
+
 					GeoLocation: &ontology.GeoLocation{
-						Region: "eastus",
+						Region: new("eastus"),
+
 					},
 					Labels:   map[string]string{},
-					Raw:      "{\"*armnetwork.ApplicationGateway\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1\",\"location\":\"eastus\",\"name\":\"appgw1\",\"properties\":{\"webApplicationFirewallConfiguration\":{\"enabled\":true}}}]}",
-					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:      new("{\"*armnetwork.ApplicationGateway\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1\",\"location\":\"eastus\",\"name\":\"appgw1\",\"properties\":{\"webApplicationFirewallConfiguration\":{\"enabled\":true}}}]}"),
+
+					ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 					AccessRestriction: &ontology.AccessRestriction{
 						Type: &ontology.AccessRestriction_WebApplicationFirewall{
 							WebApplicationFirewall: &ontology.WebApplicationFirewall{
-								Enabled: true,
+								Enabled: new(true),
+
 							},
 						},
 					},
@@ -435,7 +460,7 @@ func Test_nsgFirewallEnabled(t *testing.T) {
 				ni: &armnetwork.Interface{
 					Properties: &armnetwork.InterfacePropertiesFormat{
 						NetworkSecurityGroup: &armnetwork.SecurityGroup{
-							ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/false"),
+							ID: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/false"),
 						},
 					},
 				},
@@ -451,7 +476,7 @@ func Test_nsgFirewallEnabled(t *testing.T) {
 				ni: &armnetwork.Interface{
 					Properties: &armnetwork.InterfacePropertiesFormat{
 						NetworkSecurityGroup: &armnetwork.SecurityGroup{
-							ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/nsg1"),
+							ID: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/nsg1"),
 						},
 					},
 				},
@@ -521,12 +546,12 @@ func Test_azureDiscovery_handleLoadBalancer(t *testing.T) {
 			},
 			args: args{
 				lb: &armnetwork.LoadBalancer{
-					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1"),
-					Name:     util.Ref("lb1"),
-					Location: util.Ref("eastus"),
+					ID:       new("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1"),
+					Name:     new("lb1"),
+					Location: new("eastus"),
 					Tags: map[string]*string{
-						"tag1": util.Ref("value1"),
-						"tag2": util.Ref("value2"),
+						"tag1": new("value1"),
+						"tag2": new("value2"),
 					},
 					Properties: &armnetwork.LoadBalancerPropertiesFormat{
 						LoadBalancingRules: []*armnetwork.LoadBalancingRule{},
@@ -534,17 +559,21 @@ func Test_azureDiscovery_handleLoadBalancer(t *testing.T) {
 				},
 			},
 			want: &ontology.LoadBalancer{
-				Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/loadbalancers/lb1",
-				Name: "lb1",
+				Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/loadbalancers/lb1"),
+
+				Name: new("lb1"),
+
 				GeoLocation: &ontology.GeoLocation{
-					Region: "eastus",
+					Region: new("eastus"),
+
 				},
 				Labels: map[string]string{
 					"tag1": "value1",
 					"tag2": "value2",
 				},
-				Raw:           "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1\",\"location\":\"eastus\",\"name\":\"lb1\",\"properties\":{\"loadBalancingRules\":[]},\"tags\":{\"tag1\":\"value1\",\"tag2\":\"value2\"}}]}",
-				ParentId:      util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+				Raw:           new("{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1\",\"location\":\"eastus\",\"name\":\"lb1\",\"properties\":{\"loadBalancingRules\":[]},\"tags\":{\"tag1\":\"value1\",\"tag2\":\"value2\"}}]}"),
+
+				ParentId:      new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 				Ips:           []string{},
 				Ports:         nil,
 				HttpEndpoints: nil,
@@ -581,29 +610,34 @@ func Test_azureDiscovery_handleApplicationGateway(t *testing.T) {
 			},
 			args: args{
 				ag: &armnetwork.ApplicationGateway{
-					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1"),
-					Name:     util.Ref("appgw1"),
-					Location: util.Ref("eastus"),
+					ID:       new("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1"),
+					Name:     new("appgw1"),
+					Location: new("eastus"),
 					Properties: &armnetwork.ApplicationGatewayPropertiesFormat{
 						WebApplicationFirewallConfiguration: &armnetwork.ApplicationGatewayWebApplicationFirewallConfiguration{
-							Enabled: util.Ref(true),
+							Enabled: new(true),
 						},
 					},
 				},
 			},
 			want: &ontology.LoadBalancer{
-				Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/applicationgateways/appgw1",
-				Name: "appgw1",
+				Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/applicationgateways/appgw1"),
+
+				Name: new("appgw1"),
+
 				GeoLocation: &ontology.GeoLocation{
-					Region: "eastus",
+					Region: new("eastus"),
+
 				},
 				Labels:   map[string]string{},
-				Raw:      "{\"*armnetwork.ApplicationGateway\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1\",\"location\":\"eastus\",\"name\":\"appgw1\",\"properties\":{\"webApplicationFirewallConfiguration\":{\"enabled\":true}}}]}",
-				ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+				Raw:      new("{\"*armnetwork.ApplicationGateway\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1\",\"location\":\"eastus\",\"name\":\"appgw1\",\"properties\":{\"webApplicationFirewallConfiguration\":{\"enabled\":true}}}]}"),
+
+				ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 				AccessRestriction: &ontology.AccessRestriction{
 					Type: &ontology.AccessRestriction_WebApplicationFirewall{
 						WebApplicationFirewall: &ontology.WebApplicationFirewall{
-							Enabled: true,
+							Enabled: new(true),
+
 						},
 					},
 				},
@@ -648,7 +682,7 @@ func Test_loadBalancerPorts(t *testing.T) {
 						LoadBalancingRules: []*armnetwork.LoadBalancingRule{
 							{
 								Properties: &armnetwork.LoadBalancingRulePropertiesFormat{
-									FrontendPort: util.Ref(int32(99)),
+									FrontendPort: new(int32(99)),
 								},
 							},
 						},
@@ -686,30 +720,35 @@ func Test_azureDiscovery_handleNetworkInterfaces(t *testing.T) {
 			},
 			args: args{
 				ni: &armnetwork.Interface{
-					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1"),
-					Name:     util.Ref("iface1"),
-					Location: util.Ref("eastus"),
+					ID:       new("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1"),
+					Name:     new("iface1"),
+					Location: new("eastus"),
 					Properties: &armnetwork.InterfacePropertiesFormat{
 						NetworkSecurityGroup: &armnetwork.SecurityGroup{
-							ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1"),
-							Location: util.Ref("eastus"),
+							ID:       new("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1"),
+							Location: new("eastus"),
 						},
 					},
 				},
 			},
 			want: &ontology.NetworkInterface{
-				Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/networkinterfaces/iface1",
-				Name: "iface1",
+				Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/networkinterfaces/iface1"),
+
+				Name: new("iface1"),
+
 				GeoLocation: &ontology.GeoLocation{
-					Region: "eastus",
+					Region: new("eastus"),
+
 				},
 				Labels:   map[string]string{},
-				Raw:      "{\"*armnetwork.Interface\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1\",\"location\":\"eastus\",\"name\":\"iface1\",\"properties\":{\"networkSecurityGroup\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\"}}}]}",
-				ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+				Raw:      new("{\"*armnetwork.Interface\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1\",\"location\":\"eastus\",\"name\":\"iface1\",\"properties\":{\"networkSecurityGroup\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\"}}}]}"),
+
+				ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 				AccessRestriction: &ontology.AccessRestriction{
 					Type: &ontology.AccessRestriction_L3Firewall{
 						L3Firewall: &ontology.L3Firewall{
-							Enabled: true,
+							Enabled: new(true),
+
 						},
 					},
 				},

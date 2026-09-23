@@ -101,24 +101,24 @@ func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) ontology.IsResou
 	// storageos - StorageOS volume (deprecated in v1.22)
 	if vs.AWSElasticBlockStore != nil || vs.AzureDisk != nil || vs.Cinder != nil || vs.FlexVolume != nil || vs.CephFS != nil || vs.Glusterfs != nil || vs.GCEPersistentDisk != nil || vs.RBD != nil || vs.StorageOS != nil || vs.FC != nil || vs.PortworxVolume != nil || vs.ISCSI != nil || vs.Flocker != nil {
 		v := &ontology.BlockStorage{
-			Id:               string(pv.UID),
-			Name:             pv.Name,
+			Id:               new(string(pv.UID)),
+			Name:             new(pv.Name),
 			CreationTime:     timestamppb.New(pv.CreationTimestamp.Time),
 			Labels:           pv.Labels,
 			AtRestEncryption: &ontology.AtRestEncryption{},
-			Raw:              discovery.Raw(pv),
+			Raw:              new(discovery.Raw(pv)),
 		}
 
 		return v
 	} else if vs.AzureFile != nil || vs.NFS != nil || vs.HostPath != nil {
 		// TODO(oxisto): Does this even make sense? The volume is always a block storage, but the underlying storage might be a file storage?
 		v := &ontology.FileStorage{
-			Id:               string(pv.UID),
-			Name:             pv.Name,
+			Id:               new(string(pv.UID)),
+			Name:             new(pv.Name),
 			CreationTime:     timestamppb.New(pv.CreationTimestamp.Time),
 			Labels:           pv.Labels,
 			AtRestEncryption: &ontology.AtRestEncryption{},
-			Raw:              discovery.Raw(pv),
+			Raw:              new(discovery.Raw(pv)),
 		}
 
 		return v

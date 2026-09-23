@@ -28,7 +28,6 @@ package openstack
 import (
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
-	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/gophercloud/gophercloud/v2/openstack/containerinfra/v1/clusters"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -37,18 +36,18 @@ import (
 // handleCluster creates a container resource based on the Clouditor Ontology
 func (d *openstackDiscovery) handleCluster(cluster *clusters.Cluster) (ontology.IsResource, error) {
 	r := &ontology.ContainerOrchestration{
-		Id:           cluster.UUID,
-		Name:         cluster.Name,
+		Id:           new(cluster.UUID),
+		Name:         new(cluster.Name),
 		CreationTime: timestamppb.New(cluster.CreatedAt),
 		GeoLocation: &ontology.GeoLocation{
-			Region: d.region,
+			Region: new(d.region),
 		},
 		Labels:   cluster.Labels,
-		ParentId: util.Ref(cluster.ProjectID),
-		Raw:      discovery.Raw(cluster),
+		ParentId: new(cluster.ProjectID),
+		Raw:      new(discovery.Raw(cluster)),
 	}
 
-	log.Infof("Adding cluster '%s", cluster.Name)
+	log.Infof("Adding cluster '%s'", cluster.Name)
 
 	return r, nil
 }

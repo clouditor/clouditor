@@ -29,7 +29,6 @@ import (
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/v2/internal/util"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -47,7 +46,7 @@ func TestRuntime_VersionString(t *testing.T) {
 		{
 			name: "release",
 			fields: fields{
-				ReleaseVersion: util.Ref("v2.0.0"),
+				ReleaseVersion: new("v2.0.0"),
 			},
 			want: "v2.0.0",
 		},

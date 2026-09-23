@@ -49,7 +49,7 @@ func TestService_CreateCatalog(t *testing.T) {
 	mockCatalogWithoutMetadata := orchestratortest.NewCatalog()
 	mockCatalogWithMetadata := orchestratortest.NewCatalog()
 	mockCatalogWithMetadata.Metadata = &orchestrator.Catalog_Metadata{
-		Color: util.Ref("#007FC3"),
+		Color: new("#007FC3"),
 	}
 	mockCatalogWithoutID := orchestratortest.NewCatalog()
 	mockCatalogWithoutID.Id = ""
@@ -461,9 +461,9 @@ func TestService_GetControl(t *testing.T) {
 					CategoryName:                   testdata.MockCategoryName,
 					CategoryCatalogId:              testdata.MockCatalogID1,
 					AssuranceLevel:                 &testdata.AssuranceLevelBasic,
-					ParentControlId:                util.Ref(testdata.MockControlID1),
-					ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID1),
-					ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
+					ParentControlId:                new(testdata.MockControlID1),
+					ParentControlCategoryCatalogId: new(testdata.MockCatalogID1),
+					ParentControlCategoryName:      new(testdata.MockCategoryName),
 				}},
 			},
 			wantErr: assert.NoError,

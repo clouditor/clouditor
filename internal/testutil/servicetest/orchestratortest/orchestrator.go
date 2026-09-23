@@ -6,7 +6,6 @@ import (
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/testdata"
-	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -188,7 +187,7 @@ var (
 			MetricId:             testdata.MockMetricID1,
 			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 		},
-		ToolId:           util.Ref(assessment.AssessmentToolId),
+		ToolId:           new(assessment.AssessmentToolId),
 		HistoryUpdatedAt: timestamppb.New(time.Unix(1, 0)),
 		History: []*assessment.Record{
 			{
@@ -214,7 +213,7 @@ var (
 			MetricId:             testdata.MockMetricID1,
 			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 		},
-		ToolId:           util.Ref(assessment.AssessmentToolId),
+		ToolId:           new(assessment.AssessmentToolId),
 		HistoryUpdatedAt: timestamppb.New(time.Unix(1, 0)),
 		History: []*assessment.Record{
 			{
@@ -240,7 +239,7 @@ var (
 			MetricId:             testdata.MockMetricID2,
 			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 		},
-		ToolId:           util.Ref(assessment.AssessmentToolId),
+		ToolId:           new(assessment.AssessmentToolId),
 		HistoryUpdatedAt: timestamppb.New(time.Unix(1, 0)),
 		History: []*assessment.Record{
 			{
@@ -266,7 +265,7 @@ var (
 			MetricId:             testdata.MockMetricID2,
 			TargetOfEvaluationId: testdata.MockTargetOfEvaluationID2,
 		},
-		ToolId:           util.Ref(testdata.MockAssessmentResultToolID),
+		ToolId:           new(testdata.MockAssessmentResultToolID),
 		HistoryUpdatedAt: timestamppb.New(time.Unix(1, 0)),
 		History: []*assessment.Record{
 			{
@@ -291,9 +290,9 @@ var (
 				CategoryCatalogId:              testdata.MockCatalogID1,
 				Description:                    testdata.MockSubControlDescription,
 				AssuranceLevel:                 &testdata.AssuranceLevelBasic,
-				ParentControlId:                util.Ref(testdata.MockControlID1),
-				ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
-				ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID1),
+				ParentControlId:                new(testdata.MockControlID1),
+				ParentControlCategoryName:      new(testdata.MockCategoryName),
+				ParentControlCategoryCatalogId: new(testdata.MockCatalogID1),
 				Metrics: []*assessment.Metric{{
 					Id:          testdata.MockMetricID1,
 					Name:        testdata.MockMetricName1,
@@ -310,9 +309,9 @@ var (
 		CategoryCatalogId:              testdata.MockCatalogID1,
 		Description:                    testdata.MockSubControlDescription,
 		AssuranceLevel:                 &testdata.AssuranceLevelBasic,
-		ParentControlId:                util.Ref(testdata.MockControlID1),
-		ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
-		ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID1),
+		ParentControlId:                new(testdata.MockControlID1),
+		ParentControlCategoryName:      new(testdata.MockCategoryName),
+		ParentControlCategoryCatalogId: new(testdata.MockCatalogID1),
 		Metrics: []*assessment.Metric{{
 			Id:          testdata.MockMetricID1,
 			Name:        testdata.MockMetricName1,
@@ -336,9 +335,9 @@ var (
 				CategoryCatalogId:              testdata.MockCatalogID1,
 				Description:                    testdata.MockControlDescription,
 				AssuranceLevel:                 &testdata.AssuranceLevelBasic,
-				ParentControlId:                util.Ref(testdata.MockControlID2),
-				ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
-				ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID1),
+				ParentControlId:                new(testdata.MockControlID2),
+				ParentControlCategoryName:      new(testdata.MockCategoryName),
+				ParentControlCategoryCatalogId: new(testdata.MockCatalogID1),
 				Metrics: []*assessment.Metric{{
 					Id:          testdata.MockMetricID1,
 					Name:        testdata.MockMetricName2,
@@ -364,9 +363,9 @@ var (
 				CategoryCatalogId:              testdata.MockCatalogID1,
 				Description:                    testdata.MockControlDescription,
 				AssuranceLevel:                 &testdata.AssuranceLevelSubstantial,
-				ParentControlId:                util.Ref(testdata.MockControlID3),
-				ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
-				ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID1),
+				ParentControlId:                new(testdata.MockControlID3),
+				ParentControlCategoryName:      new(testdata.MockCategoryName),
+				ParentControlCategoryCatalogId: new(testdata.MockCatalogID1),
 			}},
 	}
 	MockControl4 = &orchestrator.Control{

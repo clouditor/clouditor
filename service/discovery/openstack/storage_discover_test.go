@@ -33,7 +33,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest/openstacktest"
-	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/testhelper"
 	"github.com/gophercloud/gophercloud/v2/testhelper/client"
@@ -96,14 +95,18 @@ func Test_openstackDiscovery_discoverBlockStorage(t *testing.T) {
 				assert.NoError(t, err)
 
 				want := &ontology.BlockStorage{
-					Id:           "289da7f8-6440-407c-9fb4-7db01ec49164",
-					Name:         "vol-001",
-					Description:  "",
+					Id:           new("289da7f8-6440-407c-9fb4-7db01ec49164"),
+
+					Name:         new("vol-001"),
+
+					Description:  new(""),
+
 					CreationTime: timestamppb.New(t1),
 					GeoLocation: &ontology.GeoLocation{
-						Region: "test region",
+						Region: new("test region"),
+
 					},
-					ParentId: util.Ref("83ec2e3b-4321-422b-8706-a84185f52a0a"),
+					ParentId: new("83ec2e3b-4321-422b-8706-a84185f52a0a"),
 					Labels:   map[string]string{},
 				}
 
@@ -111,7 +114,8 @@ func Test_openstackDiscovery_discoverBlockStorage(t *testing.T) {
 				assert.True(t, ok)
 
 				assert.NotEmpty(t, got0.GetRaw())
-				got0.Raw = ""
+				got0.Raw = nil
+
 				return assert.Equal(t, want, got0)
 			},
 			wantErr: assert.NoError,

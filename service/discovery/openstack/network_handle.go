@@ -45,16 +45,16 @@ func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) 
 	}
 
 	r := &ontology.NetworkInterface{
-		Id:           network.ID,
-		Name:         network.Name,
-		Description:  network.Description,
+		Id:           new(network.ID),
+		Name:         new(network.Name),
+		Description:  new(network.Description),
 		CreationTime: timestamppb.New(network.CreatedAt),
 		GeoLocation: &ontology.GeoLocation{
-			Region: d.region,
+			Region: new(d.region),
 		},
-		Labels:   labels(util.Ref(network.Tags)),
-		ParentId: util.Ref(projectId),
-		Raw:      discovery.Raw(network),
+		Labels:   labels(new(network.Tags)),
+		ParentId: new(projectId),
+		Raw:      new(discovery.Raw(network)),
 	}
 
 	// Create project resource for the parentId if not available
@@ -63,7 +63,7 @@ func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) 
 		return nil, fmt.Errorf("could not handle project for network interface '%s': %w", network.Name, err)
 	}
 
-	log.Infof("Adding network interface '%s", r.Name)
+	log.Infof("Adding network interface '%s'", util.Deref(r.Name))
 
 	return r, nil
 }

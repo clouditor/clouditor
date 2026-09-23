@@ -139,8 +139,8 @@ func Test_k8sComputeDiscovery_List(t *testing.T) {
 				}
 				// Create expected ontology.Container
 				expectedContainer := &ontology.Container{
-					Id:     podID,
-					Name:   podName,
+					Id:     new(podID),
+					Name:   new(podName),
 					Labels: podLabel,
 					NetworkInterfaceIds: []string{
 						podNamespace,
@@ -158,8 +158,8 @@ func Test_k8sComputeDiscovery_List(t *testing.T) {
 
 				// Create expected ontology.BlockStorage
 				expectedVolume := &ontology.BlockStorage{
-					Id:               volumeName,
-					Name:             volumeName,
+					Id:               new(volumeName),
+					Name:             new(volumeName),
 					CreationTime:     nil,
 					AtRestEncryption: &ontology.AtRestEncryption{},
 				}
@@ -218,10 +218,10 @@ func Test_k8sComputeDiscovery_handlePodVolume(t *testing.T) {
 			},
 			want: []ontology.IsResource{
 				&ontology.FileStorage{
-					Id:               "test",
-					Name:             "test",
+					Id:               new("test"),
+					Name:             new("test"),
 					AtRestEncryption: &ontology.AtRestEncryption{},
-					Raw:              `{"*v1.Pod":[{"metadata":{"creationTimestamp":null},"spec":{"volumes":[{"name":"test","hostPath":{"path":"/tmp"}}],"containers":null},"status":{}}],"*v1.Volume":[{"name":"test","hostPath":{"path":"/tmp"}}]}`,
+					Raw:              new(`{"*v1.Pod":[{"metadata":{"creationTimestamp":null},"spec":{"volumes":[{"name":"test","hostPath":{"path":"/tmp"}}],"containers":null},"status":{}}],"*v1.Volume":[{"name":"test","hostPath":{"path":"/tmp"}}]}`),
 				},
 			},
 		},
