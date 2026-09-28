@@ -116,7 +116,7 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 							Enabled:         new(true),
 							Enforced:        new(true),
 							Protocol:        new(constants.TLS),
-							ProtocolVersion: new(float32(1.2)), // https://learn.microsoft.com/en-us/azure/backup/transport-layer-security#why-enable-tls-12 (Last access: 04/27/2023))
+							ProtocolVersion: new(float32(1.2)), // https://learn.microsoft.com/en-us/azure/backup/transport-layer-security#why-enable-tls-12 (Last access: 04/27/2023)
 						},
 					},
 				}

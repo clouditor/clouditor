@@ -48,13 +48,12 @@ func TestRelated(t *testing.T) {
 			name: "happy path",
 			args: args{
 				r: &ObjectStorage{
-					Id:       new("some-id"),
+					Id: new("some-id"),
 
-					Name:     new("some-name"),
+					Name: new("some-name"),
 
 					ParentId: new("some-storage-account-id"),
 					Raw:      new("{}"),
-
 				},
 			},
 			want: []Relationship{
@@ -68,13 +67,12 @@ func TestRelated(t *testing.T) {
 			name: "happy path with plural",
 			args: args{
 				r: &Application{
-					Id:         new("some-id"),
+					Id: new("some-id"),
 
-					Name:       new("some-name"),
+					Name: new("some-name"),
 
 					LibraryIds: []string{"some-library"},
 					Raw:        new("{}"),
-
 				},
 			},
 			want: []Relationship{
@@ -107,9 +105,9 @@ func TestResourceMap(t *testing.T) {
 			name: "happy path",
 			args: args{
 				r: &VirtualMachine{
-					Id:           new("my-id"),
+					Id: new("my-id"),
 
-					Name:         new("My VM"),
+					Name: new("My VM"),
 
 					CreationTime: timestamppb.New(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
 					AutomaticUpdates: &AutomaticUpdates{
@@ -120,8 +118,8 @@ func TestResourceMap(t *testing.T) {
 			wantProps: func(t *testing.T, got map[string]any) bool {
 				want := map[string]any{
 					"creationTime": "2024-01-01T00:00:00Z",
-					"id":          "my-id",
-					"name":        "My VM",
+					"id":           "my-id",
+					"name":         "My VM",
 					"automaticUpdates": map[string]any{
 						"interval": "172800s",
 					},
@@ -191,14 +189,12 @@ func TestProtoResource(t *testing.T) {
 			args: args{
 				resource: &VirtualMachine{
 					Id: new("vm-1"),
-
 				},
 			},
 			want: &Resource{
 				Type: &Resource_VirtualMachine{
 					VirtualMachine: &VirtualMachine{
 						Id: new("vm-1"),
-
 					},
 				},
 			},

@@ -156,7 +156,8 @@ func (d *computeDiscovery) discoverVolumes() ([]*ontology.BlockStorage, error) {
 		}
 
 		// AWS uses a fixed algorithm, if enabled
-		if util.Deref(atRest.Enabled) {			atRest.Algorithm = new("AES-256")
+		if util.Deref(atRest.Enabled) {
+			atRest.Algorithm = new("AES-256")
 		}
 
 		blocks = append(blocks, &ontology.BlockStorage{

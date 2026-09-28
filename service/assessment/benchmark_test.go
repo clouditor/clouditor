@@ -75,10 +75,9 @@ func createEvidences(n int, m int, b *testing.B) int {
 			// Create evidences for n resources (1 per resource)
 			for i := 0; i < n; i++ {
 				vm := ontology.ProtoResource(&ontology.VirtualMachine{
-					Id:   new(fmt.Sprintf("%d", i)),
+					Id: new(fmt.Sprintf("%d", i)),
 
 					Name: new(fmt.Sprintf("my-vm-%d", i)),
-
 				})
 
 				e := evidence.Evidence{

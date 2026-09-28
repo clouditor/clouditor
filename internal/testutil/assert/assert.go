@@ -59,6 +59,12 @@ var stripZeroValues = cmp.Transformer("stripZero", func(m protocmp.Message) prot
 	return result
 })
 
+// isZeroValue only recognizes zero-valued scalar leaves. It deliberately does NOT treat a
+// present-but-all-zero nested message as equivalent to an absent one: doing so would collapse
+// "field known and inactive" with "field unknown" for message-typed fields, defeating the
+// explicit-presence tracking that optional ontology fields exist for. Nested protocmp.Message
+// values are still stripped of their own zero-valued scalar leaves, since cmp.Transformer
+// recurses into them independently.
 func isZeroValue(v interface{}) bool {
 	switch x := v.(type) {
 	case bool:
@@ -75,17 +81,6 @@ func isZeroValue(v interface{}) bool {
 		return x == 0
 	case float64:
 		return x == 0
-	case protocmp.Message:
-		// Skip the "@type" field which is always present in protocmp.Message
-		for k, sv := range x {
-			if k == "@type" {
-				continue
-			}
-			if !isZeroValue(sv) {
-				return false
-			}
-		}
-		return true
 	case []interface{}:
 		return len(x) == 0
 	case nil:

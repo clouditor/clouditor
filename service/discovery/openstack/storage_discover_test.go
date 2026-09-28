@@ -95,16 +95,15 @@ func Test_openstackDiscovery_discoverBlockStorage(t *testing.T) {
 				assert.NoError(t, err)
 
 				want := &ontology.BlockStorage{
-					Id:           new("289da7f8-6440-407c-9fb4-7db01ec49164"),
+					Id: new("289da7f8-6440-407c-9fb4-7db01ec49164"),
 
-					Name:         new("vol-001"),
+					Name: new("vol-001"),
 
-					Description:  new(""),
+					Description: new(""),
 
 					CreationTime: timestamppb.New(t1),
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("test region"),
-
 					},
 					ParentId: new("83ec2e3b-4321-422b-8706-a84185f52a0a"),
 					Labels:   map[string]string{},

@@ -33,18 +33,17 @@ func Test_csafDiscovery_providerTransportEncryption(t *testing.T) {
 				client: goodProvider.Client(),
 			},
 			want: &ontology.TransportEncryption{
-				Enabled:         new(true),
+				Enabled: new(true),
 
-				Protocol:        new(constants.TLS),
+				Protocol: new(constants.TLS),
 
 				ProtocolVersion: new(float32(1.3)),
 
 				CipherSuites: []*ontology.CipherSuite{
 					{
-						MacAlgorithm:  new(constants.SHA_256),
+						MacAlgorithm: new(constants.SHA_256),
 
 						SessionCipher: new(constants.AES_128_GCM),
-
 					},
 				},
 			},
@@ -98,11 +97,9 @@ func Test_providerValidationErrors(t *testing.T) {
 				want := []*ontology.Error{
 					{
 						Message: new("message1"),
-
 					},
 					{
 						Message: new("message2"),
-
 					},
 				}
 				return assert.Equal(t, want, got)

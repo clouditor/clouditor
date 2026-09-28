@@ -128,9 +128,9 @@ func Test_k8sStorageDiscovery_List(t *testing.T) {
 
 	// Create expected ontology.BlockStorage
 	expectedVolume := &ontology.BlockStorage{
-		Id:               new(volumeUID),
+		Id: new(volumeUID),
 
-		Name:             new(volumeName),
+		Name: new(volumeName),
 
 		CreationTime:     volume.CreationTime,
 		Labels:           volumeLabel,
@@ -174,14 +174,13 @@ func Test_k8sStorageDiscovery_handlePV(t *testing.T) {
 				},
 			},
 			want: &ontology.FileStorage{
-				Id:               new("my-id"),
+				Id: new("my-id"),
 
-				Name:             new("test"),
+				Name: new("test"),
 
 				AtRestEncryption: &ontology.AtRestEncryption{},
 				CreationTime:     timestamppb.New(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
 				Raw:              new(`{"*v1.PersistentVolume":[{"metadata":{"name":"test","uid":"my-id","creationTimestamp":"2024-01-01T00:00:00Z"},"spec":{"hostPath":{"path":"/tmp"}},"status":{}}]}`),
-
 			},
 		},
 	}

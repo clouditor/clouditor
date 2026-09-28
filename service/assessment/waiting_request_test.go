@@ -51,9 +51,9 @@ func TestService_AssessEvidenceWaitFor(t *testing.T) {
 		Evidence: &evidence.Evidence{
 			Id: "11111111-1111-1111-1111-111111111111",
 			Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
-				Id:              new("my-resource"),
+				Id: new("my-resource"),
 
-				Name:            new("my resource"),
+				Name: new("my resource"),
 
 				BlockStorageIds: []string{"my-third-resource"},
 			}),
@@ -72,9 +72,9 @@ func TestService_AssessEvidenceWaitFor(t *testing.T) {
 		Evidence: &evidence.Evidence{
 			Id: "22222222-2222-2222-2222-222222222222",
 			Resource: prototest.NewProtobufResource(t, &ontology.VirtualMachine{
-				Id:              new("my-other-resource"),
+				Id: new("my-other-resource"),
 
-				Name:            new("my other resource"),
+				Name: new("my other resource"),
 
 				BlockStorageIds: []string{"my-third-resource"},
 			}),
@@ -94,10 +94,9 @@ func TestService_AssessEvidenceWaitFor(t *testing.T) {
 		Evidence: &evidence.Evidence{
 			Id: "33333333-3333-3333-3333-333333333333",
 			Resource: prototest.NewProtobufResource(t, &ontology.BlockStorage{
-				Id:   new("my-third-resource"),
+				Id: new("my-third-resource"),
 
 				Name: new("my third resource"),
-
 			}),
 			TargetOfEvaluationId:           testdata.MockTargetOfEvaluationID1,
 			ToolId:                         "my-tool",

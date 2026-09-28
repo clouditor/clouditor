@@ -96,14 +96,13 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 			},
 			want: func(t *testing.T, got ontology.IsResource) bool {
 				want := &ontology.BlockStorage{
-					Id:           new(testdata.MockOpenstackVolumeID1),
+					Id: new(testdata.MockOpenstackVolumeID1),
 
-					Name:         new(testdata.MockOpenstackVolumeID1),
+					Name: new(testdata.MockOpenstackVolumeID1),
 
 					CreationTime: timestamppb.New(testTime),
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("test region"),
-
 					},
 					ParentId: new(testdata.MockOpenstackVolumeTenantID),
 				}
@@ -139,14 +138,13 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 			},
 			want: func(t *testing.T, got ontology.IsResource) bool {
 				want := &ontology.BlockStorage{
-					Id:           new(testdata.MockOpenstackVolumeID1),
+					Id: new(testdata.MockOpenstackVolumeID1),
 
-					Name:         new(testdata.MockOpenstackVolumeName1),
+					Name: new(testdata.MockOpenstackVolumeName1),
 
 					CreationTime: timestamppb.New(testTime),
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("test region"),
-
 					},
 					ParentId: new(testdata.MockOpenstackVolumeTenantID),
 				}

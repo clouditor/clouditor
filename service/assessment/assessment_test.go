@@ -692,13 +692,13 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 								RetentionPeriod:   durationpb.New(time.Hour * 24 * 36),
 							},
 							MalwareProtection: &ontology.MalwareProtection{
-								Enabled:              new(true),
+								Enabled: new(true),
 
 								NumberOfThreatsFound: new(int32(5)),
 
-								DurationSinceActive:  durationpb.New(time.Hour * 24 * 20),
+								DurationSinceActive: durationpb.New(time.Hour * 24 * 20),
 								ApplicationLogging: &ontology.ApplicationLogging{
-									Enabled:           new(true),
+									Enabled: new(true),
 
 									LoggingServiceIds: []string{"SomeAnalyticsService?"},
 								},
@@ -930,31 +930,29 @@ func TestService_handleEvidence(t *testing.T) {
 					Timestamp:            timestamppb.Now(),
 					TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 					Resource: prototest.NewProtobufResource(t, &ontology.SecurityAdvisoryDocument{
-						Id:          new("123Doc"),
+						Id: new("123Doc"),
 
-						Name:        new("docname"),
+						Name: new("docname"),
 
 						Description: new("Doc"),
 
 						CryptographicHashs: []*ontology.CryptographicHash{
 							&ontology.CryptographicHash{
 								Algorithm: new("md5"),
-
 							},
 						},
 					}),
 				},
 				resource: &ontology.SecurityAdvisoryDocument{
-					Id:          new("123Doc"),
+					Id: new("123Doc"),
 
-					Name:        new("docname"),
+					Name: new("docname"),
 
 					Description: new("Doc"),
 
 					CryptographicHashs: []*ontology.CryptographicHash{
 						&ontology.CryptographicHash{
 							Algorithm: new("md5"),
-
 						},
 					},
 				},
@@ -986,7 +984,6 @@ func TestService_handleEvidence(t *testing.T) {
 						BootLogging: &ontology.BootLogging{
 							LoggingServiceIds: nil,
 							Enabled:           new(true),
-
 						},
 					}),
 				},
@@ -996,7 +993,6 @@ func TestService_handleEvidence(t *testing.T) {
 					BootLogging: &ontology.BootLogging{
 						LoggingServiceIds: nil,
 						Enabled:           new(true),
-
 					},
 				},
 			},

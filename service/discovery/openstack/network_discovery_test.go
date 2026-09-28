@@ -95,14 +95,13 @@ func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 				assert.NoError(t, err)
 
 				want := &ontology.NetworkInterface{
-					Id:           new("d32019d3-bc6e-4319-9c1d-6722fc136a22"),
+					Id: new("d32019d3-bc6e-4319-9c1d-6722fc136a22"),
 
-					Name:         new("public"),
+					Name: new("public"),
 
 					CreationTime: timestamppb.New(t1),
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("test region"),
-
 					},
 					Labels:   map[string]string{},
 					ParentId: new("4fd44f30292945e481c7b8a0c8908869"),

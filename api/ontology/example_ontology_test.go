@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -15,7 +14,6 @@ func ExampleMarshal() {
 
 		BootLogging: &BootLogging{
 			Enabled: new(true),
-
 		},
 	}
 

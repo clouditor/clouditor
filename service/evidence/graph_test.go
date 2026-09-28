@@ -134,7 +134,6 @@ func TestService_ListGraphEdges(t *testing.T) {
 									Enforced:        new(false),
 									Enabled:         new(true),
 									ProtocolVersion: new(float32(1.2)),
-
 								},
 							},
 						}, testdata.MockTargetOfEvaluationID2, testdata.MockEvidenceToolID1)))
@@ -215,7 +214,6 @@ func TestService_UpdateResource(t *testing.T) {
 				req: &evidence.UpdateResourceRequest{
 					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
 						Name: new("some-name"),
-
 					}, testdata.MockTargetOfEvaluationID1, testdata.MockEvidenceToolID1),
 				},
 			},
@@ -231,10 +229,9 @@ func TestService_UpdateResource(t *testing.T) {
 			args: args{
 				req: &evidence.UpdateResourceRequest{
 					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
-						Id:   new("my-id"),
+						Id: new("my-id"),
 
 						Name: new("some-name"),
-
 					}, testdata.MockTargetOfEvaluationID1, testdata.MockEvidenceToolID1),
 				},
 			},
@@ -251,18 +248,16 @@ func TestService_UpdateResource(t *testing.T) {
 			args: args{
 				req: &evidence.UpdateResourceRequest{
 					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
-						Id:   new("my-id"),
+						Id: new("my-id"),
 
 						Name: new("some-name"),
-
 					}, testdata.MockTargetOfEvaluationID1, testdata.MockEvidenceToolID1),
 				},
 			},
 			wantRes: panicToDiscoveryResource(t, &ontology.VirtualMachine{
-				Id:   new("my-id"),
+				Id: new("my-id"),
 
 				Name: new("some-name"),
-
 			}, testdata.MockTargetOfEvaluationID1, testdata.MockEvidenceToolID1),
 			wantErr: assert.NoError,
 		},

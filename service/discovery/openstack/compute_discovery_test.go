@@ -104,14 +104,13 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 
 				// We check two VMs, the first one (want) has bootLoggingOutput enabled and the second one (want2) not
 				want := &ontology.VirtualMachine{
-					Id:           new("ef079b0c-e610-4dfb-b1aa-b49f07ac48e5"),
+					Id: new("ef079b0c-e610-4dfb-b1aa-b49f07ac48e5"),
 
-					Name:         new("herp"),
+					Name: new("herp"),
 
 					CreationTime: timestamppb.New(t1),
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("test region"),
-
 					},
 					Labels:              map[string]string{},
 					ParentId:            new("fcad67a6189847c4aecfa3c81a05783b"),
@@ -119,18 +118,16 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 					NetworkInterfaceIds: []string{"8a5fe506-7e9f-4091-899b-96336909d93c"},
 					MalwareProtection:   &ontology.MalwareProtection{},
 					AutomaticUpdates:    &ontology.AutomaticUpdates{},
-					BootLogging:        &ontology.BootLogging{Enabled: new(true)},
-
+					BootLogging:         &ontology.BootLogging{Enabled: new(true)},
 				}
 
 				want2 := &ontology.VirtualMachine{
-					Id:           new("9e5476bd-a4ec-4653-93d6-72c93aa682ba"),
-					Name:         new("derp"),
+					Id:   new("9e5476bd-a4ec-4653-93d6-72c93aa682ba"),
+					Name: new("derp"),
 
 					CreationTime: timestamppb.New(t2),
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("test region"),
-
 					},
 					Labels:              map[string]string{},
 					ParentId:            new("fcad67a6189847c4aecfa3c81a05783b"),
@@ -138,8 +135,7 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 					NetworkInterfaceIds: []string{"8a5fe506-7e9f-4091-899b-96336909d93c"},
 					MalwareProtection:   &ontology.MalwareProtection{},
 					AutomaticUpdates:    &ontology.AutomaticUpdates{},
-					BootLogging:        &ontology.BootLogging{Enabled: new(false)},
-
+					BootLogging:         &ontology.BootLogging{Enabled: new(false)},
 				}
 
 				got0, ok := got[0].(*ontology.VirtualMachine)
@@ -153,7 +149,6 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 				assert.True(t, ok)
 				assert.NotEmpty(t, got1.GetRaw())
 				got1.Raw = nil
-
 
 				return assert.Equal(t, want2, got1)
 			},

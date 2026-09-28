@@ -152,14 +152,13 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 				assert.NotEmpty(t, got)
 
 				want := &ontology.VirtualMachine{
-					Id:           new("ef079b0c-e610-4dfb-b1aa-b49f07ac48e5"),
+					Id: new("ef079b0c-e610-4dfb-b1aa-b49f07ac48e5"),
 
-					Name:         new("herp"),
+					Name: new("herp"),
 
 					CreationTime: timestamppb.New(t1),
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("test region"),
-
 					},
 					Labels:              map[string]string{},
 					ParentId:            new("fcad67a6189847c4aecfa3c81a05783b"),
@@ -168,7 +167,6 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 					MalwareProtection:   &ontology.MalwareProtection{},
 					AutomaticUpdates:    &ontology.AutomaticUpdates{},
 					BootLogging:         &ontology.BootLogging{Enabled: new(true)},
-
 				}
 
 				gotNew, ok := got.(*ontology.VirtualMachine)

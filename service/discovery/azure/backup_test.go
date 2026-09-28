@@ -282,7 +282,6 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 				Labels:       nil,
 				ParentId:     new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 				Raw:          new("{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"datasourceType\":\"Microsoft.Storage/storageAccounts/blobServices\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222\",\"name\":\"account1-account1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}"),
-
 			},
 			wantErr: assert.NoError,
 		},
@@ -308,19 +307,17 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 				},
 			},
 			wantResource: &ontology.BlockStorage{
-				Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.dataprotection/backupvaults/backupaccount1/backupinstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
+				Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.dataprotection/backupvaults/backupaccount1/backupinstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
 
 				Name: new("disk1-disk1-22222222-2222-2222-2222-222222222222"),
 
 				GeoLocation: &ontology.GeoLocation{
 					Region: new("westeurope"),
-
 				},
 				CreationTime: nil,
 				Labels:       nil,
 				ParentId:     new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 				Raw:          new("{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"datasourceType\":\"Microsoft.Compute/disks\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222\",\"name\":\"disk1-disk1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}"),
-
 			},
 			wantErr: assert.NoError,
 		},

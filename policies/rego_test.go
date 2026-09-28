@@ -238,7 +238,7 @@ func Test_regoEval_Eval(t *testing.T) {
 						LoggingServiceIds: []string{"SomeResourceId3"},
 						Enabled:           new(false),
 
-						RetentionPeriod:   durationpb.New(1 * time.Hour * 24),
+						RetentionPeriod: durationpb.New(1 * time.Hour * 24),
 					},
 				},
 				evidenceID: mockVM2EvidenceID,
@@ -265,7 +265,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args: args{
 				resource: &ontology.VirtualMachine{
-					Id:              new(mockVM2ResourceID),
+					Id: new(mockVM2ResourceID),
 
 					BlockStorageIds: []string{mockBlockStorage1ID},
 				},
@@ -280,7 +280,6 @@ func Test_regoEval_Eval(t *testing.T) {
 								CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
 									Enabled:   new(false),
 									Algorithm: new("AES256"),
-
 								},
 							},
 						},
@@ -303,7 +302,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args: args{
 				resource: &ontology.VirtualMachine{
-					Id:              new(mockVM2ResourceID),
+					Id: new(mockVM2ResourceID),
 
 					BlockStorageIds: []string{mockBlockStorage1ID},
 				},
@@ -316,10 +315,9 @@ func Test_regoEval_Eval(t *testing.T) {
 						AtRestEncryption: &ontology.AtRestEncryption{
 							Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 								CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
-									Enabled:   new(true),
+									Enabled: new(true),
 
 									Algorithm: new("AES256"),
-
 								},
 							},
 						},
@@ -342,21 +340,20 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args: args{
 				resource: &ontology.LoggingService{
-					Id:                         new("loggingservice"),
+					Id: new("loggingservice"),
 
-					Description:                new("loggingservice"),
+					Description: new("loggingservice"),
 
 					InternetAccessibleEndpoint: new(true),
 
 					TransportEncryption: &ontology.TransportEncryption{
-						Enforced:        new(false),
+						Enforced: new(false),
 
-						Enabled:         new(true),
+						Enabled: new(true),
 
-						Protocol:        new("TLS"),
+						Protocol: new("TLS"),
 
 						ProtocolVersion: new(float32(1.3)),
-
 					},
 				},
 				evidenceID: mockVM1EvidenceID,
@@ -446,7 +443,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 				},
 				baseDir: ".",
 				m: map[string]interface{}{
-					"type":             []string{"VirtualMachine"},
+					"type": []string{"VirtualMachine"},
 					"automaticUpdates": map[string]interface{}{
 						"enabled": true,
 					},
@@ -469,7 +466,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 					},
 					ComparisonResult: []*assessment.ComparisonResult{
 						{
-							Property:   "automaticUpdates.enabled",
+							Property:    "automaticUpdates.enabled",
 							Value:       structpb.NewBoolValue(true),
 							Operator:    "==",
 							TargetValue: structpb.NewBoolValue(true),
@@ -501,7 +498,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 				},
 				baseDir: ".",
 				m: map[string]interface{}{
-					"type":             []string{"VirtualMachine"},
+					"type": []string{"VirtualMachine"},
 					"automaticUpdates": map[string]interface{}{
 						"enabled": true,
 					},
@@ -524,7 +521,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 					},
 					ComparisonResult: []*assessment.ComparisonResult{
 						{
-							Property:   "automaticUpdates.enabled",
+							Property:    "automaticUpdates.enabled",
 							Value:       structpb.NewBoolValue(true),
 							Operator:    "==",
 							TargetValue: structpb.NewBoolValue(false),

@@ -95,27 +95,25 @@ func Test_openstackDiscovery_discoverCluster(t *testing.T) {
 				assert.NoError(t, err)
 
 				want := &ontology.ContainerOrchestration{
-					Id:           new("746e779a-751a-456b-a3e9-c883d734946f"),
+					Id: new("746e779a-751a-456b-a3e9-c883d734946f"),
 
 					CreationTime: timestamppb.New(t1),
 					Name:         new("k8s"),
 
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("test region"),
-
 					},
 					ParentId: new(""),
 				}
 
 				want1 := &ontology.ContainerOrchestration{
-					Id:           new("846e779a-751a-456b-a3e9-c883d734946f"),
+					Id: new("846e779a-751a-456b-a3e9-c883d734946f"),
 
 					CreationTime: timestamppb.New(t2),
 					Name:         new("k8s"),
 
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("test region"),
-
 					},
 					ParentId: new(""),
 				}

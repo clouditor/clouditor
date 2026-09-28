@@ -69,9 +69,9 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 			},
 			want: []ontology.IsResource{
 				&ontology.Function{
-					Id:           new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/function1"),
+					Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/function1"),
 
-					Name:         new("function1"),
+					Name: new("function1"),
 
 					CreationTime: nil,
 					Labels: map[string]string{
@@ -80,15 +80,12 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 					},
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("West Europe"),
-
 					},
-					ParentId:            new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-					Raw:                 new("{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"kind\":\"functionapp,linux\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"publicNetworkAccess\":\"Enabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"name\":\"function1\",\"properties\":{\"minTlsCipherSuite\":\"TLS_AES_128_GCM_SHA256\",\"minTlsVersion\":\"1.1\"},\"type\":\"Microsoft.Web/sites/config\"}]}"),
+					ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:      new("{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"kind\":\"functionapp,linux\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"publicNetworkAccess\":\"Enabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"name\":\"function1\",\"properties\":{\"minTlsCipherSuite\":\"TLS_AES_128_GCM_SHA256\",\"minTlsVersion\":\"1.1\"},\"type\":\"Microsoft.Web/sites/config\"}]}"),
 
 					NetworkInterfaceIds: []string{},
-					ResourceLogging: &ontology.ResourceLogging{
-
-					},
+					ResourceLogging:     &ontology.ResourceLogging{},
 					/*HttpEndpoint: &ontology.HttpEndpoint{
 						TransportEncryption: &ontology.TransportEncryption{
 							Enabled:    true,
@@ -99,16 +96,15 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 					},*/
 					InternetAccessibleEndpoint: new(true),
 
-					Redundancies:               []*ontology.Redundancy{},
-					RuntimeVersion:             new("3.8"),
+					Redundancies:   []*ontology.Redundancy{},
+					RuntimeVersion: new("3.8"),
 
-					RuntimeLanguage:            new("PYTHON"),
-
+					RuntimeLanguage: new("PYTHON"),
 				},
 				&ontology.Function{
-					Id:           new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/function2"),
+					Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/function2"),
 
-					Name:         new("function2"),
+					Name: new("function2"),
 
 					CreationTime: nil,
 					Labels: map[string]string{
@@ -117,15 +113,12 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 					},
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("West Europe"),
-
 					},
-					ParentId:            new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-					Raw:                 new("{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2\",\"kind\":\"functionapp\",\"location\":\"West Europe\",\"name\":\"function2\",\"properties\":{\"publicNetworkAccess\":\"Disabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"name\":\"function2\",\"properties\":{\"javaVersion\":\"1.8\"},\"type\":\"Microsoft.Web/sites/config\"}]}"),
+					ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:      new("{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2\",\"kind\":\"functionapp\",\"location\":\"West Europe\",\"name\":\"function2\",\"properties\":{\"publicNetworkAccess\":\"Disabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"name\":\"function2\",\"properties\":{\"javaVersion\":\"1.8\"},\"type\":\"Microsoft.Web/sites/config\"}]}"),
 
 					NetworkInterfaceIds: []string{},
-					ResourceLogging: &ontology.ResourceLogging{
-
-					},
+					ResourceLogging:     &ontology.ResourceLogging{},
 					/*HttpEndpoint: &ontology.HttpEndpoint{
 						TransportEncryption: &ontology.TransportEncryption{
 							Enabled:    false,
@@ -136,16 +129,15 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 					},*/
 					InternetAccessibleEndpoint: new(false),
 
-					Redundancies:               []*ontology.Redundancy{},
-					RuntimeVersion:             new("1.8"),
+					Redundancies:   []*ontology.Redundancy{},
+					RuntimeVersion: new("1.8"),
 
-					RuntimeLanguage:            new("Java"),
-
+					RuntimeLanguage: new("Java"),
 				},
 				&ontology.Function{
-					Id:           new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/webapp1"),
+					Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/webapp1"),
 
-					Name:         new("WebApp1"),
+					Name: new("WebApp1"),
 
 					CreationTime: nil,
 					Labels: map[string]string{
@@ -154,15 +146,13 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 					},
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("West Europe"),
-
 					},
-					ParentId:            new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-					Raw:                 new("{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1\",\"kind\":\"app\",\"location\":\"West Europe\",\"name\":\"WebApp1\",\"properties\":{\"httpsOnly\":true,\"publicNetworkAccess\":\"Enabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet1\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"name\":\"WebApp1\",\"properties\":{\"minTlsCipherSuite\":\"TLS_AES_128_GCM_SHA256\",\"minTlsVersion\":\"1.1\"},\"type\":\"Microsoft.Web/sites/config\"}]}"),
+					ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:      new("{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1\",\"kind\":\"app\",\"location\":\"West Europe\",\"name\":\"WebApp1\",\"properties\":{\"httpsOnly\":true,\"publicNetworkAccess\":\"Enabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet1\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"name\":\"WebApp1\",\"properties\":{\"minTlsCipherSuite\":\"TLS_AES_128_GCM_SHA256\",\"minTlsVersion\":\"1.1\"},\"type\":\"Microsoft.Web/sites/config\"}]}"),
 
 					NetworkInterfaceIds: []string{"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/virtualnetworks/vnet1/subnets/subnet1"},
 					ResourceLogging: &ontology.ResourceLogging{
 						Enabled: new(true),
-
 					},
 					/*HttpEndpoint: &ontology.HttpEndpoint{
 						TransportEncryption: &ontology.TransportEncryption{
@@ -174,12 +164,12 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 					},*/
 					InternetAccessibleEndpoint: new(true),
 
-					Redundancies:               []*ontology.Redundancy{},
+					Redundancies: []*ontology.Redundancy{},
 				},
 				&ontology.Function{
-					Id:           new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/webapp2"),
+					Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/webapp2"),
 
-					Name:         new("WebApp2"),
+					Name: new("WebApp2"),
 
 					CreationTime: nil,
 					Labels: map[string]string{
@@ -189,12 +179,11 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("West Europe"),
 					},
-					ParentId:            new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-					Raw: new(                 "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2\",\"kind\":\"app,linux\",\"location\":\"West Europe\",\"name\":\"WebApp2\",\"properties\":{\"httpsOnly\":false,\"publicNetworkAccess\":\"Disabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"name\":\"WebApp2\",\"properties\":{},\"type\":\"Microsoft.Web/sites/config\"}]}"),
+					ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:      new("{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2\",\"kind\":\"app,linux\",\"location\":\"West Europe\",\"name\":\"WebApp2\",\"properties\":{\"httpsOnly\":false,\"publicNetworkAccess\":\"Disabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"name\":\"WebApp2\",\"properties\":{},\"type\":\"Microsoft.Web/sites/config\"}]}"),
 
 					NetworkInterfaceIds: []string{"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/virtualnetworks/vnet1/subnets/subnet2"},
-					ResourceLogging: &ontology.ResourceLogging{
-					},
+					ResourceLogging:     &ontology.ResourceLogging{},
 					/*HttpEndpoint: &ontology.HttpEndpoint{
 						TransportEncryption: &ontology.TransportEncryption{
 							Enabled:    false,
@@ -205,7 +194,7 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 					},*/
 					InternetAccessibleEndpoint: new(false),
 
-					Redundancies:               []*ontology.Redundancy{},
+					Redundancies: []*ontology.Redundancy{},
 				},
 			},
 			wantErr: assert.NoError,
@@ -280,9 +269,9 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 				},
 			},
 			want: &ontology.Function{
-				Id:           new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/function1"),
+				Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/function1"),
 
-				Name:         new("function1"),
+				Name: new("function1"),
 
 				CreationTime: nil,
 				Labels: map[string]string{
@@ -291,21 +280,18 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 				},
 				GeoLocation: &ontology.GeoLocation{
 					Region: new("West Europe"),
-
 				},
-				ParentId:            new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-				Raw:                 new("{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"kind\":\"functionapp,linux\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"httpsOnly\":true,\"resourceGroup\":\"res1\",\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{\"minTlsCipherSuite\":\"TLS_AES_128_GCM_SHA256\",\"minTlsVersion\":\"1.2\"}}]}"),
+				ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+				Raw:      new("{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"kind\":\"functionapp,linux\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"httpsOnly\":true,\"resourceGroup\":\"res1\",\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{\"minTlsCipherSuite\":\"TLS_AES_128_GCM_SHA256\",\"minTlsVersion\":\"1.2\"}}]}"),
 
-				NetworkInterfaceIds: []string{},
-				ResourceLogging: &ontology.ResourceLogging{
-
-				},
+				NetworkInterfaceIds:        []string{},
+				ResourceLogging:            &ontology.ResourceLogging{},
 				InternetAccessibleEndpoint: new(false),
 
-				Redundancies:               []*ontology.Redundancy{},
-				RuntimeVersion:             new("3.8"),
+				Redundancies:   []*ontology.Redundancy{},
+				RuntimeVersion: new("3.8"),
 
-				RuntimeLanguage:            new("PYTHON"),
+				RuntimeLanguage: new("PYTHON"),
 
 				/*HttpEndpoint: &ontology.HttpEndpoint{
 					TransportEncryption: &ontology.TransportEncryption{
@@ -351,9 +337,9 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 				},
 			},
 			want: &ontology.Function{
-				Id:           new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/function2"),
+				Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/function2"),
 
-				Name:         new("function2"),
+				Name: new("function2"),
 
 				CreationTime: nil,
 				Labels: map[string]string{
@@ -362,21 +348,18 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 				},
 				GeoLocation: &ontology.GeoLocation{
 					Region: new("West Europe"),
-
 				},
-				ParentId:            new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-				Raw:                 new("{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2\",\"kind\":\"functionapp\",\"location\":\"West Europe\",\"name\":\"function2\",\"properties\":{\"httpsOnly\":true,\"resourceGroup\":\"res1\",\"siteConfig\":{}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{\"javaVersion\":\"1.8\",\"minTlsCipherSuite\":\"TLS_AES_128_GCM_SHA256\",\"minTlsVersion\":\"1.2\"}}]}"),
+				ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+				Raw:      new("{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2\",\"kind\":\"functionapp\",\"location\":\"West Europe\",\"name\":\"function2\",\"properties\":{\"httpsOnly\":true,\"resourceGroup\":\"res1\",\"siteConfig\":{}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{\"javaVersion\":\"1.8\",\"minTlsCipherSuite\":\"TLS_AES_128_GCM_SHA256\",\"minTlsVersion\":\"1.2\"}}]}"),
 
-				NetworkInterfaceIds: []string{},
-				ResourceLogging: &ontology.ResourceLogging{
-
-				},
+				NetworkInterfaceIds:        []string{},
+				ResourceLogging:            &ontology.ResourceLogging{},
 				InternetAccessibleEndpoint: new(false),
 
-				Redundancies:               []*ontology.Redundancy{},
-				RuntimeVersion:             new("1.8"),
+				Redundancies:   []*ontology.Redundancy{},
+				RuntimeVersion: new("1.8"),
 
-				RuntimeLanguage:            new("Java"),
+				RuntimeLanguage: new("Java"),
 
 				/*HttpEndpoint: &ontology.HttpEndpoint{
 					TransportEncryption: &ontology.TransportEncryption{
@@ -434,18 +417,17 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 			},
 			want: []ontology.IsResource{
 				&ontology.VirtualMachine{
-					Id:           new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.compute/virtualmachines/vm1"),
+					Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.compute/virtualmachines/vm1"),
 
-					Name:         new("vm1"),
+					Name: new("vm1"),
 
 					CreationTime: timestamppb.New(creationTime),
 					Labels:       map[string]string{},
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("eastus"),
-
 					},
-					ParentId:            new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-					Raw:                 new("{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1\",\"location\":\"eastus\",\"name\":\"vm1\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true,\"storageUri\":\"https://logstoragevm1.blob.core.windows.net/\"}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"123\"},{\"id\":\"234\"}]},\"osProfile\":{\"linuxConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByPlatform\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_1\"}},{\"managedDisk\":{\"id\":\"data_disk_2\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}},\"timeCreated\":\"2017-05-24T13:28:53.004540398Z\"},\"resources\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1/extensions/MicrosoftMonitoringAgent\"}]}]}"),
+					ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:      new("{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1\",\"location\":\"eastus\",\"name\":\"vm1\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true,\"storageUri\":\"https://logstoragevm1.blob.core.windows.net/\"}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"123\"},{\"id\":\"234\"}]},\"osProfile\":{\"linuxConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByPlatform\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_1\"}},{\"managedDisk\":{\"id\":\"data_disk_2\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}},\"timeCreated\":\"2017-05-24T13:28:53.004540398Z\"},\"resources\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1/extensions/MicrosoftMonitoringAgent\"}]}]}"),
 
 					NetworkInterfaceIds: []string{"123", "234"},
 					BlockStorageIds:     []string{"os_test_disk", "data_disk_1", "data_disk_2"},
@@ -453,104 +435,102 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 						Enabled: new(true),
 
 						//LoggingService: []ontology.ResourceID{"https://logstoragevm1.blob.core.windows.net/"},
-						LoggingServiceIds: []string{},
-						RetentionPeriod:   durationpb.New(0),
+						LoggingServiceIds:        []string{},
+						RetentionPeriod:          durationpb.New(0),
 						MonitoringLogDataEnabled: new(false),
 						SecurityAlertsEnabled:    new(false),
 					},
 					OsLogging: &ontology.OSLogging{
-						Enabled:           new(true),
+						Enabled: new(true),
 
-						RetentionPeriod:   durationpb.New(0),
+						RetentionPeriod:          durationpb.New(0),
 						MonitoringLogDataEnabled: new(false),
 						SecurityAlertsEnabled:    new(false),
-						LoggingServiceIds: []string{},
+						LoggingServiceIds:        []string{},
 					},
 					AutomaticUpdates: &ontology.AutomaticUpdates{
-						Enabled:  new(true),
+						Enabled: new(true),
 
 						Interval: durationpb.New(Duration30Days),
 					},
 					MalwareProtection: &ontology.MalwareProtection{},
 					ActivityLogging: &ontology.ActivityLogging{
-						Enabled:           new(true),
+						Enabled: new(true),
 
 						RetentionPeriod:   durationpb.New(RetentionPeriod90Days),
 						LoggingServiceIds: []string{},
 					},
 				},
 				&ontology.VirtualMachine{
-					Id:           new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.compute/virtualmachines/vm2"),
+					Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.compute/virtualmachines/vm2"),
 
-					Name:         new("vm2"),
+					Name: new("vm2"),
 
 					CreationTime: nil,
 					Labels:       map[string]string{},
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("eastus"),
-
 					},
-					ParentId:            new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-					Raw:                 new("{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2\",\"location\":\"eastus\",\"name\":\"vm2\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"987\"},{\"id\":\"654\"}]},\"osProfile\":{\"windowsConfiguration\":{\"enableAutomaticUpdates\":true,\"patchSettings\":{\"patchMode\":\"AutomaticByOS\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_2\"}},{\"managedDisk\":{\"id\":\"data_disk_3\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}}},\"resources\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2/extensions/OmsAgentForLinux\"}]}]}"),
+					ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:      new("{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2\",\"location\":\"eastus\",\"name\":\"vm2\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"987\"},{\"id\":\"654\"}]},\"osProfile\":{\"windowsConfiguration\":{\"enableAutomaticUpdates\":true,\"patchSettings\":{\"patchMode\":\"AutomaticByOS\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_2\"}},{\"managedDisk\":{\"id\":\"data_disk_3\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}}},\"resources\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2/extensions/OmsAgentForLinux\"}]}]}"),
 
 					NetworkInterfaceIds: []string{"987", "654"},
 					BlockStorageIds:     []string{"os_test_disk", "data_disk_2", "data_disk_3"},
 					BootLogging: &ontology.BootLogging{
-						Enabled:           new(true),
+						Enabled: new(true),
 
-						LoggingServiceIds: []string{},
-						RetentionPeriod:   durationpb.New(0),
+						LoggingServiceIds:        []string{},
+						RetentionPeriod:          durationpb.New(0),
 						MonitoringLogDataEnabled: new(false),
 						SecurityAlertsEnabled:    new(false),
 					},
 					OsLogging: &ontology.OSLogging{
-						Enabled:           new(true),
-						LoggingServiceIds: []string{},
-						RetentionPeriod:   durationpb.New(0),
+						Enabled:                  new(true),
+						LoggingServiceIds:        []string{},
+						RetentionPeriod:          durationpb.New(0),
 						MonitoringLogDataEnabled: new(false),
 						SecurityAlertsEnabled:    new(false),
 					},
 					AutomaticUpdates: &ontology.AutomaticUpdates{
-						Enabled:  new(true),
+						Enabled: new(true),
 
 						Interval: durationpb.New(Duration30Days),
 					},
 					MalwareProtection: &ontology.MalwareProtection{},
 					ActivityLogging: &ontology.ActivityLogging{
-						Enabled:           new(true),
+						Enabled: new(true),
 
 						RetentionPeriod:   durationpb.New(RetentionPeriod90Days),
 						LoggingServiceIds: []string{},
 					},
 				},
 				&ontology.VirtualMachine{
-					Id:           new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.compute/virtualmachines/vm3"),
+					Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.compute/virtualmachines/vm3"),
 
-					Name:         new("vm3"),
+					Name: new("vm3"),
 
 					CreationTime: nil,
 					Labels:       map[string]string{},
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("eastus"),
-
 					},
-					ParentId:            new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-					Raw:                 new("{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3\",\"location\":\"eastus\",\"name\":\"vm3\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{}}}}]}"),
+					ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:      new("{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3\",\"location\":\"eastus\",\"name\":\"vm3\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{}}}}]}"),
 
 					NetworkInterfaceIds: []string{},
 					BlockStorageIds:     []string{},
 					BootLogging: &ontology.BootLogging{
 
-						LoggingServiceIds: []string{},
-						RetentionPeriod:   durationpb.New(0),
+						LoggingServiceIds:        []string{},
+						RetentionPeriod:          durationpb.New(0),
 						MonitoringLogDataEnabled: new(false),
 						SecurityAlertsEnabled:    new(false),
 					},
 					OsLogging: &ontology.OSLogging{
-						Enabled:           new(false),
+						Enabled: new(false),
 
-						LoggingServiceIds: []string{},
-						RetentionPeriod:   durationpb.New(0),
+						LoggingServiceIds:        []string{},
+						RetentionPeriod:          durationpb.New(0),
 						MonitoringLogDataEnabled: new(false),
 						SecurityAlertsEnabled:    new(false),
 					},
@@ -560,7 +540,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					},
 					MalwareProtection: &ontology.MalwareProtection{},
 					ActivityLogging: &ontology.ActivityLogging{
-						Enabled:           new(true),
+						Enabled: new(true),
 
 						RetentionPeriod:   durationpb.New(RetentionPeriod90Days),
 						LoggingServiceIds: []string{},
@@ -662,18 +642,17 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 				},
 			},
 			want: &ontology.VirtualMachine{
-				Id:           new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.compute/virtualmachines/vm1"),
+				Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.compute/virtualmachines/vm1"),
 
-				Name:         new("vm1"),
+				Name: new("vm1"),
 
 				CreationTime: timestamppb.New(creationTime),
 				Labels:       map[string]string{},
 				GeoLocation: &ontology.GeoLocation{
 					Region: new("eastus"),
-
 				},
-				ParentId:            new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-				Raw:                 new("{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1\",\"location\":\"eastus\",\"name\":\"vm1\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true,\"storageUri\":\"https://logstoragevm1.blob.core.windows.net/\"}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"123\"},{\"id\":\"234\"}]},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_1\"}},{\"managedDisk\":{\"id\":\"data_disk_2\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}},\"timeCreated\":\"2017-05-24T13:28:53.004540398Z\"}}]}"),
+				ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+				Raw:      new("{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1\",\"location\":\"eastus\",\"name\":\"vm1\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true,\"storageUri\":\"https://logstoragevm1.blob.core.windows.net/\"}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"123\"},{\"id\":\"234\"}]},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_1\"}},{\"managedDisk\":{\"id\":\"data_disk_2\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}},\"timeCreated\":\"2017-05-24T13:28:53.004540398Z\"}}]}"),
 
 				NetworkInterfaceIds: []string{"123", "234"},
 				BlockStorageIds:     []string{"os_test_disk", "data_disk_1", "data_disk_2"},
@@ -685,8 +664,7 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 					RetentionPeriod:          durationpb.New(0),
 					MonitoringLogDataEnabled: new(true),
 
-					SecurityAlertsEnabled:    new(true),
-
+					SecurityAlertsEnabled: new(true),
 				},
 				OsLogging: &ontology.OSLogging{
 
@@ -695,8 +673,7 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 					RetentionPeriod:          durationpb.New(0),
 					MonitoringLogDataEnabled: new(true),
 
-					SecurityAlertsEnabled:    new(true),
-
+					SecurityAlertsEnabled: new(true),
 				},
 				AutomaticUpdates: &ontology.AutomaticUpdates{
 
@@ -704,7 +681,7 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 				},
 				MalwareProtection: &ontology.MalwareProtection{},
 				ActivityLogging: &ontology.ActivityLogging{
-					Enabled:           new(true),
+					Enabled: new(true),
 
 					RetentionPeriod:   durationpb.New(RetentionPeriod90Days),
 					LoggingServiceIds: []string{},
@@ -926,14 +903,13 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 			},
 			want: []ontology.IsResource{
 				&ontology.BlockStorage{
-					Id:           new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.compute/disks/disk1"),
+					Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.compute/disks/disk1"),
 
-					Name:         new("disk1"),
+					Name: new("disk1"),
 
 					CreationTime: timestamppb.New(creationTime),
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("eastus"),
-
 					},
 					Labels:   map[string]string{},
 					ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
@@ -944,8 +920,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
 								Algorithm: new("AES256"),
 
-								Enabled:   new(true),
-
+								Enabled: new(true),
 							},
 						},
 					},
@@ -959,13 +934,12 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 					},
 				},
 				&ontology.BlockStorage{
-					Id:           new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.compute/disks/disk2"),
+					Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.compute/disks/disk2"),
 
 					Name:         new("disk2"),
 					CreationTime: timestamppb.New(creationTime),
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("eastus"),
-
 					},
 					Labels:   map[string]string{},
 					ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
@@ -976,10 +950,9 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 							CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
 								Algorithm: new(""),
 
-								Enabled:   new(true),
+								Enabled: new(true),
 
-								KeyUrl:    new("https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382"),
-
+								KeyUrl: new("https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382"),
 							},
 						},
 					},
@@ -993,14 +966,13 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 					},
 				},
 				&ontology.BlockStorage{
-					Id:           new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res2/providers/microsoft.compute/disks/disk3"),
+					Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res2/providers/microsoft.compute/disks/disk3"),
 
-					Name:         new("disk3"),
+					Name: new("disk3"),
 
 					CreationTime: timestamppb.New(creationTime),
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("eastus"),
-
 					},
 					Labels:   map[string]string{},
 					ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
@@ -1011,8 +983,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
 								Algorithm: new("AES256"),
 
-								Enabled:   new(true),
-
+								Enabled: new(true),
 							},
 						},
 					},
@@ -1133,14 +1104,13 @@ func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			want: &ontology.BlockStorage{
-				Id:           new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.compute/disks/disk1"),
+				Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.compute/disks/disk1"),
 
-				Name:         new("disk1"),
+				Name: new("disk1"),
 
 				CreationTime: timestamppb.New(creationTime),
 				GeoLocation: &ontology.GeoLocation{
 					Region: new("eastus"),
-
 				},
 				Labels:   map[string]string{},
 				ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res2"),
@@ -1151,17 +1121,16 @@ func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
 						CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
 							Algorithm: new(""),
 
-							Enabled:   new(true),
+							Enabled: new(true),
 
-							KeyUrl:    new("https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382"),
-
+							KeyUrl: new("https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382"),
 						},
 					},
 				},
 				Backups: []*ontology.Backup{
 					{
 
-							Enabled:         new(false),
+						Enabled:         new(false),
 						RetentionPeriod: nil,
 						Interval:        nil,
 					},
@@ -1258,10 +1227,9 @@ func Test_azureComputeDiscovery_blockStorageAtRestEncryption(t *testing.T) {
 					CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
 						Algorithm: new(""),
 
-						Enabled:   new(true),
+						Enabled: new(true),
 
-						KeyUrl:    new("https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382"),
-
+						KeyUrl: new("https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382"),
 					},
 				},
 			},
@@ -1480,7 +1448,7 @@ func Test_automaticUpdates(t *testing.T) {
 				},
 			},
 			wantAutomaticUpdates: &ontology.AutomaticUpdates{
-				Enabled:  new(true),
+				Enabled: new(true),
 
 				Interval: durationpb.New(Duration30Days),
 			},
@@ -1502,7 +1470,7 @@ func Test_automaticUpdates(t *testing.T) {
 				},
 			},
 			wantAutomaticUpdates: &ontology.AutomaticUpdates{
-				Enabled:  new(true),
+				Enabled: new(true),
 
 				Interval: durationpb.New(Duration30Days),
 			},
@@ -1573,9 +1541,9 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 				},
 			},
 			want: &ontology.Function{
-				Id:           new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/webapp1"),
+				Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/webapp1"),
 
-				Name:         new("WebApp1"),
+				Name: new("WebApp1"),
 
 				CreationTime: nil,
 				Labels: map[string]string{
@@ -1584,10 +1552,9 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 				},
 				GeoLocation: &ontology.GeoLocation{
 					Region: new("West Europe"),
-
 				},
-				ParentId:            new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-				Raw:                 new("{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1\",\"kind\":\"app\",\"location\":\"West Europe\",\"name\":\"WebApp1\",\"properties\":{\"httpsOnly\":true,\"resourceGroup\":\"res1\",\"siteConfig\":{\"minTlsVersion\":\"1.2\"},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet1\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{\"minTlsCipherSuite\":\"TLS_AES_128_GCM_SHA256\",\"minTlsVersion\":\"1.2\"}}]}"),
+				ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+				Raw:      new("{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1\",\"kind\":\"app\",\"location\":\"West Europe\",\"name\":\"WebApp1\",\"properties\":{\"httpsOnly\":true,\"resourceGroup\":\"res1\",\"siteConfig\":{\"minTlsVersion\":\"1.2\"},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet1\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{\"minTlsCipherSuite\":\"TLS_AES_128_GCM_SHA256\",\"minTlsVersion\":\"1.2\"}}]}"),
 
 				NetworkInterfaceIds: []string{"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/virtualnetworks/vnet1/subnets/subnet1"},
 				ResourceLogging: &ontology.ResourceLogging{
@@ -1603,7 +1570,7 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 				},*/
 				InternetAccessibleEndpoint: new(false),
 
-				Redundancies:               []*ontology.Redundancy{},
+				Redundancies: []*ontology.Redundancy{},
 			},
 		},
 		{
@@ -1638,9 +1605,9 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 				},
 			},
 			want: &ontology.Function{
-				Id:           new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/webapp2"),
+				Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/webapp2"),
 
-				Name:         new("WebApp2"),
+				Name: new("WebApp2"),
 
 				CreationTime: nil,
 				Labels: map[string]string{
@@ -1649,15 +1616,12 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 				},
 				GeoLocation: &ontology.GeoLocation{
 					Region: new("West Europe"),
-
 				},
-				ParentId:            new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-				Raw:                 new("{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2\",\"kind\":\"app\",\"location\":\"West Europe\",\"name\":\"WebApp2\",\"properties\":{\"httpsOnly\":false,\"resourceGroup\":\"res1\",\"siteConfig\":{},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{}}]}"),
+				ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+				Raw:      new("{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2\",\"kind\":\"app\",\"location\":\"West Europe\",\"name\":\"WebApp2\",\"properties\":{\"httpsOnly\":false,\"resourceGroup\":\"res1\",\"siteConfig\":{},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{}}]}"),
 
 				NetworkInterfaceIds: []string{"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/virtualnetworks/vnet1/subnets/subnet2"},
-				ResourceLogging: &ontology.ResourceLogging{
-
-				},
+				ResourceLogging:     &ontology.ResourceLogging{},
 				/*HttpEndpoint: &ontology.HttpEndpoint{
 					TransportEncryption: &ontology.TransportEncryption{
 						Enabled:    false,
@@ -1668,7 +1632,7 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 				},*/
 				InternetAccessibleEndpoint: new(false),
 
-				Redundancies:               []*ontology.Redundancy{},
+				Redundancies: []*ontology.Redundancy{},
 			},
 		},
 	}
@@ -1712,8 +1676,6 @@ func Test_getTransportEncryption(t *testing.T) {
 			},
 			wantEnc: &ontology.TransportEncryption{
 				Enforced: new(false),
-
-
 			},
 		},
 		{
@@ -1733,11 +1695,11 @@ func Test_getTransportEncryption(t *testing.T) {
 				},
 			},
 			wantEnc: &ontology.TransportEncryption{
-				Enforced:        new(true),
+				Enforced: new(true),
 
-				Enabled:         new(true),
+				Enabled: new(true),
 
-				Protocol:        new(constants.TLS),
+				Protocol: new(constants.TLS),
 
 				ProtocolVersion: new(float32(1.0)),
 
@@ -1745,8 +1707,7 @@ func Test_getTransportEncryption(t *testing.T) {
 					{
 						SessionCipher: new("AES-128-GCM"),
 
-						MacAlgorithm:  new("SHA-256"),
-
+						MacAlgorithm: new("SHA-256"),
 					},
 				},
 			},
@@ -1768,11 +1729,11 @@ func Test_getTransportEncryption(t *testing.T) {
 				},
 			},
 			wantEnc: &ontology.TransportEncryption{
-				Enforced:        new(true),
+				Enforced: new(true),
 
-				Enabled:         new(true),
+				Enabled: new(true),
 
-				Protocol:        new(constants.TLS),
+				Protocol: new(constants.TLS),
 
 				ProtocolVersion: new(float32(1.1)),
 
@@ -1780,8 +1741,7 @@ func Test_getTransportEncryption(t *testing.T) {
 					{
 						SessionCipher: new("AES-128-GCM"),
 
-						MacAlgorithm:  new("SHA-256"),
-
+						MacAlgorithm: new("SHA-256"),
 					},
 				},
 			},
@@ -1803,11 +1763,11 @@ func Test_getTransportEncryption(t *testing.T) {
 				},
 			},
 			wantEnc: &ontology.TransportEncryption{
-				Enforced:        new(true),
+				Enforced: new(true),
 
-				Enabled:         new(true),
+				Enabled: new(true),
 
-				Protocol:        new(constants.TLS),
+				Protocol: new(constants.TLS),
 
 				ProtocolVersion: new(float32(1.2)),
 
@@ -1815,8 +1775,7 @@ func Test_getTransportEncryption(t *testing.T) {
 					{
 						SessionCipher: new("AES-128-GCM"),
 
-						MacAlgorithm:  new("SHA-256"),
-
+						MacAlgorithm: new("SHA-256"),
 					},
 				},
 			},
@@ -1873,9 +1832,7 @@ func Test_azureComputeDiscovery_getResourceLoggingWebApp(t *testing.T) {
 					},
 				},
 			},
-			wantRl: &ontology.ResourceLogging{
-
-			},
+			wantRl: &ontology.ResourceLogging{},
 		},
 		{
 			name: "Happy path: logging enabled",
@@ -1897,7 +1854,6 @@ func Test_azureComputeDiscovery_getResourceLoggingWebApp(t *testing.T) {
 			},
 			wantRl: &ontology.ResourceLogging{
 				Enabled: new(true),
-
 			},
 		},
 	}

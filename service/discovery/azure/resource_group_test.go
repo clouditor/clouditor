@@ -62,12 +62,11 @@ func Test_azureResourceGroupDiscovery_handleSubscription(t *testing.T) {
 				},
 			},
 			want: &ontology.Account{
-				Id:   new(testdata.MockSubscriptionResourceID),
+				Id: new(testdata.MockSubscriptionResourceID),
 
 				Name: new("Wonderful Subscription"),
 
-				Raw:  new(string(`{"*armsubscription.Subscription":[{"displayName":"Wonderful Subscription","id":"/subscriptions/00000000-0000-0000-0000-000000000000","subscriptionId":"00000000-0000-0000-0000-000000000000"}]}`)),
-
+				Raw: new(string(`{"*armsubscription.Subscription":[{"displayName":"Wonderful Subscription","id":"/subscriptions/00000000-0000-0000-0000-000000000000","subscriptionId":"00000000-0000-0000-0000-000000000000"}]}`)),
 			},
 		},
 	}
@@ -111,13 +110,12 @@ func Test_azureResourceGroupDiscovery_handleResourceGroup(t *testing.T) {
 				},
 			},
 			want: &ontology.ResourceGroup{
-				Id:   new(testdata.MockResourceGroupID),
+				Id: new(testdata.MockResourceGroupID),
 
 				Name: new("res1"),
 
 				GeoLocation: &ontology.GeoLocation{
 					Region: new("westus"),
-
 				},
 				Labels: map[string]string{
 					"tag2Key": "tag2",
@@ -125,7 +123,6 @@ func Test_azureResourceGroupDiscovery_handleResourceGroup(t *testing.T) {
 				},
 				ParentId: new(testdata.MockSubscriptionResourceID),
 				Raw:      new(string(`{"*armresources.ResourceGroup":[{"id":"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1","location":"westus","name":"res1","tags":{"tag1Key":"tag1","tag2Key":"tag2"}}]}`)),
-
 			},
 		},
 	}
@@ -172,21 +169,19 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 			},
 			wantList: []ontology.IsResource{
 				&ontology.Account{
-					Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000"),
+					Id: new("/subscriptions/00000000-0000-0000-0000-000000000000"),
 
 					Name: new("displayName"),
 
-					Raw:  new(string(`{"*armsubscription.Subscription":[{"displayName":"displayName","id":"/subscriptions/00000000-0000-0000-0000-000000000000","subscriptionId":"00000000-0000-0000-0000-000000000000"}]}`)),
-
+					Raw: new(string(`{"*armsubscription.Subscription":[{"displayName":"displayName","id":"/subscriptions/00000000-0000-0000-0000-000000000000","subscriptionId":"00000000-0000-0000-0000-000000000000"}]}`)),
 				},
 				&ontology.ResourceGroup{
-					Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 
 					Name: new("res1"),
 
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("westus"),
-
 					},
 					Labels: map[string]string{
 						"testKey1": "testTag1",
@@ -194,16 +189,14 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 					},
 					ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000"),
 					Raw:      new(string(`{"*armresources.ResourceGroup":[{"id":"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1","location":"westus","name":"res1","tags":{"testKey1":"testTag1","testKey2":"testTag2"}}]}`)),
-
 				},
 				&ontology.ResourceGroup{
-					Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res2"),
+					Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res2"),
 
 					Name: new("res2"),
 
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("eastus"),
-
 					},
 					Labels: map[string]string{
 						"testKey1": "testTag1",
@@ -211,7 +204,6 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 					},
 					ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000"),
 					Raw:      new(string(`{"*armresources.ResourceGroup":[{"id":"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2","location":"eastus","name":"res2","tags":{"testKey1":"testTag1","testKey2":"testTag2"}}]}`)),
-
 				},
 			},
 			wantErr: assert.NoError,
@@ -229,21 +221,19 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 			},
 			wantList: []ontology.IsResource{
 				&ontology.Account{
-					Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000"),
+					Id: new("/subscriptions/00000000-0000-0000-0000-000000000000"),
 
 					Name: new("displayName"),
 
-					Raw:  new(string(`{"*armsubscription.Subscription":[{"displayName":"displayName","id":"/subscriptions/00000000-0000-0000-0000-000000000000","subscriptionId":"00000000-0000-0000-0000-000000000000"}]}`)),
-
+					Raw: new(string(`{"*armsubscription.Subscription":[{"displayName":"displayName","id":"/subscriptions/00000000-0000-0000-0000-000000000000","subscriptionId":"00000000-0000-0000-0000-000000000000"}]}`)),
 				},
 				&ontology.ResourceGroup{
-					Id:   new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Id: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 
 					Name: new("res1"),
 
 					GeoLocation: &ontology.GeoLocation{
 						Region: new("westus"),
-
 					},
 					Labels: map[string]string{
 						"testKey1": "testTag1",
@@ -251,7 +241,6 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 					},
 					ParentId: new("/subscriptions/00000000-0000-0000-0000-000000000000"),
 					Raw:      new(string(`{"*armresources.ResourceGroup":[{"id":"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1","location":"westus","name":"res1","tags":{"testKey1":"testTag1","testKey2":"testTag2"}}]}`)),
-
 				},
 			},
 			wantErr: assert.NoError,
