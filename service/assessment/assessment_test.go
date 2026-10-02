@@ -918,7 +918,7 @@ func TestService_handleEvidence(t *testing.T) {
 		wantErr assert.WantErr
 	}{
 		{
-			name: "correct evidence: using metrics which return comparison results",
+			name: "document evidence: applicable CSAF metrics without comparison results",
 			fields: fields{
 				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
 				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
@@ -958,16 +958,23 @@ func TestService_handleEvidence(t *testing.T) {
 				},
 			},
 			want: func(t *testing.T, got []*assessment.AssessmentResult) bool {
+				metricIDs := make(map[string]int)
 				for _, result := range got {
+					metricIDs[result.GetMetricId()]++
 					err := api.Validate(result)
 					assert.NoError(t, err)
+					assert.Empty(t, result.GetComplianceDetails())
 				}
-				return assert.Equal(t, 4, len(got))
+				return assert.Equal(t, map[string]int{
+					"ba26e062-eea7-4d47-a181-3a5dbe723ed3": 1,
+					"3320c5ca-376b-4bdc-b4e6-0a03db2ec66e": 1,
+					"56ab82ed-e3f2-49e3-9acf-0b5c1fa744d1": 1,
+				}, metricIDs)
 			},
 			wantErr: assert.Nil[error],
 		},
 		{
-			name: "correct evidence: using metrics which do not return comparison results",
+			name: "VM evidence: populated boot logging field with comparison results",
 			fields: fields{
 				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
 				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
@@ -997,11 +1004,14 @@ func TestService_handleEvidence(t *testing.T) {
 				},
 			},
 			want: func(t *testing.T, got []*assessment.AssessmentResult) bool {
+				metricIDs := make(map[string]int)
 				for _, result := range got {
+					metricIDs[result.GetMetricId()]++
 					err := api.Validate(result)
 					assert.NoError(t, err)
+					assert.Equal(t, 1, len(result.GetComplianceDetails()))
 				}
-				return assert.True(t, len(got) >= 4)
+				return assert.Equal(t, map[string]int{"bb41142b-ce8c-4c5c-9b42-360f015fd325": 1}, metricIDs)
 			},
 			wantErr: assert.Nil[error],
 		},

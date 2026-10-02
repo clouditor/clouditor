@@ -74,7 +74,6 @@ func Test_regoEval_Eval(t *testing.T) {
 				"AtRestEncryptionAlgorithm":         true,
 				"AtRestEncryptionEnabled":           true,
 				"ObjectStoragePublicAccessDisabled": true,
-				"VulnerabilitiesNotExploitable":     false,
 			},
 			args: args{
 				resource: &ontology.ObjectStorage{
@@ -125,7 +124,6 @@ func Test_regoEval_Eval(t *testing.T) {
 				"AtRestEncryptionAlgorithm":         false,
 				"AtRestEncryptionEnabled":           false,
 				"ObjectStoragePublicAccessDisabled": false,
-				"VulnerabilitiesNotExploitable":     false,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -159,7 +157,6 @@ func Test_regoEval_Eval(t *testing.T) {
 				"AtRestEncryptionAlgorithm":         false,
 				"AtRestEncryptionEnabled":           false,
 				"ObjectStoragePublicAccessDisabled": false,
-				"VulnerabilitiesNotExploitable":     false,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -204,17 +201,16 @@ func Test_regoEval_Eval(t *testing.T) {
 				evidenceID: mockVM1EvidenceID,
 			},
 			compliant: map[string]bool{
-				"AutomaticUpdatesEnabled":       true,
-				"AutomaticUpdatesInterval":      true,
-				"BootLoggingEnabled":            true,
-				"BootLoggingOutput":             true,
-				"BootLoggingRetention":          true,
-				"MalwareProtectionEnabled":      true,
-				"MalwareProtectionOutput":       true,
-				"OSLoggingRetention":            true,
-				"OSLoggingOutput":               true,
-				"OSLoggingEnabled":              true,
-				"VulnerabilitiesNotExploitable": false,
+				"AutomaticUpdatesEnabled":  true,
+				"AutomaticUpdatesInterval": true,
+				"BootLoggingEnabled":       true,
+				"BootLoggingOutput":        true,
+				"BootLoggingRetention":     true,
+				"MalwareProtectionEnabled": true,
+				"MalwareProtectionOutput":  true,
+				"OSLoggingRetention":       true,
+				"OSLoggingOutput":          true,
+				"OSLoggingEnabled":         true,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -245,13 +241,11 @@ func Test_regoEval_Eval(t *testing.T) {
 				src:        &mockMetricsSource{t: t},
 			},
 			compliant: map[string]bool{
-				"BootLoggingEnabled":            false,
-				"BootLoggingOutput":             false,
-				"BootLoggingRetention":          false,
-				"OSLoggingEnabled":              false,
-				"OSLoggingOutput":               true,
-				"OSLoggingRetention":            false,
-				"VulnerabilitiesNotExploitable": false,
+				"BootLoggingEnabled":   false,
+				"BootLoggingRetention": false,
+				"OSLoggingEnabled":     false,
+				"OSLoggingOutput":      true,
+				"OSLoggingRetention":   false,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -288,7 +282,6 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			compliant: map[string]bool{
 				"VirtualMachineDiskEncryptionEnabled": false,
-				"VulnerabilitiesNotExploitable":       false,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -326,7 +319,6 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			compliant: map[string]bool{
 				"VirtualMachineDiskEncryptionEnabled": true,
-				"VulnerabilitiesNotExploitable":       false,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -360,14 +352,9 @@ func Test_regoEval_Eval(t *testing.T) {
 				src:        &mockMetricsSource{t: t},
 			},
 			compliant: map[string]bool{
-				"TransportEncryptionEnabled":            true,
-				"TransportEncryptionEnforced":           false,
-				"TransportEncryptionProtocol":           true,
-				"TransportEncryptionProtocolVersion":    true,
-				"TlsCipherSuite":                        false,
-				"TlsDHGroup":                            false,
-				"TransportEncryptionSignatureAlgorithm": false,
-				"VulnerabilitiesNotExploitable":         false,
+				"TransportEncryptionEnabled":  true,
+				"TransportEncryptionEnforced": false,
+				"TransportEncryptionProtocol": true,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -397,10 +384,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				}
 			}
 
-			for metricName, expected := range tt.compliant {
-				assert.Contains(t, compliants, metricName)
-				assert.Equal(t, expected, compliants[metricName])
-			}
+			assert.Equal(t, tt.compliant, compliants)
 		})
 	}
 }
