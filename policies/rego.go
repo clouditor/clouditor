@@ -56,6 +56,12 @@ type regoEval struct {
 
 	// pkg is the base package name that is used in the Rego files
 	pkg string
+
+	// cacheApplicableMetrics specifies whether mrtc is actually used to cache applicable metrics. It is
+	// disabled by default, since applicability is not a pure function of toolID and resourceType alone -
+	// it can also depend on which fields are actually populated on a specific resource instance - so the
+	// cache can go stale, e.g., when metrics are reloaded from an updated security-metrics bundle.
+	cacheApplicableMetrics bool
 }
 
 type queryCache struct {
@@ -71,6 +77,14 @@ type RegoEvalOption func(re *regoEval)
 func WithPackageName(pkg string) RegoEvalOption {
 	return func(re *regoEval) {
 		re.pkg = pkg
+	}
+}
+
+// WithApplicableMetricsCache is an option to enable or disable the caching of applicable metrics per
+// toolID and resourceType (mrtc). It is disabled by default.
+func WithApplicableMetricsCache(enabled bool) RegoEvalOption {
+	return func(re *regoEval) {
+		re.cacheApplicableMetrics = enabled
 	}
 }
 
@@ -97,6 +111,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, rel
 		m       map[string]any
 		mm      map[string]any
 		types   []string
+		cached  []*assessment.Metric
 	)
 
 	baseDir = "."
@@ -122,9 +137,11 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, rel
 	types = ontology.ResourceTypes(r)
 	key := createKey(evidence, types)
 
-	re.mrtc.RLock()
-	cached := re.mrtc.m[key]
-	re.mrtc.RUnlock()
+	if re.cacheApplicableMetrics {
+		re.mrtc.RLock()
+		cached = re.mrtc.m[key]
+		re.mrtc.RUnlock()
+	}
 
 	// TODO(lebogg): Try to optimize duplicated code
 	if cached == nil {
@@ -133,8 +150,10 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, rel
 			return nil, fmt.Errorf("could not retrieve metric definitions: %w", err)
 		}
 
-		// Lock until we looped through all files
-		re.mrtc.Lock()
+		if re.cacheApplicableMetrics {
+			// Lock until we looped through all files
+			re.mrtc.Lock()
+		}
 
 		// Start with an empty list, otherwise we might copy metrics into the list
 		// that are added by a parallel execution - which might occur if both goroutines
@@ -159,11 +178,13 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, rel
 					continue
 				}
 
-				// Otherwise, we are not really in a state where our cache is valid, so we mark it as not cached at all.
-				re.mrtc.m[key] = nil
+				if re.cacheApplicableMetrics {
+					// Otherwise, we are not really in a state where our cache is valid, so we mark it as not cached at all.
+					re.mrtc.m[key] = nil
 
-				// Unlock, to avoid deadlock and return from here with the error
-				re.mrtc.Unlock()
+					// Unlock, to avoid deadlock and return from here with the error
+					re.mrtc.Unlock()
+				}
 				return nil, err
 			}
 
@@ -174,11 +195,13 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, rel
 			}
 		}
 
-		// Set it and unlock
-		re.mrtc.m[key] = cached
-		log.Infof("Resource type %v has the following %v applicable metric(s): %v", key, len(re.mrtc.m[key]), idsOf(re.mrtc.m[key]))
+		if re.cacheApplicableMetrics {
+			// Set it and unlock
+			re.mrtc.m[key] = cached
+			log.Infof("Resource type %v has the following %v applicable metric(s): %v", key, len(re.mrtc.m[key]), idsOf(re.mrtc.m[key]))
 
-		re.mrtc.Unlock()
+			re.mrtc.Unlock()
+		}
 	} else {
 		for _, metric := range cached {
 			runMap, err := re.evalMap(baseDir, evidence.TargetOfEvaluationId, metric, m, src)

@@ -75,9 +75,13 @@ func BindFlags(cmd *cobra.Command) {
 	if cmd.Flag(config.APIHTTPPortFlag) == nil {
 		cmd.Flags().Uint16(config.APIHTTPPortFlag, config.DefaultAPIHTTPPortAssessment, "Specifies the port used for the Clouditor HTTP API")
 	}
+	if cmd.Flag(config.CacheApplicableMetricsFlag) == nil {
+		cmd.Flags().Bool(config.CacheApplicableMetricsFlag, config.DefaultCacheApplicableMetrics, "Caches the list of applicable metrics per tool ID and resource type. Disabled by default, since the cache is not invalidated when the security-metrics bundle is reloaded")
+	}
 
 	_ = viper.BindPFlag(config.OrchestratorURLFlag, cmd.Flags().Lookup(config.OrchestratorURLFlag))
 	_ = viper.BindPFlag(config.EvidenceStoreURLFlag, cmd.Flags().Lookup(config.EvidenceStoreURLFlag))
 	_ = viper.BindPFlag(config.APIgRPCPortFlag, cmd.Flags().Lookup(config.APIgRPCPortFlag))
 	_ = viper.BindPFlag(config.APIHTTPPortFlag, cmd.Flags().Lookup(config.APIHTTPPortFlag))
+	_ = viper.BindPFlag(config.CacheApplicableMetricsFlag, cmd.Flags().Lookup(config.CacheApplicableMetricsFlag))
 }

@@ -73,6 +73,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 		},
 		WithOAuth2Authorizer(config.ClientCredentials()),
 		WithOrchestratorAddress(viper.GetString(config.OrchestratorURLFlag)),
+		WithApplicableMetricsCache(viper.GetBool(config.CacheApplicableMetricsFlag)),
 	)
 }
 
@@ -132,6 +133,10 @@ type Service struct {
 
 	// evalPkg specifies the package used for the evaluation engine
 	evalPkg string
+
+	// cacheApplicableMetrics specifies whether the policy evaluation engine caches the list of applicable
+	// metrics per tool ID and resource type. It is disabled by default.
+	cacheApplicableMetrics bool
 }
 
 // WithOrchestratorAddress is an option to configure the orchestrator gRPC address.
@@ -166,6 +171,14 @@ func WithRegoPackageName(pkg string) service.Option[*Service] {
 	}
 }
 
+// WithApplicableMetricsCache is an option to enable or disable caching of applicable metrics per tool ID
+// and resource type in the policy evaluation engine. It is disabled by default.
+func WithApplicableMetricsCache(enabled bool) service.Option[*Service] {
+	return func(s *Service) {
+		s.cacheApplicableMetrics = enabled
+	}
+}
+
 // WithAuthorizationStrategy is an option that configures an authorization strategy.
 func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Option[*Service] {
 	return func(svc *Service) {
@@ -194,7 +207,10 @@ func NewService(opts ...service.Option[*Service]) *Service {
 	}
 
 	// Initialize the policy evaluator after options are set
-	svc.pe = policies.NewRegoEval(policies.WithPackageName(svc.evalPkg))
+	svc.pe = policies.NewRegoEval(
+		policies.WithPackageName(svc.evalPkg),
+		policies.WithApplicableMetricsCache(svc.cacheApplicableMetrics),
+	)
 
 	// Default to an allow-all authorization strategy
 	if svc.authz == nil {
