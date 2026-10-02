@@ -27,7 +27,8 @@
                                 "description": "The CSP shall use an up-to-date TLS protocol in all data transmissions",
                                 "metrics": [
                                     {
-                                        "id": "TransportEncryptionProtocol"
+                                        "id": "85fb5768-61c4-41d7-b2a3-603bfc5726cd",
+                                        "name": "TransportEncryptionProtocol"
                                     }
                                 ],
                                 "assurance_level": "substantial"
@@ -37,7 +38,8 @@
                                 "description": "The CSP shall enforce encryption in all data transmissions",
                                 "metrics": [
                                     {
-                                        "id": "TransportEncryptionEnforced"
+                                        "id": "a8d42a80-4230-4c2e-8713-b5e4b15262de",
+                                        "name": "TransportEncryptionEnforced"
                                     }
                                 ],
                                 "assurance_level": "high"
@@ -47,7 +49,8 @@
                                 "description": "The CSP shall enable encryption in all data transmissions",
                                 "metrics": [
                                     {
-                                        "id": "TransportEncryptionEnabled"
+                                        "id": "642e9b84-4bf9-4853-9c76-555716f0c716",
+                                        "name": "TransportEncryptionEnabled"
                                     }
                                 ],
                                 "assurance_level": "substantial"
@@ -57,7 +60,8 @@
                                 "description": "The CSP shall use state-of-the-art TLS cipher suites.",
                                 "metrics": [
                                     {
-                                        "id": "TlsCipherSuites"
+                                        "id": "f05099b4-1d9c-43c8-acd0-6a06ce060478",
+                                        "name": "TlsCipherSuite"
                                     }
                                 ],
                                 "assurance_level": "high"
@@ -67,7 +71,8 @@
                                 "description": "The CSP shall use state-of-the-art TLS Diffie-Hellman groups.",
                                 "metrics": [
                                     {
-                                        "id": "TlsDHGroups"
+                                        "id": "0d641dd8-eafa-4c47-822d-70d44ae0cfcd",
+                                        "name": "TlsDHGroup"
                                     }
                                 ],
                                 "assurance_level": "high"
@@ -77,7 +82,8 @@
                                 "description": "The CSP shall use state-of-the-art TLS signature algorithms.",
                                 "metrics": [
                                     {
-                                        "id": "TlsSignatureAlgorithms"
+                                        "id": "62fc5729-400f-4835-b5d6-0cd3d3d36ad4",
+                                        "name": "TransportEncryptionSignatureAlgorithm"
                                     }
                                 ],
                                 "assurance_level": "high"
@@ -100,7 +106,8 @@
                                 "description": "The CSP shall use an up-to-date TLS protocol in all data transmissions",
                                 "metrics": [
                                     {
-                                        "id": "TransportEncryptionProtocol"
+                                        "id": "85fb5768-61c4-41d7-b2a3-603bfc5726cd",
+                                        "name": "TransportEncryptionProtocol"
                                     }
                                 ],
                                 "assurance_level": "substantial"
@@ -110,7 +117,8 @@
                                 "description": "The CSP shall enforce encryption in all data transmissions.",
                                 "metrics": [
                                     {
-                                        "id": "TransportEncryptionEnforced"
+                                        "id": "a8d42a80-4230-4c2e-8713-b5e4b15262de",
+                                        "name": "TransportEncryptionEnforced"
                                     }
                                 ],
                                 "assurance_level": "high"
@@ -120,7 +128,8 @@
                                 "description": "The CSP shall enable encryption in all data transmissions",
                                 "metrics": [
                                     {
-                                        "id": "TransportEncryptionEnabled"
+                                        "id": "642e9b84-4bf9-4853-9c76-555716f0c716",
+                                        "name": "TransportEncryptionEnabled"
                                     }
                                 ],
                                 "assurance_level": "substantial"
@@ -137,7 +146,8 @@
                                 "description": "The CSP shall enable the Web Application Firewall (WAF).",
                                 "metrics": [
                                     {
-                                        "id": "WebApplicationFirewallEnabled"
+                                        "id": "977e1eb2-ebe8-4fac-8def-da47f62ea8eb",
+                                        "name": "WebApplicationFirewallEnabled"
                                     }
                                 ],
                                 "assurance_level": "substantial"
@@ -147,10 +157,12 @@
                                 "description": "The CSP shall enable the L3 firewall and restrict specific ports.",
                                 "metrics": [
                                     {
-                                        "id": "L3FirewallEnabled"
+                                        "id": "44cc5226-bfe0-4394-ac20-108edc410fb4",
+                                        "name": "L3FirewallEnabled"
                                     },
                                     {
-                                        "id": "L3FirewallRestrictedPorts"
+                                        "id": "8d5e6fe4-d600-4e5b-aba6-03035d59f329",
+                                        "name": "L3FirewallRestrictedPorts"
                                     }
                                 ],
                                 "assurance_level": "high"
@@ -167,10 +179,12 @@
                                 "description": "The CSP shall enable malware protection and store the log data.",
                                 "metrics": [
                                     {
-                                        "id": "MalwareProtectionEnabled"
+                                        "id": "ee918d96-028b-48ee-8c4c-afa0d5aa9d49",
+                                        "name": "MalwareProtectionEnabled"
                                     },
                                     {
-                                        "id": "MalwareProtectionOutput"
+                                        "id": "2f827e14-11d7-4c1c-8020-9c69185f807f",
+                                        "name": "MalwareProtectionOutput"
                                     }
                                 ],
                                 "assurance_level": "substantial"
@@ -187,10 +201,12 @@
                                 "description": "The CSP shall enable automatic updates and update in a specific time intervall.",
                                 "metrics": [
                                     {
-                                        "id": "AutomaticUpdatesEnabled"
+                                        "id": "84eaed86-759d-4419-9954-f3d3ea1f5200",
+                                        "name": "AutomaticUpdatesEnabled"
                                     },
                                     {
-                                        "id": "AutomaticUpdatesInterval"
+                                        "id": "50118133-1b49-416c-a052-8bc9221241c2",
+                                        "name": "AutomaticUpdatesInterval"
                                     }
                                 ],
                                 "assurance_level": "substantial"
@@ -207,10 +223,12 @@
                                 "description": "The CSP shall enable anomaly detection and store the log data.",
                                 "metrics": [
                                     {
-                                        "id": "AnomalyDetectionEnabled"
+                                        "id": "58d9a281-0f05-4a49-a1ef-df5013cc901e",
+                                        "name": "AnomalyDetectionEnabled"
                                     },
                                     {
-                                        "id": "AnomalyDetectionOutput"
+                                        "id": "0772e639-06b8-4a37-913d-5ef0840a334e",
+                                        "name": "AnomalyDetectionOutput"
                                     }
                                 ],
                                 "assurance_level": "high"
@@ -227,7 +245,16 @@
                                 "description": "The CSP shall use state-of-the-art runtime versions.",
                                 "metrics": [
                                     {
-                                        "id": "RuntimeVersion"
+                                        "id": "ff45f41b-11dd-4419-9d65-19f91735c661",
+                                        "name": "JavaRuntime"
+                                    },
+                                    {
+                                        "id": "8075e45f-38d8-4c99-94d6-62eebd379e6b",
+                                        "name": "PythonRuntime"
+                                    },
+                                    {
+                                        "id": "da31d179-91ce-4782-97c7-c2e629ba2e19",
+                                        "name": "PHPRuntime"
                                     }
                                 ],
                                 "assurance_level": "substantial"
@@ -244,7 +271,8 @@
                                 "description": "The CSP shall enable at rest encryption.",
                                 "metrics": [
                                     {
-                                        "id": "AtRestEncryptionEnabled"
+                                        "id": "c7121da1-274e-4c6b-b2fe-47df992297a9",
+                                        "name": "AtRestEncryptionEnabled"
                                     }
                                 ],
                                 "assurance_level": "substantial"
@@ -254,7 +282,8 @@
                                 "description": "The CSP shall use state-of-the-art encryption algorithms for data at rest.",
                                 "metrics": [
                                     {
-                                        "id": "AtRestEncryptionAlgorithm"
+                                        "id": "ed9f79fb-ff19-4626-8911-a3484a9b7639",
+                                        "name": "AtRestEncryptionAlgorithm"
                                     }
                                 ],
                                 "assurance_level": "substantial"
@@ -277,13 +306,16 @@
                                 "description": "The CSP shall log all boot activities in a dedicated storage and retain the data for a specific time.",
                                 "metrics": [
                                     {
-                                        "id": "BootLoggingEnabled"
+                                        "id": "bb41142b-ce8c-4c5c-9b42-360f015fd325",
+                                        "name": "BootLoggingEnabled"
                                     },
                                     {
-                                        "id": "BootLoggingOutput"
+                                        "id": "2ba4df85-11f7-41f8-a761-ae7c5d91c758",
+                                        "name": "BootLoggingOutput"
                                     },
                                     {
-                                        "id": "BootLoggingRetention"
+                                        "id": "eeb0ecc5-a72e-4d8f-a2e3-c641e6bfe7fd",
+                                        "name": "BootLoggingRetention"
                                     }
                                 ],
                                 "assurance_level": "substantial"
@@ -300,13 +332,16 @@
                                 "description": "The CSP shall log all activities in a dedicated storage and retain the data for a specific time.",
                                 "metrics": [
                                     {
-                                        "id": "OSLoggingEnabled"
+                                        "id": "8c124502-547f-42dc-9b16-1ae939a14128",
+                                        "name": "OSLoggingEnabled"
                                     },
                                     {
-                                        "id": "OSLoggingOutput"
+                                        "id": "432bfcdf-42f1-4c39-8ec9-b02a96dbbdc8",
+                                        "name": "OSLoggingOutput"
                                     },
                                     {
-                                        "id": "OSLoggingRetention"
+                                        "id": "ede364e8-6dc0-4774-af00-bfd57445f35c",
+                                        "name": "OSLoggingRetention"
                                     }
                                 ],
                                 "assurance_level": "high"
@@ -323,7 +358,8 @@
                                 "description": "The CSP shall log malware protection data.",
                                 "metrics": [
                                     {
-                                        "id": "MalwareProtectionOutput"
+                                        "id": "2f827e14-11d7-4c1c-8020-9c69185f807f",
+                                        "name": "MalwareProtectionOutput"
                                     }
                                 ],
                                 "assurance_level": "substantial"
@@ -333,7 +369,8 @@
                                 "name": "The CSP shall log anomaly detection data.",
                                 "metrics": [
                                     {
-                                        "id": "AnomalyDetectionOutput"
+                                        "id": "0772e639-06b8-4a37-913d-5ef0840a334e",
+                                        "name": "AnomalyDetectionOutput"
                                     }
                                 ],
                                 "assurance_level": "substantial"
@@ -356,7 +393,8 @@
                                 "description": "The CSP shall check recent identity activities.",
                                 "metrics": [
                                     {
-                                        "id": "IdentityRecentActivity"
+                                        "id": "42873d13-7816-4bef-a875-d13e36ec9cf5",
+                                        "name": "IdentityInactiveDuration"
                                     }
                                 ],
                                 "assurance_level": "high"
@@ -373,7 +411,8 @@
                                 "description": "The CSP shall use password policies.",
                                 "metrics": [
                                     {
-                                        "id": "IdentityPasswordPolicy"
+                                        "id": "12fc547b-7a33-4d6a-8f9a-cf9ec059a13e",
+                                        "name": "IdentityPasswordPolicyEnabled"
                                     }
                                 ],
                                 "assurance_level": "substantial"
@@ -396,7 +435,8 @@
                                 "description": "The CSP shall check if data encryption is enabled.",
                                 "metrics": [
                                     {
-                                        "id": "AtRestEncryptionEnabled"
+                                        "id": "c7121da1-274e-4c6b-b2fe-47df992297a9",
+                                        "name": "AtRestEncryptionEnabled"
                                     }
                                 ],
                                 "assurance_level": "substantial"
@@ -406,7 +446,8 @@
                                 "description": "The CSP shall check if state-of-the-art algorithms are used for data at rest.",
                                 "metrics": [
                                     {
-                                        "id": "AtRestEncryptionAlgorithm"
+                                        "id": "ed9f79fb-ff19-4626-8911-a3484a9b7639",
+                                        "name": "AtRestEncryptionAlgorithm"
                                     }
                                 ],
                                 "assurance_level": "substantial"
@@ -429,7 +470,8 @@
                                 "description": "The CSP shall check if Git commit messages contain a signoff.",
                                 "metrics": [
                                     {
-                                        "id": "CodeSignoff"
+                                        "id": "6d3a98a6-b5b9-4f62-904f-be421ec69f36",
+                                        "name": "CodeSignoffEnforced"
                                     }
                                 ],
                                 "assurance_level": "substantial"
@@ -439,7 +481,12 @@
                                 "description": "The CSP shall check if Git commits are signed and contain a signoff.",
                                 "metrics": [
                                     {
-                                        "id": "SignedSignoff"
+                                        "id": "6920d9c5-587d-4e9f-876c-dcf1a69f7f75",
+                                        "name": "SignedCommitsEnforced"
+                                    },
+                                    {
+                                        "id": "6d3a98a6-b5b9-4f62-904f-be421ec69f36",
+                                        "name": "CodeSignoffEnforced"
                                     }
                                 ],
                                 "assurance_level": "high"
@@ -449,7 +496,8 @@
                                 "description": "The CSP shall check if Git commits are signed.",
                                 "metrics": [
                                     {
-                                        "id": "SignedCommits"
+                                        "id": "6920d9c5-587d-4e9f-876c-dcf1a69f7f75",
+                                        "name": "SignedCommitsEnforced"
                                     }
                                 ],
                                 "assurance_level": "high"
@@ -459,7 +507,8 @@
                                 "description": "The CSP shall check if only approved authors have committed new code.",
                                 "metrics": [
                                     {
-                                        "id": "ApprovedCommitAuthor"
+                                        "id": "4fbcbf09-35c3-4d7b-b9a9-97c7ba36f0de",
+                                        "name": "ApprovedCommitAuthorEnforced"
                                     }
                                 ],
                                 "assurance_level": "substantial"
