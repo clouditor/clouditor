@@ -1682,6 +1682,12 @@ components:
                     type: number
                     description: Percentage of completed reviews and updates of asset inventory entries.
                     format: float
+                inventoryDefined:
+                    type: boolean
+                    description: Indicates whether an asset inventory is defined.
+                ownerAssignmentStated:
+                    type: boolean
+                    description: Indicates whether an owner is assigned for each asset class/type.
                 reviewFrequency:
                     type: integer
                     format: int32
@@ -2066,6 +2072,10 @@ components:
                 authenticationMechanism:
                     type: string
                     description: 'for example: RSA, ECDSA'
+                dhGroup:
+                    type: array
+                    items:
+                        type: string
                 keyExchangeAlgorithm:
                     type: string
                 macAlgorithm:
@@ -2151,7 +2161,11 @@ components:
                 percentageLastMonth:
                     type: number
                     format: float
-            description: "CodeSignoff is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.\n Percentage: Percentage of commits with \"Signed-off-by\" lines. \n PercentageLastMonth: Percentage of commits with \"Signed-off-by\" lines in the last 30 days. \n Signoffs enable users to affirm that a commit complies with the rules and licensing governing a repository"
+            description: |-
+                CodeSignoff is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Percentage: Percentage of commits with "Signed-off-by" lines.
+                 PercentageLastMonth: Percentage of commits with "Signed-off-by" lines in the last 30 days.
+                 Signoffs enable users to affirm that a commit complies with the rules and licensing governing a repository
         ComparisonResult:
             required:
                 - property
@@ -4290,6 +4304,9 @@ components:
                 failedAuthenticationAttempts:
                     type: integer
                     format: int32
+                length:
+                    type: integer
+                    format: int32
                 rotationInterval:
                     type: integer
                     description: Maximum password rotation interval in months
@@ -4539,6 +4556,10 @@ components:
             properties:
                 approvedBeforeDeployment:
                     type: boolean
+                mandatoryFieldCompletenessPercent:
+                    type: number
+                    description: Percentage of change register entries with all mandatory fields completed.
+                    format: float
             description: RequestForChange is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         ResourceGroup:
             type: object
@@ -4812,7 +4833,11 @@ components:
                 percentageLastMonth:
                     type: number
                     format: float
-            description: "SignedCommits is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.\n  SignedCommits cryptographically verify the identity of the commit author.\n Percentage: Percentage of signed commits. \n PercentageLastMonth: Percentage of signed commits in the last 30 days."
+            description: |-
+                SignedCommits is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                  SignedCommits cryptographically verify the identity of the commit author.
+                 Percentage: Percentage of signed commits.
+                 PercentageLastMonth: Percentage of signed commits in the last 30 days.
         SingleSignOn:
             type: object
             properties:
@@ -5013,7 +5038,11 @@ components:
                 percentageLastMonth:
                     type: number
                     format: float
-            description: "VerifiedCommits is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.\n  VerifiedCommits ensure that cryptographic signatures on commits are successfully validated against trusted keys, confirming author authenticity and code integrity.\n Percentage: Percentage of verified commits. \n PercentageLastMonth: Percentage of verified commits in the last 30 days."
+            description: |-
+                VerifiedCommits is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                  VerifiedCommits ensure that cryptographic signatures on commits are successfully validated against trusted keys, confirming author authenticity and code integrity.
+                 Percentage: Percentage of verified commits.
+                 PercentageLastMonth: Percentage of verified commits in the last 30 days.
         VirtualMachine:
             type: object
             properties:

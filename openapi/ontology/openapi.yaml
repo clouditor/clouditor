@@ -34,11 +34,25 @@ components:
             type: object
             properties: {}
             description: ABAC is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        AcceptableUsePolicy:
+            type: object
+            properties:
+                isDefined:
+                    type: boolean
+                mandatedAreaCoveragePercent:
+                    type: number
+                    description: Percentage of mandated control areas explicitly addressed.
+                    format: float
+            description: |-
+                AcceptableUsePolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents an acceptable use policy within a PolicyDocument.
         AccessControlTypePolicy:
             type: object
             properties:
                 authorizationTypes:
-                    type: string
+                    type: array
+                    items:
+                        type: string
             description: AccessControlTypePolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         AccessRestriction:
             type: object
@@ -94,6 +108,17 @@ components:
             description: |-
                 Account is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  This represents the cloud account as a whole, e.g., an Azure subscription.
+        AccountManagementPolicy:
+            type: object
+            properties:
+                intervalMonths:
+                    type: integer
+                    format: int32
+                secretStorage:
+                    type: array
+                    items:
+                        type: string
+            description: AccountManagementPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         ActivityLogging:
             type: object
             properties:
@@ -287,6 +312,12 @@ components:
                     type: number
                     description: Percentage of completed reviews and updates of asset inventory entries.
                     format: float
+                inventoryDefined:
+                    type: boolean
+                    description: Indicates whether an asset inventory is defined.
+                ownerAssignmentStated:
+                    type: boolean
+                    description: Indicates whether an owner is assigned for each asset class/type.
                 reviewFrequency:
                     type: integer
                     format: int32
@@ -425,8 +456,23 @@ components:
         AwarenessTraining:
             type: object
             properties:
+                annualCadenceStated:
+                    type: array
+                    items:
+                        type: string
+                    description: Indicates whether the training plan states it is delivered at least annually.
                 annualUpdateCompleted:
                     type: boolean
+                planDocumented:
+                    type: array
+                    items:
+                        type: string
+                    description: Indicates whether a documented training and awareness plan is maintained.
+                roleAdjustedTracksStated:
+                    type: array
+                    items:
+                        type: string
+                    description: Indicates whether the training plan includes role-based tracks adjusted by employee function.
                 successfullyCompletedPercentage:
                     type: boolean
             description: AwarenessTraining is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -646,6 +692,10 @@ components:
                 authenticationMechanism:
                     type: string
                     description: 'for example: RSA, ECDSA'
+                dhGroup:
+                    type: array
+                    items:
+                        type: string
                 keyExchangeAlgorithm:
                     type: string
                 macAlgorithm:
@@ -751,7 +801,11 @@ components:
                 percentageLastMonth:
                     type: number
                     format: float
-            description: "CodeSignoff is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.\n Percentage: Percentage of commits with \"Signed-off-by\" lines. \n PercentageLastMonth: Percentage of commits with \"Signed-off-by\" lines in the last 30 days. \n Signoffs enable users to affirm that a commit complies with the rules and licensing governing a repository"
+            description: |-
+                CodeSignoff is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Percentage: Percentage of commits with "Signed-off-by" lines.
+                 PercentageLastMonth: Percentage of commits with "Signed-off-by" lines in the last 30 days.
+                 Signoffs enable users to affirm that a commit complies with the rules and licensing governing a repository
         ComplianceAuditIntervalPolicy:
             type: object
             properties:
@@ -763,12 +817,17 @@ components:
                     type: integer
                     description: The number of days elapsed since the last completed external/supervisory audit.
                     format: int32
+                unrestrictedAccessGranted:
+                    type: boolean
+                    description: Indicates whether the audit clause grants direct, unrestricted, on-demand access.
             description: ComplianceAuditIntervalPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         ComplianceMethodologyPolicy:
             type: object
             properties:
                 methodology:
-                    type: string
+                    type: array
+                    items:
+                        type: string
             description: ComplianceMethodologyPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Configuration:
             type: object
@@ -1260,6 +1319,21 @@ components:
                     items:
                         $ref: '#/components/schemas/Error'
             description: CryptographicHash is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        CryptographicTransferPolicy:
+            type: object
+            properties:
+                encryptedChannelRequired:
+                    type: boolean
+                    description: Indicates whether encrypted channels (e.g., sFTP/HTTPS) are required for data transmission.
+                nonDescriptiveFilenameRequired:
+                    type: boolean
+                    description: Indicates whether transferred file names must not include descriptive content.
+                recipientHeldKeyRequired:
+                    type: boolean
+                    description: Indicates whether the encryption key used to protect a file must be held by the recipient.
+            description: |-
+                CryptographicTransferPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents a policy section within a PolicyDocument governing cryptographic protection of transferred information.
         CustomHttpPattern:
             type: object
             properties:
@@ -1503,6 +1577,19 @@ components:
                 secretId:
                     type: string
             description: Decryption is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        DeviceManagementPolicy:
+            type: object
+            properties:
+                allMandatedControlsAddressed:
+                    type: boolean
+                    description: Indicates whether all mandated device controls are addressed.
+                checklistCoveragePercent:
+                    type: number
+                    description: Percentage of the mandated checklist items explicitly present.
+                    format: float
+            description: |-
+                DeviceManagementPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents a device management policy section within a PolicyDocument.
         DeviceProvisioningService:
             type: object
             properties:
@@ -2235,26 +2322,48 @@ components:
                     $ref: '#/components/schemas/Output'
                 padding:
                     $ref: '#/components/schemas/Padding'
+                acceptableUsePolicy:
+                    $ref: '#/components/schemas/AcceptableUsePolicy'
                 accessControlTypePolicy:
                     $ref: '#/components/schemas/AccessControlTypePolicy'
+                accountManagementPolicy:
+                    $ref: '#/components/schemas/AccountManagementPolicy'
                 auditLogMonitoringPolicy:
                     $ref: '#/components/schemas/AuditLogMonitoringPolicy'
                 complianceAuditIntervalPolicy:
                     $ref: '#/components/schemas/ComplianceAuditIntervalPolicy'
                 complianceMethodologyPolicy:
                     $ref: '#/components/schemas/ComplianceMethodologyPolicy'
+                cryptographicTransferPolicy:
+                    $ref: '#/components/schemas/CryptographicTransferPolicy'
                 dataConfidentialitySdnPolicy:
                     $ref: '#/components/schemas/DataConfidentialitySDNPolicy'
+                deviceManagementPolicy:
+                    $ref: '#/components/schemas/DeviceManagementPolicy'
+                informationSecurityManagementSystem:
+                    $ref: '#/components/schemas/InformationSecurityManagementSystem'
                 leastPrivilegePolicy:
                     $ref: '#/components/schemas/LeastPrivilegePolicy'
+                liabilityPolicy:
+                    $ref: '#/components/schemas/LiabilityPolicy'
                 needToKnowPolicy:
                     $ref: '#/components/schemas/NeedToKnowPolicy'
                 networkThreatMitigationPolicy:
                     $ref: '#/components/schemas/NetworkThreatMitigationPolicy'
+                outsourcingPolicy:
+                    $ref: '#/components/schemas/OutsourcingPolicy'
                 sdnFunctionValidationPolicy:
                     $ref: '#/components/schemas/SDNFunctionValidationPolicy'
+                secureDevelopmentPolicy:
+                    $ref: '#/components/schemas/SecureDevelopmentPolicy'
                 separationOfDutiesPolicy:
                     $ref: '#/components/schemas/SeparationOfDutiesPolicy'
+                teleworkingPolicy:
+                    $ref: '#/components/schemas/TeleworkingPolicy'
+                testDataPolicy:
+                    $ref: '#/components/schemas/TestDataPolicy'
+                vulnerabilityManagementPolicy:
+                    $ref: '#/components/schemas/VulnerabilityManagementPolicy'
                 principal:
                     $ref: '#/components/schemas/Principal'
                 protectedAsset:
@@ -2929,6 +3038,14 @@ components:
                 enabled:
                     type: boolean
             description: Immutability is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        InformationSecurityManagementSystem:
+            type: object
+            properties:
+                iso27001Certified:
+                    type: array
+                    items:
+                        type: string
+            description: InformationSecurityManagementSystem is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Infrastructure:
             type: object
             properties:
@@ -3324,6 +3441,15 @@ components:
             description: |-
                 LeastPrivilegePolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  Represents a policy section within a [PolicyDocument] describing least privilege requirements. isDefined: whether this policy section is present and defined.
+        LiabilityPolicy:
+            type: object
+            properties:
+                costsExplicitlyAssignedToProvider:
+                    type: boolean
+                    description: Indicates whether the clause explicitly assigns cost responsibility to the service provider.
+            description: |-
+                LiabilityPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents a liability/cost-assignment clause within a PolicyDocument.
         Library:
             type: object
             properties:
@@ -4120,6 +4246,9 @@ components:
                 antispoofingRequired:
                     type: boolean
                     description: Indicates whether the policy explicitly requires antispoofing mechanisms on internet-facing routers.
+                authorizedSoftwareAndControlledInstallationRequired:
+                    type: boolean
+                    description: Indicates whether the standard requires authorized-software and controlled-installation controls on network devices.
                 coveredAttackTypes:
                     type: array
                     items:
@@ -4331,6 +4460,18 @@ components:
             type: object
             properties: {}
             description: Output is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        OutsourcingPolicy:
+            type: object
+            properties:
+                monitoringMechanism:
+                    type: string
+                    description: The stated monitoring cadence or mechanism for subcontractor compliance.
+                monitoringObligationStated:
+                    type: boolean
+                    description: Indicates whether subcontracted/external providers are required to comply with and be monitored against the security policy.
+            description: |-
+                OutsourcingPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents a subcontractor/outsourcing clause within a PolicyDocument.
         POSIX:
             type: object
             properties:
@@ -4426,6 +4567,9 @@ components:
                 failedAuthenticationAttempts:
                     type: integer
                     format: int32
+                length:
+                    type: integer
+                    format: int32
                 rotationInterval:
                     type: integer
                     description: Maximum password rotation interval in months
@@ -4492,12 +4636,18 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                acceptableUsePolicy:
+                    $ref: '#/components/schemas/AcceptableUsePolicy'
                 accessControlTypePolicy:
                     $ref: '#/components/schemas/AccessControlTypePolicy'
+                accountManagementPolicy:
+                    $ref: '#/components/schemas/AccountManagementPolicy'
                 assetInventory:
                     $ref: '#/components/schemas/AssetInventory'
                 auditLogMonitoringPolicy:
                     $ref: '#/components/schemas/AuditLogMonitoringPolicy'
+                awarenessTraining:
+                    $ref: '#/components/schemas/AwarenessTraining'
                 backup:
                     $ref: '#/components/schemas/Backup'
                 complianceAuditIntervalPolicy:
@@ -4506,10 +4656,14 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/CryptographicHash'
+                cryptographicTransferPolicy:
+                    $ref: '#/components/schemas/CryptographicTransferPolicy'
                 dataConfidentialitySdnPolicy:
                     $ref: '#/components/schemas/DataConfidentialitySDNPolicy'
                 dataLocation:
                     $ref: '#/components/schemas/DataLocation'
+                deviceManagementPolicy:
+                    $ref: '#/components/schemas/DeviceManagementPolicy'
                 documentSignatures:
                     type: array
                     items:
@@ -4518,20 +4672,28 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Governance'
+                informationSecurityManagementSystem:
+                    $ref: '#/components/schemas/InformationSecurityManagementSystem'
                 leastPrivilegePolicy:
                     $ref: '#/components/schemas/LeastPrivilegePolicy'
+                liabilityPolicy:
+                    $ref: '#/components/schemas/LiabilityPolicy'
                 monitoringProcedure:
                     $ref: '#/components/schemas/MonitoringProcedure'
                 needToKnowPolicy:
                     $ref: '#/components/schemas/NeedToKnowPolicy'
                 networkThreatMitigationPolicy:
                     $ref: '#/components/schemas/NetworkThreatMitigationPolicy'
+                outsourcingPolicy:
+                    $ref: '#/components/schemas/OutsourcingPolicy'
                 parentId:
                     type: string
                 sdnFunctionValidationPolicy:
                     $ref: '#/components/schemas/SDNFunctionValidationPolicy'
                 validatedBy:
                     $ref: '#/components/schemas/SchemaValidation'
+                secureDevelopmentPolicy:
+                    $ref: '#/components/schemas/SecureDevelopmentPolicy'
                 securityFeatures:
                     type: array
                     items:
@@ -4542,6 +4704,12 @@ components:
                     $ref: '#/components/schemas/SecurityPolicyReview'
                 separationOfDutiesPolicy:
                     $ref: '#/components/schemas/SeparationOfDutiesPolicy'
+                teleworkingPolicy:
+                    $ref: '#/components/schemas/TeleworkingPolicy'
+                testDataPolicy:
+                    $ref: '#/components/schemas/TestDataPolicy'
+                vulnerabilityManagementPolicy:
+                    $ref: '#/components/schemas/VulnerabilityManagementPolicy'
             description: PolicyDocument is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Principal:
             type: object
@@ -4998,6 +5166,10 @@ components:
             properties:
                 approvedBeforeDeployment:
                     type: boolean
+                mandatoryFieldCompletenessPercent:
+                    type: number
+                    description: Percentage of change register entries with all mandatory fields completed.
+                    format: float
             description: RequestForChange is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Resource:
             type: object
@@ -5387,6 +5559,25 @@ components:
                 usageStatistics:
                     $ref: '#/components/schemas/UsageStatistics'
             description: Secret is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        SecureDevelopmentPolicy:
+            type: object
+            properties:
+                checklistCoveragePercent:
+                    type: number
+                    description: Percentage of the mandated checklist items explicitly present.
+                    format: float
+                highCriticalFindingsBlockRelease:
+                    type: boolean
+                    description: Indicates whether high/critical findings block the production release.
+                pentestGateRequired:
+                    type: boolean
+                    description: Indicates whether a pentest/static-analysis gate is required prior to production release.
+                referencesIndustryFramework:
+                    type: boolean
+                    description: Indicates whether the methodology references an industry framework (e.g., OWASP, SANS, CERT).
+            description: |-
+                SecureDevelopmentPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents a secure development methodology / SDLC policy section within a PolicyDocument.
         SecurityAdvisoryDocument:
             type: object
             properties:
@@ -5601,6 +5792,16 @@ components:
         SecurityIncident:
             type: object
             properties:
+                notificationWindowHours:
+                    type: integer
+                    description: The maximum incident notification window, in hours.
+                    format: int32
+                registryAndSlaStated:
+                    type: boolean
+                    description: Indicates whether an incident registry and handling SLA are stated.
+                severityAndEscalationDefined:
+                    type: boolean
+                    description: Indicates whether escalation responsibility for critical/high severity incidents is defined.
                 team:
                     type: array
                     items:
@@ -5613,14 +5814,32 @@ components:
                     type: integer
                     description: The interval refers to the interval in months.
                     format: int32
+                ownerAndApprovalDefined:
+                    type: boolean
+                    description: Indicates whether an accountable owner and an approval date/signature are both stated for the policy.
             description: |-
                 SecurityPolicyReview is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  Represents the review cadence of the organization's Information Security Policy. intervalMonths: how often the policy must be reviewed, in months.
         SecurityTraining:
             type: object
             properties:
+                annualCadenceStated:
+                    type: array
+                    items:
+                        type: string
+                    description: Indicates whether the training plan states it is delivered at least annually.
                 annualUpdateCompleted:
                     type: boolean
+                planDocumented:
+                    type: array
+                    items:
+                        type: string
+                    description: Indicates whether a documented training and awareness plan is maintained.
+                roleAdjustedTracksStated:
+                    type: array
+                    items:
+                        type: string
+                    description: Indicates whether the training plan includes role-based tracks adjusted by employee function.
                 successfullyCompletedPercentage:
                     type: boolean
             description: SecurityTraining is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -5683,7 +5902,11 @@ components:
                 percentageLastMonth:
                     type: number
                     format: float
-            description: "SignedCommits is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.\n  SignedCommits cryptographically verify the identity of the commit author.\n Percentage: Percentage of signed commits. \n PercentageLastMonth: Percentage of signed commits in the last 30 days."
+            description: |-
+                SignedCommits is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                  SignedCommits cryptographically verify the identity of the commit author.
+                 Percentage: Percentage of signed commits.
+                 PercentageLastMonth: Percentage of signed commits in the last 30 days.
         SingleSignOn:
             type: object
             properties:
@@ -5793,6 +6016,33 @@ components:
             description: |-
                 SymmetricCipher is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  Represents a symmetric cipher.
+        TeleworkingPolicy:
+            type: object
+            properties:
+                encryptionRequired:
+                    type: boolean
+                    description: Indicates whether data encryption is required.
+                mfaAndFederationRequiredForRemoteAccess:
+                    type: boolean
+                    description: Indicates whether MFA and federation are required for remote access.
+                twoFactorRequired:
+                    type: boolean
+                    description: Indicates whether two-factor authentication is required.
+            description: |-
+                TeleworkingPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents a teleworking / remote access policy section within a PolicyDocument.
+        TestDataPolicy:
+            type: object
+            properties:
+                anonymizationRequiredForNonProd:
+                    type: boolean
+                    description: Indicates whether anonymization/pseudonymization is required for non-production environments.
+                technique:
+                    type: string
+                    description: The named anonymization technique or standard used.
+            description: |-
+                TestDataPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents a policy section within a PolicyDocument governing the use and anonymization of test data.
         Time:
             type: object
             properties: {}
@@ -5991,7 +6241,11 @@ components:
                 percentageLastMonth:
                     type: number
                     format: float
-            description: "VerifiedCommits is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.\n  VerifiedCommits ensure that cryptographic signatures on commits are successfully validated against trusted keys, confirming author authenticity and code integrity.\n Percentage: Percentage of verified commits. \n PercentageLastMonth: Percentage of verified commits in the last 30 days."
+            description: |-
+                VerifiedCommits is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                  VerifiedCommits ensure that cryptographic signatures on commits are successfully validated against trusted keys, confirming author authenticity and code integrity.
+                 Percentage: Percentage of verified commits.
+                 PercentageLastMonth: Percentage of verified commits in the last 30 days.
         VirtualMachine:
             type: object
             properties:
@@ -6157,6 +6411,24 @@ components:
                 Vulnerability is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  cve: Common Vulnerabilities and Exposures
                  cwe: Common Weakness Enumeration
+        VulnerabilityManagementPolicy:
+            type: object
+            properties:
+                criticalHighSlaStated:
+                    type: boolean
+                    description: Indicates whether the critical/high severity vulnerability resolution SLA is stated.
+                cvssScoringUsed:
+                    type: boolean
+                    description: Indicates whether CVSS scoring is used to prioritize vulnerability resolution.
+                lowSlaStated:
+                    type: boolean
+                    description: Indicates whether the low severity vulnerability resolution SLA is stated.
+                mediumSlaStated:
+                    type: boolean
+                    description: Indicates whether the medium severity vulnerability resolution SLA is stated.
+            description: |-
+                VulnerabilityManagementPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Represents a vulnerability management procedure section within a PolicyDocument, covering CVSS scoring and severity-tiered resolution SLAs.
         WebApplicationFirewall:
             type: object
             properties:
