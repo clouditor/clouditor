@@ -45,6 +45,51 @@ func CompareAllUnexported() cmp.Option {
 	return cmp.Exporter(func(reflect.Type) bool { return true })
 }
 
+// stripZeroValues is a cmp.Transformer that, after protocmp.Transform(),
+// removes entries with zero values from protocmp.Message maps. This makes
+// nil optional fields (absent key) compare equal to optional fields set
+// to their zero value (e.g. *bool→false vs nil *bool).
+var stripZeroValues = cmp.Transformer("stripZero", func(m protocmp.Message) protocmp.Message {
+	result := protocmp.Message{}
+	for k, v := range m {
+		if !isZeroValue(v) {
+			result[k] = v
+		}
+	}
+	return result
+})
+
+// isZeroValue only recognizes zero-valued scalar leaves. It deliberately does NOT treat a
+// present-but-all-zero nested message as equivalent to an absent one: doing so would collapse
+// "field known and inactive" with "field unknown" for message-typed fields, defeating the
+// explicit-presence tracking that optional ontology fields exist for. Nested protocmp.Message
+// values are still stripped of their own zero-valued scalar leaves, since cmp.Transformer
+// recurses into them independently.
+func isZeroValue(v interface{}) bool {
+	switch x := v.(type) {
+	case bool:
+		return !x
+	case string:
+		return x == ""
+	case int:
+		return x == 0
+	case int32:
+		return x == 0
+	case int64:
+		return x == 0
+	case float32:
+		return x == 0
+	case float64:
+		return x == 0
+	case []interface{}:
+		return len(x) == 0
+	case nil:
+		return true
+	default:
+		return false
+	}
+}
+
 // Equal asserts that [got] and [want] are Equal. Under the hood, this uses the go-cmp package in combination with
 // protocmp and also supplies a diff, in case the messages to do not match.
 //
@@ -56,7 +101,7 @@ func Equal[T any](t TestingT, want T, got T, opts ...cmp.Option) bool {
 		tt.Helper()
 	}
 
-	opts = append(opts, protocmp.Transform())
+	opts = append(opts, protocmp.Transform(), stripZeroValues)
 
 	if cmp.Equal(got, want, opts...) {
 		return true
@@ -72,7 +117,7 @@ func NotEqual[T any](t TestingT, want T, got T, opts ...cmp.Option) bool {
 		tt.Helper()
 	}
 
-	opts = append(opts, protocmp.Transform())
+	opts = append(opts, protocmp.Transform(), stripZeroValues)
 
 	if !cmp.Equal(got, want, opts...) {
 		return true

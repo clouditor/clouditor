@@ -140,29 +140,29 @@ func (d *awsS3Discovery) List() (resources []ontology.IsResource, err error) {
 		resources = append(resources,
 			// Add ObjectStorage
 			&ontology.ObjectStorage{
-				Id:           b.arn,
-				Name:         b.name,
+				Id:           new(b.arn),
+				Name:         new(b.name),
 				CreationTime: timestamppb.New(b.creationTime),
 				GeoLocation: &ontology.GeoLocation{
-					Region: b.region,
+					Region: new(b.region),
 				},
 				AtRestEncryption: encryptionAtRest,
-				Raw:              discovery.Raw(&b, &rawBucketEncOutput, &rawBucketTranspEnc, &b.raw),
+				Raw:              new(discovery.Raw(&b, &rawBucketEncOutput, &rawBucketTranspEnc, &b.raw)),
 			},
 			// Add ObjectStorageService
 			&ontology.ObjectStorageService{
-				Id:           b.arn,
-				Name:         b.name,
+				Id:           new(b.arn),
+				Name:         new(b.name),
 				CreationTime: timestamppb.New(b.creationTime),
 				GeoLocation: &ontology.GeoLocation{
-					Region: b.region,
+					Region: new(b.region),
 				},
 				TransportEncryption: encryptionAtTransit,
 				HttpEndpoint: &ontology.HttpEndpoint{
-					Url:                 b.endpoint,
+					Url:                 new(b.endpoint),
 					TransportEncryption: encryptionAtTransit,
 				},
-				Raw: discovery.Raw(&b, &rawBucketEncOutput, &rawBucketTranspEnc, &b.raw),
+				Raw: new(discovery.Raw(&b, &rawBucketEncOutput, &rawBucketTranspEnc, &b.raw)),
 			})
 	}
 	return
@@ -248,8 +248,8 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket *bucket) (e *ontology.AtRest
 		e = &ontology.AtRestEncryption{
 			Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 				ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-					Algorithm: string(alg),
-					Enabled:   true,
+					Algorithm: new(string(alg)),
+					Enabled:   new(true),
 				},
 			},
 		}
@@ -257,10 +257,10 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket *bucket) (e *ontology.AtRest
 		e = &ontology.AtRestEncryption{
 			Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 				CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
-					Algorithm: "", // not available
-					Enabled:   true,
+					Algorithm: new(""), // not available
+					Enabled:   new(true),
 					// TODO(lebogg): Check in console if bucket.region is the actual region of the key arn
-					KeyUrl: "arn:aws:kms:" + bucket.region + ":" + aws.ToString(d.awsConfig.accountID) + ":key/" + aws.ToString(resp.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.KMSMasterKeyID),
+					KeyUrl: new("arn:aws:kms:" + bucket.region + ":" + aws.ToString(d.awsConfig.accountID) + ":key/" + aws.ToString(resp.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.KMSMasterKeyID)),
 				},
 			},
 		}
@@ -290,10 +290,10 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (*ontology.Transp
 			if ae.ErrorCode() == "NoSuchBucketPolicy" {
 				// This error code is equivalent to "encryption not enforced": set err to nil
 				return &ontology.TransportEncryption{
-					Enforced:        false,
-					Enabled:         true,
-					Protocol:        "TLS",
-					ProtocolVersion: 1.2,
+					Enforced:        new(false),
+					Enabled:         new(true),
+					Protocol:        new("TLS"),
+					ProtocolVersion: new(float32(1.2)),
 				}, resp, nil
 			}
 			// Any other error is a connection error with AWS : Format err and return it
@@ -313,23 +313,23 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (*ontology.Transp
 	// one statement has set https only -> default encryption is set
 	for _, statement := range policy.Statement {
 		if a, ok := statement.Action.(string); ok {
-			if statement.Effect == "Deny" && !statement.Condition.AwsSecureTransport && a == "s3:*" {
+			if statement.Effect == "Deny" && !statement.AwsSecureTransport && a == "s3:*" {
 				return &ontology.TransportEncryption{
-					Enforced:        true,
-					Enabled:         true,
-					Protocol:        "TLS",
-					ProtocolVersion: 1.2,
+					Enforced:        new(true),
+					Enabled:         new(true),
+					Protocol:        new("TLS"),
+					ProtocolVersion: new(float32(1.2)),
 				}, resp, nil
 			}
 		}
 		if actions, ok := statement.Action.([]string); ok {
 			for _, a := range actions {
-				if statement.Effect == "Deny" && !statement.Condition.AwsSecureTransport && a == "s3:*" {
+				if statement.Effect == "Deny" && !statement.AwsSecureTransport && a == "s3:*" {
 					return &ontology.TransportEncryption{
-						Enforced:        true,
-						Enabled:         true,
-						Protocol:        "TLS",
-						ProtocolVersion: 1.2,
+						Enforced:        new(true),
+						Enabled:         new(true),
+						Protocol:        new("TLS"),
+						ProtocolVersion: new(float32(1.2)),
 					}, resp, nil
 				}
 			}
@@ -337,10 +337,10 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (*ontology.Transp
 	}
 
 	return &ontology.TransportEncryption{
-		Enforced:        false,
-		Enabled:         true,
-		Protocol:        "TLS",
-		ProtocolVersion: 1.2,
+		Enforced:        new(false),
+		Enabled:         new(true),
+		Protocol:        new("TLS"),
+		ProtocolVersion: new(float32(1.2)),
 	}, resp, nil
 
 }

@@ -72,7 +72,7 @@ func (d *azureDiscovery) discoverCosmosDB() ([]ontology.IsResource, error) {
 			if err != nil {
 				return fmt.Errorf("could not cosmos db accounts: %w", err)
 			}
-			log.Infof("Adding Cosmos DB account '%s", *dbAccount.Name)
+			log.Infof("Adding Cosmos DB account '%s", util.Deref(dbAccount.Name))
 			list = append(list, cosmos...)
 
 			return nil
@@ -108,13 +108,13 @@ func (d *azureDiscovery) discoverMongoDBDatabases(account *armcosmos.DatabaseAcc
 		for _, value := range pageResponse.Value {
 			// Create Cosmos DB database storage voc object
 			mongoDB := &ontology.DatabaseStorage{
-				Id:               resourceID(value.ID),
-				Name:             util.Deref(value.Name),
+				Id:               new(resourceID(value.ID)),
+				Name:             new(util.Deref(value.Name)),
 				CreationTime:     nil, // creation time of database not available
 				GeoLocation:      location(value.Location),
 				Labels:           labels(value.Tags),
 				ParentId:         resourceIDPointer(account.ID),
-				Raw:              discovery.Raw(account, value),
+				Raw:              new(discovery.Raw(account, value)),
 				AtRestEncryption: atRestEnc,
 			}
 			list = append(list, mongoDB)
@@ -151,7 +151,7 @@ func (d *azureDiscovery) discoverSqlServers() ([]ontology.IsResource, error) {
 			if err != nil {
 				return fmt.Errorf("could not handle sql database: %w", err)
 			}
-			log.Infof("Adding sql database '%s", *server.Name)
+			log.Infof("Adding sql database '%s", util.Deref(server.Name))
 			list = append(list, db...)
 
 			return nil
@@ -177,7 +177,7 @@ func (d *azureDiscovery) getSqlDBs(server *armsql.Server) ([]ontology.IsResource
 	}
 
 	// Get databases for given server
-	serverlistPager := d.clients.databasesClient.NewListByServerPager(resourceGroupName(util.Deref(server.ID)), *server.Name, &armsql.DatabasesClientListByServerOptions{})
+	serverlistPager := d.clients.databasesClient.NewListByServerPager(resourceGroupName(util.Deref(server.ID)), util.Deref(server.Name), &armsql.DatabasesClientListByServerOptions{})
 	for serverlistPager.More() {
 		pageResponse, err := serverlistPager.NextPage(context.TODO())
 		if err != nil {
@@ -190,30 +190,30 @@ func (d *azureDiscovery) getSqlDBs(server *armsql.Server) ([]ontology.IsResource
 			// Get anomaly detection status
 			anomalyDetectionEnabled, err := d.anomalyDetectionEnabled(server, value)
 			if err != nil {
-				log.Errorf("error getting anomaly detection info for database '%s': %v", *value.Name, err)
+				log.Errorf("error getting anomaly detection info for database '%s': %v", util.Deref(value.Name), err)
 			}
 
 			a := &ontology.AnomalyDetection{
-				Scope:   util.Deref(value.ID),
-				Enabled: anomalyDetectionEnabled,
+				Scope:   new(util.Deref(value.ID)),
+				Enabled: new(anomalyDetectionEnabled),
 			}
 
 			anomalyDetectionList = append(anomalyDetectionList, a)
 
 			// Create database storage voc object
 			sqlDB := &ontology.DatabaseStorage{
-				Id:           resourceID(value.ID),
-				Name:         util.Deref(value.Name),
+				Id:           new(resourceID(value.ID)),
+				Name:         new(util.Deref(value.Name)),
 				CreationTime: creationTime(value.Properties.CreationDate),
 				GeoLocation:  location(value.Location),
 				Labels:       labels(value.Tags),
 				ParentId:     resourceIDPointer(server.ID),
-				Raw:          discovery.Raw(value),
+				Raw:          new(discovery.Raw(value)),
 				AtRestEncryption: &ontology.AtRestEncryption{
 					Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 						ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-							Enabled:   *value.Properties.IsInfraEncryptionEnabled,
-							Algorithm: constants.AES256,
+							Enabled:   new(*value.Properties.IsInfraEncryptionEnabled),
+							Algorithm: new(constants.AES256),
 						},
 					},
 				},
@@ -334,7 +334,7 @@ func (d *azureDiscovery) discoverFileStorages(account *armstorage.Account, activ
 				return nil, fmt.Errorf("could not handle file storage: %w", err)
 			}
 
-			log.Infof("Adding file storage '%s", fileStorages.Name)
+			log.Infof("Adding file storage '%s'", util.Deref(fileStorages.Name))
 
 			list = append(list, fileStorages)
 		}
@@ -360,7 +360,7 @@ func (d *azureDiscovery) discoverObjectStorages(account *armstorage.Account, act
 			if err != nil {
 				return nil, fmt.Errorf("could not handle object storage: %w", err)
 			}
-			log.Infof("Adding object storage '%s'", objectStorages.Name)
+			log.Infof("Adding object storage '%s'", util.Deref(objectStorages.Name))
 
 			list = append(list, objectStorages)
 		}

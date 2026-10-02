@@ -27,7 +27,8 @@
                                 "id": "Requirement-01-Implementation",
                                 "metrics": [
                                     {
-                                        "id": "DocumentCSAFContentValid"
+                                        "id": "ba26e062-eea7-4d47-a181-3a5dbe723ed3",
+                                        "name": "DocumentCSAFContentValid"
                                     }
                                 ]
                             }
@@ -43,7 +44,8 @@
                                 "id": "Requirement-02-Implementation",
                                 "metrics": [
                                     {
-                                        "id": "DocumentCSAFFilenameValid"
+                                        "id": "3320c5ca-376b-4bdc-b4e6-0a03db2ec66e",
+                                        "name": "DocumentCSAFFilenameValid"
                                     }
                                 ]
                             }
@@ -59,7 +61,8 @@
                                 "id": "Requirement-03-Implementation",
                                 "metrics": [
                                     {
-                                        "id": "DocumentCSAFTransportEncryption"
+                                        "id": "56ab82ed-e3f2-49e3-9acf-0b5c1fa744d1",
+                                        "name": "DocumentCSAFTransportEncryption"
                                     }
                                 ]
                             }
@@ -75,7 +78,8 @@
                                 "id": "Requirement-04-Implementation",
                                 "metrics": [
                                     {
-                                        "id": "DocumentCSAFWhiteAccessible"
+                                        "id": "DocumentCSAFWhiteAccessible",
+                                        "name": "DocumentCSAFWhiteAccessible"
                                     }
                                 ]
                             }
@@ -91,7 +95,8 @@
                                 "id": "Requirement-06-Implementation",
                                 "metrics": [
                                     {
-                                        "id": "DocumentCSAFRedRestricted"
+                                        "id": "DocumentCSAFRedRestricted",
+                                        "name": "DocumentCSAFRedRestricted"
                                     }
                                 ]
                             }
@@ -107,7 +112,8 @@
                                 "id": "Requirement-06-Implementation",
                                 "metrics": [
                                     {
-                                        "id": "DocumentCSAFNoRedirect"
+                                        "id": "DocumentCSAFNoRedirect",
+                                        "name": "DocumentCSAFNoRedirect"
                                     }
                                 ]
                             }
@@ -123,7 +129,8 @@
                                 "id": "Requirement-07-10-Implementation",
                                 "metrics": [
                                     {
-                                        "id": "SecurityAdvisoryServiceValidMetadata"
+                                        "id": "SecurityAdvisoryServiceValidMetadata",
+                                        "name": "SecurityAdvisoryServiceValidMetadata"
                                     }
                                 ]
                             }
@@ -139,7 +146,8 @@
                                 "id": "Requirement-11-Implementation",
                                 "metrics": [
                                     {
-                                        "id": "DocumentCSAFYearFolder"
+                                        "id": "DocumentCSAFYearFolder",
+                                        "name": "DocumentCSAFYearFolder"
                                     }
                                 ]
                             }
@@ -155,7 +163,8 @@
                                 "id": "Requirement-18-Implementation",
                                 "metrics": [
                                     {
-                                        "id": "SecurityAdvisoryDocumentChecksum"
+                                        "id": "SecurityAdvisoryDocumentChecksum",
+                                        "name": "SecurityAdvisoryDocumentChecksum"
                                     }
                                 ]
                             }
@@ -171,7 +180,8 @@
                                 "id": "Requirement-19-Implementation",
                                 "metrics": [
                                     {
-                                        "id": "SecurityAdvisoryDocumentSignature"
+                                        "id": "SecurityAdvisoryDocumentSignature",
+                                        "name": "SecurityAdvisoryDocumentSignature"
                                     }
                                 ]
                             }
@@ -187,7 +197,8 @@
                                 "id": "Requirement-20-Implementation",
                                 "metrics": [
                                     {
-                                        "id": "SecurityAdvisoryServicePublicOpenPGPKey"
+                                        "id": "SecurityAdvisoryServicePublicOpenPGPKey",
+                                        "name": "SecurityAdvisoryServicePublicOpenPGPKey"
                                     }
                                 ]
                             }

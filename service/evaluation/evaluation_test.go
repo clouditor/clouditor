@@ -43,7 +43,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/evaluationtest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
@@ -192,11 +191,11 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
-					LatestByControlId: util.Ref(true),
+					LatestByControlId: new(true),
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
-						ControlId:            util.Ref(testdata.MockSubControlID11),
-						SubControls:          util.Ref(testdata.MockControlID1),
-						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
+						ControlId:            new(testdata.MockSubControlID11),
+						SubControls:          new(testdata.MockControlID1),
+						TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID1),
 					},
 				},
 			},
@@ -215,11 +214,11 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
-					LatestByControlId: util.Ref(true),
+					LatestByControlId: new(true),
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
-						ControlId:            util.Ref(testdata.MockSubControlID11),
-						SubControls:          util.Ref(testdata.MockControlID1),
-						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
+						ControlId:            new(testdata.MockSubControlID11),
+						SubControls:          new(testdata.MockControlID1),
+						TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID1),
 					},
 				},
 			},
@@ -240,12 +239,12 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
-					LatestByControlId: util.Ref(false),
+					LatestByControlId: new(false),
 					OrderBy:           "Wrong input",
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
-						ControlId:            util.Ref(testdata.MockSubControlID11),
-						SubControls:          util.Ref(testdata.MockControlID1),
-						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
+						ControlId:            new(testdata.MockSubControlID11),
+						SubControls:          new(testdata.MockControlID1),
+						TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID1),
 					},
 				},
 			},
@@ -266,11 +265,11 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
-					LatestByControlId: util.Ref(true),
+					LatestByControlId: new(true),
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
-						ControlId:            util.Ref(testdata.MockSubControlID11),
-						SubControls:          util.Ref(testdata.MockControlID1),
-						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
+						ControlId:            new(testdata.MockSubControlID11),
+						SubControls:          new(testdata.MockControlID1),
+						TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID1),
 					},
 				},
 			},
@@ -292,9 +291,9 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
-					LatestByControlId: util.Ref(true),
+					LatestByControlId: new(true),
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
-						ControlId: util.Ref(testdata.MockSubControlID11),
+						ControlId: new(testdata.MockSubControlID11),
 					},
 				},
 			},
@@ -315,7 +314,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.ListEvaluationResultsRequest{LatestByControlId: util.Ref(true)},
+				req: &evaluation.ListEvaluationResultsRequest{LatestByControlId: new(true)},
 			},
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
@@ -340,9 +339,9 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
-					LatestByControlId: util.Ref(true),
+					LatestByControlId: new(true),
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
-						ParentsOnly: util.Ref(true),
+						ParentsOnly: new(true),
 					},
 				},
 			},
@@ -366,7 +365,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
-						ControlId: util.Ref(testdata.MockControlID1),
+						ControlId: new(testdata.MockControlID1),
 					},
 				},
 			},
@@ -389,7 +388,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
-						SubControls: util.Ref(testdata.MockControlID1),
+						SubControls: new(testdata.MockControlID1),
 					},
 				},
 			},
@@ -415,7 +414,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
-						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
+						TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID1),
 					},
 				},
 			},

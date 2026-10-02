@@ -1682,10 +1682,26 @@ components:
                     type: number
                     description: Percentage of completed reviews and updates of asset inventory entries.
                     format: float
+                inventoryDefined:
+                    type: boolean
+                    description: Indicates whether an asset inventory is defined.
+                ownerAssignmentStated:
+                    type: boolean
+                    description: Indicates whether an owner is assigned for each asset class/type.
+                reviewFrequency:
+                    type: integer
+                    format: int32
+                service:
+                    type: string
+                    description: Service contains the name of the service (e.g., Asset Management).
                 status:
-                    type: string
+                    type: array
+                    items:
+                        type: string
                 storageFacility:
-                    type: string
+                    type: array
+                    items:
+                        type: string
                 type:
                     type: string
                 updateDuration:
@@ -1699,6 +1715,7 @@ components:
                 AssetInventory is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  AuditInterval contains the frequency of asset inventory audits in month.
                  Class representing the inventory of assets.
+                 Service contains the name of the service (e.g., Asset Management).
                  Status contains the status of the asset (e.g., active, inactive).
                  StorageFacility contains the storage facility type of the asset (e.g., central, decentralized).
                  Type: contains the type of the asset, e.g., digital
@@ -1806,10 +1823,19 @@ components:
             properties:
                 enabled:
                     type: boolean
+                frequency:
+                    type: integer
+                    format: int32
                 interval:
                     pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
                     type: string
                     description: The interval refers to the update interval in days.
+                recoveryFrequency:
+                    type: integer
+                    format: int32
+                redundant:
+                    type: boolean
+                    description: Indicates whether the resource is stored redundantly.
                 retentionPeriod:
                     pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
                     type: string
@@ -2046,6 +2072,10 @@ components:
                 authenticationMechanism:
                     type: string
                     description: 'for example: RSA, ECDSA'
+                dhGroup:
+                    type: array
+                    items:
+                        type: string
                 keyExchangeAlgorithm:
                     type: string
                 macAlgorithm:
@@ -2131,7 +2161,11 @@ components:
                 percentageLastMonth:
                     type: number
                     format: float
-            description: "CodeSignoff is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.\n Percentage: Percentage of commits with \"Signed-off-by\" lines. \n PercentageLastMonth: Percentage of commits with \"Signed-off-by\" lines in the last 30 days. \n Signoffs enable users to affirm that a commit complies with the rules and licensing governing a repository"
+            description: |-
+                CodeSignoff is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Percentage: Percentage of commits with "Signed-off-by" lines.
+                 PercentageLastMonth: Percentage of commits with "Signed-off-by" lines in the last 30 days.
+                 Signoffs enable users to affirm that a commit complies with the rules and licensing governing a repository
         ComparisonResult:
             required:
                 - property
@@ -3407,12 +3441,18 @@ components:
         L3Firewall:
             type: object
             properties:
+                allowedSources:
+                    type: array
+                    items:
+                        type: string
                 enabled:
                     type: boolean
                 inbound:
                     type: boolean
                 restrictedPorts:
-                    type: string
+                    type: array
+                    items:
+                        type: string
             description: L3Firewall is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         ListAssessmentResultsResponse:
             type: object
@@ -4264,6 +4304,9 @@ components:
                 failedAuthenticationAttempts:
                     type: integer
                     format: int32
+                length:
+                    type: integer
+                    format: int32
                 rotationInterval:
                     type: integer
                     description: Maximum password rotation interval in months
@@ -4312,7 +4355,7 @@ components:
         QPU:
             type: object
             properties:
-                oneQubitErrorRate:
+                oneQubitGateErrorRate:
                     type: number
                     format: float
                 spamErrorRate:
@@ -4326,7 +4369,7 @@ components:
                     type: number
                     description: Coherence times are a standard measure for the reliability of executing quantum circuits. T1 is the qubits's energy dephasing time (in seconds).
                     format: float
-                twoQubitErrorRate:
+                twoQubitGateErrorRate:
                     type: number
                     format: float
                 universalGateSetEnabled:
@@ -4513,6 +4556,10 @@ components:
             properties:
                 approvedBeforeDeployment:
                     type: boolean
+                mandatoryFieldCompletenessPercent:
+                    type: number
+                    description: Percentage of change register entries with all mandatory fields completed.
+                    format: float
             description: RequestForChange is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         ResourceGroup:
             type: object
@@ -4786,7 +4833,11 @@ components:
                 percentageLastMonth:
                     type: number
                     format: float
-            description: "SignedCommits is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.\n  SignedCommits cryptographically verify the identity of the commit author.\n Percentage: Percentage of signed commits. \n PercentageLastMonth: Percentage of signed commits in the last 30 days."
+            description: |-
+                SignedCommits is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                  SignedCommits cryptographically verify the identity of the commit author.
+                 Percentage: Percentage of signed commits.
+                 PercentageLastMonth: Percentage of signed commits in the last 30 days.
         SingleSignOn:
             type: object
             properties:
@@ -4987,7 +5038,11 @@ components:
                 percentageLastMonth:
                     type: number
                     format: float
-            description: "VerifiedCommits is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.\n  VerifiedCommits ensure that cryptographic signatures on commits are successfully validated against trusted keys, confirming author authenticity and code integrity.\n Percentage: Percentage of verified commits. \n PercentageLastMonth: Percentage of verified commits in the last 30 days."
+            description: |-
+                VerifiedCommits is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                  VerifiedCommits ensure that cryptographic signatures on commits are successfully validated against trusted keys, confirming author authenticity and code integrity.
+                 Percentage: Percentage of verified commits.
+                 PercentageLastMonth: Percentage of verified commits in the last 30 days.
         VirtualMachine:
             type: object
             properties:

@@ -47,28 +47,28 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 	// we cannot directly retrieve OS logging information
 	// boot logging is logged in the console log
 	consoleOutput := servers.ShowConsoleOutput(context.Background(), d.clients.computeClient, server.ID, servers.ShowConsoleOutputOpts{})
-	if consoleOutput.Result.Err == nil {
+	if consoleOutput.Err == nil {
 		bootLogging = &ontology.BootLogging{
-			Enabled: true,
+			Enabled: new(true),
 		}
 	} else {
 		log.Errorf("Error getting boot logging: %s", consoleOutput.Err)
 		// When an error occurs, we assume that boot logging is disabled.
 		bootLogging = &ontology.BootLogging{
-			Enabled: false,
+			Enabled: new(false),
 		}
 	}
 
 	r := &ontology.VirtualMachine{
-		Id:           server.ID,
-		Name:         server.Name,
+		Id:           new(server.ID),
+		Name:         new(server.Name),
 		CreationTime: timestamppb.New(server.Created),
 		GeoLocation: &ontology.GeoLocation{
-			Region: d.region,
+			Region: new(d.region),
 		},
 		Labels:            labels(server.Tags),
-		ParentId:          util.Ref(server.TenantID),
-		Raw:               discovery.Raw(server),
+		ParentId:          new(server.TenantID),
+		Raw:               new(discovery.Raw(server)),
 		MalwareProtection: &ontology.MalwareProtection{},
 		BootLogging:       bootLogging,
 		AutomaticUpdates:  &ontology.AutomaticUpdates{},
@@ -91,7 +91,7 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 		return nil, fmt.Errorf("could not handle project for server '%s': %w", server.Name, err)
 	}
 
-	log.Infof("Adding server '%s", r.Name)
+	log.Infof("Adding server '%s'", util.Deref(r.Name))
 
 	return r, nil
 }

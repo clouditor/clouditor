@@ -41,7 +41,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
@@ -62,7 +61,8 @@ func newMockSender() *mockSender {
 }
 
 func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
-	if req.URL.Path == "/subscriptions" {
+	switch req.URL.Path {
+	case "/subscriptions":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -73,7 +73,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -96,7 +96,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -117,7 +117,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -185,7 +185,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3":
 		return createResponse(req, map[string]interface{}{
 			"value": &map[string]interface{}{
 				"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account3",
@@ -218,7 +218,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -241,7 +241,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -264,7 +264,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -279,11 +279,11 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/fileServices/default/shares" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/fileServices/default/shares":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.DataProtection/backupVaults" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.DataProtection/backupVaults":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -293,7 +293,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -324,7 +324,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer":
 		return createResponse(req, map[string]interface{}{
 			"properties": map[string]interface{}{
 				"objectType": "BackupPolicy",
@@ -348,7 +348,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 			},
 			// },
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Sql/servers" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Sql/servers":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -361,7 +361,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -374,7 +374,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1/advancedThreatProtectionSettings" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1/advancedThreatProtectionSettings":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -387,7 +387,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer2/databases/SqlDatabase1/advancedThreatProtectionSettings" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer2/databases/SqlDatabase1/advancedThreatProtectionSettings":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -400,7 +400,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.DocumentDB/databaseAccounts" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.DocumentDB/databaseAccounts":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -437,7 +437,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -474,7 +474,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -499,7 +499,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/virtualMachines" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/virtualMachines":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -624,7 +624,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/disks" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/disks":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -671,7 +671,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -689,15 +689,15 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/virtualMachines" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/virtualMachines":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Web/sites" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Web/sites":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Web/sites" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Web/sites":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -768,7 +768,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1/config/web" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1/config/web":
 		return createResponse(req, map[string]interface{}{
 			"type": "Microsoft.Web/sites/config",
 			"name": "function1",
@@ -777,7 +777,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				"minTlsCipherSuite": "TLS_AES_128_GCM_SHA256",
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2/config/web" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2/config/web":
 		return createResponse(req, map[string]interface{}{
 			"name": "function2",
 			"type": "Microsoft.Web/sites/config",
@@ -785,7 +785,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				"javaVersion": "1.8",
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1/config/web" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1/config/web":
 		return createResponse(req, map[string]interface{}{
 			"name": "WebApp1",
 			"type": "Microsoft.Web/sites/config",
@@ -794,24 +794,24 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				"minTlsCipherSuite": "TLS_AES_128_GCM_SHA256",
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2/config/web" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2/config/web":
 		return createResponse(req, map[string]interface{}{
 			"name":       "WebApp2",
 			"type":       "Microsoft.Web/sites/config",
 			"properties": map[string]interface{}{},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1/config/appsettings/list" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1/config/appsettings/list":
 		return createResponse(req, map[string]interface{}{
 			"properties": map[string]interface{}{
 				"APPLICATIONINSIGHTS_CONNECTION_STRING": "test_connection_string",
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2/config/appsettings/list" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2/config/appsettings/list":
 		return createResponse(req, map[string]interface{}{
 			"properties": map[string]interface{}{},
 		}, 200)
 
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1":
 		return createResponse(req, map[string]interface{}{
 			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1",
 			"type":     "Microsoft.Compute/diskEncryptionSets",
@@ -826,7 +826,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault2" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault2":
 		return createResponse(req, map[string]interface{}{
 			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault2",
 			"type":     "Microsoft.Compute/diskEncryptionSets",
@@ -840,7 +840,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk":
 		return createResponse(req, map[string]interface{}{
 			"properties": map[string]interface{}{
 				"objectType": "BackupPolicy",
@@ -863,7 +863,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/networkInterfaces" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/networkInterfaces":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -879,7 +879,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -895,7 +895,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1":
 		return createResponse(req, map[string]interface{}{
 			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
 			"name":     "nsg1",
@@ -917,7 +917,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.MachineLearningServices/workspaces" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.MachineLearningServices/workspaces":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -940,7 +940,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace/computes" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg1/providers/Microsoft.MachineLearningServices/workspaces/mlWorkspace/computes":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -967,7 +967,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/loadBalancers" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/loadBalancers":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -1063,19 +1063,19 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c":
 		return createResponse(req, map[string]interface{}{
 			"properties": map[string]interface{}{
 				"ipAddress": "111.222.333.444",
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d":
 		return createResponse(req, map[string]interface{}{
 			"properties": map[string]interface{}{
 				"ipAddress": nil,
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/applicationGateways" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/applicationGateways":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -1090,7 +1090,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1/providers/Microsoft.Insights/diagnosticSettings" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1/providers/Microsoft.Insights/diagnosticSettings":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -1108,7 +1108,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/providers/Microsoft.Insights/diagnosticSettings" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/providers/Microsoft.Insights/diagnosticSettings":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -1125,7 +1125,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/providers/Microsoft.Insights/diagnosticSettings" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/providers/Microsoft.Insights/diagnosticSettings":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -1141,7 +1141,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account4/providers/Microsoft.Insights/diagnosticSettings" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account4/providers/Microsoft.Insights/diagnosticSettings":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -1154,7 +1154,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/providers/Microsoft.Insights/diagnosticSettings/blobServices/default" {
+	case "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/providers/Microsoft.Insights/diagnosticSettings/blobServices/default":
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
@@ -1167,7 +1167,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
-	} else {
+	default:
 		res, err = createResponse(req, map[string]interface{}{}, 404)
 		log.Errorf("Not handling mock for %s yet", req.URL.Path)
 	}
@@ -1243,7 +1243,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 				opts: []DiscoveryOption{WithResourceGroup(testdata.MockResourceGroup)},
 			},
 			want: &azureDiscovery{
-				rg:                 util.Ref(testdata.MockResourceGroup),
+				rg:                 new(testdata.MockResourceGroup),
 				ctID:               config.DefaultTargetOfEvaluationID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
@@ -1464,16 +1464,16 @@ func Test_resourceGroupID(t *testing.T) {
 		{
 			name: "invalid",
 			args: args{
-				ID: util.Ref("this is not a resource ID but it should not crash the Clouditor"),
+				ID: new("this is not a resource ID but it should not crash the Clouditor"),
 			},
 			want: nil,
 		},
 		{
 			name: "happy path",
 			args: args{
-				ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+				ID: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
 			},
-			want: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+			want: new("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 		},
 	}
 	for _, tt := range tests {
@@ -1846,8 +1846,8 @@ func WithSubscription(sub *armsubscription.Subscription) DiscoveryOption {
 
 func NewMockAzureDiscovery(transport policy.Transporter, opts ...DiscoveryOption) *azureDiscovery {
 	sub := &armsubscription.Subscription{
-		SubscriptionID: util.Ref(testdata.MockSubscriptionID),
-		ID:             util.Ref(testdata.MockSubscriptionResourceID),
+		SubscriptionID: new(testdata.MockSubscriptionID),
+		ID:             new(testdata.MockSubscriptionResourceID),
 	}
 
 	d := &azureDiscovery{

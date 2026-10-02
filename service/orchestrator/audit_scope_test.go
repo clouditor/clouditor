@@ -43,7 +43,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/evaluationtest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
 	"google.golang.org/grpc/codes"
@@ -503,7 +502,7 @@ func TestService_ListAuditScopes(t *testing.T) {
 				ctx: context.Background(),
 				req: &orchestrator.ListAuditScopesRequest{
 					Filter: &orchestrator.ListAuditScopesRequest_Filter{
-						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID2),
+						TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID2),
 					},
 				},
 			},
@@ -529,7 +528,7 @@ func TestService_ListAuditScopes(t *testing.T) {
 				ctx: context.Background(),
 				req: &orchestrator.ListAuditScopesRequest{
 					Filter: &orchestrator.ListAuditScopesRequest_Filter{
-						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID2),
+						TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID2),
 					},
 				},
 			},
@@ -556,7 +555,7 @@ func TestService_ListAuditScopes(t *testing.T) {
 				ctx: context.Background(),
 				req: &orchestrator.ListAuditScopesRequest{
 					Filter: &orchestrator.ListAuditScopesRequest_Filter{
-						TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
+						TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID1),
 					},
 				},
 			},
@@ -587,7 +586,7 @@ func TestService_ListAuditScopes(t *testing.T) {
 				ctx: context.Background(),
 				req: &orchestrator.ListAuditScopesRequest{
 					Filter: &orchestrator.ListAuditScopesRequest_Filter{
-						CatalogId: util.Ref(testdata.MockCatalogID1),
+						CatalogId: new(testdata.MockCatalogID1),
 					},
 				},
 			},
@@ -773,7 +772,7 @@ func TestService_RemoveAuditScope(t *testing.T) {
 							ControlCatalogId:     testdata.MockCatalogID1,
 							Status:               evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
 							ControlId:            testdata.MockSubControlID21,
-							ParentControlId:      util.Ref(testdata.MockControlID2),
+							ParentControlId:      new(testdata.MockControlID2),
 							AssessmentResultIds:  []string{},
 						}))
 					})),

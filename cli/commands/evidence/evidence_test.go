@@ -57,7 +57,7 @@ func TestMain(m *testing.M) {
 		TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
 		ToolId:               testdata.MockEvidenceToolID1,
 		Timestamp:            timestamppb.Now(),
-		Resource:             ontology.ProtoResource(&ontology.VirtualMachine{Id: testdata.MockVirtualMachineID1, Name: testdata.MockVirtualMachineName1}),
+		Resource:             ontology.ProtoResource(&ontology.VirtualMachine{Id: new(testdata.MockVirtualMachineID1), Name: new(testdata.MockVirtualMachineName1)}),
 	}})
 	if err != nil {
 		panic(err)

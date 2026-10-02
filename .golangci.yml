@@ -1,0 +1,18 @@
+version: "2"
+
+linters:
+  default: none
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+  settings:
+    errcheck:
+      exclude-functions:
+        # These write to an http.ResponseWriter inside test mock handlers,
+        # where an error is not actionable, so the return value is ignored.
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln

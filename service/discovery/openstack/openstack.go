@@ -111,7 +111,7 @@ func WithTargetOfEvaluationID(ctID string) DiscoveryOption {
 // WithAuthorizer is an option to set the authentication options
 func WithAuthorizer(o gophercloud.AuthOptions) DiscoveryOption {
 	return func(d *openstackDiscovery) {
-		d.authOpts = util.Ref(o)
+		d.authOpts = new(o)
 	}
 }
 

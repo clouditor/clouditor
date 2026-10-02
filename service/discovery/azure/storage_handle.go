@@ -57,10 +57,10 @@ func (d *azureDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccountGetRes
 		atRestEnc = &ontology.AtRestEncryption{
 			Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 				CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
-					Enabled: true,
+					Enabled: new(true),
 					// Algorithm: algorithm, //TODO(anatheka): How do we get the algorithm? Are we available to do it by
 					// the related resources?
-					KeyUrl: util.Deref(account.Properties.KeyVaultKeyURI),
+					KeyUrl: new(util.Deref(account.Properties.KeyVaultKeyURI)),
 				},
 			},
 		}
@@ -68,8 +68,8 @@ func (d *azureDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccountGetRes
 		atRestEnc = &ontology.AtRestEncryption{
 			Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 				ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-					Enabled:   true,
-					Algorithm: constants.AES256,
+					Enabled:   new(true),
+					Algorithm: new(constants.AES256),
 				},
 			},
 		}
@@ -80,13 +80,13 @@ func (d *azureDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccountGetRes
 	// TODO(oxisto): Actually, CosmosDB is a multi-model database, but for now we just model this as a document
 	// database.
 	dbService := &ontology.DocumentDatabaseService{
-		Id:           resourceID(account.ID),
-		Name:         util.Deref(account.Name),
+		Id:           new(resourceID(account.ID)),
+		Name:         new(util.Deref(account.Name)),
 		CreationTime: creationTime(account.SystemData.CreatedAt),
 		GeoLocation:  location(account.Location),
 		Labels:       labels(account.Tags),
 		ParentId:     resourceGroupID(account.ID),
-		Raw:          discovery.Raw(account),
+		Raw:          new(discovery.Raw(account)),
 	}
 
 	// Add Mongo DB database service
@@ -121,19 +121,19 @@ func (d *azureDiscovery) handleSqlServer(server *armsql.Server) ([]ontology.IsRe
 
 	// Create SQL database service voc object for SQL server
 	dbService = &ontology.RelationalDatabaseService{
-		Id:           resourceID(server.ID),
-		Name:         util.Deref(server.Name),
+		Id:           new(resourceID(server.ID)),
+		Name:         new(util.Deref(server.Name)),
 		CreationTime: nil,
 		GeoLocation:  location(server.Location),
 		Labels:       labels(server.Tags),
 		ParentId:     resourceGroupID(server.ID),
-		Raw:          discovery.Raw(server),
+		Raw:          new(discovery.Raw(server)),
 		// TODO(all): HttpEndpoint
 		TransportEncryption: &ontology.TransportEncryption{
-			Enabled:         true,
-			Enforced:        true,
-			Protocol:        constants.TLS,
-			ProtocolVersion: tlsVersion((*string)(server.Properties.MinimalTLSVersion)),
+			Enabled:         new(true),
+			Enforced:        new(true),
+			Protocol:        new(constants.TLS),
+			ProtocolVersion: new(tlsVersion((*string)(server.Properties.MinimalTLSVersion))),
 		},
 		AnomalyDetections: anomalyDetectionList,
 	}
@@ -164,24 +164,24 @@ func (d *azureDiscovery) handleStorageAccount(account *armstorage.Account, stora
 	}
 
 	te := &ontology.TransportEncryption{
-		Enforced:        util.Deref(account.Properties.EnableHTTPSTrafficOnly),
-		Enabled:         true, // cannot be disabled
-		Protocol:        constants.TLS,
-		ProtocolVersion: tlsVersion((*string)(account.Properties.MinimumTLSVersion)),
+		Enforced:        new(util.Deref(account.Properties.EnableHTTPSTrafficOnly)),
+		Enabled:         new(true), // cannot be disabled
+		Protocol:        new(constants.TLS),
+		ProtocolVersion: new(tlsVersion((*string)(account.Properties.MinimumTLSVersion))),
 	}
 
 	storageService := &ontology.ObjectStorageService{
-		Id:                  resourceID(account.ID),
-		Name:                util.Deref(account.Name),
+		Id:                  new(resourceID(account.ID)),
+		Name:                new(util.Deref(account.Name)),
 		StorageIds:          storageResourceIDs,
 		CreationTime:        creationTime(account.Properties.CreationTime),
 		GeoLocation:         location(account.Location),
 		Labels:              labels(account.Tags),
 		ParentId:            resourceGroupID(account.ID),
-		Raw:                 discovery.Raw(account, rawActivityLogging),
+		Raw:                 new(discovery.Raw(account, rawActivityLogging)),
 		TransportEncryption: te,
 		HttpEndpoint: &ontology.HttpEndpoint{
-			Url:                 generalizeURL(util.Deref(account.Properties.PrimaryEndpoints.Blob)),
+			Url:                 new(generalizeURL(util.Deref(account.Properties.PrimaryEndpoints.Blob))),
 			TransportEncryption: te,
 		},
 		ActivityLogging: activityLogging,
@@ -218,16 +218,16 @@ func (d *azureDiscovery) handleFileStorage(account *armstorage.Account, fileshar
 	}
 
 	return &ontology.FileStorage{
-		Id:           resourceID(fileshare.ID),
-		Name:         util.Deref(fileshare.Name),
+		Id:           new(resourceID(fileshare.ID)),
+		Name:         new(util.Deref(fileshare.Name)),
 		CreationTime: creationTime(account.Properties.CreationTime), // We only have the creation time of the storage account the file storage belongs to
 		GeoLocation:  location(account.Location),                    // The location is the same as the storage account
 		Labels:       labels(account.Tags),                          // The storage account labels the file storage belongs to
 		ParentId:     resourceIDPointer(account.ID),                 // the storage account is our parent
-		Raw:          discovery.Raw(account, fileshare),
+		Raw:          new(discovery.Raw(account, fileshare)),
 		ResourceLogging: &ontology.ResourceLogging{
-			MonitoringLogDataEnabled: monitoringLogDataEnabled,
-			SecurityAlertsEnabled:    securityAlertsEnabled,
+			MonitoringLogDataEnabled: new(monitoringLogDataEnabled),
+			SecurityAlertsEnabled:    new(securityAlertsEnabled),
 		},
 		ActivityLogging:  activityLogging,
 		AtRestEncryption: enc,
@@ -266,23 +266,23 @@ func (d *azureDiscovery) handleObjectStorage(account *armstorage.Account, contai
 	}
 
 	return &ontology.ObjectStorage{
-		Id:               resourceID(container.ID),
-		Name:             util.Deref(container.Name),
+		Id:               new(resourceID(container.ID)),
+		Name:             new(util.Deref(container.Name)),
 		CreationTime:     creationTime(account.Properties.CreationTime), // We only have the creation time of the storage account the file storage belongs to
 		GeoLocation:      location(account.Location),                    // The location is the same as the storage account
 		Labels:           labels(account.Tags),                          // The storage account labels the file storage belongs to
 		ParentId:         resourceIDPointer(account.ID),                 // the storage account is our parent
-		Raw:              discovery.Raw(account, container),
+		Raw:              new(discovery.Raw(account, container)),
 		AtRestEncryption: enc,
 		Immutability: &ontology.Immutability{
-			Enabled: util.Deref(container.Properties.HasImmutabilityPolicy),
+			Enabled: new(util.Deref(container.Properties.HasImmutabilityPolicy)),
 		},
 		ResourceLogging: &ontology.ResourceLogging{
-			MonitoringLogDataEnabled: monitoringLogDataEnabled,
-			SecurityAlertsEnabled:    securityAlertsEnabled,
+			MonitoringLogDataEnabled: new(monitoringLogDataEnabled),
+			SecurityAlertsEnabled:    new(securityAlertsEnabled),
 		},
 		ActivityLogging: activityLogging,
 		Backups:         backups,
-		PublicAccess:    util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
+		PublicAccess:    new(util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone),
 	}, nil
 }

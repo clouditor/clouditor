@@ -23,7 +23,7 @@ import (
 
 func documentValidationErrors(messages []string) (errs []*ontology.Error) {
 	for _, m := range messages {
-		errs = append(errs, &ontology.Error{Message: m})
+		errs = append(errs, &ontology.Error{Message: new(m)})
 	}
 	return
 }
@@ -34,18 +34,19 @@ func transportEncryption(state *tls.ConnectionState) (te *ontology.TransportEncr
 	te = &ontology.TransportEncryption{}
 
 	if state != nil {
-		te.Enabled = true
-		if state.Version == tls.VersionTLS10 {
-			te.ProtocolVersion = 1.0
-		} else if state.Version == tls.VersionTLS11 {
-			te.ProtocolVersion = 1.1
-		} else if state.Version == tls.VersionTLS12 {
-			te.ProtocolVersion = 1.2
-		} else if state.Version == tls.VersionTLS13 {
-			te.ProtocolVersion = 1.3
+		te.Enabled = new(true)
+		switch state.Version {
+		case tls.VersionTLS10:
+			te.ProtocolVersion = new(float32(1.0))
+		case tls.VersionTLS11:
+			te.ProtocolVersion = new(float32(1.1))
+		case tls.VersionTLS12:
+			te.ProtocolVersion = new(float32(1.2))
+		case tls.VersionTLS13:
+			te.ProtocolVersion = new(float32(1.3))
 		}
 
-		te.Protocol = constants.TLS
+		te.Protocol = new(constants.TLS)
 		cs := cipherSuite(state.CipherSuite)
 		if cs != nil {
 			te.CipherSuites = append(te.CipherSuites, cs)
@@ -58,15 +59,16 @@ func transportEncryption(state *tls.ConnectionState) (te *ontology.TransportEncr
 // cipherSuite builds an [ontology.CipherSuite] object out of the cipher suite identifier of the tls package, e.g.
 // [tls.TLS_AES_128_GCM_SHA256].
 func cipherSuite(id uint16) *ontology.CipherSuite {
-	if id == tls.TLS_AES_128_GCM_SHA256 {
+	switch id {
+	case tls.TLS_AES_128_GCM_SHA256:
 		return &ontology.CipherSuite{
-			SessionCipher: constants.AES_128_GCM,
-			MacAlgorithm:  constants.SHA_256,
+			SessionCipher: new(constants.AES_128_GCM),
+			MacAlgorithm:  new(constants.SHA_256),
 		}
-	} else if id == tls.TLS_AES_256_GCM_SHA384 {
+	case tls.TLS_AES_256_GCM_SHA384:
 		return &ontology.CipherSuite{
-			SessionCipher: constants.AES_256_GCM,
-			MacAlgorithm:  constants.SHA_384,
+			SessionCipher: new(constants.AES_256_GCM),
+			MacAlgorithm:  new(constants.SHA_384),
 		}
 	}
 	return nil
@@ -135,7 +137,7 @@ func (d *csafDiscovery) documentChecksum(checksumURL, filename string, body []by
 	if err != nil {
 		return &ontology.CryptographicHash{
 			Errors:    fromError(err),
-			Algorithm: algorithm,
+			Algorithm: new(algorithm),
 		}
 	}
 
@@ -144,7 +146,7 @@ func (d *csafDiscovery) documentChecksum(checksumURL, filename string, body []by
 	if !found || filename == "" {
 		return &ontology.CryptographicHash{
 			Errors:    fromError(errors.New("checksum file does not contain correct filename")),
-			Algorithm: algorithm,
+			Algorithm: new(algorithm),
 		}
 	}
 
@@ -157,14 +159,14 @@ func (d *csafDiscovery) documentChecksum(checksumURL, filename string, body []by
 	if subtle.ConstantTimeCompare([]byte(hash), []byte(want)) == 0 {
 		return &ontology.CryptographicHash{
 			Errors:    fromError(errors.New("checksum mismatch")),
-			Algorithm: algorithm,
+			Algorithm: new(algorithm),
 		}
 	}
 
 	// If we arrived here, everything is good
 	return &ontology.CryptographicHash{
 		Errors:    nil,
-		Algorithm: algorithm,
+		Algorithm: new(algorithm),
 	}
 }
 
@@ -193,18 +195,18 @@ func (d *csafDiscovery) documentPGPSignature(signURL string, body []byte, keyrin
 	}
 
 	// Fetch the signature (in res.Body) and use it to verify the body
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	_, err = openpgp.CheckArmoredDetachedSignature(keyring, bytes.NewReader(body), res.Body, nil)
 	if err != nil {
 		return &ontology.DocumentSignature{
 			Errors:    fromError(err),
-			Algorithm: "PGP",
+			Algorithm: new("PGP"),
 		}
 	}
 
 	return &ontology.DocumentSignature{
 		Errors:    nil,
-		Algorithm: "PGP",
+		Algorithm: new("PGP"),
 	}
 }
 
@@ -219,10 +221,10 @@ func fromError(err error) (errors []*ontology.Error) {
 	if me, ok := err.(MultiWrapError); ok {
 		errs := me.Unwrap()
 		for _, err := range errs {
-			errors = append(errors, &ontology.Error{Message: err.Error()})
+			errors = append(errors, &ontology.Error{Message: new(err.Error())})
 		}
 	} else {
-		errors = append(errors, &ontology.Error{Message: err.Error()})
+		errors = append(errors, &ontology.Error{Message: new(err.Error())})
 	}
 
 	return

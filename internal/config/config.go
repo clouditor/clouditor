@@ -74,6 +74,7 @@ const (
 	DashboardCallbackURLFlag                 = "dashboard-callback-url"
 	LogLevelFlag                             = "log-level"
 	IgnoreDefaultMetricsFlag                 = "ignore-default-metrics"
+	CacheApplicableMetricsFlag               = "cache-applicable-metrics"
 
 	DefaultAPIDefaultUser                       = "clouditor"
 	DefaultAPIDefaultPassword                   = "clouditor"
@@ -112,6 +113,10 @@ const (
 	DefaultDashboardCallbackURL                 = "http://localhost:8080/callback"
 	DefaultLogLevel                             = "info"
 	DefaultIgnoreDefaultMetrics                 = false
+	// DefaultCacheApplicableMetrics is disabled by default, since applicability of a metric is not a pure
+	// function of tool ID and resource type alone, and the cache is not invalidated when the
+	// security-metrics bundle is reloaded/updated.
+	DefaultCacheApplicableMetrics = false
 
 	EnvPrefix = "CLOUDITOR"
 )

@@ -41,7 +41,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/service"
 	"github.com/go-co-op/gocron"
@@ -267,18 +266,19 @@ func (m *mockEvidenceStoreStream) Wait() {
 }
 
 func (m *mockEvidenceStoreStream) Recv() (*evidence.StoreEvidencesResponse, error) {
-	if m.counter == 0 {
+	switch m.counter {
+	case 0:
 		m.counter++
 		return &evidence.StoreEvidencesResponse{
 			Status:        evidence.EvidenceStatus_EVIDENCE_STATUS_ERROR,
 			StatusMessage: "mockError1",
 		}, nil
-	} else if m.counter == 1 {
+	case 1:
 		m.counter++
 		return &evidence.StoreEvidencesResponse{
 			Status: evidence.EvidenceStatus_EVIDENCE_STATUS_OK,
 		}, nil
-	} else {
+	default:
 		return nil, io.EOF
 	}
 }
@@ -554,7 +554,7 @@ func TestService_Start(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				req: &discovery.StartDiscoveryRequest{
-					ResourceGroup: util.Ref("testResourceGroup"),
+					ResourceGroup: new("testResourceGroup"),
 				},
 			},
 			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
@@ -573,7 +573,7 @@ func TestService_Start(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				req: &discovery.StartDiscoveryRequest{
-					CsafDomain: util.Ref("clouditor.io"),
+					CsafDomain: new("clouditor.io"),
 				},
 			},
 			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {

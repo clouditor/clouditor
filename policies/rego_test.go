@@ -74,22 +74,21 @@ func Test_regoEval_Eval(t *testing.T) {
 				"AtRestEncryptionAlgorithm":         true,
 				"AtRestEncryptionEnabled":           true,
 				"ObjectStoragePublicAccessDisabled": true,
-				"VulnerabilitiesNotExploitable":     true,
 			},
 			args: args{
 				resource: &ontology.ObjectStorage{
-					Id:           mockObjStorage1ResourceID,
+					Id:           new(mockObjStorage1ResourceID),
 					CreationTime: timestamppb.New(time.Unix(1621086669, 0)),
 					AtRestEncryption: &ontology.AtRestEncryption{
 						Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 							CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
-								Algorithm: "AES256",
-								Enabled:   true,
-								KeyUrl:    "SomeUrl",
+								Algorithm: new("AES256"),
+								Enabled:   new(true),
+								KeyUrl:    new("SomeUrl"),
 							},
 						},
 					},
-					PublicAccess: false,
+					PublicAccess: new(false),
 				},
 				evidenceID: mockObjStorage1EvidenceID,
 				src:        &mockMetricsSource{t: t},
@@ -106,17 +105,17 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args: args{
 				resource: &ontology.ObjectStorage{
-					Id:           mockObjStorage1ResourceID,
+					Id:           new(mockObjStorage1ResourceID),
 					CreationTime: timestamppb.New(time.Unix(1621086669, 0)),
 					AtRestEncryption: &ontology.AtRestEncryption{
 						Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 							CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
-								Algorithm: "NoGoodAlg",
-								Enabled:   false,
+								Algorithm: new("NoGoodAlg"),
+								Enabled:   new(false),
 							},
 						},
 					},
-					PublicAccess: true,
+					PublicAccess: new(true),
 				},
 				evidenceID: mockObjStorage2EvidenceID,
 				src:        &mockMetricsSource{t: t},
@@ -125,7 +124,6 @@ func Test_regoEval_Eval(t *testing.T) {
 				"AtRestEncryptionAlgorithm":         false,
 				"AtRestEncryptionEnabled":           false,
 				"ObjectStoragePublicAccessDisabled": false,
-				"VulnerabilitiesNotExploitable":     true,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -139,18 +137,18 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args: args{
 				resource: &ontology.ObjectStorage{
-					Id:           mockObjStorage1ResourceID,
+					Id:           new(mockObjStorage1ResourceID),
 					CreationTime: timestamppb.New(time.Unix(1621086669, 0)),
 					AtRestEncryption: &ontology.AtRestEncryption{
 						Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 							CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
 								// Normally given but for test case purpose only check that no key URL is given
-								Algorithm: "",
-								Enabled:   false,
+								Algorithm: new(""),
+								Enabled:   new(false),
 							},
 						},
 					},
-					PublicAccess: true,
+					PublicAccess: new(true),
 				},
 				evidenceID: mockObjStorage2EvidenceID,
 				src:        &mockMetricsSource{t: t},
@@ -159,7 +157,6 @@ func Test_regoEval_Eval(t *testing.T) {
 				"AtRestEncryptionAlgorithm":         false,
 				"AtRestEncryptionEnabled":           false,
 				"ObjectStoragePublicAccessDisabled": false,
-				"VulnerabilitiesNotExploitable":     true,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -174,28 +171,28 @@ func Test_regoEval_Eval(t *testing.T) {
 			args: args{
 				src: &mockMetricsSource{t: t},
 				resource: &ontology.VirtualMachine{
-					Id: mockVM1ResourceID,
+					Id: new(mockVM1ResourceID),
 					AutomaticUpdates: &ontology.AutomaticUpdates{
-						Enabled:      true,
+						Enabled:      new(true),
 						Interval:     durationpb.New(time.Hour * 24 * 30),
-						SecurityOnly: true,
+						SecurityOnly: new(true),
 					},
 					BootLogging: &ontology.BootLogging{
 						LoggingServiceIds: []string{"SomeResourceId1", "SomeResourceId2"},
-						Enabled:           true,
+						Enabled:           new(true),
 						RetentionPeriod:   durationpb.New(36 * time.Hour * 24),
 					},
 					OsLogging: &ontology.OSLogging{
 						LoggingServiceIds: []string{"SomeResourceId2"},
-						Enabled:           true,
+						Enabled:           new(true),
 						RetentionPeriod:   durationpb.New(36 * time.Hour * 24),
 					},
 					MalwareProtection: &ontology.MalwareProtection{
-						Enabled:              true,
+						Enabled:              new(true),
 						DurationSinceActive:  durationpb.New(time.Hour * 24 * 5),
-						NumberOfThreatsFound: 5,
+						NumberOfThreatsFound: new(int32(5)),
 						ApplicationLogging: &ontology.ApplicationLogging{
-							Enabled:           true,
+							Enabled:           new(true),
 							RetentionPeriod:   durationpb.New(time.Hour * 24 * 36),
 							LoggingServiceIds: []string{"SomeAnalyticsService?"},
 						},
@@ -204,17 +201,16 @@ func Test_regoEval_Eval(t *testing.T) {
 				evidenceID: mockVM1EvidenceID,
 			},
 			compliant: map[string]bool{
-				"AutomaticUpdatesEnabled":       true,
-				"AutomaticUpdatesInterval":      true,
-				"BootLoggingEnabled":            true,
-				"BootLoggingOutput":             true,
-				"BootLoggingRetention":          true,
-				"MalwareProtectionEnabled":      true,
-				"MalwareProtectionOutput":       true,
-				"OSLoggingRetention":            true,
-				"OSLoggingOutput":               true,
-				"OSLoggingEnabled":              true,
-				"VulnerabilitiesNotExploitable": true,
+				"AutomaticUpdatesEnabled":  true,
+				"AutomaticUpdatesInterval": true,
+				"BootLoggingEnabled":       true,
+				"BootLoggingOutput":        true,
+				"BootLoggingRetention":     true,
+				"MalwareProtectionEnabled": true,
+				"MalwareProtectionOutput":  true,
+				"OSLoggingRetention":       true,
+				"OSLoggingOutput":          true,
+				"OSLoggingEnabled":         true,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -228,32 +224,28 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args: args{
 				resource: &ontology.VirtualMachine{
-					Id: mockVM2ResourceID,
+					Id: new(mockVM2ResourceID),
 					BootLogging: &ontology.BootLogging{
 						LoggingServiceIds: nil,
-						Enabled:           false,
+						Enabled:           new(false),
 						RetentionPeriod:   durationpb.New(1 * time.Hour * 24),
 					},
 					OsLogging: &ontology.OSLogging{
 						LoggingServiceIds: []string{"SomeResourceId3"},
-						Enabled:           false,
-						RetentionPeriod:   durationpb.New(1 * time.Hour * 24),
+						Enabled:           new(false),
+
+						RetentionPeriod: durationpb.New(1 * time.Hour * 24),
 					},
 				},
 				evidenceID: mockVM2EvidenceID,
 				src:        &mockMetricsSource{t: t},
 			},
 			compliant: map[string]bool{
-				"AutomaticUpdatesEnabled":       false,
-				"AutomaticUpdatesInterval":      false,
-				"BootLoggingEnabled":            false,
-				"BootLoggingOutput":             false,
-				"BootLoggingRetention":          false,
-				"MalwareProtectionEnabled":      false,
-				"OSLoggingEnabled":              false,
-				"OSLoggingOutput":               true,
-				"OSLoggingRetention":            false,
-				"VulnerabilitiesNotExploitable": true,
+				"BootLoggingEnabled":   false,
+				"BootLoggingRetention": false,
+				"OSLoggingEnabled":     false,
+				"OSLoggingOutput":      true,
+				"OSLoggingRetention":   false,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -267,19 +259,21 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args: args{
 				resource: &ontology.VirtualMachine{
-					Id:              mockVM2ResourceID,
+					Id: new(mockVM2ResourceID),
+
 					BlockStorageIds: []string{mockBlockStorage1ID},
 				},
 				evidenceID: mockVM1EvidenceID,
 				src:        &mockMetricsSource{t: t},
 				related: map[string]ontology.IsResource{
 					mockBlockStorage1ID: &ontology.BlockStorage{
-						Id: mockBlockStorage1ID,
+						Id: new(mockBlockStorage1ID),
+
 						AtRestEncryption: &ontology.AtRestEncryption{
 							Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 								CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
-									Enabled:   false,
-									Algorithm: "AES256",
+									Enabled:   new(false),
+									Algorithm: new("AES256"),
 								},
 							},
 						},
@@ -287,17 +281,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				},
 			},
 			compliant: map[string]bool{
-				"AutomaticUpdatesEnabled":             false,
-				"AutomaticUpdatesInterval":            false,
-				"BootLoggingEnabled":                  false,
-				"BootLoggingOutput":                   false,
-				"BootLoggingRetention":                false,
-				"MalwareProtectionEnabled":            false,
-				"OSLoggingEnabled":                    false,
-				"OSLoggingOutput":                     false,
-				"OSLoggingRetention":                  false,
 				"VirtualMachineDiskEncryptionEnabled": false,
-				"VulnerabilitiesNotExploitable":       true,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -311,19 +295,22 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args: args{
 				resource: &ontology.VirtualMachine{
-					Id:              mockVM2ResourceID,
+					Id: new(mockVM2ResourceID),
+
 					BlockStorageIds: []string{mockBlockStorage1ID},
 				},
 				evidenceID: mockVM1EvidenceID,
 				src:        &mockMetricsSource{t: t},
 				related: map[string]ontology.IsResource{
 					mockBlockStorage1ID: &ontology.BlockStorage{
-						Id: mockBlockStorage1ID,
+						Id: new(mockBlockStorage1ID),
+
 						AtRestEncryption: &ontology.AtRestEncryption{
 							Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
 								CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
-									Enabled:   true,
-									Algorithm: "AES256",
+									Enabled: new(true),
+
+									Algorithm: new("AES256"),
 								},
 							},
 						},
@@ -331,17 +318,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				},
 			},
 			compliant: map[string]bool{
-				"AutomaticUpdatesEnabled":             false,
-				"AutomaticUpdatesInterval":            false,
-				"BootLoggingEnabled":                  false,
-				"BootLoggingOutput":                   false,
-				"BootLoggingRetention":                false,
-				"MalwareProtectionEnabled":            false,
-				"OSLoggingEnabled":                    false,
-				"OSLoggingOutput":                     false,
-				"OSLoggingRetention":                  false,
 				"VirtualMachineDiskEncryptionEnabled": true,
-				"VulnerabilitiesNotExploitable":       true,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -355,28 +332,29 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args: args{
 				resource: &ontology.LoggingService{
-					Id:                         "loggingservice",
-					Description:                "loggingservice",
-					InternetAccessibleEndpoint: true,
+					Id: new("loggingservice"),
+
+					Description: new("loggingservice"),
+
+					InternetAccessibleEndpoint: new(true),
+
 					TransportEncryption: &ontology.TransportEncryption{
-						Enforced:        false,
-						Enabled:         true,
-						Protocol:        "TLS",
-						ProtocolVersion: 1.3,
+						Enforced: new(false),
+
+						Enabled: new(true),
+
+						Protocol: new("TLS"),
+
+						ProtocolVersion: new(float32(1.3)),
 					},
 				},
 				evidenceID: mockVM1EvidenceID,
 				src:        &mockMetricsSource{t: t},
 			},
 			compliant: map[string]bool{
-				"TransportEncryptionEnabled":            true,
-				"TransportEncryptionEnforced":           false,
-				"TransportEncryptionProtocol":           true,
-				"TransportEncryptionProtocolVersion":    true,
-				"TlsCipherSuite":                        false,
-				"TlsDHGroup":                            false,
-				"TransportEncryptionSignatureAlgorithm": false,
-				"VulnerabilitiesNotExploitable":         true,
+				"TransportEncryptionEnabled":  true,
+				"TransportEncryptionEnforced": false,
+				"TransportEncryptionProtocol": true,
 			},
 			wantErr: assert.Nil[error],
 		},
@@ -406,10 +384,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				}
 			}
 
-			for metricName, expected := range tt.compliant {
-				assert.Contains(t, compliants, metricName)
-				assert.Equal(t, expected, compliants[metricName])
-			}
+			assert.Equal(t, tt.compliant, compliants)
 		})
 	}
 }
@@ -452,6 +427,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 				},
 				baseDir: ".",
 				m: map[string]interface{}{
+					"type": []string{"VirtualMachine"},
 					"automaticUpdates": map[string]interface{}{
 						"enabled": true,
 					},
@@ -471,6 +447,15 @@ func Test_regoEval_evalMap(t *testing.T) {
 						UpdatedAt:            nil,
 						MetricId:             "84eaed86-759d-4419-9954-f3d3ea1f5200",
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+					},
+					ComparisonResult: []*assessment.ComparisonResult{
+						{
+							Property:    "automaticUpdates.enabled",
+							Value:       structpb.NewBoolValue(true),
+							Operator:    "==",
+							TargetValue: structpb.NewBoolValue(true),
+							Success:     true,
+						},
 					},
 					Message: assessment.DefaultCompliantMessage,
 				}
@@ -497,6 +482,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 				},
 				baseDir: ".",
 				m: map[string]interface{}{
+					"type": []string{"VirtualMachine"},
 					"automaticUpdates": map[string]interface{}{
 						"enabled": true,
 					},
@@ -516,6 +502,15 @@ func Test_regoEval_evalMap(t *testing.T) {
 						UpdatedAt:            timestamppb.New(time.Date(2022, 12, 1, 0, 0, 0, 0, time.Local)),
 						MetricId:             "84eaed86-759d-4419-9954-f3d3ea1f5200",
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
+					},
+					ComparisonResult: []*assessment.ComparisonResult{
+						{
+							Property:    "automaticUpdates.enabled",
+							Value:       structpb.NewBoolValue(true),
+							Operator:    "==",
+							TargetValue: structpb.NewBoolValue(false),
+							Success:     false,
+						},
 					},
 					Message: assessment.DefaultNonCompliantMessage,
 				}

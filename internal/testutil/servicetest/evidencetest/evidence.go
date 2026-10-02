@@ -6,7 +6,6 @@ import (
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
-	"clouditor.io/clouditor/v2/internal/util"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -15,14 +14,14 @@ import (
 var (
 	MockListEvidenceRequest1 = &evidence.ListEvidencesRequest{
 		Filter: &evidence.Filter{
-			TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID1),
-			ToolId:               util.Ref(testdata.MockEvidenceToolID1),
+			TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID1),
+			ToolId:               new(testdata.MockEvidenceToolID1),
 		},
 	}
 	MockListEvidenceRequest2 = &evidence.ListEvidencesRequest{
 		Filter: &evidence.Filter{
-			TargetOfEvaluationId: util.Ref(testdata.MockTargetOfEvaluationID2),
-			ToolId:               util.Ref(testdata.MockEvidenceToolID2),
+			TargetOfEvaluationId: new(testdata.MockTargetOfEvaluationID2),
+			ToolId:               new(testdata.MockEvidenceToolID2),
 		},
 	}
 )
@@ -51,8 +50,8 @@ var (
 		Resource: &ontology.Resource{
 			Type: &ontology.Resource_VirtualMachine{
 				VirtualMachine: &ontology.VirtualMachine{
-					Id:   testdata.MockVirtualMachineID1,
-					Name: testdata.MockVirtualMachineName1,
+					Id:   new(testdata.MockVirtualMachineID1),
+					Name: new(testdata.MockVirtualMachineName1),
 				},
 			},
 		},

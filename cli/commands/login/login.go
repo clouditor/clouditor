@@ -114,7 +114,7 @@ func NewLoginCommand() *cobra.Command {
 					return
 				}
 			}()
-			defer srv.Close()
+			defer func() { _ = srv.Close() }()
 
 			// waiting for our code
 			code = <-srv.code

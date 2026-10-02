@@ -237,8 +237,8 @@ func (svc *Service) Init() {
 		go func() {
 			<-rest.GetReadyChannel()
 			_, err = svc.Start(context.Background(), &discovery.StartDiscoveryRequest{
-				ResourceGroup: util.Ref(viper.GetString(config.DiscoveryResourceGroupFlag)),
-				CsafDomain:    util.Ref(viper.GetString(config.DiscoveryCSAFDomainFlag)),
+				ResourceGroup: new(viper.GetString(config.DiscoveryResourceGroupFlag)),
+				CsafDomain:    new(viper.GetString(config.DiscoveryCSAFDomainFlag)),
 			})
 			if err != nil {
 				log.Errorf("Could not automatically start discovery: %v", err)
@@ -297,8 +297,8 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 
 	// Configure discoverers for given providers
 	for _, provider := range svc.providers {
-		switch {
-		case provider == ProviderAzure:
+		switch provider {
+		case ProviderAzure:
 			authorizer, err := azure.NewAuthorizer()
 			if err != nil {
 				log.Errorf("Could not authenticate to Azure: %v", err)
@@ -311,7 +311,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				optsAzure = append(optsAzure, azure.WithResourceGroup(req.GetResourceGroup()))
 			}
 			svc.discoverers = append(svc.discoverers, azure.NewAzureDiscovery(optsAzure...))
-		case provider == ProviderK8S:
+		case ProviderK8S:
 			k8sClient, err := k8s.AuthFromKubeConfig()
 			if err != nil {
 				log.Errorf("Could not authenticate to Kubernetes: %v", err)
@@ -321,7 +321,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				k8s.NewKubernetesComputeDiscovery(k8sClient, svc.ctID),
 				k8s.NewKubernetesNetworkDiscovery(k8sClient, svc.ctID),
 				k8s.NewKubernetesStorageDiscovery(k8sClient, svc.ctID))
-		case provider == ProviderAWS:
+		case ProviderAWS:
 			awsClient, err := aws.NewClient()
 			if err != nil {
 				log.Errorf("Could not authenticate to AWS: %v", err)
@@ -330,7 +330,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 			svc.discoverers = append(svc.discoverers,
 				aws.NewAwsStorageDiscovery(awsClient, svc.ctID),
 				aws.NewAwsComputeDiscovery(awsClient, svc.ctID))
-		case provider == ProviderOpenstack:
+		case ProviderOpenstack:
 			authorizer, err := openstack.NewAuthorizer()
 			if err != nil {
 				log.Errorf("Could not authenticate to OpenStack: %v", err)
@@ -339,7 +339,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 			// Add authorizer and TargetOfEvaluationID
 			optsOpenstack = append(optsOpenstack, openstack.WithAuthorizer(authorizer), openstack.WithTargetOfEvaluationID(svc.ctID))
 			svc.discoverers = append(svc.discoverers, openstack.NewOpenstackDiscovery(optsOpenstack...))
-		case provider == ProviderCSAF:
+		case ProviderCSAF:
 			var (
 				domain string
 				opts   []csaf.DiscoveryOption

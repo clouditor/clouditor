@@ -44,11 +44,11 @@ func (d *csafDiscovery) handleKey(pgpkey csaf.PGPKey, parentId string) (key *ont
 
 	// 2nd: Create the key in the ontology format
 	key = &ontology.Key{
-		Algorithm:                  "PGP",
-		Id:                         util.Deref(pgpkey.URL),
-		Raw:                        discovery.Raw(pgpkey),
+		Algorithm:                  new("PGP"),
+		Id:                         new(util.Deref(pgpkey.URL)),
+		Raw:                        new(discovery.Raw(pgpkey)),
 		ParentId:                   &parentId,
-		InternetAccessibleEndpoint: isAccessible,
+		InternetAccessibleEndpoint: new(isAccessible),
 	}
 	return
 }
@@ -63,7 +63,7 @@ func (d *csafDiscovery) fetchKey(keyinfo csaf.PGPKey) (key *openpgp.Entity, err 
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 
 	keys, err = openpgp.ReadArmoredKeyRing(res.Body)
 	if err != nil {

@@ -40,7 +40,6 @@ import (
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/logging"
-	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/policies"
 	"clouditor.io/clouditor/v2/server"
@@ -74,6 +73,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 		},
 		WithOAuth2Authorizer(config.ClientCredentials()),
 		WithOrchestratorAddress(viper.GetString(config.OrchestratorURLFlag)),
+		WithApplicableMetricsCache(viper.GetBool(config.CacheApplicableMetricsFlag)),
 	)
 }
 
@@ -133,6 +133,10 @@ type Service struct {
 
 	// evalPkg specifies the package used for the evaluation engine
 	evalPkg string
+
+	// cacheApplicableMetrics specifies whether the policy evaluation engine caches the list of applicable
+	// metrics per tool ID and resource type. It is disabled by default.
+	cacheApplicableMetrics bool
 }
 
 // WithOrchestratorAddress is an option to configure the orchestrator gRPC address.
@@ -167,6 +171,14 @@ func WithRegoPackageName(pkg string) service.Option[*Service] {
 	}
 }
 
+// WithApplicableMetricsCache is an option to enable or disable caching of applicable metrics per tool ID
+// and resource type in the policy evaluation engine. It is disabled by default.
+func WithApplicableMetricsCache(enabled bool) service.Option[*Service] {
+	return func(s *Service) {
+		s.cacheApplicableMetrics = enabled
+	}
+}
+
 // WithAuthorizationStrategy is an option that configures an authorization strategy.
 func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Option[*Service] {
 	return func(svc *Service) {
@@ -195,7 +207,10 @@ func NewService(opts ...service.Option[*Service]) *Service {
 	}
 
 	// Initialize the policy evaluator after options are set
-	svc.pe = policies.NewRegoEval(policies.WithPackageName(svc.evalPkg))
+	svc.pe = policies.NewRegoEval(
+		policies.WithPackageName(svc.evalPkg),
+		policies.WithApplicableMetricsCache(svc.cacheApplicableMetrics),
+	)
 
 	// Default to an allow-all authorization strategy
 	if svc.authz == nil {
@@ -236,9 +251,9 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 
 	// Check, if we can immediately handle this evidence; we assume so at first
 	var (
-		canHandle                                 = true
-		waitingFor map[string]bool                = make(map[string]bool)
-		related    map[string]ontology.IsResource = make(map[string]ontology.IsResource)
+		canHandle  = true
+		waitingFor = make(map[string]bool)
+		related    = make(map[string]ontology.IsResource)
 	)
 
 	svc.em.Lock()
@@ -435,7 +450,7 @@ func (svc *Service) handleEvidence(
 			ResourceTypes:        types,
 			ComplianceComment:    data.Message,
 			ComplianceDetails:    data.ComparisonResult,
-			ToolId:               util.Ref(assessment.AssessmentToolId),
+			ToolId:               new(assessment.AssessmentToolId),
 			HistoryUpdatedAt:     timestamppb.Now(),
 			History: []*assessment.Record{{ // TODO(all): Update history in another PR, see Issue #1724
 				EvidenceId:         ev.GetId(),

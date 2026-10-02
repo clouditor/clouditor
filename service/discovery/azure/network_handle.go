@@ -35,15 +35,15 @@ import (
 
 func (d *azureDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) ontology.IsResource {
 	return &ontology.LoadBalancer{
-		Id:           resourceID(lb.ID),
-		Name:         util.Deref(lb.Name),
+		Id:           new(resourceID(lb.ID)),
+		Name:         new(util.Deref(lb.Name)),
 		CreationTime: nil, // No creation time available
 		GeoLocation: &ontology.GeoLocation{
-			Region: util.Deref(lb.Location),
+			Region: new(util.Deref(lb.Location)),
 		},
 		Labels:   labels(lb.Tags),
 		ParentId: resourceGroupID(lb.ID),
-		Raw:      discovery.Raw(lb),
+		Raw:      new(discovery.Raw(lb)),
 		Ips:      publicIPAddressFromLoadBalancer(lb),
 		Ports:    loadBalancerPorts(lb), // TODO(oxisto): ports should be uint16, not 32
 	}
@@ -59,19 +59,19 @@ func (d *azureDiscovery) handleApplicationGateway(ag *armnetwork.ApplicationGate
 	}
 
 	return &ontology.LoadBalancer{
-		Id:           resourceID(ag.ID),
-		Name:         util.Deref(ag.Name),
+		Id:           new(resourceID(ag.ID)),
+		Name:         new(util.Deref(ag.Name)),
 		CreationTime: nil, // No creation time available
 		GeoLocation: &ontology.GeoLocation{
-			Region: util.Deref(ag.Location),
+			Region: new(util.Deref(ag.Location)),
 		},
 		Labels:   labels(ag.Tags),
 		ParentId: resourceGroupID(ag.ID),
-		Raw:      discovery.Raw(ag),
+		Raw:      new(discovery.Raw(ag)),
 		AccessRestriction: &ontology.AccessRestriction{
 			Type: &ontology.AccessRestriction_WebApplicationFirewall{
 				WebApplicationFirewall: &ontology.WebApplicationFirewall{
-					Enabled: firewallStatus,
+					Enabled: new(firewallStatus),
 				},
 			},
 		},
@@ -80,19 +80,19 @@ func (d *azureDiscovery) handleApplicationGateway(ag *armnetwork.ApplicationGate
 
 func (d *azureDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) ontology.IsResource {
 	return &ontology.NetworkInterface{
-		Id:           resourceID(ni.ID),
-		Name:         util.Deref(ni.Name),
+		Id:           new(resourceID(ni.ID)),
+		Name:         new(util.Deref(ni.Name)),
 		CreationTime: nil, // No creation time available
 		GeoLocation: &ontology.GeoLocation{
-			Region: util.Deref(ni.Location),
+			Region: new(util.Deref(ni.Location)),
 		},
 		Labels:   labels(ni.Tags),
 		ParentId: resourceGroupID(ni.ID),
-		Raw:      discovery.Raw(ni),
+		Raw:      new(discovery.Raw(ni)),
 		AccessRestriction: &ontology.AccessRestriction{
 			Type: &ontology.AccessRestriction_L3Firewall{
 				L3Firewall: &ontology.L3Firewall{
-					Enabled: d.nsgFirewallEnabled(ni),
+					Enabled: new(d.nsgFirewallEnabled(ni)),
 				},
 			},
 		},

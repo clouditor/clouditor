@@ -76,34 +76,34 @@ func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (o
 	}
 
 	r := &ontology.VirtualMachine{
-		Id:           resourceID(vm.ID),
-		Name:         util.Deref(vm.Name),
+		Id:           new(resourceID(vm.ID)),
+		Name:         new(util.Deref(vm.Name)),
 		CreationTime: creationTime(vm.Properties.TimeCreated),
 		GeoLocation: &ontology.GeoLocation{
-			Region: util.Deref(vm.Location),
+			Region: new(util.Deref(vm.Location)),
 		},
 		Labels:              labels(vm.Tags),
 		ParentId:            resourceGroupID(vm.ID),
-		Raw:                 discovery.Raw(vm),
+		Raw:                 new(discovery.Raw(vm)),
 		NetworkInterfaceIds: []string{}, // TODO(all): Discover network interface IDs
 		BlockStorageIds:     []string{},
 		MalwareProtection:   &ontology.MalwareProtection{},
 		BootLogging: &ontology.BootLogging{
-			Enabled:                  isBootDiagnosticEnabled(vm),
+			Enabled:                  new(isBootDiagnosticEnabled(vm)),
 			LoggingServiceIds:        bootLogging,
 			RetentionPeriod:          durationpb.New(0), // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
-			MonitoringLogDataEnabled: monitoringLogDataEnabled,
-			SecurityAlertsEnabled:    securityAlertsEnabled,
+			MonitoringLogDataEnabled: new(monitoringLogDataEnabled),
+			SecurityAlertsEnabled:    new(securityAlertsEnabled),
 		},
 		OsLogging: &ontology.OSLogging{
-			Enabled:                  osLoggingEnabled,
+			Enabled:                  new(osLoggingEnabled),
 			RetentionPeriod:          durationpb.New(0),
 			LoggingServiceIds:        []string{}, // TODO(all): TBD
-			MonitoringLogDataEnabled: monitoringLogDataEnabled,
-			SecurityAlertsEnabled:    monitoringLogDataEnabled,
+			MonitoringLogDataEnabled: new(monitoringLogDataEnabled),
+			SecurityAlertsEnabled:    new(monitoringLogDataEnabled),
 		},
 		ActivityLogging: &ontology.ActivityLogging{
-			Enabled:           true, // is always enabled
+			Enabled:           new(true), // is always enabled
 			RetentionPeriod:   durationpb.New(RetentionPeriod90Days),
 			LoggingServiceIds: []string{}, // TODO(all): TBD
 		},
@@ -154,13 +154,13 @@ func (d *azureDiscovery) handleBlockStorage(disk *armcompute.Disk) (*ontology.Bl
 	backups = backupsEmptyCheck(backups)
 
 	return &ontology.BlockStorage{
-		Id:               resourceID(disk.ID),
-		Name:             util.Deref(disk.Name),
+		Id:               new(resourceID(disk.ID)),
+		Name:             new(util.Deref(disk.Name)),
 		CreationTime:     creationTime(disk.Properties.TimeCreated),
 		GeoLocation:      location(disk.Location),
 		Labels:           labels(disk.Tags),
 		ParentId:         resourceGroupID(disk.ManagedBy),
-		Raw:              discovery.Raw(disk, rawKeyUrl),
+		Raw:              new(discovery.Raw(disk, rawKeyUrl)),
 		AtRestEncryption: enc,
 		Backups:          backups,
 	}, nil
@@ -178,9 +178,10 @@ func (d *azureDiscovery) handleFunction(function *armappservice.Site, config arm
 		return nil
 	}
 
-	if *function.Kind == "functionapp,linux" { // Linux function
+	switch *function.Kind {
+	case "functionapp,linux": // Linux function
 		runtimeLanguage, runtimeVersion = runtimeInfo(util.Deref(function.Properties.SiteConfig.LinuxFxVersion))
-	} else if *function.Kind == "functionapp" { // Windows function, we need to get also the config information
+	case "functionapp": // Windows function, we need to get also the config information
 		// Check all runtime versions to get the used runtime language and runtime version
 		if util.Deref(config.Properties.JavaVersion) != "" {
 			runtimeLanguage = "Java"
@@ -207,24 +208,24 @@ func (d *azureDiscovery) handleFunction(function *armappservice.Site, config arm
 	}
 
 	return &ontology.Function{
-		Id:           resourceID(function.ID),
-		Name:         util.Deref(function.Name),
+		Id:           new(resourceID(function.ID)),
+		Name:         new(util.Deref(function.Name)),
 		CreationTime: nil, // No creation time available
 		GeoLocation: &ontology.GeoLocation{
-			Region: util.Deref(function.Location),
+			Region: new(util.Deref(function.Location)),
 		},
 		Labels:              labels(function.Tags),
 		ParentId:            resourceGroupID(function.ID),
-		Raw:                 discovery.Raw(function, config),
+		Raw:                 new(discovery.Raw(function, config)),
 		NetworkInterfaceIds: getVirtualNetworkSubnetId(function), // Add the Virtual Network Subnet ID
 		ResourceLogging:     d.getResourceLoggingWebApps(function),
-		RuntimeLanguage:     runtimeLanguage,
-		RuntimeVersion:      runtimeVersion,
+		RuntimeLanguage:     new(runtimeLanguage),
+		RuntimeVersion:      new(runtimeVersion),
 		// TODO(oxisto): This is missing in the ontology
 		/*HttpEndpoint: &ontology.HttpEndpoint{
 			TransportEncryption: getTransportEncryption(function.Properties, config),
 		},*/
-		InternetAccessibleEndpoint: publicNetworkAccessStatus(function.Properties.PublicNetworkAccess),
+		InternetAccessibleEndpoint: new(publicNetworkAccessStatus(function.Properties.PublicNetworkAccess)),
 		Redundancies:               getRedundancies(function),
 	}
 }
@@ -236,22 +237,22 @@ func (d *azureDiscovery) handleWebApp(webApp *armappservice.Site, config armapps
 	}
 
 	return &ontology.Function{
-		Id:           resourceID(webApp.ID),
-		Name:         util.Deref(webApp.Name),
+		Id:           new(resourceID(webApp.ID)),
+		Name:         new(util.Deref(webApp.Name)),
 		CreationTime: nil, // Only the last modified time is available.
 		GeoLocation: &ontology.GeoLocation{
-			Region: util.Deref(webApp.Location),
+			Region: new(util.Deref(webApp.Location)),
 		},
 		Labels:              labels(webApp.Tags),
 		ParentId:            resourceGroupID(webApp.ID),
-		Raw:                 discovery.Raw(webApp, config),
+		Raw:                 new(discovery.Raw(webApp, config)),
 		NetworkInterfaceIds: getVirtualNetworkSubnetId(webApp), // Add the Virtual Network Subnet ID
 		ResourceLogging:     d.getResourceLoggingWebApps(webApp),
 		// TODO(oxisto): This is missing in the ontology
 		/*HttpEndpoint: &ontology.HttpEndpoint{
 			TransportEncryption: getTransportEncryption(webApp.Properties, config),
 		},*/
-		InternetAccessibleEndpoint: publicNetworkAccessStatus(webApp.Properties.PublicNetworkAccess),
+		InternetAccessibleEndpoint: new(publicNetworkAccessStatus(webApp.Properties.PublicNetworkAccess)),
 		Redundancies:               getRedundancies(webApp),
 	}
 }
