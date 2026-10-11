@@ -181,7 +181,7 @@ var (
 		ResourceTypes:        testdata.MockVirtualMachineTypes,
 		ComplianceComment:    assessment.DefaultCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
-			Operator:             "==",
+			Operator:             string(assessment.OperatorEqual),
 			TargetValue:          structpb.NewBoolValue(true),
 			IsDefault:            true,
 			MetricId:             testdata.MockMetricID1,
@@ -207,7 +207,7 @@ var (
 		ResourceTypes:        testdata.MockVirtualMachineTypes,
 		ComplianceComment:    assessment.DefaultCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
-			Operator:             "==",
+			Operator:             string(assessment.OperatorEqual),
 			TargetValue:          structpb.NewBoolValue(true),
 			IsDefault:            true,
 			MetricId:             testdata.MockMetricID1,
@@ -233,7 +233,7 @@ var (
 		ResourceTypes:        testdata.MockVirtualMachineTypes,
 		ComplianceComment:    assessment.DefaultNonCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
-			Operator:             "==",
+			Operator:             string(assessment.OperatorEqual),
 			TargetValue:          structpb.NewBoolValue(true),
 			IsDefault:            true,
 			MetricId:             testdata.MockMetricID2,
@@ -259,7 +259,7 @@ var (
 		ResourceTypes:        testdata.MockVirtualMachineTypes,
 		ComplianceComment:    assessment.DefaultNonCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
-			Operator:             "==",
+			Operator:             string(assessment.OperatorEqual),
 			TargetValue:          structpb.NewBoolValue(true),
 			IsDefault:            true,
 			MetricId:             testdata.MockMetricID2,

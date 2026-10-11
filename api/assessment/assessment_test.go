@@ -56,7 +56,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					Id:       "",
 					MetricId: testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
-						Operator:    "==",
+						Operator:    string(OperatorEqual),
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
 					EvidenceId:    testdata.MockEvidenceID1,
@@ -76,7 +76,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					Id:       "1234",
 					MetricId: testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
-						Operator:    "==",
+						Operator:    string(OperatorEqual),
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
 					EvidenceId:    testdata.MockEvidenceID1,
@@ -96,7 +96,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					Id:       "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
 					MetricId: testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
-						Operator:    "==",
+						Operator:    string(OperatorEqual),
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
 					EvidenceId:    testdata.MockEvidenceID1,
@@ -115,7 +115,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					Id:       testdata.MockAssessmentResultID,
 					MetricId: testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
-						Operator:    ">",
+						Operator:    string(OperatorGreaterThan),
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
 					EvidenceId:    testdata.MockEvidenceID1,
@@ -134,7 +134,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					Id:        testdata.MockAssessmentResultID,
 					CreatedAt: timestamppb.Now(),
 					MetricConfiguration: &MetricConfiguration{
-						Operator:    "<",
+						Operator:    string(OperatorLessThan),
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
 					ResourceTypes: []string{"Resource"},
@@ -212,7 +212,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					CreatedAt: timestamppb.Now(),
 					MetricId:  testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
-						Operator: "<",
+						Operator: string(OperatorLessThan),
 					},
 					EvidenceId:    testdata.MockEvidenceID1,
 					ResourceTypes: []string{"Resource"},
@@ -251,7 +251,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					CreatedAt: timestamp,
 					MetricId:  testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
-						Operator:             "==",
+						Operator:             string(OperatorEqual),
 						MetricId:             testdata.MockMetricID1,
 						TargetValue:          testdata.MockMetricConfigurationTargetValueString,
 						TargetOfEvaluationId: testdata.MockTargetOfEvaluationID1,
